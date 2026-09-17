@@ -1,0 +1,15 @@
+kind = "design-system"
+previewPath = "/trynext-lifestyle-design-system/"
+title = "Trynext Lifestyle Design System"
+description = "The shared visual language for Trynext Lifestyle commerce, Design Studio, admin, and mobile experiences, built from the existing product brand and component library."
+version = "1.0.0"
+id = "artifacts/trynext-lifestyle-design-system"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/trynext-lifestyle-design-system/" ]
+localPort = 26077
+
+[services.development]
+run = "pnpm --filter @workspace/trynext-lifestyle-design-system run dev"

@@ -1,0 +1,12 @@
+.env
+production.env
+*.env
+!.env.example
+node_modules/
+dist/
+build/
+.next/
+out/
+.replit
+*.log
+.DS_Store
