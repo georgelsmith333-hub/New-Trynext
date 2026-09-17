@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "mug",
+  "color": "purple",
+  "view": "wrap",
+  "sourceView": "front",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/mug-front.png",
+  "sourceChecksum": "ca0a032ca1aad9e44001daf616dc01e956cbe6955ecd05519fd6afa15260e313",
+  "sourceTransform": "preserved-source",
+  "sourceBackPreview": "dist-mockups/staging/smart-v10-v3/sources/mug-back.png",
+  "sourceBackChecksum": "b87b4e7972f4faa45c533d08348cae66c96d67f318cb930cb4496586137437cb",
+  "sourceBackTransform": "horizontal-mirror-for-opposite-handle",
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": "dist-mockups/staging/smart-v10-v3/templates/mug/wrap-alpha.png",
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/mug/purple/wrap.png",
+  "baseChecksum": "1ef9776cc62246f483845b1007b68b0b6a45f1f3752e9352c4a2133c28df9968",
+  "printZone": {
+    "x": 165,
+    "y": 220,
+    "w": 670,
+    "h": 580
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "mug-wrap-body-composite",
+  "provenance": "generated-master",
+  "warp": {
+    "mode": "cylinder",
+    "curvature": 0.16,
+    "seamPadding": 0.035,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - mug-purple-wrap",
+    "id": "7d840a94-7d84-0a94-7d84-0a947d840a94",
+    "placed": "7d840a94-7d84-0a94-7d84-0a947d840a94-placed",
+    "transform": [
+      165,
+      220,
+      835,
+      220,
+      835,
+      800,
+      165,
+      800
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/mug/mug-purple-wrap.psb",
+  "masterChecksum": "9b94176e91f0be17183297d67d0c4b2af01437763777e3e2806555a8acf4f8b2",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/mug/purple/wrap.png",
+  "previewChecksum": "c907e8330f049ce4b767c306263254ac25ebe167a8af5df19cb94cab8291cc4d",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/purple/wrap.png",
+  "proofPreviewChecksum": "7b73f4d114aa88aa5ff6e6c050680df6f097167c7a285f97c057f9800af35450",
+  "masterFormat": "psb",
+  "reviewStatus": "candidate"
+}

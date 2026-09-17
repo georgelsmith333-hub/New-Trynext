@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "hoodie",
+  "color": "heather-grey",
+  "view": "right-sleeve",
+  "sourceView": "front",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/hoodie-front.png",
+  "sourceChecksum": "f745acdcd05a89c2e940a97dc86f53f5aa5b0346070b638cb6f3ff80110ff1c9",
+  "sourceTransform": "preserved-source",
+  "sourceBackPreview": null,
+  "sourceBackChecksum": null,
+  "sourceBackTransform": null,
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": "dist-mockups/staging/smart-v10-v3/templates/hoodie/right-sleeve-alpha.png",
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/hoodie/heather-grey/right-sleeve.png",
+  "baseChecksum": "9ee7440838a63e62b0f856117d80e020a314dc76c25c4f4b96819906475a01de",
+  "printZone": {
+    "x": 175,
+    "y": 175,
+    "w": 650,
+    "h": 650
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "right-sleeve-polygon",
+  "provenance": "generated-master",
+  "warp": {
+    "mode": "flat",
+    "curvature": 0,
+    "seamPadding": 0.02,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - hoodie-heather-grey-right-sleeve",
+    "id": "f5ebc88d-f5eb-c88d-f5eb-c88df5ebc88d",
+    "placed": "f5ebc88d-f5eb-c88d-f5eb-c88df5ebc88d-placed",
+    "transform": [
+      175,
+      175,
+      825,
+      175,
+      825,
+      825,
+      175,
+      825
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/hoodie/hoodie-heather-grey-right-sleeve.psd",
+  "masterChecksum": "71a60d627ca7cea888c244ec4a2de204723688efb639a4358d2db4f6899a010f",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/hoodie/heather-grey/right-sleeve.png",
+  "previewChecksum": "e417bdadb53db01eae34c0d315e636dc0d1616a4577f325c15366cdf798cf727",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/heather-grey/right-sleeve.png",
+  "proofPreviewChecksum": "60e9603186d896f77729c7e931f38882cecd153f9f05102a5504c69972cc0f17",
+  "masterFormat": "psd",
+  "reviewStatus": "candidate"
+}

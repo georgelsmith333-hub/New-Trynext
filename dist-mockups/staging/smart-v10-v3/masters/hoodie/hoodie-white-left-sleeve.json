@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "hoodie",
+  "color": "white",
+  "view": "left-sleeve",
+  "sourceView": "front",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/hoodie-front.png",
+  "sourceChecksum": "f745acdcd05a89c2e940a97dc86f53f5aa5b0346070b638cb6f3ff80110ff1c9",
+  "sourceTransform": "preserved-source",
+  "sourceBackPreview": null,
+  "sourceBackChecksum": null,
+  "sourceBackTransform": null,
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": "dist-mockups/staging/smart-v10-v3/templates/hoodie/left-sleeve-alpha.png",
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/hoodie/white/left-sleeve.png",
+  "baseChecksum": "162f656e50f4b2a76e2c549c7666aa4bb5f00820a78c7a4364aa17be2aa72427",
+  "printZone": {
+    "x": 175,
+    "y": 175,
+    "w": 650,
+    "h": 650
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "left-sleeve-polygon",
+  "provenance": "generated-master",
+  "warp": {
+    "mode": "flat",
+    "curvature": 0,
+    "seamPadding": 0.02,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - hoodie-white-left-sleeve",
+    "id": "53dfa05c-53df-a05c-53df-a05c53dfa05c",
+    "placed": "53dfa05c-53df-a05c-53df-a05c53dfa05c-placed",
+    "transform": [
+      175,
+      175,
+      825,
+      175,
+      825,
+      825,
+      175,
+      825
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/hoodie/hoodie-white-left-sleeve.psd",
+  "masterChecksum": "a72e0cf6a731f9ec25c857e73c2fb6ed5884e17a42db2476425a07b6dc4e7754",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/hoodie/white/left-sleeve.png",
+  "previewChecksum": "0804d61cfbdebdbb3d7b5b8dd16bb62e43ada4959e73e8919aecc04fb747a891",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/white/left-sleeve.png",
+  "proofPreviewChecksum": "25384285e46fc4567ba1855a5244663a935a437557d44b2f7ca705fa6db5d5e7",
+  "masterFormat": "psd",
+  "reviewStatus": "candidate"
+}

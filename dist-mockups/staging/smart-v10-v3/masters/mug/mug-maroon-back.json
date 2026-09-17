@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "mug",
+  "color": "maroon",
+  "view": "back",
+  "sourceView": "back",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/mug-back.png",
+  "sourceChecksum": "b87b4e7972f4faa45c533d08348cae66c96d67f318cb930cb4496586137437cb",
+  "sourceTransform": "horizontal-mirror-for-opposite-handle",
+  "sourceBackPreview": null,
+  "sourceBackChecksum": null,
+  "sourceBackTransform": null,
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": null,
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/mug/maroon/back.png",
+  "baseChecksum": "11bcefe745f95033dcbe9687db8b5dc14025317bd07c3c574375acc4c51275fd",
+  "printZone": {
+    "x": 384,
+    "y": 220,
+    "w": 451,
+    "h": 580
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "preserved-source",
+  "provenance": "authentic-preserved",
+  "warp": {
+    "mode": "cylinder",
+    "curvature": 0.16,
+    "seamPadding": 0.035,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - mug-maroon-back",
+    "id": "4f762dcb-4f76-2dcb-4f76-2dcb4f762dcb",
+    "placed": "4f762dcb-4f76-2dcb-4f76-2dcb4f762dcb-placed",
+    "transform": [
+      384,
+      220,
+      835,
+      220,
+      835,
+      800,
+      384,
+      800
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/mug/mug-maroon-back.psb",
+  "masterChecksum": "5b388c465ed92c714852073963537fe49c19e30674ba28bcaadf217fd98a14c2",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/mug/maroon/back.png",
+  "previewChecksum": "fe8a0b8f3f37892bdda02e6347ea40b5b3162329ddf9389d6fec9cd407e11872",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/maroon/back.png",
+  "proofPreviewChecksum": "e75da6eecb2bc6f66f192a3b0c5c1391b77d8fac329fac47d4d8ce9f543eb042",
+  "masterFormat": "psb",
+  "reviewStatus": "candidate"
+}

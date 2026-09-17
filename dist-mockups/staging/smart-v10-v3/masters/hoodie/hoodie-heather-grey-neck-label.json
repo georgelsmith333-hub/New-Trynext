@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "hoodie",
+  "color": "heather-grey",
+  "view": "neck-label",
+  "sourceView": "front",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/hoodie-front.png",
+  "sourceChecksum": "f745acdcd05a89c2e940a97dc86f53f5aa5b0346070b638cb6f3ff80110ff1c9",
+  "sourceTransform": "preserved-source",
+  "sourceBackPreview": null,
+  "sourceBackChecksum": null,
+  "sourceBackTransform": null,
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": "dist-mockups/staging/smart-v10-v3/templates/hoodie/neck-label-alpha.png",
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/hoodie/heather-grey/neck-label.png",
+  "baseChecksum": "9790fe44869404871514f71fa8e4e326b10cd732e82faaa02a0bc09596edc910",
+  "printZone": {
+    "x": 150,
+    "y": 265,
+    "w": 700,
+    "h": 470
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "neck-label-crop",
+  "provenance": "generated-master",
+  "warp": {
+    "mode": "flat",
+    "curvature": 0,
+    "seamPadding": 0.02,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - hoodie-heather-grey-neck-label",
+    "id": "c546cb20-c546-cb20-c546-cb20c546cb20",
+    "placed": "c546cb20-c546-cb20-c546-cb20c546cb20-placed",
+    "transform": [
+      150,
+      265,
+      850,
+      265,
+      850,
+      735,
+      150,
+      735
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/hoodie/hoodie-heather-grey-neck-label.psd",
+  "masterChecksum": "dabd99d42cd35122f5212c34b80c81ef31ea59b68fb477ce354fd4dd9d4030e1",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/hoodie/heather-grey/neck-label.png",
+  "previewChecksum": "ca11ae38228c99e255e6941f4014bfdcd5d24c6df605031f903ea0bb20c49f32",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/heather-grey/neck-label.png",
+  "proofPreviewChecksum": "a7f13493387415bbd2094b59c809e140f90f8f19167fea3c5311ee3c2ddb6414",
+  "masterFormat": "psd",
+  "reviewStatus": "candidate"
+}

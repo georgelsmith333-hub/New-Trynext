@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "mug",
+  "color": "pink",
+  "view": "back",
+  "sourceView": "back",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/mug-back.png",
+  "sourceChecksum": "b87b4e7972f4faa45c533d08348cae66c96d67f318cb930cb4496586137437cb",
+  "sourceTransform": "horizontal-mirror-for-opposite-handle",
+  "sourceBackPreview": null,
+  "sourceBackChecksum": null,
+  "sourceBackTransform": null,
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": null,
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/mug/pink/back.png",
+  "baseChecksum": "7c2bf6023b54bfcce5d867bb85a4a3be24018b63ccc791b524f06529c1edc569",
+  "printZone": {
+    "x": 384,
+    "y": 220,
+    "w": 451,
+    "h": 580
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "preserved-source",
+  "provenance": "authentic-preserved",
+  "warp": {
+    "mode": "cylinder",
+    "curvature": 0.16,
+    "seamPadding": 0.035,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - mug-pink-back",
+    "id": "64e69751-64e6-9751-64e6-975164e69751",
+    "placed": "64e69751-64e6-9751-64e6-975164e69751-placed",
+    "transform": [
+      384,
+      220,
+      835,
+      220,
+      835,
+      800,
+      384,
+      800
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/mug/mug-pink-back.psb",
+  "masterChecksum": "a6a24987cb13faa7866c2f3c7dc83c6722fbbd1039f53f3bbea521a37621248c",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/mug/pink/back.png",
+  "previewChecksum": "0c5826a27bd0a70e33b4161ce785eb5eb78d78a8807a76b274d80b7de523b9e8",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/pink/back.png",
+  "proofPreviewChecksum": "6d5aeebd12bd2adbb8358634bbf6f10742bc1b2f5001882aa29dda29e2c77eda",
+  "masterFormat": "psb",
+  "reviewStatus": "candidate"
+}

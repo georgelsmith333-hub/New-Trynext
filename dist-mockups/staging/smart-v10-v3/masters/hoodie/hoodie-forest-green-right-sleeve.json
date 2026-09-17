@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "hoodie",
+  "color": "forest-green",
+  "view": "right-sleeve",
+  "sourceView": "front",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/hoodie-front.png",
+  "sourceChecksum": "f745acdcd05a89c2e940a97dc86f53f5aa5b0346070b638cb6f3ff80110ff1c9",
+  "sourceTransform": "preserved-source",
+  "sourceBackPreview": null,
+  "sourceBackChecksum": null,
+  "sourceBackTransform": null,
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": "dist-mockups/staging/smart-v10-v3/templates/hoodie/right-sleeve-alpha.png",
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/hoodie/forest-green/right-sleeve.png",
+  "baseChecksum": "b7fdabbda9965f7ff4276e3ed26d3cba1f8f1ff6f81418940708e5ffd225a87c",
+  "printZone": {
+    "x": 175,
+    "y": 175,
+    "w": 650,
+    "h": 650
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "right-sleeve-polygon",
+  "provenance": "generated-master",
+  "warp": {
+    "mode": "flat",
+    "curvature": 0,
+    "seamPadding": 0.02,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - hoodie-forest-green-right-sleeve",
+    "id": "71ba6e59-71ba-6e59-71ba-6e5971ba6e59",
+    "placed": "71ba6e59-71ba-6e59-71ba-6e5971ba6e59-placed",
+    "transform": [
+      175,
+      175,
+      825,
+      175,
+      825,
+      825,
+      175,
+      825
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/hoodie/hoodie-forest-green-right-sleeve.psd",
+  "masterChecksum": "d3e2e873c6ba2e24109f2ff22f68b49eff54b10275363b3c27aeed61f5c1d4c5",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/hoodie/forest-green/right-sleeve.png",
+  "previewChecksum": "e3fd8e1d11566ca0a54f594a7a0c0984d438a6af83d4e45cf0fedfd2035f525b",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/forest-green/right-sleeve.png",
+  "proofPreviewChecksum": "41a5c38fc7c8fb00525e87cc637eaf47f58aef6a4a95be1ada071dadd24f2761",
+  "masterFormat": "psd",
+  "reviewStatus": "candidate"
+}

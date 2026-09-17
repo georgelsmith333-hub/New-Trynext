@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "hoodie",
+  "color": "forest-green",
+  "view": "front",
+  "sourceView": "front",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/hoodie-front.png",
+  "sourceChecksum": "f745acdcd05a89c2e940a97dc86f53f5aa5b0346070b638cb6f3ff80110ff1c9",
+  "sourceTransform": "preserved-source",
+  "sourceBackPreview": null,
+  "sourceBackChecksum": null,
+  "sourceBackTransform": null,
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": null,
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/hoodie/forest-green/front.png",
+  "baseChecksum": "c307118b14ebdbb29317c9ec5ff2647ec1f11cc23aeaf000139ba2a710bfbfa8",
+  "printZone": {
+    "x": 240,
+    "y": 270,
+    "w": 520,
+    "h": 400
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "preserved-source",
+  "provenance": "authentic-preserved",
+  "warp": {
+    "mode": "flat",
+    "curvature": 0,
+    "seamPadding": 0.02,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - hoodie-forest-green-front",
+    "id": "a6424dfd-a642-4dfd-a642-4dfda6424dfd",
+    "placed": "a6424dfd-a642-4dfd-a642-4dfda6424dfd-placed",
+    "transform": [
+      240,
+      270,
+      760,
+      270,
+      760,
+      670,
+      240,
+      670
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/hoodie/hoodie-forest-green-front.psd",
+  "masterChecksum": "32730639799bc0ab8e27106f6a0f3592b9c4c45c73ec3c1586cc5305aab2cdae",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/hoodie/forest-green/front.png",
+  "previewChecksum": "33f204bc08c591f61e42a2fdb2ce0f810ff75586477cd22ce3135cafd0b0928e",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/forest-green/front.png",
+  "proofPreviewChecksum": "a306ca668923541bb1731f112e585252ef50db4a830f28d0019f2183369d86bd",
+  "masterFormat": "psd",
+  "reviewStatus": "candidate"
+}

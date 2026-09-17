@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "cap",
+  "color": "olive",
+  "view": "front",
+  "sourceView": "front",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/cap-front.png",
+  "sourceChecksum": "9857df6893cbf0843b5d4391f71e45e66384ac89808b7d07ae77e691f541cfa4",
+  "sourceTransform": "preserved-source",
+  "sourceBackPreview": null,
+  "sourceBackChecksum": null,
+  "sourceBackTransform": null,
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": null,
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/cap/olive/front.png",
+  "baseChecksum": "6e2c9802c0f84268cdd6a29e2aa378ba01858620d07d0d8cb3b5499d9f30ae75",
+  "printZone": {
+    "x": 240,
+    "y": 260,
+    "w": 540,
+    "h": 320
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "preserved-source",
+  "provenance": "authentic-preserved",
+  "warp": {
+    "mode": "cap-panel",
+    "curvature": 0.1,
+    "seamPadding": 0.025,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - cap-olive-front",
+    "id": "2e53939f-2e53-939f-2e53-939f2e53939f",
+    "placed": "2e53939f-2e53-939f-2e53-939f2e53939f-placed",
+    "transform": [
+      240,
+      260,
+      780,
+      260,
+      780,
+      580,
+      240,
+      580
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/cap/cap-olive-front.psd",
+  "masterChecksum": "04b50b29f772b37b36d029a00330f7a446181afedf902cfd9a0aac89dc47dff3",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/cap/olive/front.png",
+  "previewChecksum": "896be6eaddb3e1109b44fe288cb90210820685fe28c0dfeae50cb3af0de6f926",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/olive/front.png",
+  "proofPreviewChecksum": "4a1b544b1e02e1c7bdcda7daded51c7529a41ec4bc29ec1d7b0d9d4c986a25c6",
+  "masterFormat": "psd",
+  "reviewStatus": "candidate"
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "trynext-smart-master/v3",
+  "generator": "tools/build-smartobject-mockups.mjs",
+  "generatorVersion": "smart-v10.3",
+  "family": "mug",
+  "color": "orange",
+  "view": "back",
+  "sourceView": "back",
+  "sourcePreview": "dist-mockups/staging/smart-v10-v3/sources/mug-back.png",
+  "sourceChecksum": "b87b4e7972f4faa45c533d08348cae66c96d67f318cb930cb4496586137437cb",
+  "sourceTransform": "horizontal-mirror-for-opposite-handle",
+  "sourceBackPreview": null,
+  "sourceBackChecksum": null,
+  "sourceBackTransform": null,
+  "faceTemplatePath": null,
+  "faceTemplateChecksum": null,
+  "faceAlphaTemplatePath": null,
+  "faceAlphaTemplateChecksum": null,
+  "derivedBasePath": "dist-mockups/staging/smart-v10-v3/sources/mug/orange/back.png",
+  "baseChecksum": "5888c8f14fe130d1fec0f7aba1fabcb8420ac86d2834b5c50abe5d2742345e8d",
+  "printZone": {
+    "x": 384,
+    "y": 220,
+    "w": 451,
+    "h": 580
+  },
+  "normalizedFrame": {
+    "canvasWidth": 1024,
+    "canvasHeight": 1024,
+    "x": 0,
+    "y": 0,
+    "w": 1024,
+    "h": 1024
+  },
+  "derivation": "preserved-source",
+  "provenance": "authentic-preserved",
+  "warp": {
+    "mode": "cylinder",
+    "curvature": 0.16,
+    "seamPadding": 0.035,
+    "preserveAspect": true
+  },
+  "smartObject": {
+    "layerName": "30 Artwork - SMART OBJECT - mug-orange-back",
+    "id": "0422de09-0422-de09-0422-de090422de09",
+    "placed": "0422de09-0422-de09-0422-de090422de09-placed",
+    "transform": [
+      384,
+      220,
+      835,
+      220,
+      835,
+      800,
+      384,
+      800
+    ],
+    "proofDesign": "embedded-linked-file"
+  },
+  "masterPath": "dist-mockups/staging/smart-v10-v3/masters/mug/mug-orange-back.psb",
+  "masterChecksum": "4a43d71cdba2adad64f0851c798246d582610728a8d03a893b03096df1038961",
+  "previewPath": "dist-mockups/staging/smart-v10-v3/previews/mug/orange/back.png",
+  "previewChecksum": "023ae5104d274b6b8cbcbb995500231cba6b2e423e0327ee5c9f11c6010f514a",
+  "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/orange/back.png",
+  "proofPreviewChecksum": "d0164cb8eb76d219070becc1a780245d9d6c7a6e5ae4e22598a63c167aa729cd",
+  "masterFormat": "psb",
+  "reviewStatus": "candidate"
+}
