@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+# Keep one authoritative run per branch or PR. Rapid source pushes cancel
+# obsolete builds instead of leaving overlapping scans and deployments active.
+concurrency:
+  group: trynext-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: trynext_test
+          POSTGRES_USER: trynext
+          POSTGRES_PASSWORD: trynext_test_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 11.20.0
+
+      - name: Get pnpm store
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build workspace libraries
+        run: pnpm run typecheck:libs
+
+      - name: TypeScript check (all packages)
+        run: pnpm --filter @workspace/trynext-storefront run typecheck && pnpm --filter @workspace/api-server run typecheck
+        continue-on-error: false
+
+      - name: Lint check (configured packages)
+        # Only execute lint scripts declared by a workspace. Several packages
+        # are build-only/mobile packages and intentionally do not install ESLint.
+        run: pnpm -r --if-present run lint
+
+      - name: Build all packages
+        run: pnpm -r build
+        env:
+          DATABASE_URL: postgresql://trynext:trynext_test_pass@localhost:5432/trynext_test
+          CI: true
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-output
+          path: |
+            artifacts/*/dist/
+            artifacts/*/.next/
+          if-no-files-found: ignore
+          retention-days: 3
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build-and-check
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 11.20.0
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Audit vulnerabilities
+        # GHSA-5p2g-fcmc-qvqq is pulled only by the Expo/Metro tooling in
+        # artifacts/trynext-brand-system. npm currently publishes image-size
+        # only through 2.0.2, while the advisory requires >=2.0.3. Keep the
+        # audit fatal for every other high-severity package and revisit this
+        # narrow exception when Expo/Metro publishes a patched dependency.
+        run: pnpm audit --audit-level=high --ignore GHSA-5p2g-fcmc-qvqq
