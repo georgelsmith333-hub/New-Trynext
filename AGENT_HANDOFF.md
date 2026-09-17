@@ -1434,38 +1434,41 @@ Verification: Storefront typecheck passed; storefront tests passed (19 files,
   payment, production data, or deployment state changed.
 ```
 
-## Final publication and verification checkpoint (2026-09-17)
+## Production catalog repair checkpoint (2026-09-18)
 
 ```text
-Status: complete — verified source published and live site updated
-Last completed: Rebuilt and validated the temporary 188-surface Smart Object
-  staging release, added portable real PSD/PSB parser fixtures, published the
-  verified commit to GitHub main, and confirmed the Cloudflare Pages site
-  updated from the pushed source.
-Stopped at: After local workflow, test, build, GitHub Actions, live-domain,
-  optimized-image, sitemap, API-health, and public runtime-manifest checks.
-Files/areas changed: artifacts/api-server/src/lib/psdMasterParser.test.ts and
-  its two real parser fixtures under artifacts/api-server/src/lib/fixtures/psd/.
-  The rebuilt editable 188-surface source kit remains outside the public
-  runtime and was not committed or exposed to the storefront.
-Remaining work: Perform the deferred authenticated browser interaction review
-  for Checkout, Account/messages, admin operations, and representative Design
-  Studio upload/cart/export flows across desktop and mobile.
-Blocker: The Cloudflare API token is active but cannot read this Pages account
-  and returns 403 for the project endpoint. This did not block the rollout:
-  GitHub push triggered successful CI and active-app verification, and the
-  public site served the new optimized asset afterward. Local Redis remains an
-  optional-cache degradation; database-backed API readiness is healthy.
-Next safe action: Complete the authenticated browser review without creating
-  orders or payment records, then record per-flow visual acceptance.
-Verification: Smart Object release gate passed structurally-verified for
-  188/188 surfaces; native ag-psd inspection found 188/188 1024x1024 documents,
-  one embedded Smart Object each, and non-empty embedded payloads. Full
-  workspace typecheck passed; API tests passed (10 files/36 tests); storefront
-  tests passed (19 files/69 tests); storefront production build passed; mobile
-  typecheck passed; both managed workflows restarted cleanly. GitHub CI and
-  Active app verification succeeded for the published commit. Live checks:
-  homepage 200, optimized WebP 200 image/webp, accepted 188-surface runtime
-  manifest, API health 200, sitemap 200. The local screenshot rendered the
-  homepage with no browser-console errors.
+Status: in progress — source repair published; Render 4 has not deployed it
+Last completed: Added an idempotent product-catalog schema repair migration,
+  made API readiness exercise the catalog query, removed the suspended standby
+  from committed public-read routing, rebuilt and restarted the local API, and
+  published commit f3430077f to GitHub main. The repaired source is based
+  directly on the verified GitHub main tree; no force-push was used.
+Stopped at: Waiting for the existing Render 4 service
+  (trynex-lifestyle-main-render) to deploy the published main commit. Its
+  public process is still the older release: readiness has no `catalog` field
+  and `/api/products` still returns HTTP 500.
+Files/areas changed: lib/db/migrations/006_ensure_product_catalog_columns.sql,
+  artifacts/api-server/src/routes/health.ts, functions/gateway-config.ts.
+  The migration adds the current product JSON/timestamp columns idempotently
+  and the readiness check now reports catalog separately from DB connectivity.
+Remaining work: Trigger/complete a Render 4 deploy, confirm migration 006 runs
+  against its managed database, verify /api/products and /api/products/featured
+  through both Render 4 and trynext.shop, then perform authenticated read-only
+  checks for admin login, dashboard, catalog editing, order views, and Design
+  Studio. Verify Render 2 and 3 before adding either back to read failover.
+Blocker: Render 1 is suspended for quota exhaustion; Render 2 and Render 3
+  return 404; Render 4 is serving the old release and did not auto-deploy the
+  GitHub push. Provider-side manual deployment/API access is still required.
+  A Render credential was pasted into chat and must not be reused; it should be
+  rotated through the provider after access is restored.
+Next safe action: Manually deploy commit f3430077f to Render 4, wait for its
+  health check, and run the live catalog smoke checks before changing any
+  standby routing or touching production data.
+Verification: API typecheck, shared-library typecheck, API bundle build, local
+  workflow restart, local readiness, local /api/products, and local featured
+  products all passed. Local readiness reports db=true and catalog=true.
+  GitHub CI and Active app verification passed for f3430077f. Public checks:
+  trynex-api is suspended (503), standby-2 and standby-3 return 404, Render 4
+  readiness/categories return 200, and Render 4 plus trynext.shop
+  /api/products return HTTP 500 until the new release is deployed.
 ```
