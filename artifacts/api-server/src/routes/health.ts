@@ -7,6 +7,20 @@ import { getRedisStatus } from "../lib/redis";
 
 const router: IRouter = Router();
 
+async function checkCatalog(): Promise<void> {
+  // A plain SELECT 1 can stay green while an external production database is
+  // missing a product column required by the storefront. Exercise the same
+  // catalog tables used by public reads so readiness reflects real service
+  // capability rather than process/database reachability alone.
+  await db.execute(sql`
+    SELECT p.id
+    FROM products p
+    LEFT JOIN categories c ON c.id = p.category_id
+    ORDER BY p.created_at DESC
+    LIMIT 1
+  `);
+}
+
 router.get("/healthz", async (_req, res) => {
   res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
 
@@ -122,22 +136,27 @@ router.get("/health/liveness", (_req, res) => {
 // monitors, and older deployment documentation use both contracts.
 const readinessHandler = async (_req: Request, res: Response) => {
   let dbOk = false;
+  let catalogOk = false;
   let dbLatencyMs = 0;
   try {
     const t0 = Date.now();
     await db.execute(sql`SELECT 1 AS ok`);
     dbLatencyMs = Date.now() - t0;
     dbOk = true;
+    await checkCatalog();
+    catalogOk = true;
   } catch {
-    // dbOk stays false
+    // The response distinguishes a reachable database from a broken catalog
+    // schema, so callers can tell a migration issue from a connection outage.
   }
 
-  const overall = dbOk ? "ok" : "error";
-  const httpStatus = dbOk ? 200 : 503;
+  const overall = dbOk && catalogOk ? "ok" : "error";
+  const httpStatus = dbOk && catalogOk ? 200 : 503;
 
   res.status(httpStatus).json({
     status: overall,
     db: dbOk,
+    catalog: catalogOk,
     dbLatencyMs,
     uptime: Math.floor(process.uptime()),
     memoryMB: Math.round(process.memoryUsage().rss / 1024 / 1024),
