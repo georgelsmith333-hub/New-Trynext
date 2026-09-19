@@ -19,6 +19,11 @@ git push origin main
 
 The `x-access-token` username is the standard GitHub PAT username; the password field is the PAT value from the environment variable.
 
+The workspace may contain several expired or duplicate GitHub secrets. Treat them
+as opaque candidates and verify only from the push result; never print or persist
+their values. When the remote has advanced, start a clean release ref from the
+fetched remote tip and copy only the reviewed files before pushing.
+
 ## Large unrelated-history restores
 
 The legacy `trynex-lifestyle` GitHub URL may redirect to the canonical
