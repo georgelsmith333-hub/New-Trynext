@@ -11,6 +11,8 @@
 
 const BASE_URL = (process.env.BASE_URL ?? "https://trynext.shop").replace(/\/+$/, "");
 const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS ?? 15_000);
+const maxTransientRetries = Number(process.env.SMOKE_RETRIES ?? 3);
+const transientStatuses = new Set([408, 425, 429, 500, 502, 503, 504]);
 
 const customerPages = [
   "/",
@@ -64,8 +66,33 @@ function withTimeout(url, init = {}) {
     .finally(() => clearTimeout(timer));
 }
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function withTransientRetry(url, init = {}) {
+  let lastError;
+
+  for (let attempt = 0; attempt <= maxTransientRetries; attempt += 1) {
+    try {
+      const response = await withTimeout(url, init);
+      if (!transientStatuses.has(response.status) || attempt === maxTransientRetries) {
+        return response;
+      }
+      lastError = new Error(`transient HTTP ${response.status}`);
+    } catch (error) {
+      if (attempt === maxTransientRetries) {
+        throw error;
+      }
+      lastError = error;
+    }
+
+    await delay(750 * (attempt + 1));
+  }
+
+  throw lastError ?? new Error("request failed after transient retries");
+}
+
 async function checkPage(path) {
-  const response = await withTimeout(`${BASE_URL}${path}`);
+  const response = await withTransientRetry(`${BASE_URL}${path}`);
   const contentType = response.headers.get("content-type") ?? "";
   if (response.status !== 200 || !contentType.includes("text/html")) {
     throw new Error(`${path}: expected HTML 200, got ${response.status} ${contentType}`);
@@ -73,7 +100,7 @@ async function checkPage(path) {
 }
 
 async function checkPublicApi({ path, check }) {
-  const response = await withTimeout(`${BASE_URL}${path}`, {
+  const response = await withTransientRetry(`${BASE_URL}${path}`, {
     headers: { accept: "application/json" },
   });
   const body = await response.json().catch(() => null);
@@ -83,7 +110,7 @@ async function checkPublicApi({ path, check }) {
 }
 
 async function checkProtectedApi(path) {
-  const response = await withTimeout(`${BASE_URL}${path}`, {
+  const response = await withTransientRetry(`${BASE_URL}${path}`, {
     headers: { accept: "application/json" },
   });
   if (![401, 403].includes(response.status)) {
@@ -92,7 +119,7 @@ async function checkProtectedApi(path) {
 }
 
 async function checkGuestSafeApi({ path, check }) {
-  const response = await withTimeout(`${BASE_URL}${path}`, {
+  const response = await withTransientRetry(`${BASE_URL}${path}`, {
     headers: { accept: "application/json" },
   });
   const body = await response.json().catch(() => null);

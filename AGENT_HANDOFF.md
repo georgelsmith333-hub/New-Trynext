@@ -1472,3 +1472,31 @@ Verification: API typecheck, shared-library typecheck, API bundle build, local
   readiness/categories return 200, and Render 4 plus trynext.shop
   /api/products return HTTP 500 until the new release is deployed.
 ```
+
+## Critical-flow smoke reliability checkpoint (2026-09-18)
+
+```text
+Status: complete — local application verification is green
+Last completed: Added bounded transient retries to the non-mutating critical
+  flow smoke checker so startup/failover windows do not create false failures.
+  Retries are limited to network errors and transient HTTP statuses; every
+  final assertion remains strict.
+Stopped at: No local application blocker remains. The external production API
+  is still blocked by the canonical Neon quota state and missing Render
+  ADMIN_PASSWORD configuration documented in the latest provider checkpoint.
+Files/areas changed: scripts/verify-critical-flows.mjs and this handoff.
+Remaining work: Restore the canonical production database quota and configure
+  the existing production admin password through secure provider settings, then
+  rerun the production readiness, catalog, settings, sitemap, and admin checks.
+  Do not promote catalog satellites or create/reset a replacement database.
+Blocker: Provider-side production configuration only; no code workaround is
+  safe for the transactional primary.
+Next safe action: After provider recovery, run the same 30-check smoke suite
+  against the canonical production URL and confirm the external API gateway.
+Verification: Local API liveness/readiness/products/categories/settings/sitemap
+  checks returned healthy responses; storefront typecheck, API typecheck,
+  mobile typecheck, full workspace typecheck, storefront tests (19 files,
+  69 tests), storefront production build, diff check, and the 30/30 critical
+  flow smoke suite all passed. Desktop and mobile storefront previews rendered
+  without browser-console errors.
+```
