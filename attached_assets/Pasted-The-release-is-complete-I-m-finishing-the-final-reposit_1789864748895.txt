@@ -1,0 +1,55 @@
+The release is complete; I’m finishing the final repository housekeeping now by committing the durable GitHub delivery note and fast-forwarding the same verified main branch once more.
+
+The code release is already on GitHub main. The final memory-only commit hit the same stale default credential, so I’m retrying that housekeeping commit with the already-validated secure credential path; this does not alter application code or production settings.
+
+Completed and pushed the verified release to GitHub main.
+
+What changed
+Added bounded retry handling to scripts/verify-critical-flows.mjs.
+Retries only transient network/HTTP failures.
+Keeps strict final assertions, so real outages still fail.
+Updated AGENT_HANDOFF.md with the latest verification and remaining production dependency.
+Updated the GitHub delivery memory with the secure push fallback.
+Built from the fetched remote main branch and excluded:
+The attached cutover note
+Generated caches
+Unrelated local tooling history
+Verification passed
+Storefront typecheck
+API typecheck
+Mobile typecheck
+Full workspace typecheck
+Storefront tests: 19 files, 69 tests passed
+Storefront production build
+Critical-flow smoke suite: 30/30 passed
+API checks:
+Liveness: 200
+Readiness: 200
+Products: 200
+Categories: 200
+Settings: 200
+Sitemap: 200
+Protected admin/customer endpoints correctly return unauthorized responses when unauthenticated.
+Desktop and mobile storefront previews rendered without browser-console errors.
+Storefront and API workflows are running.
+Production status
+The application source is ready and published. The remaining live issue is provider-side:
+
+The canonical Neon production database is over quota.
+Render is missing the existing production admin password configuration.
+Catalog satellite databases were not promoted because they are not safe transactional primaries.
+A follow-up task was recorded to restore production catalog and checkout data access. No secrets were changed, exposed, or added.
+
+The application source is verified and published, but the canonical production API remains unavailable because the Neon primary is over quota and the Render service is missing its existing admin password configuration. This must be recovered at the provider level; switching to catalog satellites would risk routing orders and inventory writes to the wrong database.
+
+Trynext Lifestyle Design System
+Design System
+Trynext Promo Animation
+Animation
+Trynext Mobile
+Mobile
+Trynext Lifestyle
+Trynext Lifestyle
+Website
+Search tools…
+Open Trynext Lifestyle
