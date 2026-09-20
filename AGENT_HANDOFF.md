@@ -1500,3 +1500,41 @@ Verification: Local API liveness/readiness/products/categories/settings/sitemap
   flow smoke suite all passed. Desktop and mobile storefront previews rendered
   without browser-console errors.
 ```
+
+## External production recovery checkpoint (2026-09-20)
+
+```text
+Status: blocked — source release delivered; external provider recovery remains
+Last completed: Reconciled the latest pasted notes, confirmed the intended
+  GitHub repository, attached the authorized GitHub connection, and delivered
+  the two pending release-handoff documentation updates to GitHub main through
+  a normal non-force commit. Restarted the local API and storefront workflows.
+Stopped at: After the GitHub commit was accepted and CI/active-app verification
+  started. The direct Render primary is reachable for liveness but still fails
+  readiness and catalog queries because its production database connection is
+  unavailable. The custom domain returns Cloudflare 522 for API and sitemap
+  requests.
+Files/areas changed: release-handoff documentation only; no application source,
+  database, order, payment, mockup, or provider configuration was changed in
+  this checkpoint.
+Remaining work: Restore the existing production database connection/quota in
+  the Render primary, confirm the service's current release and required
+  production settings, verify the Cloudflare Pages API origin, and rerun the
+  public catalog/admin/customer smoke checks. Do not promote catalog-only
+  satellites or create a replacement transactional database.
+Blocker: Provider-side production access is unavailable from this workspace.
+  The stored Cloudflare token is rejected, the Render management credential is
+  not attached to the shell path, and the direct Render database remains
+  unhealthy. The credential pasted into chat must not be reused or committed.
+Next safe action: Use secure provider-managed credentials to inspect and repair
+  the existing Render/Neon/Cloudflare deployment, then verify readiness,
+  products, categories, sitemap, storefront, admin, checkout, and Design
+  Studio before claiming the public site is live.
+Verification: Local readiness, products, featured products, categories,
+  settings, and sitemap all returned 200 with catalog=true; local API and
+  storefront workflows are running; the storefront preview loaded with no
+  browser-console errors; GitHub main contains the delivered commit and its CI
+  and active-app verification runs were in progress. Public direct Render
+  liveness returned 200, readiness/products returned 503/500, and trynext.shop
+  returned 522.
+```
