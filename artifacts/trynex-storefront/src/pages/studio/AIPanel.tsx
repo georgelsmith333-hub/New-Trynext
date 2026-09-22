@@ -51,6 +51,21 @@ export function AIPanel() {
     }
   };
 
+  // Image generation can take several seconds even on a healthy model, and
+  // longer if the server's fallback chain has to try more than one. Without
+  // this, the progress bar jumps to 35% and then sits frozen for the entire
+  // wait, which reads as "stuck" long before it reads as "slow". Trickle
+  // forward (with a shrinking step, so it never implies more progress than
+  // is real) up to a cap just under the next real checkpoint at 82%.
+  const startProgressTrickle = (from: number, cap = 78) => {
+    stopProgress();
+    let current = from;
+    progressTimer.current = window.setInterval(() => {
+      current += (cap - current) * 0.08;
+      setProgress(Math.min(cap, current));
+    }, 700);
+  };
+
   const readReference = (file: File) => {
     if (!file.type.startsWith("image/") || file.size > 10 * 1024 * 1024) {
       setError(file.size > 10 * 1024 * 1024 ? "Reference images must be under 10MB." : "Choose a JPG, PNG, or WebP reference image.");
@@ -159,6 +174,7 @@ export function AIPanel() {
 
       params.set("prompt", generationPrompt);
       params.set("model", model);
+      startProgressTrickle(referenceSrc ? 35 : 18);
       const genRes = await fetch(getApiUrl(`/api/ai/generate?${params.toString()}`));
       const genJson = await genRes.json().catch(() => ({})) as { dataUrl?: string; model?: string; validation?: { width?: number; height?: number }; error?: string };
       if (!genRes.ok || !genJson.dataUrl || !genJson.validation?.width || !genJson.validation?.height) {

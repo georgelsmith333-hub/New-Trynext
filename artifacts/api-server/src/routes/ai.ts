@@ -60,6 +60,15 @@ const IMAGE_MODELS = {
 
 type ImageModelId = keyof typeof IMAGE_MODELS;
 
+// Per-model attempt timeout for /api/ai/generate's fallback chain. This was
+// previously 90s, and the chain tries up to 4 models sequentially on failure
+// (requested model + flux-realism + flux + turbo), so a slow/overloaded first
+// model could make the customer wait up to 6 minutes before ever reaching a
+// working fallback. Pollinations' free tier normally responds in well under
+// 20s when healthy; 30s is generous headroom for a genuine success while
+// still moving on to the next model quickly when one is stuck.
+const IMAGE_GEN_TIMEOUT_MS = 30_000;
+
 /* ══════════════════════════════════════════════════════
    TEXT / CHAT MODELS — server-configured provider
    Uses the current Pollinations OpenAI-compatible endpoint with an optional server key;
@@ -305,7 +314,7 @@ router.get("/ai/generate", async (req: Request, res: Response) => {
     const url = buildUrl(m);
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 90_000);
+      const timeout = setTimeout(() => controller.abort(), IMAGE_GEN_TIMEOUT_MS);
       const imgRes = await fetch(url, {
         signal: controller.signal,
         headers: { "User-Agent": "Trynext-Studio/2.0" },
