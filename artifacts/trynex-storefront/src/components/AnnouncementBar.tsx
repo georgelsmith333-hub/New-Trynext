@@ -13,22 +13,37 @@ export function AnnouncementBar() {
   const [visible, setVisible] = useState(true);
   const barRef = useRef<HTMLDivElement>(null);
 
+  const announcements = settings.announcementBar
+    ? settings.announcementBar.split('|').map(t => t.trim()).filter(Boolean)
+    : [];
+  const showing = enabled && visible && announcements.length > 0;
+
   // Reset visibility whenever the bar is re-enabled or messages change so admin toggles take effect.
   useEffect(() => {
     setVisible(enabled);
   }, [enabled, settings.announcementBar]);
 
-  // Keep the CSS layout variable in sync with whether the bar is showing.
+  // Keep the CSS layout variable in sync with the bar's actual rendered height.
+  // A ResizeObserver (rather than a one-shot measurement) tracks every cause of
+  // a height change — including the announcement text arriving asynchronously
+  // after first mount, when the settings fetch resolves — not just window
+  // resizes. Without this, --announcement-height can get stuck at 0px from an
+  // early render where the bar didn't exist yet, leaving the fixed header
+  // positioned too high and overlapped by this still-visible, higher z-index bar.
   useEffect(() => {
-    const updateHeight = () => {
-      const showing = enabled && visible;
-      const h = showing && barRef.current ? barRef.current.offsetHeight : 0;
-      document.documentElement.style.setProperty('--announcement-height', `${h}px`);
+    if (!showing || !barRef.current) {
+      document.documentElement.style.setProperty('--announcement-height', '0px');
+      return;
+    }
+    const el = barRef.current;
+    const update = () => {
+      document.documentElement.style.setProperty('--announcement-height', `${el.offsetHeight}px`);
     };
-    updateHeight();
-    window.addEventListener('resize', updateHeight);
-    return () => window.removeEventListener('resize', updateHeight);
-  }, [visible, enabled]);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [showing]);
 
   // Optional auto-hide (admin-configurable, default OFF).
   useEffect(() => {
@@ -40,13 +55,7 @@ export function AnnouncementBar() {
     return () => clearTimeout(t);
   }, [visible, enabled, autoHide]);
 
-  if (!enabled) return null;
-
-  const announcements = settings.announcementBar
-    ? settings.announcementBar.split('|').map(t => t.trim()).filter(Boolean)
-    : [];
-
-  if (announcements.length === 0) return null;
+  if (!showing) return null;
 
   const handleClose = () => {
     setVisible(false);
