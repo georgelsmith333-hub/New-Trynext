@@ -1,0 +1,10 @@
+# Python dependencies for the mockup/PSD tooling under scripts/ and tools/.
+# None of these scripts previously declared their dependencies anywhere, so a
+# fresh checkout could not actually run them (ModuleNotFoundError on the first
+# import) — install with: pip install -r requirements.txt
+Pillow>=10.0
+numpy>=1.24
+psd-tools>=1.9
+requests>=2.31
+fpdf2>=2.7
+reportlab>=4.0
