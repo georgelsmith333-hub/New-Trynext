@@ -1538,3 +1538,88 @@ Verification: Local readiness, products, featured products, categories,
   liveness returned 200, readiness/products returned 503/500, and trynext.shop
   returned 522.
 ```
+
+## Smart Object browser upload-and-verify pass + 3D-crash fix checkpoint (2026-09-22)
+
+```text
+Status: complete for the local verification scope this checkpoint covers
+Last completed: Performed the real authenticated browser upload-and-verify
+  pass on the Design Studio Smart Object compositor that every checkpoint
+  since 2026-09-06 had flagged as never actually done (no browser-use binary
+  was available in prior continuations). Provisioned a local Postgres 16 dev
+  database (not Neon, not production) in this workspace only, ran migrations
+  and auto-seed, started the API and storefront dev servers, and drove
+  Chromium via Playwright through all six canonical product families
+  (tshirt, longsleeve, hoodie, mug, cap, waterbottle) using the studio's own
+  `?product=<category>` template switch (works without a matching catalog
+  row, so the two missing catalog families did not block this). For each
+  family: dismissed the first-use guide, uploaded a real PNG fixture through
+  the actual hidden file input, and confirmed the upload placed correctly
+  inside the fixed print-area frame with the "Smart Object Surface · 6/6
+  roles ready · Print zone: protected" panel showing for every family.
+  Screenshots for all six families (before/after upload) were captured and
+  reviewed directly, not inferred.
+  While doing this, found and fixed a real defect: opening the 3D Preview (the
+  default view for mug/cap/waterbottle per the documented architecture
+  decision) threw when `@react-three/drei`'s `<Environment preset="studio">`
+  fetched its HDRI asset from the hardcoded external `raw.githack.com` CDN,
+  and that failure was uncaught below the single app-wide `AppErrorBoundary`
+  — so any customer whose network can't reach that third-party CDN (blocked,
+  rate-limited, regionally filtered, ad-blocked) loses their entire in-progress
+  design to a full-page "Something went wrong" crash screen, not just the 3D
+  widget. Added a small `Studio3DErrorBoundary` scoped to only the
+  `<LazyProductViewer3D>` subtree; on catch it now calls `setShow3D(false)`
+  and shows a destructive toast ("3D preview unavailable — Showing the 2D
+  editor instead — your design and print zone are unaffected"), so the
+  customer falls back to the already-working 2D print-zone editor instead of
+  losing the session. Re-ran the same six-family Playwright pass after the
+  fix and confirmed the app no longer crashes; the local sandbox's outbound
+  proxy still blocks `raw.githack.com` itself (403 at the proxy, confirmed via
+  curl), so the HDRI still fails to load in this environment specifically —
+  that part is an unfixed root cause (see Remaining work), only the crash
+  blast-radius is fixed.
+Stopped at: After the second Playwright pass confirmed the graceful fallback
+  for all six families and the full local verification suite passed.
+Files/areas changed:
+  artifacts/trynex-storefront/src/pages/studio/DesignStudioV2.tsx (added
+  `Studio3DErrorBoundary` class and wrapped the existing
+  `<LazyProductViewer3D>` usage with it; no other behavior changed). This
+  handoff file only, otherwise.
+Remaining work: The actual root cause — the 3D preview's environment lighting
+  depends on an uncontrolled third-party CDN (`raw.githack.com`) with no local
+  fallback — is not fixed, only contained. The correct fix is to self-host the
+  `studio_small_03_1k.hdr` (or an equivalent) asset under this app's own
+  `public/` tree and pass it to `<Environment files="...">` instead of
+  `preset="studio"`, removing the runtime dependency on a third-party CDN
+  entirely. This was not done in this checkpoint because this workspace's own
+  outbound proxy denies `raw.githack.com` (403), so the asset could not be
+  fetched from here to bundle it; it needs fetching from an environment that
+  can reach it, or a locally-authored replacement HDRI. The long-sleeve and
+  water-bottle catalog gap (no DB rows) noted in
+  `docs/TRYNEXT_RELEASE_STATUS.md` is unchanged and still real — this
+  checkpoint worked around it via the studio's own template switch, which is
+  fine for design/print-zone verification but does not fix the storefront
+  catalog listing gap. The external production recovery (Render/Neon/
+  Cloudflare) blocker from the 2026-09-20 checkpoint is untouched and still
+  open; nothing in this checkpoint touched production, deployment, or secret
+  configuration.
+Blocker: None for the completed scope. The HDRI self-hosting follow-up is
+  blocked on network access to `raw.githack.com` (or an alternative source)
+  from wherever the fix is next attempted.
+Next safe action: Self-host the environment HDRI asset and switch
+  `ProductViewer3D.tsx` from `preset="studio"` to `files="/<local-path>.hdr"`,
+  then re-run the same six-family Playwright pass to confirm the 3D preview
+  renders the real environment (not just the graceful-fallback path) for
+  mug/cap/waterbottle. Separately, decide whether to seed real long-sleeve and
+  water-bottle catalog rows so those families are reachable from the public
+  storefront/catalog, not only via the studio's own product switch.
+Verification: Storefront typecheck passed; storefront test suite passed
+  (19 files, 69 tests, unchanged); storefront production build passed.
+  Local API readiness/products/categories all returned 200 with catalog=true
+  against the local dev database. Six-family Playwright pass (upload +
+  screenshot + console-error capture) reviewed directly for both the
+  pre-fix (crash) and post-fix (graceful fallback) runs. No order, payment,
+  production data, secrets, or deployment/provider configuration were read,
+  changed, or touched — this entire checkpoint ran against a local-only dev
+  database and local dev servers in this workspace.
+```
