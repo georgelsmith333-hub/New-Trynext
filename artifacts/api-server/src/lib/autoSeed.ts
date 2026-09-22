@@ -1,11 +1,6 @@
-import { db, categoriesTable, productsTable, settingsTable, adminTable, blogPostsTable } from "@workspace/db";
+import { db, categoriesTable, productsTable, settingsTable, blogPostsTable } from "@workspace/db";
 import { sql, eq } from "drizzle-orm";
-import * as crypto from "crypto";
 import { logger } from "./logger";
-
-function hashPassword(password: string): string {
-  return crypto.createHash("sha256").update(password + "trynext_salt_2024").digest("hex");
-}
 
 // Re-export the migration runner under its historical name so callers
 // (artifacts/api-server/src/index.ts) keep working unchanged.
@@ -801,13 +796,15 @@ export async function autoSeedIfEmpty(): Promise<void> {
 
     logger.info("Database is empty — running auto-seed for production...");
 
-    const adminExists = await db.select().from(adminTable).limit(1);
-    if (adminExists.length === 0) {
-      await db.insert(adminTable).values({
-        username: "admin",
-        passwordHash: hashPassword("admin123"),
-      });
-    }
+    // The admin account is deliberately NOT seeded here. admin.ts's own
+    // ensureAdminExists() is the single source of truth for that — it hashes
+    // the real ADMIN_PASSWORD env var with argon2id. This function used to
+    // race it with a hardcoded "admin123" (SHA-256'd with a hardcoded salt),
+    // and whichever ran first won. In practice this one usually won, silently
+    // ignoring the operator's configured ADMIN_PASSWORD — and because
+    // verifying a SHA-256 hash also requires the ADMIN_SALT env var (never
+    // documented as something this hardcoded value needed), the resulting
+    // account couldn't be logged into with any password at all.
 
     const settingsData = [
       { key: "siteName", value: "Trynext Lifestyle" },
