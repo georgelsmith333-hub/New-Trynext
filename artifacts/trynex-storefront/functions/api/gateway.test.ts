@@ -202,7 +202,7 @@ describe("four-render multi-route Pages gateway", () => {
 
     expect(response.status).toBe(200);
     const calledUrl = (fetchMock.mock.calls[0][0] as Request).url;
-    expect(calledUrl).toContain("trynext-api-standby");
+    expect(calledUrl).toContain("trynex-lifestyle-main-render.onrender.com");
   });
 
   it("prefers explicit role env vars over the legacy API_ORIGINS list", async () => {
