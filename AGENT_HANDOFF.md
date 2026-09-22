@@ -1623,3 +1623,63 @@ Verification: Storefront typecheck passed; storefront test suite passed
   changed, or touched — this entire checkpoint ran against a local-only dev
   database and local dev servers in this workspace.
 ```
+
+## Sitewide bug-fixing pass checkpoint (2026-09-22)
+
+```text
+Status: in progress — two more real bugs found, fixed, verified, and pushed
+Last completed:
+  1. Fixed a header/nav overlap bug (reported as "overblending at different
+     screen sizes"). Root cause: AnnouncementBar's height-sync effect
+     depended on [visible, enabled] only, so when the announcement text
+     arrived asynchronously after mount (settings fetched from the API)
+     without either of those flipping, --announcement-height stayed stuck at
+     0px while the bar kept rendering at 36px. The fixed header (positioned
+     at top: var(--announcement-height)) then sat too high and the
+     still-visible, higher z-index bar drew over the logo/nav. This was a
+     load-timing race, not actually tied to viewport width — confirmed by
+     reading getComputedStyle(--announcement-height) directly (it read
+     "0px" while the bar was visibly showing text) rather than guessing from
+     screenshots alone. Replaced the one-shot measurement with a
+     ResizeObserver keyed off a single derived `showing` flag.
+  2. Cut /api/ai/generate's worst-case latency from ~6 minutes to ~2 minutes.
+     The model fallback chain (up to 4 sequential attempts) used a 90s abort
+     timeout per attempt; reduced to 30s (Pollinations normally responds
+     well under 20s when healthy). Also wired up AIPanel's already-present
+     but previously-unused progressTimer ref so the progress bar trickles
+     forward during the wait instead of sitting frozen at 18-35% the entire
+     time, which read as "broken" before it read as "slow".
+Stopped at: Continuing the general responsiveness/bug audit (Cart, Checkout,
+  Admin panel next) per an open-ended user request to fix bugs sitewide,
+  improve admin-panel automation, add "advanced/futuristic" features, and
+  redesign Design Studio responsiveness. That request is intentionally being
+  worked incrementally (small, verified, pushed commits) rather than as one
+  large unreviewable change.
+Files/areas changed: artifacts/trynex-storefront/src/components/AnnouncementBar.tsx,
+  artifacts/api-server/src/routes/ai.ts, artifacts/trynex-storefront/src/pages/studio/AIPanel.tsx.
+Remaining work: The reported product-detail "scrolls down automatically on
+  click" bug did NOT reproduce against the current code in a real browser
+  test (ScrollToTop is already correctly wired for the Products→ProductDetail
+  path) — needs an exact repro (page/card/device) before further chasing.
+  The "beat the latest Laravel e-commerce" / "more futuristic admin
+  automation" asks are not concrete engineering tasks as stated; treating
+  them as an ongoing bug-fix + polish pass rather than inventing speculative
+  new features. Production (Render/Neon/Cloudflare) recovery is unchanged
+  and still blocked on real provider credentials/access — a runbook for a
+  human "subworker" was given directly in chat, not committed to the repo.
+Blocker: None for the completed scope. All work this checkpoint is local-only
+  (local Postgres, local API/storefront dev servers) — no production data,
+  secrets, or provider configuration touched.
+Next safe action: Continue the audit (Cart/Checkout responsiveness next),
+  keep committing in small verified increments (typecheck + test + build
+  before every push), and merge to `main` only if/when explicitly requested
+  — current work is intentionally staying on `claude/ecom-customization-itpg9o`.
+Verification: Full workspace typecheck (`pnpm run typecheck` from repo root,
+  which builds lib/db first) passed clean across all 10 packages. Storefront
+  tests (19 files, 69 tests) and API tests (10 files, 36 tests) both passed.
+  API production bundle rebuilt and restarted; live-smoke-tested
+  /api/ai/generate against the real Pollinations service (reached it, got a
+  real 403 in ~200ms, fallback chain correctly tried all 3 models and
+  surfaced the right error — confirms the retry/error-handling logic itself
+  is intact after the timeout change).
+```
