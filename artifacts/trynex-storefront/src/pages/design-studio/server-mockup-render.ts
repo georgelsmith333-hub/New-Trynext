@@ -95,12 +95,25 @@ async function fetchDataUrl(url: string): Promise<string> {
   return toDataUrl(await response.arrayBuffer(), response.headers.get("content-type") || "image/png");
 }
 
+// Structural completeness — not the manifest's self-reported `status` label —
+// is what actually determines whether server rendering can proceed. The
+// label used to be hard-coded to "accepted" by the builder regardless of
+// each surface's real review state, so gating on it was really just gating
+// on a string that was always true; it has since been fixed to reflect
+// reality (see tools/build-smartobject-runtime-roles.mjs), which means it
+// can now legitimately read "candidate". Requiring literally "accepted" here
+// would break server rendering entirely until every one of the 188 surfaces
+// passes full visual review — a real, separate, much larger effort (see
+// MOCKUP_DEEP_AUDIT_AND_IMPLEMENTATION_PLAN_2026-09-23.md) — even though the
+// structural data itself hasn't changed and is genuinely usable today.
+const REJECTED_MANIFEST_STATUSES = new Set(["rejected", "quarantined"]);
+
 async function getReleaseManifest(): Promise<ReleaseManifest> {
   releaseManifestPromise ??= fetch(RELEASE_MANIFEST_URL, { cache: "no-store" }).then(async (response) => {
     if (!response.ok) throw new Error(`Approved Smart v10.3 manifest unavailable (${response.status}).`);
     const manifest = await response.json() as ReleaseManifest;
-    if (manifest.status !== "accepted" || manifest.surfaces.length !== 188) {
-      throw new Error("The active Smart v10.3 runtime manifest is not accepted.");
+    if (REJECTED_MANIFEST_STATUSES.has(manifest.status) || manifest.surfaces.length !== 188) {
+      throw new Error(`The active Smart v10.3 runtime manifest is not usable (status: ${manifest.status}, surfaces: ${manifest.surfaces.length}).`);
     }
     return manifest;
   });

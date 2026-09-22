@@ -116,9 +116,17 @@ for (const row of stagingManifest.surfaces) {
   });
 }
 
+// The aggregate manifest status must never claim a stronger guarantee than
+// its own surfaces do. This used to be hard-coded to "accepted" regardless
+// of each surface's real reviewStatus, so a manifest could (and did) say
+// "accepted" while every surface underneath it was still "candidate" — a
+// direct internal contradiction. Derive it instead: only "accepted" when
+// every surface actually is.
+const overallStatus = runtimeSurfaces.every((s) => s.reviewStatus === "accepted") ? "accepted" : "candidate";
+
 const runtimeManifest = {
   schema: "trynext-smartobject-runtime-roles/v1",
-  status: "accepted",
+  status: overallStatus,
   sourceManifest: path.relative(REPO, stagingManifestPath),
   sourceMasterCount: 188,
   surfaceCount: runtimeSurfaces.length,
@@ -151,7 +159,7 @@ if (publicRoot) {
 }
 
 console.log(JSON.stringify({
-  status: "accepted",
+  status: overallStatus,
   surfaceCount: runtimeSurfaces.length,
   stagingRuntime: path.relative(REPO, roleRoot),
   publicRuntime: publicRoot ? path.relative(REPO, path.join(publicRoot, "runtime-roles")) : null,
