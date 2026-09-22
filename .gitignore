@@ -10,3 +10,4 @@ out/
 .replit
 *.log
 .DS_Store
+*.tsbuildinfo
