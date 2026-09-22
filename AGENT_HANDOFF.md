@@ -1683,3 +1683,51 @@ Verification: Full workspace typecheck (`pnpm run typecheck` from repo root,
   surfaced the right error — confirms the retry/error-handling logic itself
   is intact after the timeout change).
 ```
+
+## Admin login security/auth-race fix (2026-09-22)
+
+```text
+Status: complete for the code fix; PRODUCTION STILL NEEDS A MANUAL STEP — see below
+Last completed: Found and fixed a serious bug while testing admin login
+  locally: autoSeed.ts's autoSeedIfEmpty() had its own hardcoded admin-seeding
+  block (username "admin", password "admin123" SHA-256'd with a hardcoded
+  salt) that raced admin.ts's correct ensureAdminExists() (which
+  argon2id-hashes the real ADMIN_PASSWORD env var) on any fresh/empty
+  database. Whichever ran first won; on this checkout autoSeed's won every
+  time. Worse: verifying that SHA-256 hash requires an ADMIN_SALT env var
+  that is undocumented anywhere (not in replit.md's env var list) — so the
+  resulting account couldn't be logged into with ADMIN_PASSWORD, "admin123",
+  or anything else, without reading this specific source line. Removed the
+  redundant/dangerous block; admin.ts's path is now the only one.
+Stopped at: Verified locally — dropped the stale local-dev admin row,
+  restarted, confirmed the freshly-created row is a real $argon2id$ hash and
+  ADMIN_PASSWORD logs in successfully.
+Files/areas changed: artifacts/api-server/src/lib/autoSeed.ts.
+Remaining work — IMPORTANT FOR PRODUCTION: this fix only prevents the race on
+  a database that doesn't have an admin row yet. It does NOT retroactively
+  repair an admin row that already exists — and the real production database
+  almost certainly already has one, created the same broken way whenever it
+  was first initialized. Deploying this fix alone will not restore admin
+  login. Once this commit is live and ADMIN_PASSWORD is confirmed set
+  (Step 3 of the provider runbook already covers this), the operator/
+  subworker also needs to do ONE of:
+    (a) Preferred if ADMIN_RESET_KEY is set on the service: use the existing
+        POST /api/admin/reset-password recovery flow (see admin.ts) — this
+        is the supported path and touches only the admin credential.
+    (b) Otherwise: connect to the production database and run
+        `DELETE FROM admins;` (only that table, only that row — this does
+        not touch products, orders, or the ~70+/~10+ real catalog data) then
+        restart the Render service so ensureAdminExists() recreates it
+        correctly from the real ADMIN_PASSWORD.
+  This should be added as a step in the provider recovery runbook given to
+  the user's subworker.
+Blocker: None for the code fix. The production remediation step above is
+  pending — it needs real production DB access, which this workspace does
+  not have.
+Next safe action: Communicate the production remediation step (above) to the
+  user/subworker alongside the existing Render/Neon/Cloudflare runbook.
+Verification: Full workspace typecheck passed. API tests (10 files, 36 tests)
+  and storefront tests (19 files, 69 tests) both passed after this change.
+  Live-verified end-to-end locally: DELETE FROM admins → restart → POST
+  /api/admin/login with the real ADMIN_PASSWORD → {"success":true,"token":...}.
+```
