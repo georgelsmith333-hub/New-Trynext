@@ -676,13 +676,6 @@ export default function DesignStudioV2() {
     commit();
   };
 
-  const blobToDataUrl = (blob: Blob) => new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error("The processed image could not be read."));
-    reader.readAsDataURL(blob);
-  });
-
   const withOperationTimeout = async <T,>(operation: Promise<T>, timeoutMs: number, message: string): Promise<T> => {
     let timeoutId: number | undefined;
     try {
@@ -780,19 +773,15 @@ export default function DesignStudioV2() {
 
       if (!result) {
         const { removeBackground } = await withOperationTimeout(
-          import("@imgly/background-removal"),
+          import("@/lib/backgroundRemoval"),
           20_000,
           "Background removal could not start quickly. Your original image is unchanged; please retry.",
         );
-        const blob = await withOperationTimeout(
-          removeBackground(selectedLayer.src, {
-            publicPath: "https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/",
-            output: { format: "image/png", quality: 0.9 },
-          }),
+        result = await withOperationTimeout(
+          removeBackground(selectedLayer.src),
           45_000,
           "Background removal took too long. Your original image is unchanged; please retry.",
         );
-        result = await blobToDataUrl(blob);
       }
 
       await inspectProcessedImage(result, "remove-bg");
