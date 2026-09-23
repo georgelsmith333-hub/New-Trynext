@@ -1,7 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { createHash } from "crypto";
 import { db, ordersTable, productsTable, settingsTable, promoCodesTable, referralsTable, hamperPackagesTable, notificationsTable, adminActivityLogsTable } from "@workspace/db";
-import { eq, and, desc, sql, inArray, lte, or, ilike, asc } from "drizzle-orm";
+import { eq, and, desc, sql, inArray, lte, gte, or, ilike, asc } from "drizzle-orm";
 import { requireAdmin } from "../middlewares/adminAuth";
 import { logActivity, getAdminId } from "../lib/activityLog";
 import { verifyCustomerToken, extractCustomerToken } from "../lib/customerAuth";
@@ -1011,18 +1011,25 @@ router.post("/orders", async (req, res) => {
         // Studio items have no catalog product — skip
         if ((item as any).isStudio) continue;
 
-        // Custom hampers: validate + decrement stock of each constituent product
+        // Custom hampers: validate + decrement stock of each constituent product.
+        // The UPDATE's WHERE re-checks stock against the row's current,
+        // possibly-just-decremented-by-another-transaction value under
+        // Postgres's row lock — not the value this transaction read earlier
+        // — so two concurrent orders for the same item can never both
+        // succeed off a stale snapshot (the classic read-then-write lost
+        // update this replaced could).
         if ((item as any).isHamper) {
           const constituents = ((item as any).constituentProducts || []) as Array<{ productId: number; quantity: number }>;
           for (const c of constituents) {
-            const [prod] = await tx.select({ stock: productsTable.stock, name: productsTable.name }).from(productsTable).where(eq(productsTable.id, c.productId));
-            if (!prod) {
-              throw new ProductMissingError(`Hamper item #${c.productId}`);
-            }
-            if (prod.stock < c.quantity) {
+            const [updated] = await tx.update(productsTable)
+              .set({ stock: sql`${productsTable.stock} - ${c.quantity}` })
+              .where(and(eq(productsTable.id, c.productId), gte(productsTable.stock, c.quantity)))
+              .returning({ stock: productsTable.stock });
+            if (!updated) {
+              const [prod] = await tx.select({ stock: productsTable.stock, name: productsTable.name }).from(productsTable).where(eq(productsTable.id, c.productId));
+              if (!prod) throw new ProductMissingError(`Hamper item #${c.productId}`);
               throw new StockOutError(`${prod.name} (in hamper)`, prod.stock, c.quantity);
             }
-            await tx.update(productsTable).set({ stock: prod.stock - c.quantity }).where(eq(productsTable.id, c.productId));
           }
           continue;
         }
@@ -1031,24 +1038,37 @@ router.post("/orders", async (req, res) => {
         if (!prod) {
           throw new ProductMissingError(item.productName);
         }
-        if (prod.stock < item.quantity) {
-          throw new StockOutError(item.productName, prod.stock, item.quantity);
-        }
         const variantId = (item as any).variantId as string | null | undefined;
-        let nextVariants: any[] | undefined;
         if (variantId) {
-          const variants = Array.isArray(prod.variants) ? [...(prod.variants as any[])] : [];
+          const variants = Array.isArray(prod.variants) ? (prod.variants as any[]) : [];
           const index = variants.findIndex((v: any) => v?.id === variantId && v.active !== false);
-          if (index < 0 || Number(variants[index].stock) < item.quantity) {
-            throw new StockOutError(`${item.productName} — selected variant`, index < 0 ? 0 : Number(variants[index].stock || 0), item.quantity);
+          if (index < 0) {
+            throw new StockOutError(`${item.productName} — selected variant`, 0, item.quantity);
           }
-          nextVariants = variants;
-          nextVariants[index] = { ...variants[index], stock: Number(variants[index].stock) - item.quantity };
+          // Atomic JSONB update: rewrites only this one array element's
+          // stock field, from the CURRENT row value at UPDATE time. A
+          // concurrent order for a *different* variant of this same
+          // product can no longer be silently clobbered by this
+          // transaction overwriting the whole variants array with a copy
+          // it read before that other order committed.
+          const jsonPath = sql`ARRAY[${index}::text, 'stock']`;
+          const currentStockExpr = sql`(${productsTable.variants}->${index}->>'stock')::numeric`;
+          const [updated] = await tx.update(productsTable)
+            .set({ variants: sql`jsonb_set(${productsTable.variants}, ${jsonPath}, to_jsonb(${currentStockExpr} - ${item.quantity}))` })
+            .where(and(eq(productsTable.id, item.productId), sql`${currentStockExpr} >= ${item.quantity}`))
+            .returning({ id: productsTable.id });
+          if (!updated) {
+            throw new StockOutError(`${item.productName} — selected variant`, Number(variants[index].stock ?? 0), item.quantity);
+          }
+        } else {
+          const [updated] = await tx.update(productsTable)
+            .set({ stock: sql`${productsTable.stock} - ${item.quantity}` })
+            .where(and(eq(productsTable.id, item.productId), gte(productsTable.stock, item.quantity)))
+            .returning({ stock: productsTable.stock });
+          if (!updated) {
+            throw new StockOutError(item.productName, prod.stock, item.quantity);
+          }
         }
-        await tx.update(productsTable).set({
-          stock: sql`${productsTable.stock} - ${item.quantity}`,
-          ...(nextVariants ? { variants: nextVariants } : {}),
-        }).where(eq(productsTable.id, item.productId));
       }
 
       let validatedPromoCode: string | null = null;

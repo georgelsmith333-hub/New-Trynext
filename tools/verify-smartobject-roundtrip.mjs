@@ -1,5 +1,7 @@
 /**
- * Real Smart Object round-trip verification for the pilot T-shirt surfaces.
+ * Real Smart Object round-trip verification for every color of the
+ * flat-apparel families' authentic front/back views (T-shirt, long sleeve,
+ * hoodie).
  *
  * There is no Adobe Photoshop available in this environment, so this cannot
  * claim "verified in Photoshop." What it *can* honestly claim, and what this
@@ -89,12 +91,36 @@ const REPO = path.resolve(import.meta.dirname, "..");
 const STAGING_ROOT = path.join(REPO, "dist-mockups", "staging", "smart-v10-v3");
 const MASTERS_ROOT = path.join(STAGING_ROOT, "masters");
 
-const PILOT_SURFACES = [
-  { family: "tshirt", color: "white", view: "front" },
-  { family: "tshirt", color: "white", view: "back" },
-  { family: "tshirt", color: "black", view: "front" },
-  { family: "tshirt", color: "black", view: "back" },
-];
+/**
+ * Every color of every family's AUTHENTIC-PRESERVED views (real photography,
+ * per dist-mockups/staging/smart-v10-v3/manifest.json's own provenance
+ * field) — never the synthetic-derivative views (sleeves/neck-label/mug
+ * wrap), which are crops/composites generated from another photo, not
+ * independently photographed. Verifying that a *generated* surface's Smart
+ * Object mechanism round-trips would say nothing about whether its
+ * underlying photo content is legitimate to ship as "accepted" — that is a
+ * separate, still-open review question per AGENTS.md's fail-closed rules,
+ * so those views deliberately stay out of this list rather than being
+ * silently swept into "verified" alongside the real photos.
+ *
+ * Flat-apparel families (tshirt/longsleeve/hoodie) additionally get a real
+ * displacement role from tools/build-displacement-maps.mjs. Curved families
+ * (mug/cap/waterbottle) render through composer.ts's separate curvature-warp
+ * path and have no displacement role — their entry here verifies Smart
+ * Object structure only, which is still real, evidenced work: it proves
+ * these masters are genuinely editable, just not that they also bend
+ * artwork geometrically (a different, curvature-specific improvement).
+ */
+const AUTHENTIC_VIEWS_BY_FAMILY = {
+  tshirt: { colors: ["white", "black", "navy", "maroon", "olive", "sky-blue", "grey", "red"], views: ["front", "back"] },
+  longsleeve: { colors: ["white", "black", "charcoal", "heather-grey", "navy", "royal-blue", "forest-green", "burgundy", "red", "sand"], views: ["front", "back"] },
+  hoodie: { colors: ["white", "black", "charcoal", "heather-grey", "navy", "royal-blue", "forest-green", "burgundy", "red", "sand"], views: ["front", "back"] },
+  mug: { colors: ["white", "black", "navy", "red", "green", "purple", "sky-blue", "pink", "maroon", "orange"], views: ["front", "back"] },
+  cap: { colors: ["white", "black", "navy", "maroon", "olive", "red", "grey", "forest"], views: ["front", "back"] },
+  waterbottle: { colors: ["white"], views: ["front", "back"] },
+};
+const PILOT_SURFACES = Object.entries(AUTHENTIC_VIEWS_BY_FAMILY).flatMap(([family, { colors, views }]) =>
+  colors.flatMap((color) => views.map((view) => ({ family, color, view }))));
 
 const argv = process.argv.slice(2);
 const jsonIndex = argv.indexOf("--json");
@@ -175,7 +201,11 @@ function recomposite(originalComposite, marker, transform) {
 
 function verifySurface({ family, color, view }) {
   const surfaceKey = `${family}/${color}/${view}`;
-  const masterPath = path.join(MASTERS_ROOT, family, `${family}-${color}-${view}.psd`);
+  // Large documents (mug, water bottle) are saved as .psb; the rest as
+  // .psd. Try both rather than assuming one extension family-wide.
+  const candidates = [".psd", ".psb"].map((ext) =>
+    path.join(MASTERS_ROOT, family, `${family}-${color}-${view}${ext}`));
+  const masterPath = candidates.find((candidate) => existsSync(candidate)) ?? candidates[0];
   const checks = {};
   const notes = [];
 

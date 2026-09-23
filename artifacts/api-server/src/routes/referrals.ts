@@ -70,14 +70,31 @@ router.get("/referrals/check/:code", async (req, res) => {
   }
 });
 
-router.put("/referrals/:code/use", async (req, res) => {
+// The real checkout flow never calls this route: referral usage/earnings
+// are credited atomically inside the order transaction itself, from the
+// server-computed subtotal (see orders.ts, PROMO_INVALID/SELF_REFERRAL
+// checks). This standalone endpoint was reachable with no auth and trusted
+// a client-supplied orderTotal, letting anyone inflate a referrer's payable
+// balance with no real order behind it. Admin-gated as a manual-correction
+// tool only, with the same active-referral guard the real flow uses.
+router.put("/referrals/:code/use", requireAdmin, async (req, res) => {
   try {
-    const code = req.params.code.toUpperCase().trim();
-    const { orderTotal } = req.body;
+    const code = (req.params.code as string).toUpperCase().trim();
+    const orderTotal = Number(req.body?.orderTotal);
+    if (!Number.isFinite(orderTotal) || orderTotal <= 0) {
+      res.status(400).json({ error: "validation_error", message: "orderTotal must be a positive number" });
+      return;
+    }
+
+    const [referral] = await db.select().from(referralsTable).where(eq(referralsTable.referralCode, code));
+    if (!referral || !referral.active) {
+      res.status(404).json({ error: "invalid", message: "Invalid or inactive referral code" });
+      return;
+    }
 
     await db.update(referralsTable).set({
       usedCount: sql`COALESCE(used_count, 0) + 1`,
-      totalEarnings: sql`COALESCE(total_earnings, 0) + ${Math.round((orderTotal || 0) * 0.10)}`,
+      totalEarnings: sql`COALESCE(total_earnings, 0) + ${Math.round(orderTotal * 0.10)}`,
     }).where(eq(referralsTable.referralCode, code));
 
     res.json({ success: true });

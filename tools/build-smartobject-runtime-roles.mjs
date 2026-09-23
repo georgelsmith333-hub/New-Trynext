@@ -72,32 +72,30 @@ if (stagingManifest.surfaceCount !== 188 || stagingManifest.surfaces?.length !==
 removeFiles(roleRoot);
 mkdirSync(roleRoot, { recursive: true });
 
-// Shared, cross-color pilot displacement maps (see build-displacement-maps.mjs).
+// Shared, cross-color displacement maps (see build-displacement-maps.mjs).
 // Generated inline here, after the wipe above, so it never depends on
 // script run order or gets deleted by a later rebuild.
 const displacementMaps = await generateDisplacementMaps(stagingRoot);
-const displacementByView = new Map(displacementMaps.map((entry) => [entry.view, entry]));
+const displacementByFamilyView = new Map(displacementMaps.map((entry) => [`${entry.family}/${entry.view}`, entry]));
 
-// Pilot scope: exactly the 4 surfaces approved for this round (white/black
-// front/back) get the displacement role, even though the map is geometry-
-// only and would be valid for every color of these views. Scaling to the
-// remaining 6 colors is a separate, explicit decision — not something this
-// build script should do on its own by finding the file and attaching it
-// everywhere it would technically work.
-const PILOT_DISPLACEMENT_SURFACES = new Set([
-  "tshirt/white/front", "tshirt/white/back",
-  "tshirt/black/front", "tshirt/black/back",
-]);
-
+// Every color of a flat-apparel family's front/back view gets the
+// displacement role once that family+view's map exists — the map is
+// geometry-only (derived from the white calibration photo) and is
+// genuinely valid for every color of the same view, since garment shape
+// doesn't change with fabric tint. Curved families (mug/cap/waterbottle)
+// and the synthetic-derivative apparel views (sleeves/neck-label) are
+// deliberately excluded: displacementByFamilyView simply has no entry for
+// them (build-displacement-maps.mjs only targets authentic-preserved
+// front/back views), so this naturally stays scoped without a separate
+// allowlist to keep in sync.
 function displacementRoleFor(row) {
-  if (!PILOT_DISPLACEMENT_SURFACES.has(`${row.family}/${row.color}/${row.view}`)) return null;
-  const entry = displacementByView.get(row.view);
+  const entry = displacementByFamilyView.get(`${row.family}/${row.view}`);
   if (!entry) return null;
   const bytes = readFileSync(path.resolve(REPO, entry.path));
   return {
     path: entry.path,
     sha256: sha256(bytes),
-    sourceLayerPrefix: "Pilot Displacement Map (shared per view, cross-color)",
+    sourceLayerPrefix: "Displacement Map (shared per family+view, cross-color)",
   };
 }
 

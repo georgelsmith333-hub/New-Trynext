@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import DOMPurify from "dompurify";
 import {
   Bot, X, Send, Loader2, Copy, Check, ChevronDown, FileText, Package,
   MessageSquare, Sparkles, Trash2, TrendingUp, Tag, Mail, Users,
@@ -179,6 +180,16 @@ function uid() {
 }
 
 /* ── Markdown-ish formatter ────────────────────────── */
+// The AI response text can echo attacker-influenced content (product names,
+// order data, prompt-injected text the model was induced to repeat), so the
+// only tags this formatter ever intends to produce (<strong>/<em>) are the
+// only ones allowed through — anything else in the source text (e.g. an
+// <img onerror=...> the model was tricked into emitting) is stripped before
+// it ever reaches dangerouslySetInnerHTML in an authenticated admin session.
+function sanitizeInline(html: string): string {
+  return DOMPurify.sanitize(html, { ALLOWED_TAGS: ["strong", "em"], ALLOWED_ATTR: [] });
+}
+
 function FormattedMessage({ content }: { content: string }) {
   const lines = content.split("\n");
   return (
@@ -190,18 +201,18 @@ function FormattedMessage({ content }: { content: string }) {
         if (line.startsWith("• ") || line.startsWith("- ")) return (
           <div key={i} className="flex gap-2">
             <span className="shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-current opacity-50 inline-block" />
-            <span dangerouslySetInnerHTML={{ __html: line.slice(2).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+            <span dangerouslySetInnerHTML={{ __html: sanitizeInline(line.slice(2).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")) }} />
           </div>
         );
         if (/^\d+\. /.test(line)) return (
           <div key={i} className="flex gap-2">
             <span className="shrink-0 font-bold opacity-60 text-[11px] mt-0.5">{line.match(/^(\d+)\./)?.[1]}.</span>
-            <span dangerouslySetInnerHTML={{ __html: line.replace(/^\d+\. /, "").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>") }} />
+            <span dangerouslySetInnerHTML={{ __html: sanitizeInline(line.replace(/^\d+\. /, "").replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")) }} />
           </div>
         );
         if (line.trim() === "") return <div key={i} className="h-1.5" />;
         const bolded = line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/_(.+?)_/g, "<em>$1</em>");
-        return <p key={i} dangerouslySetInnerHTML={{ __html: bolded }} />;
+        return <p key={i} dangerouslySetInnerHTML={{ __html: sanitizeInline(bolded) }} />;
       })}
     </div>
   );

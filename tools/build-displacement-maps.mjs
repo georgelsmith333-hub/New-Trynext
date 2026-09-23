@@ -1,5 +1,7 @@
 /**
- * Pilot displacement-map generator — T-shirt front/back only.
+ * Real displacement-map generator for the flat-apparel families (T-shirt,
+ * long sleeve, hoodie) — front/back only, the authentic-preserved photo
+ * views for each.
  *
  * Builds a real per-pixel geometric displacement field (not just a
  * multiply/screen shading overlay) from the reviewed source photo's own
@@ -14,9 +16,11 @@
  * not invented data; the fold pattern comes from the real photographed
  * garment, only reframed as an offset field instead of a shading overlay.
  *
- * Scope: front/back only (the two authentic-preserved T-shirt views). One
- * map per view, shared across every color of that view, since garment
- * geometry does not change with color — only fabric tint does.
+ * Scope: front/back only (the authentic-preserved views) per flat-apparel
+ * family. One map per family+view, shared across every color of that view,
+ * since garment geometry does not change with color — only fabric tint
+ * does. Curved families (mug, cap, water bottle) use a different rendering
+ * path entirely (composer.ts's curvature warp) and are out of scope here.
  *
  * Usage:
  *   node tools/build-displacement-maps.mjs
@@ -25,6 +29,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
+import { CANONICAL } from "./build-smartobject-mockups.mjs";
 
 const REPO = path.resolve(import.meta.dirname, "..");
 const DEFAULT_STAGING_ROOT = path.join(REPO, "dist-mockups", "staging", "smart-v10-v3");
@@ -34,10 +39,23 @@ const BLUR_SIGMA = 16; // smooths away fabric micro-texture/print noise, keeps f
 const GRADIENT_SAMPLE = 3; // px offset for the central-difference gradient
 export const MAX_DISPLACEMENT_PX = 10; // clamp so artwork bends with folds without visibly buckling
 
-const PILOT_VIEWS = [
-  { view: "front", zone: { x: 240, y: 185, w: 520, h: 580 } },
-  { view: "back", zone: { x: 240, y: 185, w: 520, h: 580 } },
-];
+/** Flat-apparel families, front+back only (their authentic-preserved
+ *  views). Zones are pulled from CANONICAL so this can never drift out of
+ *  sync with the actual print-zone geometry each family/view was built with. */
+const FLAT_APPAREL_FAMILIES = ["tshirt", "longsleeve", "hoodie"];
+const DISPLACEMENT_VIEWS = ["front", "back"];
+function pilotTargets() {
+  const targets = [];
+  for (const family of FLAT_APPAREL_FAMILIES) {
+    for (const view of DISPLACEMENT_VIEWS) {
+      const viewConfig = CANONICAL[family]?.views?.[view];
+      if (!viewConfig || viewConfig.provenance !== "authentic-preserved") continue;
+      targets.push({ family, view, zone: viewConfig.zone });
+    }
+  }
+  return targets;
+}
+
 const CALIBRATION_COLOR = "white"; // best fold visibility, least color interference
 const NORMALIZATION_PERCENTILE = 0.97;
 
@@ -50,8 +68,8 @@ function percentile(sortedAsc, p) {
   return sortedAsc[index];
 }
 
-async function buildDisplacementMap(sourceRoot, view, zone) {
-  const sourcePath = path.join(sourceRoot, "tshirt", CALIBRATION_COLOR, `${view}.png`);
+async function buildDisplacementMap(sourceRoot, family, view, zone) {
+  const sourcePath = path.join(sourceRoot, family, CALIBRATION_COLOR, `${view}.png`);
   if (!existsSync(sourcePath)) throw new Error(`missing calibration source: ${sourcePath}`);
 
   // 1. Height-field proxy: blurred greyscale luminance of the real photo.
@@ -125,14 +143,15 @@ async function buildDisplacementMap(sourceRoot, view, zone) {
  */
 export async function generateDisplacementMaps(stagingRoot = DEFAULT_STAGING_ROOT) {
   const sourceRoot = path.join(stagingRoot, "sources");
-  const outDir = path.join(stagingRoot, "runtime-roles", "tshirt", "_shared");
-  mkdirSync(outDir, { recursive: true });
   const results = [];
-  for (const { view, zone } of PILOT_VIEWS) {
-    const { png, sourcePath, scale } = await buildDisplacementMap(sourceRoot, view, zone);
+  for (const { family, view, zone } of pilotTargets()) {
+    const outDir = path.join(stagingRoot, "runtime-roles", family, "_shared");
+    mkdirSync(outDir, { recursive: true });
+    const { png, sourcePath, scale } = await buildDisplacementMap(sourceRoot, family, view, zone);
     const outPath = path.join(outDir, `${view}-displacement.png`);
     writeFileSync(outPath, png);
     results.push({
+      family,
       view,
       path: path.relative(REPO, outPath),
       sha256: sha256(png),

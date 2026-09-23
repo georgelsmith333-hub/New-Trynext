@@ -52,18 +52,18 @@ export function getSmartV10SurfaceKey(
 }
 
 /**
- * Pilot scope: exactly the surfaces that have real displacement-map
- * generation plus passing Smart Object round-trip verification behind them
- * (tools/build-displacement-maps.mjs, tools/verify-smartobject-roundtrip.mjs,
- * and the "accepted" rows in dist-mockups/staging/smart-v10-v3/manifest.json).
- * Kept as an explicit allowlist rather than "does the file exist" so this
- * list only ever grows through a deliberate, evidenced decision — matching
- * PILOT_DISPLACEMENT_SURFACES in tools/build-smartobject-runtime-roles.mjs.
+ * Real displacement-map generation exists for every color of the
+ * authentic-preserved front/back views of the flat-apparel families —
+ * matches tools/build-displacement-maps.mjs's FLAT_APPAREL_FAMILIES and
+ * DISPLACEMENT_VIEWS exactly. Sleeves/neck-label (synthetic-derivative
+ * views, not real photography) and the curved families (mug/cap/
+ * waterbottle, a different rendering path entirely) are excluded by
+ * construction: their view/category simply isn't in these sets, not via a
+ * separate allowlist that could drift out of sync with what the build
+ * script actually generated.
  */
-const DISPLACEMENT_PILOT_SURFACES = new Set([
-  "tshirt:white:front", "tshirt:white:back",
-  "tshirt:black:front", "tshirt:black:back",
-]);
+const DISPLACEMENT_FAMILIES: ReadonlySet<SmartMockupCategory> = new Set(["tshirt", "longsleeve", "hoodie"]);
+const DISPLACEMENT_VIEWS: ReadonlySet<SmartMockupFace> = new Set(["front", "back"]);
 
 export function getSmartV10RuntimeRoles(
   category: SmartMockupCategory,
@@ -79,7 +79,7 @@ export function getSmartV10RuntimeRoles(
     highlight: `${prefix}-highlight.png`,
     printMask: `${prefix}-print-mask.png`,
   };
-  if (DISPLACEMENT_PILOT_SURFACES.has(`${category}:${colorSlug}:${face}`)) {
+  if (DISPLACEMENT_FAMILIES.has(category) && DISPLACEMENT_VIEWS.has(face)) {
     roles.displacement = `${SMART_V10_RUNTIME_ROOT}/${category}/_shared/${face}-displacement.png`;
   }
   return roles;

@@ -68,13 +68,13 @@ app.use(
 const DEFAULT_PROD_ORIGINS = [
   "https://trynext.shop",
   "https://www.trynext.shop",
-  "https://trynext.pages.dev",
+  "https://trynext-shop-new.pages.dev",
 ];
 
 const DEFAULT_DEV_ORIGINS = [
   "https://trynext.shop",
   "https://www.trynext.shop",
-  "https://trynext.pages.dev",
+  "https://trynext-shop-new.pages.dev",
   "http://localhost:5173",
   "http://localhost:8080",
   "http://localhost:8081",

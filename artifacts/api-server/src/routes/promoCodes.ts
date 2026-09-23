@@ -214,7 +214,14 @@ router.post("/promo-codes/validate", async (req, res) => {
   }
 });
 
-router.put("/promo-codes/:id/use", async (req, res) => {
+// The real checkout flow never calls this route: promo usage is checked
+// against maxUses and incremented atomically inside the order transaction
+// itself (orders.ts, ~line 1102). This standalone endpoint was reachable
+// with no auth and never checked maxUses before incrementing usedCount,
+// letting anyone exhaust a campaign's cap with no real order behind it.
+// Admin-gated as a manual-correction tool only, with the same maxUses
+// guard the real flow uses.
+router.put("/promo-codes/:id/use", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id as string, 10);
     if (!Number.isFinite(id) || id <= 0) {
@@ -222,7 +229,7 @@ router.put("/promo-codes/:id/use", async (req, res) => {
       return;
     }
     const [promo] = await db
-      .select({ id: promoCodesTable.id, active: promoCodesTable.active })
+      .select({ id: promoCodesTable.id, active: promoCodesTable.active, maxUses: promoCodesTable.maxUses, usedCount: promoCodesTable.usedCount })
       .from(promoCodesTable)
       .where(eq(promoCodesTable.id, id))
       .limit(1);
@@ -232,6 +239,10 @@ router.put("/promo-codes/:id/use", async (req, res) => {
     }
     if (!promo.active) {
       res.status(400).json({ error: "validation_error", message: "Promo code is no longer active" });
+      return;
+    }
+    if (promo.maxUses && promo.maxUses > 0 && (promo.usedCount ?? 0) >= promo.maxUses) {
+      res.status(400).json({ error: "validation_error", message: "Promo code has reached its usage limit" });
       return;
     }
     await db.update(promoCodesTable)

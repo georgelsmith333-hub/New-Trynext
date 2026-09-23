@@ -64,7 +64,7 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction): v
             ? (() => { try { return new URL(referer).origin; } catch { return ""; } })()
             : "";
             const isTrustedTrynextOrigin = (value: string): boolean =>
-              /^https:\/\/(?:[a-z0-9-]+\.)?trynext-lifestyle-shop\.pages\.dev$/i.test(value);
+              /^https:\/\/(?:[a-z0-9-]+\.)?trynext-shop-new\.pages\.dev$/i.test(value);
           const ok =
             (origin && (allowed.includes(origin) || isTrustedTrynextOrigin(origin))) ||
             (refererOrigin && (allowed.includes(refererOrigin) || isTrustedTrynextOrigin(refererOrigin)));

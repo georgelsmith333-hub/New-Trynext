@@ -691,6 +691,15 @@ router.get("/admin/stats", requireAdmin, async (req, res) => {
 
 router.get("/admin/customers", requireAdmin, async (req, res) => {
   try {
+    // Intentionally unpaginated: AdminCustomers.tsx does client-side
+    // search/sort/stat-totals/CSV export over the full customer list, so
+    // slicing the response here would silently break search results,
+    // exported CSVs, and revenue/repeat-customer totals to only the
+    // current page. The real fix for the cost of loading every order to
+    // aggregate in JS is a SQL-level GROUP BY (SUM/COUNT/MIN/MAX per
+    // customer key) instead of this in-memory Map — same response shape,
+    // no frontend change needed, and a separate piece of work from the
+    // response contract change that would be needed to also paginate it.
     const allOrders = await db.select().from(ordersTable).orderBy(desc(ordersTable.createdAt));
 
     const customerMap = new Map<string, {

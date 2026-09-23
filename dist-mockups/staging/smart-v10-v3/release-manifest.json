@@ -78,7 +78,7 @@
       "reviewStatus": "accepted",
       "verification": {
         "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
-        "verifiedAt": "2026-09-23T01:54:13.473Z",
+        "verifiedAt": "2026-09-23T02:59:16.130Z",
         "masterChecksumAtVerification": "4c93c43d163e176296e54067a60607d43450f2221b54c2390a32f1a0bc43ef5d",
         "checks": {
           "artworkLayerFound": true,
@@ -171,7 +171,7 @@
       "reviewStatus": "accepted",
       "verification": {
         "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
-        "verifiedAt": "2026-09-23T01:54:13.937Z",
+        "verifiedAt": "2026-09-23T02:59:16.804Z",
         "masterChecksumAtVerification": "f9e26be4d9299480716899fce4ef2471f9197856f2933e24b831e6e80dbd5597",
         "checks": {
           "artworkLayerFound": true,
@@ -465,7 +465,7 @@
       "reviewStatus": "accepted",
       "verification": {
         "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
-        "verifiedAt": "2026-09-23T01:54:14.329Z",
+        "verifiedAt": "2026-09-23T02:59:17.294Z",
         "masterChecksumAtVerification": "37ded67006f97fec5aaef4c50bb18a01a00cde75b9050b626fe2ed18031df404",
         "checks": {
           "artworkLayerFound": true,
@@ -558,7 +558,7 @@
       "reviewStatus": "accepted",
       "verification": {
         "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
-        "verifiedAt": "2026-09-23T01:54:14.719Z",
+        "verifiedAt": "2026-09-23T02:59:17.670Z",
         "masterChecksumAtVerification": "d3b453a7629263474ee96c0aae0d947208d6be2bf1d4b2725d981a6e53f53499",
         "checks": {
           "artworkLayerFound": true,
@@ -849,7 +849,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/navy/front.png",
       "proofPreviewChecksum": "75c0b2e28dde8dd751c422270b714618af802b54895ac0fc0fa114cb995462d3",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:18.049Z",
+        "masterChecksumAtVerification": "e58ca9d8240d190f9ef1d655ab5bc1c515ae3a1404bedb81af5bd23c8d656562",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -916,7 +942,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/navy/back.png",
       "proofPreviewChecksum": "eedfa824012e3a526d8e2af5c987f297c1087abe641c75be20c1b2f66737ef7a",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:18.424Z",
+        "masterChecksumAtVerification": "b24101cee255859460427f69b74b1c24c609e0a53370a78f11e82b6cc7cf91b7",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1184,7 +1236,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/maroon/front.png",
       "proofPreviewChecksum": "c752c90995d3b206b63d710b753c54216983735a601f5fc6af0af9efb1bf8254",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:18.913Z",
+        "masterChecksumAtVerification": "ad7367bad200fa272140f7de713a43c512fc4340df1d4b2f2720ba4b31ee3134",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1251,7 +1329,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/maroon/back.png",
       "proofPreviewChecksum": "ba11a76c903b138389c25ab2eacb691e65dc846ddb79d106c96d445f11372f8a",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:19.277Z",
+        "masterChecksumAtVerification": "5dc17be51b5f1d327862c72a04ffd4e5f6734c95aa31bbe182c646f960b3a6d6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1519,7 +1623,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/olive/front.png",
       "proofPreviewChecksum": "1cefb1d690a60bf66ffaf28be8c1d3f1e013f78e8f8535e3ecc8e32ce9fae03d",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:19.748Z",
+        "masterChecksumAtVerification": "47fb8daaceca81050577a88799c7da065c82ca5a3ad95ab38624512bb5c29690",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1586,7 +1716,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/olive/back.png",
       "proofPreviewChecksum": "05ca1e1d8f19a4222cd58f3427bbcb67b5033547973faef8e738b52d8d9c99ef",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:20.429Z",
+        "masterChecksumAtVerification": "0918907799fd949b36033bc06eafd711b31c21c879f46cc3f0f1b98f67750ee1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1854,7 +2010,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/sky-blue/front.png",
       "proofPreviewChecksum": "0f88397fceb1108c9dc727816532929992ee6a3dd515afcdbdf5838eccbfa2a3",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:20.882Z",
+        "masterChecksumAtVerification": "646ea7acc6decebca9edfbff8050341f07f776a77b881e86b960dd2d452614ea",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1921,7 +2103,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/sky-blue/back.png",
       "proofPreviewChecksum": "adf680596db6df50a1c14f2a9e82ef68e866aa3edb9635f2bf56465197f4fcb3",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:21.354Z",
+        "masterChecksumAtVerification": "20da2ff3a0b7fdc717f2a24c87bb88d1903bf245bc284df9f192cf5a7ce74279",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2189,7 +2397,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/grey/front.png",
       "proofPreviewChecksum": "1c6f0fde1b1123bd2b33adb990603d12006a4e91b8409560b5694fbae9b155a7",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:21.870Z",
+        "masterChecksumAtVerification": "ce7ff4a260e489feaa69117431e22bee3285f352f61041ad029143471cf595d3",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2256,7 +2490,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/grey/back.png",
       "proofPreviewChecksum": "e11133495a626cd3457564a3a130e4c0c0c0fd42bff70b05830af16b8a05971c",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:22.320Z",
+        "masterChecksumAtVerification": "fee058d91389afa8b4342e61d48ca7498bfe59e13abd0a99dca72deafcdd35c6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2524,7 +2784,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/red/front.png",
       "proofPreviewChecksum": "cd2c415cde454d154be9f291a68295b91774894d69ebda297c58f7923a2dd6a1",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:23.029Z",
+        "masterChecksumAtVerification": "ed868c287acbece9ad84fdd9c994cb3dfe47d2b5dd0aef018b764252d34c5bfa",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2591,7 +2877,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/red/back.png",
       "proofPreviewChecksum": "c8b4877d6880f8ccbfcb2ae2bc265664630729e30e50e7de8c49069c1d919a0f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:23.420Z",
+        "masterChecksumAtVerification": "08d3be08bcc24647ed288867dc5ca8d79fafa4bc8f9c4520cda326b087c57071",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2859,7 +3171,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/white/front.png",
       "proofPreviewChecksum": "ec137cecd2a8aec069945c40a8204ab5a706f1adbb67d10d21e993fc86be9121",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:23.854Z",
+        "masterChecksumAtVerification": "f49469b616b585c7339ec8afef83907ed18f65a592a1f76a18c645a2300f6818",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2926,7 +3264,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/white/back.png",
       "proofPreviewChecksum": "489399ea69bec2d90104b365531010db735794cd796dee6f2ad1df7620e3c267",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:24.293Z",
+        "masterChecksumAtVerification": "8d3e0dcbe16435fc0ee6d73279e7e0038e485a8c9a92542dd76c8efca5a06e87",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3194,7 +3558,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/black/front.png",
       "proofPreviewChecksum": "a195278f6fb636061f94b452a31edd0799355ea2b5a0f5220be9f71d10ca5c8a",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:24.652Z",
+        "masterChecksumAtVerification": "aa5e7df2eccaf8657e3727add57863627c239524e648b6bc20752ce216eae1e8",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3261,7 +3651,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/black/back.png",
       "proofPreviewChecksum": "999171145e53934e02cc6d68ac4601abe410705f36b546b5ff1f8d5454bca909",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:25.031Z",
+        "masterChecksumAtVerification": "9311174b9d06da8c5b2347da7905b860ed23f2dbb62dc033ef6721f57f92c13b",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3529,7 +3945,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/charcoal/front.png",
       "proofPreviewChecksum": "0a09f098e079dd9980dd62c814c1970ff7c7bbae5c354e985be16dc0ff797481",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:25.373Z",
+        "masterChecksumAtVerification": "2fd6f9b010250ec6d078bdde8bc1815a9dcfbd06c853091ed3b0e463e0f9728c",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3596,7 +4038,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/charcoal/back.png",
       "proofPreviewChecksum": "e2d1ad618c7c05848b827da27e4e38cee94b43882aa1d0ee20ad2607dda7d562",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:25.722Z",
+        "masterChecksumAtVerification": "bd7dcc9deeb1058ae1426b55dff3151d335aab44bf75ce78eaadd2b1d48c4d65",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3864,7 +4332,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/heather-grey/front.png",
       "proofPreviewChecksum": "0ad6b084fe1435d2c3d28337514d994864b58ac61c2b7055150a0bb8e459f69b",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:26.291Z",
+        "masterChecksumAtVerification": "ad9b3b1508d29d7d42b16c1852233ca13561e8e6b6386d8cbc9241274f3508c1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3931,7 +4425,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/heather-grey/back.png",
       "proofPreviewChecksum": "de9e7800f2581a15027c9cab867a75f68ebf3126ae1974782c122dc034635e6f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:26.744Z",
+        "masterChecksumAtVerification": "425bb245012cbad836d077c406cd56e7a50d728accf37a96c4393ba92dceded9",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4199,7 +4719,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/navy/front.png",
       "proofPreviewChecksum": "dade32605dddbc167ff4cfb0589bc01bf077d72a496e9cc22a64a894314d8fa5",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:27.090Z",
+        "masterChecksumAtVerification": "3d84482420907817dfdd4affb73e89eec1982436f0c407cec8befaa60fa4dea5",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4266,7 +4812,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/navy/back.png",
       "proofPreviewChecksum": "209750d28b80898ac16cbcb1f3aa2c9aea59b4f6c965ad785c077c9c896a44fa",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:27.444Z",
+        "masterChecksumAtVerification": "a8d5fabbf9f79836896a5db3f38ddc0de816ac227057dc0117d5d48f6cd976d5",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4534,7 +5106,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/royal-blue/front.png",
       "proofPreviewChecksum": "329fd3a7e5429aa757c3ace5f480c89e3dd7c99a7b6ec8f58be99540c82d3867",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:27.804Z",
+        "masterChecksumAtVerification": "a795a0f4adb2a1129b79afaef884da1d2654480dd226b536fba7b54568e5729d",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4601,7 +5199,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/royal-blue/back.png",
       "proofPreviewChecksum": "57831220f4e3a8fcbfed8d4b889e9566591a5a59d5eee71675a45381044d5b4f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:28.183Z",
+        "masterChecksumAtVerification": "4133d9891b177cccc6216a28a3b988e22fd6d6ec857bea7c517e2572d0389e41",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4869,7 +5493,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/forest-green/front.png",
       "proofPreviewChecksum": "2cf0a6049577fdb35d90c2626b27cfbbb23ea16759d472f30ca0d45344aa21dc",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:28.549Z",
+        "masterChecksumAtVerification": "68bfb745c265e1239d3de333555054b7b183146bf37c378b3f42191c2395e7d1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4936,7 +5586,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/forest-green/back.png",
       "proofPreviewChecksum": "bc43f221753edc48471bb210f16337494750697020beff51d1584d3b255bdff4",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:28.915Z",
+        "masterChecksumAtVerification": "d6617c9f34e8746afc59946f53b99f225975f31b9084fea2936d0910b06b9d50",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5204,7 +5880,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/burgundy/front.png",
       "proofPreviewChecksum": "4b21d5253eaef2e26e2c7dc405ecbcb8f32f922eddccc5ecac6709b1e8df2bbb",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:29.270Z",
+        "masterChecksumAtVerification": "516f8decee6b72cd4c78413c4b16378f8f756c979cd907a9440a9ed70366bbf2",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5271,7 +5973,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/burgundy/back.png",
       "proofPreviewChecksum": "05172d20ca7cf5a17354de920ceb2f0b6cd1d6197b385d0768d9e8c0dcf88a8a",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:29.732Z",
+        "masterChecksumAtVerification": "ff424a3400b5280dd09bc557667d30034ba1a9577e75baf3f61d8a9b28ee000c",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5539,7 +6267,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/red/front.png",
       "proofPreviewChecksum": "da40c0f9e186b60ca72ca3c2e30822c36f3afe446617fdab3bf7ee00b2402c8b",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:30.104Z",
+        "masterChecksumAtVerification": "dbcbb85f5f3d3c984249b98b0bb28cd0f9add7d5623ebbc4ec3a0f81826546a3",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5606,7 +6360,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/red/back.png",
       "proofPreviewChecksum": "9758b9e3b61b32567f18dae35a06ee9d03f0dc14e205b078e88dbd93ce9fb46a",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:30.463Z",
+        "masterChecksumAtVerification": "4846b504ca1c11e9105b00358f47559b3a0eebecf0ff555cd1490bd62583c842",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5874,7 +6654,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/sand/front.png",
       "proofPreviewChecksum": "d829e79acd6de96998899cd9ba860190ab9436b8ea269b5cd54de61b31e5dc74",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:30.951Z",
+        "masterChecksumAtVerification": "7e85331288942df2751d7b48919dfbc27f8906338e68e3b4d4930e6a4b06f08f",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5941,7 +6747,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/sand/back.png",
       "proofPreviewChecksum": "921871cd27adcd5006b5feaecbff9ab7a23a635bed5418b84767b5fec5b11cf7",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:31.349Z",
+        "masterChecksumAtVerification": "be40f6e1942e2cf6866122407d1b83e8910cafba8092b1e5d6894f944a8a08ed",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6209,7 +7041,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/white/front.png",
       "proofPreviewChecksum": "6fe8dca39439e99d13cdb872aa5fbcb595a0744930038c60983aa04d81cdebed",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:31.793Z",
+        "masterChecksumAtVerification": "8911ec144dba3480ad6783bce07ac851062b365edf9e56a556aea80b63718dd9",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6276,7 +7134,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/white/back.png",
       "proofPreviewChecksum": "78dd5a78303e449d1468a3e3385ef87a984354c803c045d0fb5cc491c3cfee29",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:32.195Z",
+        "masterChecksumAtVerification": "9c3f85b2f2653c3be01525af905bda9a70d8ebd08c2f325b7d6b5f1656c551b6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6544,7 +7428,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/black/front.png",
       "proofPreviewChecksum": "8303843f0bd9df027fe268b7eeebd9a36b4a67fc99b15395992e7577c7a57c0f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:32.553Z",
+        "masterChecksumAtVerification": "1d65c2fa8aabf9811c65d623bb626262fad28d51afae036448f2fd7a37563abb",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6611,7 +7521,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/black/back.png",
       "proofPreviewChecksum": "8de61407a645bc340e09685298d82076a8938de86ce80b6a657eb17a5bbd4145",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:32.884Z",
+        "masterChecksumAtVerification": "852c276c784d01fbe3d72bfe05741f74a03283b9edd8ad80dea872b1ff023db1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6879,7 +7815,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/charcoal/front.png",
       "proofPreviewChecksum": "6460400bf0f217df0631ffb1b3dae7bbac2851cd630375fc7d017087fae13c73",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:33.244Z",
+        "masterChecksumAtVerification": "ddad58ac7668c513108dc533131013a559ee630519539980a19bea9d91947649",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6946,7 +7908,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/charcoal/back.png",
       "proofPreviewChecksum": "b7dc11147238932cc8d98f8dd919fba739c59062629c56aeaabe48b0e0f393eb",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:33.670Z",
+        "masterChecksumAtVerification": "d4ad1c7fae19756df7607a6bd2dfffcb16e45d01c6eb55355945ba5f4805450b",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7214,7 +8202,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/heather-grey/front.png",
       "proofPreviewChecksum": "61a9e3c22a96ac60300a726799f8b7c2218542a502b5024ed3700cc28d6a5e56",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:34.077Z",
+        "masterChecksumAtVerification": "3cbf088c15431c0354172f29dddadaf8e27e1645cc7fd031de03e6457e5c1312",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7281,7 +8295,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/heather-grey/back.png",
       "proofPreviewChecksum": "09e246c3818667232340986125de36cfdb1980606b14e67c2af5fc6b08eaac0f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:34.478Z",
+        "masterChecksumAtVerification": "2e5be276b6903c1b5c65f9d234fc72985a8dcff682d149cc60d8f4137f47aeb6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7549,7 +8589,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/navy/front.png",
       "proofPreviewChecksum": "bc2c0c139d420289bd9c84a7c7952933027a4fb918fba462558c529a38acaad6",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:34.900Z",
+        "masterChecksumAtVerification": "05937d91d164e9d689da14be4f716d437a6e8774261a1d0eba3c6f192d464e4b",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7616,7 +8682,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/navy/back.png",
       "proofPreviewChecksum": "57f228bd6320db7222f92793f0660ad34d47032fa0016274a183373a0f68f5e9",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:35.257Z",
+        "masterChecksumAtVerification": "6dca93247a7c5c4f2d5998407af8394029991ae492fb39c7c2b03f4fe21089d4",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7884,7 +8976,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/royal-blue/front.png",
       "proofPreviewChecksum": "4c415754c74491850987ee162090fccd5cff52c2f930c42718581f28ee0ec480",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:35.636Z",
+        "masterChecksumAtVerification": "9a701d0844b78b03d7955fd5fe25a7b65b2da63d69b5554e30d1ede577f6c331",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7951,7 +9069,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/royal-blue/back.png",
       "proofPreviewChecksum": "0041a015dcea3899cfe27224f3f892d5c4186ce909ca78ea9b2210d62383bf32",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:36.064Z",
+        "masterChecksumAtVerification": "505f7b285f1e803d2af9eb01dc12beeaddb06561bf335cc265942223ad740c80",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8219,7 +9363,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/forest-green/front.png",
       "proofPreviewChecksum": "a306ca668923541bb1731f112e585252ef50db4a830f28d0019f2183369d86bd",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:36.426Z",
+        "masterChecksumAtVerification": "32730639799bc0ab8e27106f6a0f3592b9c4c45c73ec3c1586cc5305aab2cdae",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8286,7 +9456,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/forest-green/back.png",
       "proofPreviewChecksum": "0a58d9c45b9a7573abddcf3120b728a737b1a3f06937313cb5dc7e6d87bc7940",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:36.814Z",
+        "masterChecksumAtVerification": "66977ec8dd0b01e883beee1e10018e4f6a3ae0716e2e80f5ecaf8481e345ede6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8554,7 +9750,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/burgundy/front.png",
       "proofPreviewChecksum": "7af70e4e1475cbdb9f7eac67d6b83ef825abdd7296e1e6fce4192b0caf87ab11",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:37.259Z",
+        "masterChecksumAtVerification": "465d038b2f5f3dd2787960da44adf3026f4ffa8abad5eb7d3b5525af52527564",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8621,7 +9843,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/burgundy/back.png",
       "proofPreviewChecksum": "4874f709fc249c7622a85a4768f64ac439aec9456f35ea854101dbf57cff583a",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:37.676Z",
+        "masterChecksumAtVerification": "82794b8fe1b027f77870d882c8d70444d73b0fad4ef550fc4ad4080f20ab0b63",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8889,7 +10137,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/red/front.png",
       "proofPreviewChecksum": "2c05a272818a4d4641c546d591f1b92c4cff0cfc24f7e3b09aa309e988de6b93",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:38.045Z",
+        "masterChecksumAtVerification": "5b51ae87029f503af5780aaa82350cbd850001a01a63681bfc8ebe5711fd13d3",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8956,7 +10230,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/red/back.png",
       "proofPreviewChecksum": "6b7bb7d23fbb651eee65e4a64a2b1df8ebfdc2d93342b5eb70832e7cde0ae020",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:38.540Z",
+        "masterChecksumAtVerification": "48fd9f71a98581b7977e9db3cfd23c6ebc821f5f28793e20990e90dc89374687",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9224,7 +10524,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/sand/front.png",
       "proofPreviewChecksum": "9cdcd0fc486f7840d99f8b652324a373d3842a584ceb798185d42981a70aeaa7",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:38.957Z",
+        "masterChecksumAtVerification": "4d610c75a7917682d07beb744c7c774190555c3aed22eac6baef71796c2456ee",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9291,7 +10617,33 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/sand/back.png",
       "proofPreviewChecksum": "40b2ecb048e2661f088126f81b107e4c8fa29274877720434a3f9b14297de336",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:39.349Z",
+        "masterChecksumAtVerification": "b1c7a51cc4aff9b33c4049ff58f607bed0cadc8aa420a95615273b7e03be6f1a",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
+      "displacementSource": {
+        "technique": "blurred-luminance-height-proxy-gradient",
+        "note": "Real per-pixel geometric displacement derived from this view's own photographed fold structure, shared across every color of the view. See tools/build-displacement-maps.mjs."
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9559,7 +10911,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/white/front.png",
       "proofPreviewChecksum": "aeb41fcc8cc2a701388a204922b73e8428d817ea44c150c36a3b389309fc2d96",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:39.879Z",
+        "masterChecksumAtVerification": "b9e2162d899dcd1f3c22ceb3fe933878e2d0ead7fe3d44e7d18e0f624107b039",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9626,7 +11000,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/white/back.png",
       "proofPreviewChecksum": "2d64640f434702e54a8782c3f75b5482e26dec8f5181dabe92412915b1b7c790",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:40.491Z",
+        "masterChecksumAtVerification": "48c7a9b3d21d06564a59092194066ab994aa8d55dc9dec02eddbb1f24b983de1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9760,7 +11156,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/black/front.png",
       "proofPreviewChecksum": "54d11d1a7cd41ebeeefa0a9c9a71d8015f96c0e00a4fcfacb56d3c17c9d13fef",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:40.862Z",
+        "masterChecksumAtVerification": "4500bb179ab61d8592e61bc0e59327eac12892d53c11fd214f0ba1ee58b175ee",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9827,7 +11245,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/black/back.png",
       "proofPreviewChecksum": "9c1580a25f22d72bfdc4307f58ed73a49fc328badb0fdc106d4ceddc93420fd2",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:41.209Z",
+        "masterChecksumAtVerification": "34591faa5bf85fe3d0e91ec1c8cf3ae9a5cef70a444d7c173ba85b0f2d2525fd",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9961,7 +11401,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/navy/front.png",
       "proofPreviewChecksum": "e399287e80f8f828c1725bb6aa91aa245592da9f56a0627738306f93001d9aea",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:41.665Z",
+        "masterChecksumAtVerification": "f8c68a5e277acca875fc3cb0560fde86bb10308b7c1ac1239b4fdbe9a2c951a5",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10028,7 +11490,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/navy/back.png",
       "proofPreviewChecksum": "8187c9ac61283bde82d25d494db21ba8707d6d2f4df4b1a91a8261170a5d1b52",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:42.048Z",
+        "masterChecksumAtVerification": "830015959e6a79a16452a898d42dbc01a25270fdfb8352e3aafb33053d17c9ad",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10162,7 +11646,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/red/front.png",
       "proofPreviewChecksum": "94ad6950677167720565e6e4d02ca99a98d9112665af99dd8504f0bca551a9d7",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:42.414Z",
+        "masterChecksumAtVerification": "35ed23618cb7ae40211c026a98b36dc1888fd84d1fcb467696f5295c4e6cdfd6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10229,7 +11735,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/red/back.png",
       "proofPreviewChecksum": "dc7f71368a5180c6fadce07aec9839825f867f77c9dc42ebe39bd0d40a6a9766",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:42.775Z",
+        "masterChecksumAtVerification": "74ee3d39ab8bdafcf18940a49913858e9b549ff1a870ee0bb03fb2be7adbe86e",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10363,7 +11891,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/green/front.png",
       "proofPreviewChecksum": "c3efc7b40b5d5e18ad48cf3aa4e406dedfcbebac5ce168d8b372cc839d5b88cf",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:43.178Z",
+        "masterChecksumAtVerification": "997142a631384b1a792cb0a6f3356bb5a0b25bb2f3428b1bc20f0e0acf3b2d4e",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10430,7 +11980,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/green/back.png",
       "proofPreviewChecksum": "0a7509f02f99b8f2e60dfd1293fe233cc2d97982cb44029ae3bc5af70c58fb50",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:43.582Z",
+        "masterChecksumAtVerification": "049692641f09da9e27f4808a742a3bfe2f5c439db5331c38d5107327f1b6e4cf",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10564,7 +12136,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/purple/front.png",
       "proofPreviewChecksum": "95a839a65936642f994bd79a6a58f1dde6eff48ca21be46722e2bef8ab5cf82b",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:44.011Z",
+        "masterChecksumAtVerification": "6118db06dfbba22c6dc467ab31d5112b83158a6b7cf61c7f5c10741d018b4c65",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10631,7 +12225,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/purple/back.png",
       "proofPreviewChecksum": "c1481bff635577504ce447f0962bbce3d9f495859d5a04c8f0693ce39bba2d7e",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:44.451Z",
+        "masterChecksumAtVerification": "32b19b487cdfd6da1cc3f901b43f71103ba143f31ee2174268f27ec4c7895a7a",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10765,7 +12381,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/sky-blue/front.png",
       "proofPreviewChecksum": "c64b9c4e0d228471a1070570784037e2424687c086fa00bcc46bbc49c675e5e1",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:44.886Z",
+        "masterChecksumAtVerification": "3cfac9c173f2583992a2c5ca292f29c9327fde1b805f8a58c8d524b60fe8aeb6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10832,7 +12470,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/sky-blue/back.png",
       "proofPreviewChecksum": "30f59f1dd63e05011c72035df5d4e70bedb2fc86ff413b7f2b05bcf4bfeedf0c",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:45.276Z",
+        "masterChecksumAtVerification": "2a41afff96db3cab270821d9d425e66d6a1d75c94642c4c6a8e168e93b3a1ad8",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10966,7 +12626,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/pink/front.png",
       "proofPreviewChecksum": "14ce9db387b10206f8fac3c9d39598542b56fb6f3d74aa42583ea2a7500f5fba",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:45.806Z",
+        "masterChecksumAtVerification": "78336f84e6fc748d589a9ccb89f874a8320192557ff8c4a1824093c0ba46ec0f",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11033,7 +12715,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/pink/back.png",
       "proofPreviewChecksum": "6d5aeebd12bd2adbb8358634bbf6f10742bc1b2f5001882aa29dda29e2c77eda",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:46.252Z",
+        "masterChecksumAtVerification": "a6a24987cb13faa7866c2f3c7dc83c6722fbbd1039f53f3bbea521a37621248c",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11167,7 +12871,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/maroon/front.png",
       "proofPreviewChecksum": "2d0e13c3c2af929a79b7c6978011d2dac90e36c556461a48b11cfea80f42433b",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:46.638Z",
+        "masterChecksumAtVerification": "9a6de63520564b2397a64cffd0e0696442a07afa625237fdc7f0b7572678aa81",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11234,7 +12960,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/maroon/back.png",
       "proofPreviewChecksum": "e75da6eecb2bc6f66f192a3b0c5c1391b77d8fac329fac47d4d8ce9f543eb042",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:47.011Z",
+        "masterChecksumAtVerification": "5b388c465ed92c714852073963537fe49c19e30674ba28bcaadf217fd98a14c2",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11368,7 +13116,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/orange/front.png",
       "proofPreviewChecksum": "2a12eefa724321bdce0bcc8ad3ff7531540db2d3e5bcafc3713f44be3524b0c2",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:47.420Z",
+        "masterChecksumAtVerification": "04b372dc92427ecec8c9242bcd7cef707f5ba203f074c574136579772b162928",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11435,7 +13205,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/orange/back.png",
       "proofPreviewChecksum": "d0164cb8eb76d219070becc1a780245d9d6c7a6e5ae4e22598a63c167aa729cd",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:47.866Z",
+        "masterChecksumAtVerification": "4a43d71cdba2adad64f0851c798246d582610728a8d03a893b03096df1038961",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11569,7 +13361,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/white/front.png",
       "proofPreviewChecksum": "8c677affed0f9e6d0fd8dcc535d5a6c74a9102fcc5d8754933de0cf9451fc976",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:48.577Z",
+        "masterChecksumAtVerification": "953d5bf2a4f839d16f99064186edfb82fcb3ccd059db9a800a34fc4ce6575903",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11636,7 +13450,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/white/back.png",
       "proofPreviewChecksum": "33a4fec13ec9664929f3494b9a1c62e1222583af59b332a33b320b9c2e2435e6",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:49.056Z",
+        "masterChecksumAtVerification": "01643272d31cda19fde7b5ce36e2c4cda47506f9e384b4fa01293d39cb5ef827",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11703,7 +13539,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/black/front.png",
       "proofPreviewChecksum": "f619bb92d6e45b92ff53089aa520275ddfd155b36ce74862e12d07d368db42de",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:49.529Z",
+        "masterChecksumAtVerification": "12693034a4569c3b080828206595ff4ff9c66ea18ba98f05f656d322052359b4",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11770,7 +13628,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/black/back.png",
       "proofPreviewChecksum": "07474de3582e8d53aa87464c9b413999577cc3d07156e389247077129ab91d57",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:49.922Z",
+        "masterChecksumAtVerification": "22f3c0bf80773bee70df24c0d44d8486fdc4cec81517f90e5dcffa9097af8131",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11837,7 +13717,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/navy/front.png",
       "proofPreviewChecksum": "c3ec402540f1a3f180458d8b890a6b78ea52a52404e49ee47a9136e23a6e4225",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:50.326Z",
+        "masterChecksumAtVerification": "ac2921d46703cf75f02c6d1b3791fe147ee95610d7ca2ae744531f9ebe1de31a",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11904,7 +13806,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/navy/back.png",
       "proofPreviewChecksum": "395a7cc63dac8bb4be2ac4632307e7fe88eb04bcc4e7c15a107acb21d3399b21",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:50.672Z",
+        "masterChecksumAtVerification": "bfc9fc3fa281a1a3d4e64961340cae125fa7dc4dd775894e338985169b8ef18f",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11971,7 +13895,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/maroon/front.png",
       "proofPreviewChecksum": "2691e9429e06a378b551bd86e7e4ee73aca12592faac8e1598d4a0f7f3ecb633",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:51.052Z",
+        "masterChecksumAtVerification": "c7cbb8107c8d157d612292ec96f8be2c6ec4e55fc22a8c661ed7143717256e31",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12038,7 +13984,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/maroon/back.png",
       "proofPreviewChecksum": "0a319011c049f043324aa3599d235c99ac4f0e5e188c12285bcd9cce9512c474",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:51.399Z",
+        "masterChecksumAtVerification": "a2ce74e341c9b83ea132fc52b70c832ba156d45ad5b97c7ca16df495d3e4b252",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12105,7 +14073,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/olive/front.png",
       "proofPreviewChecksum": "4a1b544b1e02e1c7bdcda7daded51c7529a41ec4bc29ec1d7b0d9d4c986a25c6",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:51.808Z",
+        "masterChecksumAtVerification": "04b50b29f772b37b36d029a00330f7a446181afedf902cfd9a0aac89dc47dff3",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12172,7 +14162,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/olive/back.png",
       "proofPreviewChecksum": "32f31ee2b4ac3458c4eb552687466152e0252d16be551e95ea1f5eaac15fc3e2",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:52.167Z",
+        "masterChecksumAtVerification": "e5b7ffc3de456f6237d380bf031abcf9484661584756f94062dff5d9f6585c24",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12239,7 +14251,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/red/front.png",
       "proofPreviewChecksum": "832e53f1656be6f28722e7e8df6b07d3ead025c961e556eae19fb6b7ac578ecb",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:52.614Z",
+        "masterChecksumAtVerification": "bd79d696cdd3c85bf91827b9f20957adce9a5fecb72ec446f08bd65ad60336d4",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12306,7 +14340,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/red/back.png",
       "proofPreviewChecksum": "9077891214de34c9da07b8fbfbea0ffcbca38783de8c6da625b4d6ad85f98f98",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:52.978Z",
+        "masterChecksumAtVerification": "3ff24131fa617ecb7436ae4ba7a1b9ef125786cfb90f9938c33c662d9668eb65",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12373,7 +14429,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/grey/front.png",
       "proofPreviewChecksum": "f586942f1854553955f45a9ce60e4a59b6a832ea8bf627a03575ef6ad2d5b130",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:53.492Z",
+        "masterChecksumAtVerification": "6b5239cf4787fc49c12c5464701eff73f3da74c3eba6031096dd8c99b992166c",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12440,7 +14518,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/grey/back.png",
       "proofPreviewChecksum": "55f64adc55fb637d7a531c6cb0a5ec75107ec46aeb0c9446893c21368e027309",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:53.893Z",
+        "masterChecksumAtVerification": "35212a17583dda2613ab600e19bece92fbd5a53c76d54d9b0742071d28b47d42",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12507,7 +14607,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/forest/front.png",
       "proofPreviewChecksum": "7eee60a694fdcd608cc9e9a3420f7e3c0086ec676b180050beb8c4196ab5d266",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:54.288Z",
+        "masterChecksumAtVerification": "d9433268ab7bf4ca24b5506313a0d036e221c69cce78e5194d30acfa6a7836b0",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12574,7 +14696,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/cap/forest/back.png",
       "proofPreviewChecksum": "19e75549e69035ce236d40d76eafa67a3726cff9ad9c98adca8a331168749a30",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:54.644Z",
+        "masterChecksumAtVerification": "0a7d8454dc25b9d1251fe1505c5775b77cb6654157ff3c72b6cbf14cdd1568df",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12641,7 +14785,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/waterbottle/white/front.png",
       "proofPreviewChecksum": "7b3e2cf8ab9906edbaf18d7d7b99191ff2e17559a2eed1ea7682bc29b47b0d2b",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:55.064Z",
+        "masterChecksumAtVerification": "f316ff6e28cd1423dd0fb125dbd829c8df7319cec445808dfe20a4acb5b076cc",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12708,7 +14874,29 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/waterbottle/white/back.png",
       "proofPreviewChecksum": "1eb907f9a89cf7b3920259ef01202ccdf0848977f5a398cfe38553f24a09419e",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:55.491Z",
+        "masterChecksumAtVerification": "4b10d1d33d07eecf929c7c8449ce11927f2defe884fb58d4a08e8a0963ae70fb",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      }
     }
   ]
 }

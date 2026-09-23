@@ -53,7 +53,7 @@
       "reviewStatus": "accepted",
       "verification": {
         "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
-        "verifiedAt": "2026-09-23T01:54:13.473Z",
+        "verifiedAt": "2026-09-23T02:59:16.130Z",
         "masterChecksumAtVerification": "4c93c43d163e176296e54067a60607d43450f2221b54c2390a32f1a0bc43ef5d",
         "checks": {
           "artworkLayerFound": true,
@@ -107,7 +107,7 @@
         "displacement": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/front-displacement.png",
           "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
-          "sourceLayerPrefix": "Pilot Displacement Map (shared per view, cross-color)"
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -158,7 +158,7 @@
       "reviewStatus": "accepted",
       "verification": {
         "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
-        "verifiedAt": "2026-09-23T01:54:13.937Z",
+        "verifiedAt": "2026-09-23T02:59:16.804Z",
         "masterChecksumAtVerification": "f9e26be4d9299480716899fce4ef2471f9197856f2933e24b831e6e80dbd5597",
         "checks": {
           "artworkLayerFound": true,
@@ -212,7 +212,7 @@
         "displacement": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/back-displacement.png",
           "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
-          "sourceLayerPrefix": "Pilot Displacement Map (shared per view, cross-color)"
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -497,7 +497,7 @@
       "reviewStatus": "accepted",
       "verification": {
         "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
-        "verifiedAt": "2026-09-23T01:54:14.329Z",
+        "verifiedAt": "2026-09-23T02:59:17.294Z",
         "masterChecksumAtVerification": "37ded67006f97fec5aaef4c50bb18a01a00cde75b9050b626fe2ed18031df404",
         "checks": {
           "artworkLayerFound": true,
@@ -551,7 +551,7 @@
         "displacement": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/front-displacement.png",
           "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
-          "sourceLayerPrefix": "Pilot Displacement Map (shared per view, cross-color)"
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -602,7 +602,7 @@
       "reviewStatus": "accepted",
       "verification": {
         "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
-        "verifiedAt": "2026-09-23T01:54:14.719Z",
+        "verifiedAt": "2026-09-23T02:59:17.670Z",
         "masterChecksumAtVerification": "d3b453a7629263474ee96c0aae0d947208d6be2bf1d4b2725d981a6e53f53499",
         "checks": {
           "artworkLayerFound": true,
@@ -656,7 +656,7 @@
         "displacement": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/back-displacement.png",
           "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
-          "sourceLayerPrefix": "Pilot Displacement Map (shared per view, cross-color)"
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -938,7 +938,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:18.049Z",
+        "masterChecksumAtVerification": "e58ca9d8240d190f9ef1d655ab5bc1c515ae3a1404bedb81af5bd23c8d656562",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/navy/front-studioBackground.png",
@@ -969,6 +991,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/navy/front-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/front-displacement.png",
+          "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -1016,7 +1043,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:18.424Z",
+        "masterChecksumAtVerification": "b24101cee255859460427f69b74b1c24c609e0a53370a78f11e82b6cc7cf91b7",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/navy/back-studioBackground.png",
@@ -1047,6 +1096,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/navy/back-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/back-displacement.png",
+          "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -1328,7 +1382,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:18.913Z",
+        "masterChecksumAtVerification": "ad7367bad200fa272140f7de713a43c512fc4340df1d4b2f2720ba4b31ee3134",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/maroon/front-studioBackground.png",
@@ -1359,6 +1435,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/maroon/front-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/front-displacement.png",
+          "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -1406,7 +1487,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:19.277Z",
+        "masterChecksumAtVerification": "5dc17be51b5f1d327862c72a04ffd4e5f6734c95aa31bbe182c646f960b3a6d6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/maroon/back-studioBackground.png",
@@ -1437,6 +1540,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/maroon/back-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/back-displacement.png",
+          "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -1718,7 +1826,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:19.748Z",
+        "masterChecksumAtVerification": "47fb8daaceca81050577a88799c7da065c82ca5a3ad95ab38624512bb5c29690",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/olive/front-studioBackground.png",
@@ -1749,6 +1879,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/olive/front-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/front-displacement.png",
+          "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -1796,7 +1931,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:20.429Z",
+        "masterChecksumAtVerification": "0918907799fd949b36033bc06eafd711b31c21c879f46cc3f0f1b98f67750ee1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/olive/back-studioBackground.png",
@@ -1827,6 +1984,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/olive/back-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/back-displacement.png",
+          "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -2108,7 +2270,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:20.882Z",
+        "masterChecksumAtVerification": "646ea7acc6decebca9edfbff8050341f07f776a77b881e86b960dd2d452614ea",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/sky-blue/front-studioBackground.png",
@@ -2139,6 +2323,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/sky-blue/front-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/front-displacement.png",
+          "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -2186,7 +2375,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:21.354Z",
+        "masterChecksumAtVerification": "20da2ff3a0b7fdc717f2a24c87bb88d1903bf245bc284df9f192cf5a7ce74279",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/sky-blue/back-studioBackground.png",
@@ -2217,6 +2428,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/sky-blue/back-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/back-displacement.png",
+          "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -2498,7 +2714,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:21.870Z",
+        "masterChecksumAtVerification": "ce7ff4a260e489feaa69117431e22bee3285f352f61041ad029143471cf595d3",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/grey/front-studioBackground.png",
@@ -2529,6 +2767,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/grey/front-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/front-displacement.png",
+          "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -2576,7 +2819,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:22.320Z",
+        "masterChecksumAtVerification": "fee058d91389afa8b4342e61d48ca7498bfe59e13abd0a99dca72deafcdd35c6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/grey/back-studioBackground.png",
@@ -2607,6 +2872,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/grey/back-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/back-displacement.png",
+          "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -2888,7 +3158,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:23.029Z",
+        "masterChecksumAtVerification": "ed868c287acbece9ad84fdd9c994cb3dfe47d2b5dd0aef018b764252d34c5bfa",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/red/front-studioBackground.png",
@@ -2919,6 +3211,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/red/front-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/front-displacement.png",
+          "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -2966,7 +3263,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:23.420Z",
+        "masterChecksumAtVerification": "08d3be08bcc24647ed288867dc5ca8d79fafa4bc8f9c4520cda326b087c57071",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/red/back-studioBackground.png",
@@ -2997,6 +3316,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/red/back-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/tshirt/_shared/back-displacement.png",
+          "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -3278,7 +3602,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:23.854Z",
+        "masterChecksumAtVerification": "f49469b616b585c7339ec8afef83907ed18f65a592a1f76a18c645a2300f6818",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/white/front-studioBackground.png",
@@ -3309,6 +3655,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/white/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -3356,7 +3707,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:24.293Z",
+        "masterChecksumAtVerification": "8d3e0dcbe16435fc0ee6d73279e7e0038e485a8c9a92542dd76c8efca5a06e87",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/white/back-studioBackground.png",
@@ -3387,6 +3760,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/white/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -3668,7 +4046,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:24.652Z",
+        "masterChecksumAtVerification": "aa5e7df2eccaf8657e3727add57863627c239524e648b6bc20752ce216eae1e8",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/black/front-studioBackground.png",
@@ -3699,6 +4099,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/black/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -3746,7 +4151,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:25.031Z",
+        "masterChecksumAtVerification": "9311174b9d06da8c5b2347da7905b860ed23f2dbb62dc033ef6721f57f92c13b",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/black/back-studioBackground.png",
@@ -3777,6 +4204,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/black/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -4058,7 +4490,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:25.373Z",
+        "masterChecksumAtVerification": "2fd6f9b010250ec6d078bdde8bc1815a9dcfbd06c853091ed3b0e463e0f9728c",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/charcoal/front-studioBackground.png",
@@ -4089,6 +4543,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/charcoal/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -4136,7 +4595,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:25.722Z",
+        "masterChecksumAtVerification": "bd7dcc9deeb1058ae1426b55dff3151d335aab44bf75ce78eaadd2b1d48c4d65",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/charcoal/back-studioBackground.png",
@@ -4167,6 +4648,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/charcoal/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -4448,7 +4934,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:26.291Z",
+        "masterChecksumAtVerification": "ad9b3b1508d29d7d42b16c1852233ca13561e8e6b6386d8cbc9241274f3508c1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/heather-grey/front-studioBackground.png",
@@ -4479,6 +4987,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/heather-grey/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -4526,7 +5039,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:26.744Z",
+        "masterChecksumAtVerification": "425bb245012cbad836d077c406cd56e7a50d728accf37a96c4393ba92dceded9",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/heather-grey/back-studioBackground.png",
@@ -4557,6 +5092,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/heather-grey/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -4838,7 +5378,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:27.090Z",
+        "masterChecksumAtVerification": "3d84482420907817dfdd4affb73e89eec1982436f0c407cec8befaa60fa4dea5",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/navy/front-studioBackground.png",
@@ -4869,6 +5431,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/navy/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -4916,7 +5483,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:27.444Z",
+        "masterChecksumAtVerification": "a8d5fabbf9f79836896a5db3f38ddc0de816ac227057dc0117d5d48f6cd976d5",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/navy/back-studioBackground.png",
@@ -4947,6 +5536,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/navy/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -5228,7 +5822,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:27.804Z",
+        "masterChecksumAtVerification": "a795a0f4adb2a1129b79afaef884da1d2654480dd226b536fba7b54568e5729d",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/royal-blue/front-studioBackground.png",
@@ -5259,6 +5875,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/royal-blue/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -5306,7 +5927,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:28.183Z",
+        "masterChecksumAtVerification": "4133d9891b177cccc6216a28a3b988e22fd6d6ec857bea7c517e2572d0389e41",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/royal-blue/back-studioBackground.png",
@@ -5337,6 +5980,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/royal-blue/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -5618,7 +6266,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:28.549Z",
+        "masterChecksumAtVerification": "68bfb745c265e1239d3de333555054b7b183146bf37c378b3f42191c2395e7d1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/forest-green/front-studioBackground.png",
@@ -5649,6 +6319,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/forest-green/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -5696,7 +6371,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:28.915Z",
+        "masterChecksumAtVerification": "d6617c9f34e8746afc59946f53b99f225975f31b9084fea2936d0910b06b9d50",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/forest-green/back-studioBackground.png",
@@ -5727,6 +6424,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/forest-green/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -6008,7 +6710,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:29.270Z",
+        "masterChecksumAtVerification": "516f8decee6b72cd4c78413c4b16378f8f756c979cd907a9440a9ed70366bbf2",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/burgundy/front-studioBackground.png",
@@ -6039,6 +6763,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/burgundy/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -6086,7 +6815,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:29.732Z",
+        "masterChecksumAtVerification": "ff424a3400b5280dd09bc557667d30034ba1a9577e75baf3f61d8a9b28ee000c",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/burgundy/back-studioBackground.png",
@@ -6117,6 +6868,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/burgundy/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -6398,7 +7154,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:30.104Z",
+        "masterChecksumAtVerification": "dbcbb85f5f3d3c984249b98b0bb28cd0f9add7d5623ebbc4ec3a0f81826546a3",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/red/front-studioBackground.png",
@@ -6429,6 +7207,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/red/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -6476,7 +7259,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:30.463Z",
+        "masterChecksumAtVerification": "4846b504ca1c11e9105b00358f47559b3a0eebecf0ff555cd1490bd62583c842",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/red/back-studioBackground.png",
@@ -6507,6 +7312,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/red/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -6788,7 +7598,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:30.951Z",
+        "masterChecksumAtVerification": "7e85331288942df2751d7b48919dfbc27f8906338e68e3b4d4930e6a4b06f08f",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/sand/front-studioBackground.png",
@@ -6819,6 +7651,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/sand/front-print-mask.png",
           "sha256": "b8619e05c10b2fb203e9a0eec46e0704ad7e1ddaa9c30709946484cd641794fa",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/front-displacement.png",
+          "sha256": "d933aa4ecdf6785b49415bdae432c5af93dbae499bab62f328d8821993f34fb0",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -6866,7 +7703,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:31.349Z",
+        "masterChecksumAtVerification": "be40f6e1942e2cf6866122407d1b83e8910cafba8092b1e5d6894f944a8a08ed",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/sand/back-studioBackground.png",
@@ -6897,6 +7756,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/sand/back-print-mask.png",
           "sha256": "4fa516fedba260e855cc526349cc7363531369a4ce7877077a738a01bf3f68a0",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/longsleeve/_shared/back-displacement.png",
+          "sha256": "cfe760396fd7e785c8e4535fac71d062664fa5e6a878cdae3fd4c1ccafcc807a",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -7178,7 +8042,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:31.793Z",
+        "masterChecksumAtVerification": "8911ec144dba3480ad6783bce07ac851062b365edf9e56a556aea80b63718dd9",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/white/front-studioBackground.png",
@@ -7209,6 +8095,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/white/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -7256,7 +8147,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:32.195Z",
+        "masterChecksumAtVerification": "9c3f85b2f2653c3be01525af905bda9a70d8ebd08c2f325b7d6b5f1656c551b6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/white/back-studioBackground.png",
@@ -7287,6 +8200,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/white/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -7568,7 +8486,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:32.553Z",
+        "masterChecksumAtVerification": "1d65c2fa8aabf9811c65d623bb626262fad28d51afae036448f2fd7a37563abb",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/black/front-studioBackground.png",
@@ -7599,6 +8539,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/black/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -7646,7 +8591,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:32.884Z",
+        "masterChecksumAtVerification": "852c276c784d01fbe3d72bfe05741f74a03283b9edd8ad80dea872b1ff023db1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/black/back-studioBackground.png",
@@ -7677,6 +8644,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/black/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -7958,7 +8930,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:33.244Z",
+        "masterChecksumAtVerification": "ddad58ac7668c513108dc533131013a559ee630519539980a19bea9d91947649",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/charcoal/front-studioBackground.png",
@@ -7989,6 +8983,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/charcoal/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -8036,7 +9035,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:33.670Z",
+        "masterChecksumAtVerification": "d4ad1c7fae19756df7607a6bd2dfffcb16e45d01c6eb55355945ba5f4805450b",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/charcoal/back-studioBackground.png",
@@ -8067,6 +9088,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/charcoal/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -8348,7 +9374,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:34.077Z",
+        "masterChecksumAtVerification": "3cbf088c15431c0354172f29dddadaf8e27e1645cc7fd031de03e6457e5c1312",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/heather-grey/front-studioBackground.png",
@@ -8379,6 +9427,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/heather-grey/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -8426,7 +9479,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:34.478Z",
+        "masterChecksumAtVerification": "2e5be276b6903c1b5c65f9d234fc72985a8dcff682d149cc60d8f4137f47aeb6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/heather-grey/back-studioBackground.png",
@@ -8457,6 +9532,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/heather-grey/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -8738,7 +9818,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:34.900Z",
+        "masterChecksumAtVerification": "05937d91d164e9d689da14be4f716d437a6e8774261a1d0eba3c6f192d464e4b",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/navy/front-studioBackground.png",
@@ -8769,6 +9871,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/navy/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -8816,7 +9923,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:35.257Z",
+        "masterChecksumAtVerification": "6dca93247a7c5c4f2d5998407af8394029991ae492fb39c7c2b03f4fe21089d4",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/navy/back-studioBackground.png",
@@ -8847,6 +9976,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/navy/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -9128,7 +10262,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:35.636Z",
+        "masterChecksumAtVerification": "9a701d0844b78b03d7955fd5fe25a7b65b2da63d69b5554e30d1ede577f6c331",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/royal-blue/front-studioBackground.png",
@@ -9159,6 +10315,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/royal-blue/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -9206,7 +10367,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:36.064Z",
+        "masterChecksumAtVerification": "505f7b285f1e803d2af9eb01dc12beeaddb06561bf335cc265942223ad740c80",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/royal-blue/back-studioBackground.png",
@@ -9237,6 +10420,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/royal-blue/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -9518,7 +10706,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:36.426Z",
+        "masterChecksumAtVerification": "32730639799bc0ab8e27106f6a0f3592b9c4c45c73ec3c1586cc5305aab2cdae",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/forest-green/front-studioBackground.png",
@@ -9549,6 +10759,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/forest-green/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -9596,7 +10811,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:36.814Z",
+        "masterChecksumAtVerification": "66977ec8dd0b01e883beee1e10018e4f6a3ae0716e2e80f5ecaf8481e345ede6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/forest-green/back-studioBackground.png",
@@ -9627,6 +10864,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/forest-green/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -9908,7 +11150,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:37.259Z",
+        "masterChecksumAtVerification": "465d038b2f5f3dd2787960da44adf3026f4ffa8abad5eb7d3b5525af52527564",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/burgundy/front-studioBackground.png",
@@ -9939,6 +11203,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/burgundy/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -9986,7 +11255,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:37.676Z",
+        "masterChecksumAtVerification": "82794b8fe1b027f77870d882c8d70444d73b0fad4ef550fc4ad4080f20ab0b63",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/burgundy/back-studioBackground.png",
@@ -10017,6 +11308,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/burgundy/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -10298,7 +11594,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:38.045Z",
+        "masterChecksumAtVerification": "5b51ae87029f503af5780aaa82350cbd850001a01a63681bfc8ebe5711fd13d3",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/red/front-studioBackground.png",
@@ -10329,6 +11647,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/red/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -10376,7 +11699,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:38.540Z",
+        "masterChecksumAtVerification": "48fd9f71a98581b7977e9db3cfd23c6ebc821f5f28793e20990e90dc89374687",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/red/back-studioBackground.png",
@@ -10407,6 +11752,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/red/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -10688,7 +12038,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:38.957Z",
+        "masterChecksumAtVerification": "4d610c75a7917682d07beb744c7c774190555c3aed22eac6baef71796c2456ee",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/sand/front-studioBackground.png",
@@ -10719,6 +12091,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/sand/front-print-mask.png",
           "sha256": "b501dd944257e5077ae7a18f3c7e5110451b6b2e872890c778584c8cce70b919",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/front-displacement.png",
+          "sha256": "b75d406731d96e9170855d2bb0a6269946b62bc7302025d021b4d10fedb96029",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -10766,7 +12143,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:39.349Z",
+        "masterChecksumAtVerification": "b1c7a51cc4aff9b33c4049ff58f607bed0cadc8aa420a95615273b7e03be6f1a",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/sand/back-studioBackground.png",
@@ -10797,6 +12196,11 @@
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/sand/back-print-mask.png",
           "sha256": "dac3d4025ecaa0ae4ed7a172be36a2a25fa8b0f13900458bd6ec6747dc93d806",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/hoodie/_shared/back-displacement.png",
+          "sha256": "bfa976ebe66bff5ac535e41c6f1360d044361cb9ee8fdc750fec151a48878926",
+          "sourceLayerPrefix": "Displacement Map (shared per family+view, cross-color)"
         }
       },
       "blendModes": {
@@ -11078,7 +12482,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:39.879Z",
+        "masterChecksumAtVerification": "b9e2162d899dcd1f3c22ceb3fe933878e2d0ead7fe3d44e7d18e0f624107b039",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/white/front-studioBackground.png",
@@ -11156,7 +12582,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:40.491Z",
+        "masterChecksumAtVerification": "48c7a9b3d21d06564a59092194066ab994aa8d55dc9dec02eddbb1f24b983de1",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/white/back-studioBackground.png",
@@ -11312,7 +12760,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:40.862Z",
+        "masterChecksumAtVerification": "4500bb179ab61d8592e61bc0e59327eac12892d53c11fd214f0ba1ee58b175ee",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/black/front-studioBackground.png",
@@ -11390,7 +12860,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:41.209Z",
+        "masterChecksumAtVerification": "34591faa5bf85fe3d0e91ec1c8cf3ae9a5cef70a444d7c173ba85b0f2d2525fd",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/black/back-studioBackground.png",
@@ -11546,7 +13038,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:41.665Z",
+        "masterChecksumAtVerification": "f8c68a5e277acca875fc3cb0560fde86bb10308b7c1ac1239b4fdbe9a2c951a5",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/navy/front-studioBackground.png",
@@ -11624,7 +13138,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:42.048Z",
+        "masterChecksumAtVerification": "830015959e6a79a16452a898d42dbc01a25270fdfb8352e3aafb33053d17c9ad",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/navy/back-studioBackground.png",
@@ -11780,7 +13316,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:42.414Z",
+        "masterChecksumAtVerification": "35ed23618cb7ae40211c026a98b36dc1888fd84d1fcb467696f5295c4e6cdfd6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/red/front-studioBackground.png",
@@ -11858,7 +13416,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:42.775Z",
+        "masterChecksumAtVerification": "74ee3d39ab8bdafcf18940a49913858e9b549ff1a870ee0bb03fb2be7adbe86e",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/red/back-studioBackground.png",
@@ -12014,7 +13594,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:43.178Z",
+        "masterChecksumAtVerification": "997142a631384b1a792cb0a6f3356bb5a0b25bb2f3428b1bc20f0e0acf3b2d4e",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/green/front-studioBackground.png",
@@ -12092,7 +13694,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:43.582Z",
+        "masterChecksumAtVerification": "049692641f09da9e27f4808a742a3bfe2f5c439db5331c38d5107327f1b6e4cf",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/green/back-studioBackground.png",
@@ -12248,7 +13872,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:44.011Z",
+        "masterChecksumAtVerification": "6118db06dfbba22c6dc467ab31d5112b83158a6b7cf61c7f5c10741d018b4c65",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/purple/front-studioBackground.png",
@@ -12326,7 +13972,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:44.451Z",
+        "masterChecksumAtVerification": "32b19b487cdfd6da1cc3f901b43f71103ba143f31ee2174268f27ec4c7895a7a",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/purple/back-studioBackground.png",
@@ -12482,7 +14150,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:44.886Z",
+        "masterChecksumAtVerification": "3cfac9c173f2583992a2c5ca292f29c9327fde1b805f8a58c8d524b60fe8aeb6",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/sky-blue/front-studioBackground.png",
@@ -12560,7 +14250,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:45.276Z",
+        "masterChecksumAtVerification": "2a41afff96db3cab270821d9d425e66d6a1d75c94642c4c6a8e168e93b3a1ad8",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/sky-blue/back-studioBackground.png",
@@ -12716,7 +14428,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:45.806Z",
+        "masterChecksumAtVerification": "78336f84e6fc748d589a9ccb89f874a8320192557ff8c4a1824093c0ba46ec0f",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/pink/front-studioBackground.png",
@@ -12794,7 +14528,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:46.252Z",
+        "masterChecksumAtVerification": "a6a24987cb13faa7866c2f3c7dc83c6722fbbd1039f53f3bbea521a37621248c",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/pink/back-studioBackground.png",
@@ -12950,7 +14706,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:46.638Z",
+        "masterChecksumAtVerification": "9a6de63520564b2397a64cffd0e0696442a07afa625237fdc7f0b7572678aa81",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/maroon/front-studioBackground.png",
@@ -13028,7 +14806,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:47.011Z",
+        "masterChecksumAtVerification": "5b388c465ed92c714852073963537fe49c19e30674ba28bcaadf217fd98a14c2",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/maroon/back-studioBackground.png",
@@ -13184,7 +14984,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:47.420Z",
+        "masterChecksumAtVerification": "04b372dc92427ecec8c9242bcd7cef707f5ba203f074c574136579772b162928",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/orange/front-studioBackground.png",
@@ -13262,7 +15084,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:47.866Z",
+        "masterChecksumAtVerification": "4a43d71cdba2adad64f0851c798246d582610728a8d03a893b03096df1038961",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/mug/orange/back-studioBackground.png",
@@ -13418,7 +15262,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:48.577Z",
+        "masterChecksumAtVerification": "953d5bf2a4f839d16f99064186edfb82fcb3ccd059db9a800a34fc4ce6575903",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/white/front-studioBackground.png",
@@ -13496,7 +15362,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:49.056Z",
+        "masterChecksumAtVerification": "01643272d31cda19fde7b5ce36e2c4cda47506f9e384b4fa01293d39cb5ef827",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/white/back-studioBackground.png",
@@ -13574,7 +15462,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:49.529Z",
+        "masterChecksumAtVerification": "12693034a4569c3b080828206595ff4ff9c66ea18ba98f05f656d322052359b4",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/black/front-studioBackground.png",
@@ -13652,7 +15562,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:49.922Z",
+        "masterChecksumAtVerification": "22f3c0bf80773bee70df24c0d44d8486fdc4cec81517f90e5dcffa9097af8131",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/black/back-studioBackground.png",
@@ -13730,7 +15662,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:50.326Z",
+        "masterChecksumAtVerification": "ac2921d46703cf75f02c6d1b3791fe147ee95610d7ca2ae744531f9ebe1de31a",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/navy/front-studioBackground.png",
@@ -13808,7 +15762,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:50.672Z",
+        "masterChecksumAtVerification": "bfc9fc3fa281a1a3d4e64961340cae125fa7dc4dd775894e338985169b8ef18f",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/navy/back-studioBackground.png",
@@ -13886,7 +15862,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:51.052Z",
+        "masterChecksumAtVerification": "c7cbb8107c8d157d612292ec96f8be2c6ec4e55fc22a8c661ed7143717256e31",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/maroon/front-studioBackground.png",
@@ -13964,7 +15962,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:51.399Z",
+        "masterChecksumAtVerification": "a2ce74e341c9b83ea132fc52b70c832ba156d45ad5b97c7ca16df495d3e4b252",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/maroon/back-studioBackground.png",
@@ -14042,7 +16062,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:51.808Z",
+        "masterChecksumAtVerification": "04b50b29f772b37b36d029a00330f7a446181afedf902cfd9a0aac89dc47dff3",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/olive/front-studioBackground.png",
@@ -14120,7 +16162,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:52.167Z",
+        "masterChecksumAtVerification": "e5b7ffc3de456f6237d380bf031abcf9484661584756f94062dff5d9f6585c24",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/olive/back-studioBackground.png",
@@ -14198,7 +16262,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:52.614Z",
+        "masterChecksumAtVerification": "bd79d696cdd3c85bf91827b9f20957adce9a5fecb72ec446f08bd65ad60336d4",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/red/front-studioBackground.png",
@@ -14276,7 +16362,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:52.978Z",
+        "masterChecksumAtVerification": "3ff24131fa617ecb7436ae4ba7a1b9ef125786cfb90f9938c33c662d9668eb65",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/red/back-studioBackground.png",
@@ -14354,7 +16462,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:53.492Z",
+        "masterChecksumAtVerification": "6b5239cf4787fc49c12c5464701eff73f3da74c3eba6031096dd8c99b992166c",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/grey/front-studioBackground.png",
@@ -14432,7 +16562,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:53.893Z",
+        "masterChecksumAtVerification": "35212a17583dda2613ab600e19bece92fbd5a53c76d54d9b0742071d28b47d42",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/grey/back-studioBackground.png",
@@ -14510,7 +16662,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:54.288Z",
+        "masterChecksumAtVerification": "d9433268ab7bf4ca24b5506313a0d036e221c69cce78e5194d30acfa6a7836b0",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/forest/front-studioBackground.png",
@@ -14588,7 +16762,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:54.644Z",
+        "masterChecksumAtVerification": "0a7d8454dc25b9d1251fe1505c5775b77cb6654157ff3c72b6cbf14cdd1568df",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/forest/back-studioBackground.png",
@@ -14666,7 +16862,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:55.064Z",
+        "masterChecksumAtVerification": "f316ff6e28cd1423dd0fb125dbd829c8df7319cec445808dfe20a4acb5b076cc",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/waterbottle/white/front-studioBackground.png",
@@ -14744,7 +16962,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T02:59:55.491Z",
+        "masterChecksumAtVerification": "4b10d1d33d07eecf929c7c8449ce11927f2defe884fb58d4a08e8a0963ae70fb",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/waterbottle/white/back-studioBackground.png",
