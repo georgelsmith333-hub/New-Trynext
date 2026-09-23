@@ -10,6 +10,11 @@ export interface SmartMockupRuntimeRoles {
   protected: string;
   highlight: string;
   printMask: string;
+  /** Pilot-only: a two-channel (R=dx, G=dy, 128=zero) geometric displacement
+   *  field derived from the surface's own photographed fold structure. Only
+   *  present for surfaces that have passed real displacement verification;
+   *  every other surface omits this field and renders exactly as before. */
+  displacement?: string;
 }
 
 export interface SmartObjectPrintZone {

@@ -51,13 +51,27 @@ export function getSmartV10SurfaceKey(
   return `${category}:${colorSlug}:${face}`;
 }
 
+/**
+ * Pilot scope: exactly the surfaces that have real displacement-map
+ * generation plus passing Smart Object round-trip verification behind them
+ * (tools/build-displacement-maps.mjs, tools/verify-smartobject-roundtrip.mjs,
+ * and the "accepted" rows in dist-mockups/staging/smart-v10-v3/manifest.json).
+ * Kept as an explicit allowlist rather than "does the file exist" so this
+ * list only ever grows through a deliberate, evidenced decision — matching
+ * PILOT_DISPLACEMENT_SURFACES in tools/build-smartobject-runtime-roles.mjs.
+ */
+const DISPLACEMENT_PILOT_SURFACES = new Set([
+  "tshirt:white:front", "tshirt:white:back",
+  "tshirt:black:front", "tshirt:black:back",
+]);
+
 export function getSmartV10RuntimeRoles(
   category: SmartMockupCategory,
   colorSlug: string,
   face: SmartMockupFace,
 ): SmartMockupRuntimeRoles {
   const prefix = `${SMART_V10_RUNTIME_ROOT}/${category}/${colorSlug}/${face}`;
-  return {
+  const roles: SmartMockupRuntimeRoles = {
     studioBackground: `${prefix}-studioBackground.png`,
     base: `${prefix}-base.png`,
     shadow: `${prefix}-shadow.png`,
@@ -65,4 +79,8 @@ export function getSmartV10RuntimeRoles(
     highlight: `${prefix}-highlight.png`,
     printMask: `${prefix}-print-mask.png`,
   };
+  if (DISPLACEMENT_PILOT_SURFACES.has(`${category}:${colorSlug}:${face}`)) {
+    roles.displacement = `${SMART_V10_RUNTIME_ROOT}/${category}/_shared/${face}-displacement.png`;
+  }
+  return roles;
 }

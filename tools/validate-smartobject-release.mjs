@@ -90,7 +90,27 @@ for (const row of manifest.surfaces ?? []) {
   }
   if (runtime.masterChecksum !== row.masterChecksum) errors.push(`${key}: runtime role points at a different master checksum`);
   const roleEntries = Object.entries(runtime.roles ?? {});
-  if (roleEntries.length !== 6) errors.push(`${key}: expected six runtime roles, found ${roleEntries.length}`);
+  // Six required roles, plus an optional pilot-only "displacement" role
+  // (tools/build-displacement-maps.mjs) on the handful of surfaces that
+  // have earned it. Anything else is a real count mismatch.
+  const roleNames = new Set(roleEntries.map(([role]) => role));
+  const hasSixRequired = ["studioBackground", "base", "shadow", "protected", "highlight", "printMask"]
+    .every((role) => roleNames.has(role));
+  const extras = [...roleNames].filter((role) => role !== "displacement" && !hasSixRequired);
+  if (!hasSixRequired || (roleEntries.length !== 6 && roleEntries.length !== 7) || extras.length) {
+    errors.push(`${key}: expected six required runtime roles plus an optional displacement role, found ${roleEntries.length} (${[...roleNames].join(",")})`);
+  }
+  // A surface can only claim "accepted" when real verification evidence
+  // backs it — never from a bare status edit. See
+  // tools/verify-smartobject-roundtrip.mjs.
+  if (row.reviewStatus === "accepted") {
+    const checks = row.verification?.checks;
+    const hasEvidence = !!checks && Object.keys(checks).length > 0 && Object.values(checks).every(Boolean);
+    if (!hasEvidence) errors.push(`${key}: reviewStatus is "accepted" but has no passing verification evidence`);
+    if (row.verification?.masterChecksumAtVerification !== row.masterChecksum) {
+      errors.push(`${key}: verification evidence was recorded against a different master checksum`);
+    }
+  }
   for (const [role, asset] of roleEntries) {
     const rolePath = path.resolve(repo, asset.path);
     if (!existsSync(rolePath)) {
@@ -129,7 +149,11 @@ const output = {
   structuralAudit: path.relative(repo, auditPath),
   surfaces: manifest.surfaces.map((row) => ({
     ...row,
-    reviewStatus: approveVisual ? "verified" : "structurally-verified",
+    // A surface individually verified with real evidence (row.verification)
+    // keeps its "accepted" status. Never let a whole-release visual pass
+    // downgrade evidence-backed status, and never let it upgrade an
+    // unverified surface past what --approve-visual actually establishes.
+    reviewStatus: row.reviewStatus === "accepted" ? "accepted" : (approveVisual ? "verified" : "structurally-verified"),
   })),
 };
 writeFileSync(releasePath, `${JSON.stringify(output, null, 2)}\n`);

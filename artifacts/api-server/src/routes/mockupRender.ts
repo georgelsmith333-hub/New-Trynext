@@ -2,11 +2,17 @@ import { Router, type Request, type Response } from "express";
 import { createHash } from "node:crypto";
 import sharp, { type OverlayOptions } from "sharp";
 import {
+  OPTIONAL_RUNTIME_ROLES,
   REQUIRED_RUNTIME_ROLES,
   validateRenderSurfaceManifest,
+  type OptionalRuntimeRole,
   type RuntimeRole,
   type SmartMockupIngestionManifest,
 } from "../lib/mockupContract";
+
+/** Matches the browser compositor's own bound (composer.ts
+ *  DISPLACEMENT_MAX_OFFSET_PX_AT_1024) so server and browser renders agree. */
+const DISPLACEMENT_MAX_OFFSET_PX_AT_1024 = 10;
 
 const router = Router();
 const MAX_INPUT_BYTES = 12 * 1024 * 1024;
@@ -35,12 +41,12 @@ function numberInRange(value: unknown, min: number, max: number, fallback: numbe
 function ensureRoleImages(
   value: unknown,
   surface: SmartMockupIngestionManifest,
-): Record<RuntimeRole, Buffer> {
+): Record<RuntimeRole, Buffer> & Partial<Record<OptionalRuntimeRole, Buffer>> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     throw new Error("runtime_role_images_required");
   }
   const input = value as Record<string, unknown>;
-  const result = {} as Record<RuntimeRole, Buffer>;
+  const result = {} as Record<RuntimeRole, Buffer> & Partial<Record<OptionalRuntimeRole, Buffer>>;
   for (const role of REQUIRED_RUNTIME_ROLES) {
     const buffer = decodeImage(input[role]);
     if (sha256(buffer) !== surface.runtimeRoles[role].sha256.toLowerCase()) {
@@ -48,7 +54,58 @@ function ensureRoleImages(
     }
     result[role] = buffer;
   }
+  for (const role of OPTIONAL_RUNTIME_ROLES) {
+    const expected = surface.runtimeRoles[role];
+    if (!expected) continue;
+    const buffer = decodeImage(input[role]);
+    if (sha256(buffer) !== expected.sha256.toLowerCase()) {
+      throw new Error(`runtime_role_checksum_mismatch:${role}`);
+    }
+    result[role] = buffer;
+  }
   return result;
+}
+
+/**
+ * Real per-pixel geometric displacement (the Photoshop "Displace" filter
+ * mechanic), applied server-side against a raw RGBA buffer so it matches the
+ * browser compositor's applyDisplacementMap pixel-for-pixel. `artworkFull` is
+ * the masked artwork already placed at its final position on a
+ * canvas-sized transparent buffer; `displacementPng` is the two-channel
+ * (R=dx, G=dy, 128=zero) map for this surface's view.
+ */
+async function applyServerDisplacement(
+  artworkFull: Buffer,
+  displacementPng: Buffer,
+  canvasW: number,
+  canvasH: number,
+): Promise<Buffer> {
+  const [art, disp] = await Promise.all([
+    sharp(artworkFull).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
+    sharp(displacementPng).resize(canvasW, canvasH, { fit: "fill" }).ensureAlpha().raw().toBuffer({ resolveWithObject: true }),
+  ]);
+  const src = art.data;
+  const d = disp.data;
+  const out = Buffer.alloc(canvasW * canvasH * 4);
+  const maxOffset = (DISPLACEMENT_MAX_OFFSET_PX_AT_1024 / 1024) * Math.max(canvasW, canvasH);
+
+  for (let y = 0; y < canvasH; y++) {
+    for (let x = 0; x < canvasW; x++) {
+      const oi = (y * canvasW + x) * 4;
+      const di = (y * canvasW + x) * 4;
+      const dx = Math.round(((d[di] - 128) / 128) * maxOffset);
+      const dy = Math.round(((d[di + 1] - 128) / 128) * maxOffset);
+      const sxp = x + dx;
+      const syp = y + dy;
+      if (sxp < 0 || sxp >= canvasW || syp < 0 || syp >= canvasH) continue;
+      const si = (syp * canvasW + sxp) * 4;
+      out[oi] = src[si];
+      out[oi + 1] = src[si + 1];
+      out[oi + 2] = src[si + 2];
+      out[oi + 3] = src[si + 3];
+    }
+  }
+  return sharp(out, { raw: { width: canvasW, height: canvasH, channels: 4 } }).png().toBuffer();
 }
 
 async function applyOpacity(image: Buffer, opacity: number): Promise<Buffer> {
@@ -122,6 +179,24 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
       .png()
       .toBuffer();
 
+    // Pilot surfaces only: warp the placed artwork to follow the garment's
+    // real photographed fold structure, matching the browser compositor's
+    // applyDisplacementMap. Surfaces without a displacement role place the
+    // artwork exactly as before.
+    let artworkComposite: OverlayOptions;
+    if (roles.displacement) {
+      const placedOnCanvas = await sharp({
+        create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+      })
+        .composite([{ input: maskedArtwork, left, top }])
+        .png()
+        .toBuffer();
+      const displaced = await applyServerDisplacement(placedOnCanvas, roles.displacement, canvasW, canvasH);
+      artworkComposite = { input: displaced, left: 0, top: 0 };
+    } else {
+      artworkComposite = { input: maskedArtwork, left, top };
+    }
+
     const background = await sharp(roles.studioBackground)
       .resize(canvasW, canvasH, { fit: "fill" })
       .ensureAlpha()
@@ -129,7 +204,7 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
       .toBuffer();
     const composites: OverlayOptions[] = [
       { input: roles.base, left: 0, top: 0 },
-      { input: maskedArtwork, left, top },
+      artworkComposite,
       { input: await sharp(roles.shadow).resize(canvasW, canvasH, { fit: "fill" }).ensureAlpha().png().toBuffer(), left: 0, top: 0, blend: "multiply" },
       { input: await sharp(roles.highlight).resize(canvasW, canvasH, { fit: "fill" }).ensureAlpha().png().toBuffer(), left: 0, top: 0, blend: "screen" },
       { input: await sharp(roles.protected).resize(canvasW, canvasH, { fit: "fill" }).ensureAlpha().png().toBuffer(), left: 0, top: 0 },

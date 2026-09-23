@@ -7,6 +7,7 @@ import {
 } from "./composer";
 
 type RuntimeRole = "studioBackground" | "base" | "shadow" | "protected" | "highlight" | "printMask";
+type OptionalRuntimeRole = "displacement";
 
 type ReleaseSurface = {
   surfaceKey: string;
@@ -26,7 +27,8 @@ type ReleaseSurface = {
   };
   normalizedFrame: { canvasWidth: number; canvasHeight: number; x: number; y: number; w: number; h: number };
   printZone: { x: number; y: number; w: number; h: number };
-  roles: Record<RuntimeRole, { path: string; sha256: string; sourceLayerPrefix: string }>;
+  roles: Record<RuntimeRole, { path: string; sha256: string; sourceLayerPrefix: string }>
+    & Partial<Record<OptionalRuntimeRole, { path: string; sha256: string; sourceLayerPrefix: string }>>;
 };
 
 type ReleaseManifest = {
@@ -50,7 +52,8 @@ type ServerSurfaceManifest = {
     smartObjectLayer: string;
     geometry: { canvasWidth: number; canvasHeight: number; x: number; y: number; w: number; h: number };
   };
-  runtimeRoles: Record<RuntimeRole, { path: string; sha256: string; sourceLayerPrefix: string }>;
+  runtimeRoles: Record<RuntimeRole, { path: string; sha256: string; sourceLayerPrefix: string }>
+    & Partial<Record<OptionalRuntimeRole, { path: string; sha256: string; sourceLayerPrefix: string }>>;
   printZone: { x: number; y: number; w: number; h: number };
   blendModes: { shadow: "multiply"; highlight: "screen"; protected: "source-over" };
 };
@@ -73,6 +76,19 @@ function toRoleUrl(surface: ReleaseSurface, role: RuntimeRole): string {
   const fileName = surface.roles[role]?.path.split("/").pop();
   if (!fileName) throw new Error(`The approved ${role} role is missing for ${surface.surfaceKey}.`);
   return `${RUNTIME_ROOT}/${surface.family}/${surface.color}/${fileName}`;
+}
+
+/** The displacement role is shared across every color of a view, so it
+ *  lives at `<family>/_shared/<file>` rather than `<family>/<color>/<file>`.
+ *  Derive the URL from its own stored path instead of assuming the
+ *  per-color layout the other roles use. */
+function toOptionalRoleUrl(surface: ReleaseSurface, role: OptionalRuntimeRole): string | null {
+  const storedPath = surface.roles[role]?.path;
+  if (!storedPath) return null;
+  const marker = "runtime-roles/";
+  const index = storedPath.indexOf(marker);
+  if (index < 0) return null;
+  return `${RUNTIME_ROOT}/${storedPath.slice(index + marker.length)}`;
 }
 
 function basename(path: string): string {
@@ -120,7 +136,7 @@ async function getReleaseManifest(): Promise<ReleaseManifest> {
   return releaseManifestPromise;
 }
 
-async function getServerSurface(surface: ServerRenderableSurface): Promise<{ manifest: ServerSurfaceManifest; roleImages: Record<RuntimeRole, string>; release: ReleaseSurface }> {
+async function getServerSurface(surface: ServerRenderableSurface): Promise<{ manifest: ServerSurfaceManifest; roleImages: Record<RuntimeRole, string> & Partial<Record<OptionalRuntimeRole, string>>; release: ReleaseSurface }> {
   if (surface.runtimeStatus !== "approved" || surface.contractErrors.length > 0) {
     throw new Error(surface.disabledReason ?? `Mockup surface ${surface.sourceKitKey} is not approved for server rendering.`);
   }
@@ -136,6 +152,14 @@ async function getServerSurface(surface: ServerRenderableSurface): Promise<{ man
       sourceLayerPrefix: release.roles[role].sourceLayerPrefix,
     },
   ])) as ServerSurfaceManifest["runtimeRoles"];
+  const displacementUrl = toOptionalRoleUrl(release, "displacement");
+  if (displacementUrl && release.roles.displacement) {
+    runtimeRoles.displacement = {
+      path: displacementUrl,
+      sha256: release.roles.displacement.sha256,
+      sourceLayerPrefix: release.roles.displacement.sourceLayerPrefix,
+    };
+  }
   const manifest: ServerSurfaceManifest = {
     schema: "trynext-smart-mockup-ingestion/v1",
     releaseVersion: "smart-v10.3",
@@ -171,6 +195,14 @@ async function getServerSurface(surface: ServerRenderableSurface): Promise<{ man
     }
     return [role, await request] as const;
   }))) as Record<RuntimeRole, string>;
+  if (displacementUrl) {
+    let request = roleDataUrlCache.get(displacementUrl);
+    if (!request) {
+      request = fetchDataUrl(displacementUrl);
+      roleDataUrlCache.set(displacementUrl, request);
+    }
+    (roleImages as Record<RuntimeRole, string> & Partial<Record<OptionalRuntimeRole, string>>).displacement = await request;
+  }
   return { manifest, roleImages, release };
 }
 

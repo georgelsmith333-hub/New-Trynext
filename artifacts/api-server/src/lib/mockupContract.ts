@@ -12,6 +12,15 @@ export const REQUIRED_RUNTIME_ROLES = [
 
 export type RuntimeRole = (typeof REQUIRED_RUNTIME_ROLES)[number];
 
+/**
+ * Pilot-only geometric displacement role. Optional and additive: surfaces
+ * without it validate and render exactly as before. Only present once a
+ * surface has passed real displacement-map generation and verification
+ * (see tools/build-displacement-maps.mjs, tools/verify-smartobject-roundtrip.mjs).
+ */
+export const OPTIONAL_RUNTIME_ROLES = ["displacement"] as const;
+export type OptionalRuntimeRole = (typeof OPTIONAL_RUNTIME_ROLES)[number];
+
 type SurfaceCategory = "tshirt" | "longsleeve" | "hoodie" | "mug" | "cap" | "waterbottle";
 type SurfaceFace = "front" | "back" | "left-sleeve" | "right-sleeve" | "neck-label" | "wrap";
 
@@ -66,7 +75,7 @@ export type SmartMockupIngestionManifest = {
       h: number;
     };
   };
-  runtimeRoles: Record<RuntimeRole, RuntimeRoleAsset>;
+  runtimeRoles: Record<RuntimeRole, RuntimeRoleAsset> & Partial<Record<OptionalRuntimeRole, RuntimeRoleAsset>>;
   printZone: { x: number; y: number; w: number; h: number };
   blendModes: {
     shadow: "multiply";
@@ -113,10 +122,21 @@ function parseSurfaceKey(value: unknown): { category: SurfaceCategory; color: st
   return { category: typedCategory, color, face: face as SurfaceFace };
 }
 
-function expectedRolePath(sourceKitKey: string, role: RuntimeRole): string {
+function expectedRolePath(sourceKitKey: string, role: RuntimeRole | OptionalRuntimeRole): string {
   const [category, color, face] = sourceKitKey.split("/");
   const fileRole = role === "printMask" ? "print-mask" : role;
   return `/mockups/psd-master-v10/runtime-roles/${category}/${color}/${face}-${fileRole}.png`;
+}
+
+/**
+ * The displacement role is shared across every color of a given view (one
+ * garment shape, many tints), so it lives outside the per-color role
+ * directory. Reject anything else so a manifest can't smuggle in an
+ * unrelated path under the displacement key.
+ */
+function expectedDisplacementPath(sourceKitKey: string): string {
+  const [category, , face] = sourceKitKey.split("/");
+  return `/mockups/psd-master-v10/runtime-roles/${category}/_shared/${face}-displacement.png`;
 }
 
 function validateGeometry(
@@ -218,6 +238,21 @@ export function validateSmartMockupIngestionManifest(
       }
       if (asset.path !== expectedRolePath(input.sourceKitKey as string, role)) {
         errors.push(`runtimeRoles.${role}.path is not the approved v10.3 path`);
+      }
+      if (!isSha256(asset.sha256)) errors.push(`runtimeRoles.${role}.sha256 must be a SHA-256 checksum`);
+      if (typeof asset.sourceLayerPrefix !== "string" || !asset.sourceLayerPrefix.trim()) {
+        errors.push(`runtimeRoles.${role}.sourceLayerPrefix is required`);
+      }
+    }
+    for (const role of OPTIONAL_RUNTIME_ROLES) {
+      const asset = roles[role];
+      if (asset === undefined) continue;
+      if (!isRecord(asset)) {
+        errors.push(`runtimeRoles.${role} is present but malformed`);
+        continue;
+      }
+      if (asset.path !== expectedDisplacementPath(input.sourceKitKey as string)) {
+        errors.push(`runtimeRoles.${role}.path is not the approved shared displacement path`);
       }
       if (!isSha256(asset.sha256)) errors.push(`runtimeRoles.${role}.sha256 must be a SHA-256 checksum`);
       if (typeof asset.sourceLayerPrefix !== "string" || !asset.sourceLayerPrefix.trim()) {

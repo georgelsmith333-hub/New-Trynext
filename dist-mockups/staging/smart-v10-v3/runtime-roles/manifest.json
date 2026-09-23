@@ -50,7 +50,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T01:54:13.473Z",
+        "masterChecksumAtVerification": "4c93c43d163e176296e54067a60607d43450f2221b54c2390a32f1a0bc43ef5d",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/white/front-studioBackground.png",
@@ -81,6 +103,11 @@
           "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/white/front-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/_shared/front-displacement.png",
+          "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
+          "sourceLayerPrefix": "Pilot Displacement Map (shared per view, cross-color)"
         }
       },
       "blendModes": {
@@ -128,7 +155,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T01:54:13.937Z",
+        "masterChecksumAtVerification": "f9e26be4d9299480716899fce4ef2471f9197856f2933e24b831e6e80dbd5597",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/white/back-studioBackground.png",
@@ -159,6 +208,11 @@
           "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/white/back-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/_shared/back-displacement.png",
+          "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
+          "sourceLayerPrefix": "Pilot Displacement Map (shared per view, cross-color)"
         }
       },
       "blendModes": {
@@ -440,7 +494,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T01:54:14.329Z",
+        "masterChecksumAtVerification": "37ded67006f97fec5aaef4c50bb18a01a00cde75b9050b626fe2ed18031df404",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/black/front-studioBackground.png",
@@ -471,6 +547,11 @@
           "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/black/front-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/_shared/front-displacement.png",
+          "sha256": "efc06c913c6fcaa9e1c0f6d4d0e9dbb36914f36133ebf6b108ddd94d08906f46",
+          "sourceLayerPrefix": "Pilot Displacement Map (shared per view, cross-color)"
         }
       },
       "blendModes": {
@@ -518,7 +599,29 @@
         ],
         "proofDesign": "embedded-linked-file"
       },
-      "reviewStatus": "candidate",
+      "reviewStatus": "accepted",
+      "verification": {
+        "method": "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)",
+        "verifiedAt": "2026-09-23T01:54:14.719Z",
+        "masterChecksumAtVerification": "d3b453a7629263474ee96c0aae0d947208d6be2bf1d4b2725d981a6e53f53499",
+        "checks": {
+          "artworkLayerFound": true,
+          "linkedFileFound": true,
+          "baseLayerFound": true,
+          "unrelatedLayersFound": true,
+          "reserialized": true,
+          "linkedContentPersisted": true,
+          "linkedContentActuallyChanged": true,
+          "transformPreserved": true,
+          "placedLayerIdPreserved": true,
+          "shadowLayerUnchanged": true,
+          "protectedLayerUnchanged": true,
+          "highlightLayerUnchanged": true,
+          "compositeUnchangedOutsideZone": true,
+          "compositeReflectsNewArtwork": true,
+          "originalFileUntouchedOnDisk": true
+        }
+      },
       "roles": {
         "studioBackground": {
           "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/black/back-studioBackground.png",
@@ -549,6 +652,11 @@
           "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/black/back-print-mask.png",
           "sha256": "d0fd3f7c3a10411db30abd5e30d36288f65086a968854f36102396c80afab01b",
           "sourceLayerPrefix": "60 Print Zone Mask"
+        },
+        "displacement": {
+          "path": "dist-mockups/staging/smart-v10-v3/runtime-roles/tshirt/_shared/back-displacement.png",
+          "sha256": "efd909ed9260685c3db000e1e44872c7d84abf53ac98c45ba633fe179e2a280d",
+          "sourceLayerPrefix": "Pilot Displacement Map (shared per view, cross-color)"
         }
       },
       "blendModes": {

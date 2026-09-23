@@ -9,6 +9,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, readdirSync, rmSync
 import path from "node:path";
 import crypto from "node:crypto";
 import { CANONICAL, pngBytes, protectedDetails, readPng, shadowMap, highlightMap, solid } from "./build-smartobject-mockups.mjs";
+import { generateDisplacementMaps } from "./build-displacement-maps.mjs";
 import { PNG } from "pngjs";
 
 const REPO = path.resolve(import.meta.dirname, "..");
@@ -70,6 +71,36 @@ if (stagingManifest.surfaceCount !== 188 || stagingManifest.surfaces?.length !==
 
 removeFiles(roleRoot);
 mkdirSync(roleRoot, { recursive: true });
+
+// Shared, cross-color pilot displacement maps (see build-displacement-maps.mjs).
+// Generated inline here, after the wipe above, so it never depends on
+// script run order or gets deleted by a later rebuild.
+const displacementMaps = await generateDisplacementMaps(stagingRoot);
+const displacementByView = new Map(displacementMaps.map((entry) => [entry.view, entry]));
+
+// Pilot scope: exactly the 4 surfaces approved for this round (white/black
+// front/back) get the displacement role, even though the map is geometry-
+// only and would be valid for every color of these views. Scaling to the
+// remaining 6 colors is a separate, explicit decision — not something this
+// build script should do on its own by finding the file and attaching it
+// everywhere it would technically work.
+const PILOT_DISPLACEMENT_SURFACES = new Set([
+  "tshirt/white/front", "tshirt/white/back",
+  "tshirt/black/front", "tshirt/black/back",
+]);
+
+function displacementRoleFor(row) {
+  if (!PILOT_DISPLACEMENT_SURFACES.has(`${row.family}/${row.color}/${row.view}`)) return null;
+  const entry = displacementByView.get(row.view);
+  if (!entry) return null;
+  const bytes = readFileSync(path.resolve(REPO, entry.path));
+  return {
+    path: entry.path,
+    sha256: sha256(bytes),
+    sourceLayerPrefix: "Pilot Displacement Map (shared per view, cross-color)",
+  };
+}
+
 const runtimeSurfaces = [];
 
 for (const row of stagingManifest.surfaces) {
@@ -98,6 +129,8 @@ for (const row of stagingManifest.surfaces) {
   if (!hasVisibleAlpha(manifestRoles.protected.path)) {
     throw new Error(`${row.family}/${row.color}/${row.view}: protected role is empty`);
   }
+  const displacement = displacementRoleFor(row);
+  if (displacement) manifestRoles.displacement = displacement;
   runtimeSurfaces.push({
     surfaceKey: `${row.family}/${row.color}/${row.view}`,
     family: row.family,
@@ -111,6 +144,7 @@ for (const row of stagingManifest.surfaces) {
     masterFormat: row.masterFormat,
     smartObject: row.smartObject,
     reviewStatus: row.reviewStatus,
+    ...(row.verification ? { verification: row.verification } : {}),
     roles: manifestRoles,
     blendModes: { shadow: "multiply", highlight: "screen", protected: "source-over" },
   });
@@ -152,6 +186,15 @@ if (publicRoot) {
       const filename = `${row.view}-${role === "printMask" ? "print-mask" : role}.png`;
       writeFileSync(path.join(targetDir, filename), readFileSync(path.join(sourceDir, filename)));
       row.roles[role].path = path.relative(REPO, path.join(publicRoleRoot, row.family, row.color, filename));
+    }
+    if (row.roles.displacement) {
+      // Shared per-view file, not per-color: lives at <family>/_shared/.
+      const filename = `${row.view}-displacement.png`;
+      const sharedSourceDir = path.join(roleRoot, row.family, "_shared");
+      const sharedTargetDir = path.join(publicRoleRoot, row.family, "_shared");
+      mkdirSync(sharedTargetDir, { recursive: true });
+      writeFileSync(path.join(sharedTargetDir, filename), readFileSync(path.join(sharedSourceDir, filename)));
+      row.roles.displacement.path = path.relative(REPO, path.join(sharedTargetDir, filename));
     }
   }
   const publicManifest = { ...runtimeManifest, runtimeRoot: path.relative(REPO, publicRoleRoot), surfaces: runtimeSurfaces };

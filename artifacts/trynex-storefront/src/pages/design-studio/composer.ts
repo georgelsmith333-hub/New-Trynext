@@ -550,6 +550,56 @@ export async function composeLayers(opts: ComposeOptions): Promise<HTMLCanvasEle
   return canvas;
 }
 
+/** Displacement strength: how many output-canvas pixels a fully-saturated
+ *  map channel (0 or 255) represents. Matches the generator's own bound
+ *  (tools/build-displacement-maps.mjs MAX_DISPLACEMENT_PX) at the 1024px
+ *  canvas the maps were authored at; scaled here for other output sizes. */
+const DISPLACEMENT_MAX_OFFSET_PX_AT_1024 = 10;
+
+/** Warp an isolated (transparent-background) artwork canvas in place using a
+ *  two-channel displacement map: R encodes horizontal offset, G vertical,
+ *  128 = zero. This is a real per-pixel geometric remap — the Photoshop
+ *  "Displace" filter mechanic — not a shading overlay. Alpha-aware: pixels
+ *  that would sample outside the canvas, or from fully-transparent source
+ *  pixels, come out transparent rather than smeared. */
+function applyDisplacementMap(
+  canvas: HTMLCanvasElement,
+  displacement: HTMLImageElement,
+  outSize: number,
+) {
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return;
+
+  const dispCanvas = document.createElement("canvas");
+  dispCanvas.width = outSize;
+  dispCanvas.height = outSize;
+  const dctx = dispCanvas.getContext("2d", { willReadFrequently: true });
+  if (!dctx) return;
+  dctx.drawImage(displacement, 0, 0, outSize, outSize);
+  const disp = dctx.getImageData(0, 0, outSize, outSize).data;
+
+  const src = ctx.getImageData(0, 0, outSize, outSize);
+  const out = ctx.createImageData(outSize, outSize);
+  const maxOffset = (DISPLACEMENT_MAX_OFFSET_PX_AT_1024 / 1024) * outSize;
+
+  for (let y = 0; y < outSize; y++) {
+    for (let x = 0; x < outSize; x++) {
+      const i = (y * outSize + x) * 4;
+      const dx = Math.round(((disp[i] - 128) / 128) * maxOffset);
+      const dy = Math.round(((disp[i + 1] - 128) / 128) * maxOffset);
+      const sxp = x + dx;
+      const syp = y + dy;
+      if (sxp < 0 || sxp >= outSize || syp < 0 || syp >= outSize) continue;
+      const si = (syp * outSize + sxp) * 4;
+      out.data[i] = src.data[si];
+      out.data[i + 1] = src.data[si + 1];
+      out.data[i + 2] = src.data[si + 2];
+      out.data[i + 3] = src.data[si + 3];
+    }
+  }
+  ctx.putImageData(out, 0, 0);
+}
+
 async function drawRuntimeRoles(opts: {
   ctx: CanvasRenderingContext2D;
   runtimeRoles: SmartMockupRuntimeRoles;
@@ -692,22 +742,57 @@ export async function composeGarmentMockup(opts: {
   const gg = parseInt(garmentColor?.slice(3, 5) ?? "ff", 16);
   const gb = parseInt(garmentColor?.slice(5, 7) ?? "ff", 16);
   const glum = (0.299 * gr + 0.587 * gg + 0.114 * gb) / 255;
-  await composeLayers({
-    canvas,
-    baseHeight: 1000,
-    printZone,
-    layers,
-    garmentColor: null,
-    outW: outSize,
-    outH: outSize,
-    imageCache,
-    clipToPrintZone: true,
-    blendMode: "source-over",
-    textBlendMode: glum > 0.92 ? "multiply" : "source-over",
-    curvature,
-    fabricTexture,
-    clearCanvas: false,
-  });
+  const hasVisibleLayers = layers.some((layer) => layer.visible);
+
+  if (runtimeRoles?.displacement && hasVisibleLayers) {
+    // Pilot surfaces only: render the artwork in isolation (transparent
+    // background) so displacement can warp exactly its own pixels without
+    // disturbing the garment photo beneath it, then composite the warped
+    // result onto the main canvas. Every surface without a displacement
+    // role skips this branch entirely and keeps today's flat placement.
+    const artworkCanvas = document.createElement("canvas");
+    artworkCanvas.width = outSize;
+    artworkCanvas.height = outSize;
+    await composeLayers({
+      canvas: artworkCanvas,
+      baseHeight: 1000,
+      printZone,
+      layers,
+      garmentColor: null,
+      outW: outSize,
+      outH: outSize,
+      imageCache,
+      clipToPrintZone: true,
+      blendMode: "source-over",
+      textBlendMode: glum > 0.92 ? "multiply" : "source-over",
+      curvature,
+      fabricTexture: false,
+      clearCanvas: true,
+    });
+    const displacementImg = await loadImage(runtimeRoles.displacement, imageCache);
+    applyDisplacementMap(artworkCanvas, displacementImg, outSize);
+    ctx.save();
+    ctx.globalCompositeOperation = "source-over";
+    ctx.drawImage(artworkCanvas, 0, 0);
+    ctx.restore();
+  } else {
+    await composeLayers({
+      canvas,
+      baseHeight: 1000,
+      printZone,
+      layers,
+      garmentColor: null,
+      outW: outSize,
+      outH: outSize,
+      imageCache,
+      clipToPrintZone: true,
+      blendMode: "source-over",
+      textBlendMode: glum > 0.92 ? "multiply" : "source-over",
+      curvature,
+      fabricTexture,
+      clearCanvas: false,
+    });
+  }
 
   if (runtimeRoles && layers.some((layer) => layer.visible)) {
     await drawRuntimeRoles({
