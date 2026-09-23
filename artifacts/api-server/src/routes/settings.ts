@@ -298,12 +298,30 @@ router.get(["/settings", "/settings/public"], async (req, res) => {
   }
 });
 
-/** Public endpoint — Get single setting by key */
-router.get("/settings/:key", async (req, res) => {
+// Credentials and hashes that other modules store in this same table. They
+// must never be returned by the raw single-key reader, even to an admin
+// session: an admin-side XSS could otherwise exfiltrate them through it.
+const NEVER_READABLE_SETTING_KEYS = new Set([
+  "removeBgApiKey",
+  "metaCapiToken",
+  "github_token",
+  "render_deploy_hook",
+  "cloudflare_pages_hook",
+  "adminResetKeyHash",
+]);
+
+/**
+ * Admin-only: raw single setting by key. This reads any row in the table
+ * (unlike the public /settings endpoint, which only returns the fields
+ * buildSettings() explicitly maps), so it was a public read of whatever
+ * the Deployment page, admin reset flow, etc. had stored — including a
+ * plaintext GitHub token. Its only callers are admin pages that already
+ * send the admin Authorization header.
+ */
+router.get("/settings/:key", requireAdmin, async (req, res) => {
   try {
-    const { key } = req.params;
-    // Don't expose secrets via this endpoint
-    if (key === "removeBgApiKey" || key === "metaCapiToken") {
+    const key = req.params.key as string;
+    if (NEVER_READABLE_SETTING_KEYS.has(key)) {
       res.status(403).json({ error: "forbidden", message: "Cannot access secret keys" });
       return;
     }

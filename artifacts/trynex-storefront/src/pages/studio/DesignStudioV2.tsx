@@ -154,6 +154,7 @@ function SmartObjectStatusCard({ surface }: { surface: MockupResolution }) {
     ["printMask", "Print mask"],
   ];
   const roleCount = runtimeRoles ? roleLabels.filter(([role]) => Boolean(runtimeRoles[role])).length : 0;
+  const hasDisplacement = Boolean(runtimeRoles?.displacement);
   const sourceState = surface.smartObject.masterStatus === "verified" ? "source linked" : "metadata only";
   return (
     <section
@@ -175,14 +176,15 @@ function SmartObjectStatusCard({ surface }: { surface: MockupResolution }) {
           {surface.manifestRevision}
         </span>
       </div>
-      <div className="mt-1.5 hidden grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-gray-600 sm:mt-2 sm:grid sm:grid-cols-4">
+      <div className="mt-1.5 hidden grid-cols-2 gap-x-3 gap-y-1 text-[10px] text-gray-600 sm:mt-2 sm:grid sm:grid-cols-5">
          <span><strong className="text-gray-900">Source:</strong> {surface.sourceKitKey}</span>
          <span><strong className="text-gray-900">Master:</strong> {sourceState}</span>
         <span><strong className="text-gray-900">Roles:</strong> {roleCount}/6 ready</span>
          <span><strong className="text-gray-900">Print zone:</strong> protected</span>
+         <span><strong className="text-gray-900">Displacement:</strong> {hasDisplacement ? "active" : "—"}</span>
       </div>
        <p className="mt-1.5 text-[10px] font-semibold text-emerald-800 sm:hidden">
-         {roleCount}/6 runtime roles ready · protected print zone
+         {roleCount}/6 runtime roles ready · protected print zone{hasDisplacement ? " · displacement active" : ""}
        </p>
        <div className="mt-2 hidden flex-wrap gap-1 sm:flex" aria-label="Runtime role health">
          {roleLabels.map(([role, label]) => {
@@ -210,11 +212,37 @@ function SmartObjectStatusCard({ surface }: { surface: MockupResolution }) {
   );
 }
 
+// The status card above is an internal verification aid (PSD/runtime-role
+// jargon). Customers only need to know when a surface can't be designed on,
+// in plain language; admins testing in the same tab, or anyone opening the
+// studio with ?studioDebug, still get the full diagnostic card.
+function isStudioDiagnosticsEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    if (new URLSearchParams(window.location.search).has("studioDebug")) return true;
+    return Boolean(sessionStorage.getItem("trynext_admin_token"));
+  } catch {
+    return false;
+  }
+}
+
+function StudioSurfaceNotice({ surface }: { surface: MockupResolution }) {
+  const approved = surface.runtimeStatus === "approved" && surface.contractErrors.length === 0;
+  if (approved) return null;
+  return (
+    <div role="alert" className="rounded-2xl border border-amber-300 bg-amber-50 px-3.5 py-3 text-amber-900">
+      <p className="text-sm font-bold">This side isn't available for custom printing in this color yet.</p>
+      <p className="mt-0.5 text-xs text-amber-800">Please choose another color or print side to continue designing.</p>
+    </div>
+  );
+}
+
 export default function DesignStudioV2() {
   const [, navigate] = useLocation();
   const { addToCart } = useCartActions();
   const settings = useSiteSettings();
   const { toast } = useToast();
+  const [showStudioDiagnostics] = useState(isStudioDiagnosticsEnabled);
   const [psdTshirtStageRequested] = useState(() => {
     if (!import.meta.env.DEV) return false;
     const request = new URLSearchParams(window.location.search).get("psdTshirtStage");
@@ -1302,7 +1330,9 @@ export default function DesignStudioV2() {
             ]}
             onFocusCanvas={() => containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
           />
-          <SmartObjectStatusCard surface={activeMockup} />
+          {showStudioDiagnostics
+            ? <SmartObjectStatusCard surface={activeMockup} />
+            : <StudioSurfaceNotice surface={activeMockup} />}
           <StudioQualityBanner
             issues={qualityIssues}
             onShowPrintZone={() => {

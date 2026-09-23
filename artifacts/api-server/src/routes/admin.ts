@@ -700,7 +700,20 @@ router.get("/admin/customers", requireAdmin, async (req, res) => {
     // customer key) instead of this in-memory Map — same response shape,
     // no frontend change needed, and a separate piece of work from the
     // response contract change that would be needed to also paginate it.
-    const allOrders = await db.select().from(ordersTable).orderBy(desc(ordersTable.createdAt));
+    // Only the columns the aggregation reads: skipping `items` matters,
+    // since Design Studio orders carry their full design payload there.
+    const allOrders = await db.select({
+      customerName: ordersTable.customerName,
+      customerEmail: ordersTable.customerEmail,
+      customerPhone: ordersTable.customerPhone,
+      shippingDistrict: ordersTable.shippingDistrict,
+      shippingCity: ordersTable.shippingCity,
+      shippingAddress: ordersTable.shippingAddress,
+      paymentMethod: ordersTable.paymentMethod,
+      status: ordersTable.status,
+      total: ordersTable.total,
+      createdAt: ordersTable.createdAt,
+    }).from(ordersTable).orderBy(desc(ordersTable.createdAt));
 
     const customerMap = new Map<string, {
       name: string;

@@ -39,10 +39,8 @@ export function ViewerCount({ productId, className = "" }: ViewerCountProps) {
           setCount(data.count ?? null);
         }
       } catch {
-        if (count === null) {
-          const seed = pid;
-          setCount(Math.max(2, Math.min(3 + (seed % 8), 11)));
-        }
+        // Never show an invented number as live social proof.
+        setCount(null);
       }
     };
 
@@ -51,7 +49,8 @@ export function ViewerCount({ productId, className = "" }: ViewerCountProps) {
     return () => clearInterval(id);
   }, [productId]);
 
-  if (count === null) return null;
+  // A count of 1 is just the current visitor — not meaningful to show them.
+  if (count === null || count < 2) return null;
 
   return (
     <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${className}`}>
