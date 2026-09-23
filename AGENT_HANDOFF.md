@@ -1925,3 +1925,48 @@ Verification: storefront test suite 69/69 pass, API test suite 36/36 pass,
   displacement is real, visible, and fully contained to the 4 approved
   surfaces with zero effect elsewhere.
 ```
+
+## Checkpoint: confirmed live Cloudflare/GitHub wiring (2026-09-23)
+
+```text
+Status: complete — repo/deploy identity confirmed from the actual dashboard,
+  not inferred from file contents
+Last completed: Resolved real confusion about which repo is live. This
+  workspace also contains a completely separate, unrelated-history repo
+  (georgelsmith333-hub/trynext-lifestyle, last pushed 2026-09-16) with an
+  identical wrangler.toml/render.yaml (because it's the origin this repo was
+  copied from). That similarity briefly led to a wrong inference that
+  trynext-lifestyle might be the real deployed repo. The project owner
+  checked the actual Cloudflare dashboard and confirmed ground truth:
+  - Live Cloudflare Pages project: "trynext-shop-new"
+  - Domains attached: trynext.shop, www.trynext.shop, trynext-shop-new.pages.dev
+  - Source repo: georgelsmith333-hub/New-Trynext, branch main (confirmed
+    correct — this IS the repo this session has been working in all along)
+  - Production + preview auto-deploy: enabled, watched paths: *
+  - Two other older Cloudflare projects exist (trynext-shop, trynext-lifestyle)
+    pointed at the old trynext-lifestyle repo, but neither serves the
+    trynext.shop custom domain — only *.pages.dev subdomains. They are not
+    live production and should not be worked on.
+  - The last recorded deployment on trynext-shop-new (9b80fa5a, commit
+    35fc583) was triggered "ad_hoc" (manual), not "github:push" — meaning
+    the GitHub source binding had been freshly repaired/reconnected but had
+    not yet been proven by an actual push-triggered auto-deploy. This
+    commit is intentionally being pushed to produce that first
+    post-reconnection github:push-triggered deployment.
+Stopped at: This commit is the test push. Whether it actually triggers and
+  succeeds on Cloudflare needs to be confirmed from the dashboard (deployment
+  trigger should read "github:push" instead of "ad_hoc"), since this
+  workspace cannot reach the Cloudflare dashboard or trynext.shop directly.
+Files/areas changed: AGENT_HANDOFF.md only (this note).
+Remaining work: Confirm the Cloudflare Pages deployment log shows a new
+  github:push-triggered build for this commit and that it succeeds; confirm
+  Render's connected repo/branch the same way (dashboard-verified, not
+  inferred) since only Cloudflare was checked this round.
+Blocker: None for this note. Confirming the deploy fired needs dashboard
+  access this workspace doesn't have.
+Next safe action: After the project owner confirms the deploy fired and
+  succeeded, resume the mockup pilot scaling work (or whatever is next) with
+  confidence pushes are actually reaching the live site.
+Verification: Repo/branch/domain binding confirmed directly from the
+  Cloudflare dashboard by the project owner, not inferred.
+```
