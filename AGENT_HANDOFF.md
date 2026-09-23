@@ -1792,3 +1792,36 @@ Verification: Full workspace typecheck, both test suites (105 tests total),
   pushed to main — not re-verified after merging, but verified on the merge
   result itself before pushing.
 ```
+
+## Checkpoint: mobile .gitignore fix + main sync (2026-09-23, follow-up)
+
+```text
+Status: complete
+Last completed: Fixed a stop-hook-flagged untracked-files issue: running
+  `expo export --platform web` earlier in the mobile app audit left
+  artifacts/trynext-mobile/.expo/web/ untracked (not covered by any existing
+  .gitignore). Added `.expo/` to artifacts/trynext-mobile/.gitignore
+  (alongside the existing expo-cli-generated expo-env.d.ts entry), confirmed
+  via `git status --short` that the tree is clean, committed
+  (2b6b3ff), and pushed to origin/claude/ecom-customization-itpg9o. Then
+  fast-forwarded and pushed origin/main to the same commit (main was one
+  commit behind, at 50fe50a), consistent with the standing "push everything
+  live" instruction from earlier this session.
+Stopped at: main and claude/ecom-customization-itpg9o both at commit
+  2b6b3ff. No source/runtime code changed — .gitignore only.
+Files/areas changed: artifacts/trynext-mobile/.gitignore (added `.expo/`).
+Remaining work: None for this housekeeping item. Broader open items are
+  unchanged from the prior checkpoint above: confirming the live Cloudflare
+  Pages deploy picked up the latest commit, and the mockup system's deeper
+  rebuild scoping (docs/MOCKUP_DEEP_AUDIT_AND_IMPLEMENTATION_PLAN_2026-09-23.md)
+  remains not started, pending proper scoping.
+Blocker: None.
+Next safe action: Ask the user what's actually bothering them in day-to-day
+  use of the live site (a specific page/flow) to prioritize next, since the
+  broad audit asks have all been addressed at the scale this workspace can
+  verify; alternatively scope and start the mockup rebuild plan if that's the
+  priority.
+Verification: `git status --short` clean on both branches after push; push
+  output confirmed both refs updated (50fe50a..2b6b3ff on the feature branch,
+  50fe50a..2b6b3ff on main).
+```
