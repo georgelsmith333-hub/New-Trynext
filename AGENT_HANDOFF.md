@@ -1825,3 +1825,103 @@ Verification: `git status --short` clean on both branches after push; push
   output confirmed both refs updated (50fe50a..2b6b3ff on the feature branch,
   50fe50a..2b6b3ff on main).
 ```
+
+## Checkpoint: T-shirt displacement pilot — first real slice (2026-09-23)
+
+Per AGENTS.md's "Active approved workstream — six-family PSD/PSB Smart
+Mockups" section: this is the first genuinely verified slice of that
+rebuild, not the full 188-surface effort. Scope was deliberately narrowed
+to 4 surfaces to prove the method before committing further.
+
+```text
+Status: ready for review
+Last completed: Built and shipped a real geometric displacement pipeline
+  for exactly tshirt/{white,black}/{front,back} (4 of 188 surfaces):
+  - tools/build-displacement-maps.mjs generates a real two-channel
+    (R=dx, G=dy) displacement map per view (front/back), derived from that
+    view's own photographed fold structure (blurred luminance height-field
+    proxy -> gradient -> offset field, normalized within the print zone).
+    One map per view, shared across colors of that view.
+  - composer.ts (browser) and mockupRender.ts (server, Sharp) both gained
+    a real per-pixel displacement remap of the artwork before compositing
+    — the actual Photoshop "Displace filter" mechanic — gated so only
+    surfaces with a "displacement" runtime role use it. All 184 other
+    surfaces render through the exact prior code path, unchanged.
+  - tools/verify-smartobject-roundtrip.mjs performs a genuine open/replace
+    Smart Object payload/re-save/reopen-from-scratch cycle against each
+    pilot master's real shipped PSD bytes (via ag-psd, the same library
+    the builder uses, plus a minimal in-repo canvas polyfill since
+    node-canvas isn't installed in this sandbox). All 4 surfaces pass every
+    check: linked content genuinely swappable and persists, transform/
+    registration preserved, unrelated layers byte-identical, composite
+    reflects the edit inside the zone and not outside it. This is NOT a
+    Photoshop-verified claim — no Adobe product is available here — it is
+    an honest, evidenced claim about the shipped file's real structure.
+  - Manifest: only these 4 rows carry reviewStatus "accepted" plus the
+    embedded verification evidence (dist-mockups/staging/smart-v10-v3/
+    manifest.json). All other 184 stay "candidate". Tightened
+    validate-smartobject-release.mjs and build-smartobject-runtime-roles.mjs
+    so "accepted" without passing evidence is now a hard build/validate
+    error — previously the status could be hand-edited with nothing
+    checking it.
+  - mockupContract.ts / server-mockup-render.ts (client fetcher) gained an
+    optional "displacement" runtime role end-to-end, additive: the 6
+    REQUIRED_RUNTIME_ROLES are unchanged and every other surface's request
+    shape is byte-identical to before.
+  - Incidental fix (found re-running the full pipeline, not intentional
+    scope): 20 mug runtime-role PNGs (base/protected/shadow, 10 colors)
+    had drifted out of sync with their own unchanged staging source images
+    — same staleness pattern as a separate masterChecksum drift also fixed
+    here for tshirt/white/front. Verified pixel-for-pixel that regenerated
+    output now matches the current (unchanged) staging source exactly
+    before committing; no mug source/geometry data was touched.
+Stopped at: Committed (1510189) and pushed to both
+  claude/ecom-customization-itpg9o and main. Not yet scaled beyond the 4
+  approved pilot surfaces — that is an explicit next decision, not an
+  oversight.
+Files/areas changed: tools/build-displacement-maps.mjs (new),
+  tools/verify-smartobject-roundtrip.mjs (new),
+  tools/build-smartobject-runtime-roles.mjs, tools/validate-smartobject-release.mjs,
+  artifacts/api-server/src/lib/mockupContract.ts,
+  artifacts/api-server/src/routes/mockupRender.ts,
+  artifacts/trynex-storefront/src/pages/design-studio/{composer,
+  server-mockup-render,smart-mockup-manifest,smart-v10-runtime}.ts,
+  dist-mockups/staging/smart-v10-v3/manifest.json + derived manifests,
+  20 mug runtime-role PNGs (resync only, see above).
+Remaining work: (1) Decide whether to scale displacement to the other 6
+  T-shirt colors (front/back only — geometry is color-independent, the map
+  already works for them, this is a scope decision not an engineering
+  blocker) and/or to the 3 synthetic-derivative T-shirt views (left-sleeve/
+  right-sleeve/neck-label — these are NOT authentic photography per the
+  staging manifest's own provenance field, so promoting them to "accepted"
+  needs a separate, explicit decision, not silent inclusion). (2) The other
+  5 families (longsleeve, hoodie, mug, cap, waterbottle) have no
+  displacement work at all yet. (3) Cosmetic tuning: the current effect
+  reads as fairly organic/rippled at print-zone edges (visually confirmed
+  via a live render) — arguably a good thing (directly answers the "looks
+  like a flat photo overlap" complaint) but could be tuned subtler if
+  wanted. (4) The verification method is explicitly NOT Photoshop-based
+  (no Adobe product available in this sandbox) — if a true Photoshop
+  open/edit/save verification is required before a wider "verified"
+  claim, that needs to happen outside this environment.
+Blocker: None for the completed scope. Local Postgres/DB-backed E2E
+  testing was blocked mid-session by the sandbox's credential-exploration
+  guard (any psql connection attempt was denied) — worked around entirely
+  by testing the rendering pipeline through a standalone Vite-served
+  harness that doesn't need the DB, since the actual change is in
+  image/canvas code, not data flow. Full DB-backed Design Studio E2E
+  (uploading real artwork through the live UI, not a synthetic harness)
+  is still unverified from this workspace for that reason.
+Next safe action: Either (a) scope-approve scaling to the remaining 6
+  T-shirt colors for front/back, or (b) pick the next family to pilot the
+  same method on, or (c) do a DB-backed live-UI pass once Postgres access
+  is available, to visually confirm the pilot in the real Design Studio
+  (not just the standalone harness).
+Verification: storefront test suite 69/69 pass, API test suite 36/36 pass,
+  storefront production build succeeds, all three mockup validators
+  (placeholder scanner, release gate, runtime-roles builder) pass with the
+  tightened evidence requirement, and a live browser render (flat vs.
+  displaced vs. a non-pilot control surface) visually confirms the
+  displacement is real, visible, and fully contained to the 4 approved
+  surfaces with zero effect elsewhere.
+```
