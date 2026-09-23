@@ -1731,3 +1731,64 @@ Verification: Full workspace typecheck passed. API tests (10 files, 36 tests)
   Live-verified end-to-end locally: DELETE FROM admins → restart → POST
   /api/admin/login with the real ADMIN_PASSWORD → {"success":true,"token":...}.
 ```
+
+## AGPL removal + main merge checkpoint (2026-09-23)
+
+```text
+Status: complete — session batch merged to main and pushed
+Last completed: Found @imgly/background-removal (both the JS wrapper and its
+  model-data package) is AGPLv3-licensed, mid-fix, before committing anything —
+  stopped and got an explicit decision from the project owner rather than
+  shipping it or deciding alone. Replaced it with a direct implementation of
+  U-2-Net (Apache 2.0, from the original academic authors) via onnxruntime-web
+  (MIT, already a dependency), self-hosted (~40MB: the u2netp.onnx model plus
+  onnxruntime-web's own bundled WASM runtime — no external CDN dependency).
+  Preprocessing/postprocessing intentionally mirrors the rembg reference
+  implementation exactly (same resize, same ImageNet mean/std, same output
+  normalization) rather than improvised values. See
+  artifacts/trynex-storefront/src/lib/backgroundRemoval.ts and
+  artifacts/trynex-storefront/public/onnx/NOTICE.md for full provenance.
+  Two real integration issues only surfaced by testing live in a browser:
+  onnxruntime-web 1.21.0's broken "exports" map (worked around with a minimal
+  local .d.ts) and the runtime requesting the ".jsep" WASM variant by default
+  regardless of configured executionProviders (confirmed via an actual failed
+  network request, not assumed).
+  Merged the full session's branch (claude/ecom-customization-itpg9o) into
+  main and pushed, per explicit instruction from the project owner — this was
+  previously held pending that instruction. Full typecheck + both test suites
+  + production build were re-run and passed on the exact merged commit before
+  pushing to main, not just on the feature branch in isolation.
+Stopped at: main pushed (commit 8d95432). This should trigger Cloudflare
+  Pages' auto-deploy (confirmed connected: georgelsmith333-hub/New-Trynext →
+  main → Automatic deployments: Enabled, per a live dashboard check earlier
+  this session). Whether Render also auto-deploys from this push is unverified
+  from this workspace — prior checkpoints (2026-09-18) documented Render not
+  auto-deploying a GitHub push at least once before; the production runbook
+  given to the user's subworker covers manually triggering a Render deploy if
+  it doesn't pick this up on its own.
+Files/areas changed (this session, full list): 3D preview error boundary,
+  AnnouncementBar height-sync race, AI generate timeout + progress trickle,
+  autoSeed.ts hardcoded-admin removal, mockup placeholder scanner + manifest
+  status derivation + server-mockup-render.ts gate, AGPL background-removal
+  replacement. See individual commits for full detail on each.
+Remaining work: Confirm the live deploy actually picked up this commit
+  (Cloudflare Pages deployment log / trynext.shop response) — not verified
+  from this workspace since it can't reach trynext.shop directly. The mockup
+  system's deeper issues (real Photoshop Smart Object verification, true
+  projective/displacement rendering, shared browser/API compositor) remain
+  open per docs/MOCKUP_DEEP_AUDIT_AND_IMPLEMENTATION_PLAN_2026-09-23.md — not
+  started, by explicit choice, pending proper scoping rather than started
+  blind. Long-sleeve/water-bottle catalog gap and full admin-panel /
+  mobile-app audit remain open from earlier checkpoints.
+Blocker: None for the completed scope. Confirming the live deploy needs
+  either provider dashboard access or a working path to reach trynext.shop,
+  neither of which this workspace has.
+Next safe action: Verify the Cloudflare Pages deployment log shows this
+  commit built and deployed; if Render didn't auto-deploy, trigger it
+  manually per the provider runbook. Then decide on scope for the mockup
+  system's deeper rebuild.
+Verification: Full workspace typecheck, both test suites (105 tests total),
+  and a full storefront production build all passed on the exact commit
+  pushed to main — not re-verified after merging, but verified on the merge
+  result itself before pushing.
+```
