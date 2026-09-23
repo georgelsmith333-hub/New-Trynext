@@ -1083,7 +1083,12 @@ export default function DesignStudioV2() {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: filename, size: blob.size, contentType: mime }),
         });
-        if (!reqRes.ok) throw new Error("Original artwork storage is unavailable. Your design was not added to cart; please retry.");
+        if (!reqRes.ok) {
+          const body = await reqRes.json().catch(() => ({} as Record<string, unknown>));
+          const code = typeof body?.error === "string" ? body.error : "storage_request_failed";
+          const detail = typeof body?.message === "string" ? body.message : "The server could not prepare the original artwork upload.";
+          throw new Error(`Original artwork upload could not be prepared (${reqRes.status}, ${code}). ${detail} Your design was not added to cart.`);
+        }
         const { uploadURL, objectPath } = await reqRes.json();
         if (!uploadURL || !objectPath) throw new Error("Original artwork storage returned an incomplete upload response. Please retry.");
         const putRes = await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": mime }, body: blob });

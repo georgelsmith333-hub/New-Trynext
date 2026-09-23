@@ -108,7 +108,10 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
     });
   } catch (error) {
     req.log.error({ err: error }, "Error generating upload URL");
-    res.status(500).json({ error: "Failed to generate upload URL" });
+    res.status(500).json({
+      error: "storage_presign_failed",
+      message: "The configured object storage could not prepare an upload. Please try again later.",
+    });
   }
 });
 

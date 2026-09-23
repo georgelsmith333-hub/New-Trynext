@@ -178,7 +178,8 @@ function TelegramSection() {
         <p className="text-sm font-bold text-blue-800">How to activate order notifications:</p>
         <ol className="text-xs text-blue-700 space-y-1.5 list-decimal list-inside">
           <li>Open Telegram and search for <strong>@{setupInfo?.botUsername || 'Trynex_Bot'}</strong></li>
-          <li>Send any message (e.g. <code>/start</code>) — the bot auto-registers your chat</li>
+          <li>Use your private owner chat only, then copy its numeric chat ID from the authenticated setup flow</li>
+          <li>Save that ID here or in Render as <code>TELEGRAM_CHAT_ID</code>; the bot will reject all other chats</li>
           <li>Click <strong>"Check Setup"</strong> below to confirm, then <strong>"Send Test"</strong></li>
         </ol>
         <p className="text-xs text-blue-600 mt-1">Or paste your chat ID manually below if you know it.</p>

@@ -2,9 +2,6 @@ import { Router, type IRouter } from "express";
 import { requireAdmin } from "../middlewares/adminAuth";
 import { logger } from "../lib/logger";
 import { z } from "zod";
-import { db, adminTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
-import { verifyTotp } from "../lib/totp";
 
 const router: IRouter = Router();
 
@@ -55,43 +52,15 @@ router.get("/admin/secrets", requireAdmin, (_req, res) => {
   }
 });
 
-// ── GET /api/admin/secrets/raw — get actual unmasked values (admin only) ──
-// Requires an additional TOTP re-verification step before exposing raw secrets.
-router.get("/admin/secrets/raw", requireAdmin, async (req, res) => {
-  try {
-    const totpCode = req.headers["x-admin-totp-code"];
-    if (!totpCode || typeof totpCode !== "string" || !/^\d{6}$/.test(totpCode)) {
-      res.status(403).json({ ok: false, error: "totp_required", message: "TOTP code required in X-Admin-TOTP-Code header" });
-      return;
-    }
-    const session = (req as any).adminSession;
-    if (!session?.adminId) {
-      res.status(403).json({ ok: false, error: "session_error", message: "Admin session lacks identity" });
-      return;
-    }
-    const [admin] = await db.select().from(adminTable).where(eq(adminTable.id, session.adminId)).limit(1);
-    if (!admin || !admin.totpEnabled || !admin.totpSecret) {
-      res.status(403).json({ ok: false, error: "totp_not_configured", message: "2FA is not enabled for this admin" });
-      return;
-    }
-    if (!verifyTotp(totpCode, admin.totpSecret)) {
-      res.status(403).json({ ok: false, error: "invalid_totp", message: "Invalid TOTP code" });
-      return;
-    }
-    const envVars: Record<string, string> = {};
-    for (const [key, value] of Object.entries(process.env)) {
-      if (value === undefined) continue;
-      envVars[key] = value;
-    }
-    res.json({
-      ok: true,
-      secrets: envVars,
-      count: Object.keys(envVars).length,
-    });
-  } catch (err) {
-    logger.error({ err }, "Failed to list raw secrets");
-    res.status(500).json({ ok: false, error: "Failed to list raw secrets" });
-  }
+// ── GET /api/admin/secrets/raw — intentionally unavailable ──
+// Even with TOTP, returning the complete process environment to a browser
+// creates a full secret-disclosure event after a session/XSS compromise.
+router.get("/admin/secrets/raw", requireAdmin, (_req, res) => {
+  res.status(403).json({
+    ok: false,
+    error: "disabled",
+    message: "Raw secret values are never returned by the API. Rotate values through the hosting platform and restart the service.",
+  });
 });
 
 // ── Runtime secret updates are intentionally DISABLED ──
