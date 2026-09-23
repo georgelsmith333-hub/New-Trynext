@@ -2064,3 +2064,59 @@ Verification: storefront (69/69) and API (36/36) test suites pass, both
   product families render correctly (displacement visible on flat apparel,
   curvature warp untouched on mug/cap/bottle).
 ```
+
+## Checkpoint: settings credential leak fix + customer-facing studio fixes (2026-09-23)
+
+```text
+Status: ready for review (code pushed; production activation depends on
+  Render redeploying the API, see Blocker)
+Last completed: Ran the full stack locally (sandbox Postgres with seeded dev
+  data only, never production) and crawled 76 page-views (18 customer + 20
+  admin routes, desktop 1440 and mobile 390). Baseline was clean: no JS
+  exceptions, no mobile horizontal overflow, one noisy 404 (see below).
+  Fixed:
+  - CRITICAL: GET /api/settings/:key was unauthenticated and read any raw
+    settings row except two denylisted names. The admin Deployment page
+    stores github_token (plaintext), render_deploy_hook and
+    cloudflare_pages_hook in that table; the admin reset flow stores
+    adminResetKeyHash. Proven exploitable locally with a planted fake
+    token. Now requireAdmin (its only callers, Dashboard.tsx and
+    AdminAIDeveloper.tsx, already send getAuthHeaders()), and those keys
+    return 403 even to admins. Public GET /api/settings is unchanged and
+    was already safe (buildSettings() allowlist by construction).
+  - Design Studio: the internal SmartObjectStatusCard (PSD/runtime-role
+    jargon) was shown to customers and pushed the canvas below the fold.
+    Now shown only with an admin session in the same tab or ?studioDebug;
+    customers get a plain notice only when a surface is unavailable. The
+    admin card now shows "Displacement: active/-".
+  - ViewerCount.tsx: removed the invented 2-11 viewer count shown when the
+    API failed; hides for count < 2 (fixes "1 people viewing now").
+  - product-placeholder.svg: square, so the brand text isn't cropped.
+  - /admin/customers: column projection (skips items JSONB), same shape.
+Stopped at: Committed 38e0767, merged an empty Manus commit (d1493b3),
+  pushed main at 45fc777.
+Files/areas changed: artifacts/api-server/src/routes/{settings,admin}.ts,
+  artifacts/trynex-storefront/src/pages/studio/DesignStudioV2.tsx,
+  src/components/ViewerCount.tsx, public/images/product-placeholder.svg.
+Remaining work: (1) Owner should rotate any GitHub token / Render hook /
+  Cloudflare hook ever saved in the admin Deployment page on production,
+  since they were publicly readable before this fix. (2) Telegram bot is
+  trust-on-first-use: if no admin chat is registered (and TELEGRAM_CHAT_ID
+  unset), the first person to message it becomes admin, and it has deploy
+  commands. Intentional onboarding, left unchanged; owner should confirm
+  their chat is registered. (3) The /api/settings/prodNoticeDismissed 404
+  on the admin dashboard is the existing "not set" signal, cosmetic only.
+  (4) Admin panel feature enhancements and a design pass were requested
+  but not started; the crawl found the UI already solid, so any further
+  work there needs specific direction from the owner.
+Blocker: The API runs on Render, not Cloudflare. Every API-side fix
+  (settings leak, referral/promo endpoints, stock race) is only live once
+  Render redeploys from New-Trynext/main. Render's connected repo/branch
+  has not been confirmed from its dashboard (only Cloudflare's was).
+Next safe action: Owner confirms Render deploys 45fc777 (or later), then
+  verifies GET https://<api-host>/api/settings/siteName returns 401.
+Verification: storefront 69/69, API 36/36 tests pass; both typecheck;
+  storefront production build passes; exploit re-run against the fixed
+  server returned 401/401/200/403/200/0 as expected; post-fix crawl of all
+  76 page-views shows no regressions.
+```
