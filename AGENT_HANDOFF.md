@@ -1970,3 +1970,97 @@ Next safe action: After the project owner confirms the deploy fired and
 Verification: Repo/branch/domain binding confirmed directly from the
   Cloudflare dashboard by the project owner, not inferred.
 ```
+
+## Checkpoint: mockup scale-up to 94 surfaces + 3 critical security fixes (2026-09-23)
+
+```text
+Status: ready for review
+Last completed: Two independent workstreams, both fully verified.
+
+Mockups: generalized the T-shirt-only displacement pilot to cover every
+  color of every flat-apparel family's authentic front/back views
+  (T-shirt 16, long sleeve 20, hoodie 20 = 56 surfaces with real
+  displacement), plus extended real Smart Object round-trip verification
+  (no displacement — a different rendering path) to mug (20), cap (16),
+  water bottle (2) = 38 more. Total 94/188 surfaces now "accepted" with
+  embedded verification evidence; the other 94 (synthetic sleeve/neck-label
+  crops, mug's generated wrap) deliberately stay "candidate" — not
+  independently photographed, so not eligible for "accepted" without a
+  separate review decision. tools/build-displacement-maps.mjs and
+  tools/verify-smartobject-roundtrip.mjs were generalized from hardcoded
+  T-shirt lists to pull from CANONICAL/family color lists, so future scope
+  changes are a data change, not a script rewrite. Fixed a real bug found
+  scaling to mug/water bottle: they ship as .psb not .psd, and the
+  verifier silently reported "not found" for all of them until fixed to
+  check both extensions.
+
+Security: ran a full-stack audit (general-purpose agent, read-only,
+  evidence-required) across storefront/admin/API. It found 3 Critical + 1
+  High + 2 Medium real, verified issues — not invented ones; every finding
+  was independently re-confirmed by reading the actual code before fixing.
+  Fixed:
+  - referrals.ts PUT /:code/use and promoCodes.ts PUT /:id/use: both had
+    zero auth and zero legitimate callers (confirmed by grep across
+    storefront + mobile) — the real order flow already credits/checks
+    these atomically inside its own transaction. Anyone could inflate a
+    referrer's balance or exhaust a promo's maxUses with a fake request
+    and no real order. Admin-gated both, added the missing active/maxUses
+    guards to match the real flow.
+  - orders.ts stock decrement: was read-stock-then-write-computed-value
+    (classic lost-update race under concurrent orders); worse for JSONB
+    variants, where the WHOLE variants array was overwritten from a stale
+    read, silently clobbering a concurrent order for a *different* variant
+    of the same product. Replaced with atomic conditional SQL (UPDATE ...
+    WHERE stock >= qty, and a jsonb_set targeting only the one variant's
+    stock field) — the same pattern already correct elsewhere in the same
+    function, now applied consistently.
+  - AdminAIAssistant.tsx: dangerouslySetInnerHTML only escaped
+    **bold**/_em_, leaving any other HTML in an AI response (plausible via
+    prompt injection from product/order data in its context) able to
+    execute in the authenticated admin session. Sanitized with DOMPurify
+    (already a dependency; BlogPost.tsx already used it correctly
+    elsewhere), allow-listing only strong/em.
+  - CORS/CSRF hardcoded origin fallbacks (app.ts, adminAuth.ts) referenced
+    stale Cloudflare project names that don't match the real live project
+    (trynext-shop-new, confirmed from the actual Cloudflare dashboard this
+    session — see the "confirmed live Cloudflare/GitHub wiring" checkpoint
+    above). Production on trynext.shop was unaffected (that domain was
+    already correctly allow-listed), but direct testing against the live
+    *.pages.dev preview URL would have been silently rejected.
+  Investigated but deliberately NOT changed: admin/customers pagination.
+  The audit correctly flagged it as unpaginated and O(n) on total order
+  count, but AdminCustomers.tsx does client-side search/sort/CSV-export
+  over the full response — slicing it would have broken those working
+  features. Left the endpoint's response shape unchanged with a comment
+  documenting the real fix (SQL-level GROUP BY instead of loading every
+  order into memory) as separate follow-up work, rather than ship a
+  regression to close a Medium-severity performance concern.
+Stopped at: Committed (fd0d60d) and pushed to both
+  claude/ecom-customization-itpg9o and main.
+Files/areas changed: tools/build-displacement-maps.mjs,
+  tools/build-smartobject-runtime-roles.mjs,
+  tools/verify-smartobject-roundtrip.mjs, dist-mockups/staging/smart-v10-v3/
+  manifest.json + derived manifests, 4 new shared displacement PNGs
+  (hoodie/longsleeve front+back), artifacts/api-server/src/{app.ts,
+  middlewares/adminAuth.ts,routes/{admin,orders,promoCodes,referrals}.ts},
+  artifacts/trynex-storefront/src/{components/AdminAIAssistant.tsx,
+  pages/design-studio/smart-v10-runtime.ts}.
+Remaining work: Mockups — decide whether to scale displacement further
+  (the 3 synthetic-derivative T-shirt/longsleeve/hoodie views, or attempt
+  a curvature-specific realism improvement for mug/cap/waterbottle beyond
+  today's structural-only verification). Security — the High XSS finding
+  is fixed; two Medium items remain: the documented admin/customers
+  pagination follow-up (needs a SQL aggregation rewrite, not a quick fix),
+  and none else outstanding from this audit pass. A second, later audit
+  pass would likely find more — this was one thorough pass, not an
+  exhaustive one.
+Blocker: None for the completed scope.
+Next safe action: Continue the broader "3 hours" work the project owner
+  authorized — admin panel enhancements and a frontend design pass are
+  still open asks from that authorization, not yet started this round.
+Verification: storefront (69/69) and API (36/36) test suites pass, both
+  packages typecheck clean, storefront production build succeeds, all
+  three mockup validators pass, and a live browser render confirms all 6
+  product families render correctly (displacement visible on flat apparel,
+  curvature warp untouched on mug/cap/bottle).
+```
