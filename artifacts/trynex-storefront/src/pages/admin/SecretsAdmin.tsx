@@ -244,7 +244,7 @@ export default function SecretsAdmin() {
               Secrets Manager
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              View, edit, and manage all environment variables. Sensitive values are masked by default.
+              View runtime configuration. Values are changed in Render or Cloudflare and require a service restart.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -333,11 +333,9 @@ export default function SecretsAdmin() {
               <FileText className="w-4 h-4" /> .env
             </button>
             <div className="h-6 w-px bg-gray-200" />
-            <button onClick={() => fileInputRef.current?.click()} className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-white transition-colors"
-              style={{ background: "linear-gradient(135deg,#E85D04,#FB8500)" }}>
-              <Upload className="w-4 h-4" /> Import
-            </button>
-            <input ref={fileInputRef} type="file" accept=".env,.txt,.json,.csv" className="hidden" onChange={handleFileUpload} />
+            <span className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-bold text-gray-500 bg-gray-100 border border-gray-200" title="Change secrets in the hosting platform, then restart the service">
+              <Lock className="w-4 h-4" /> Platform-managed
+            </span>
           </div>
         </div>
 
@@ -373,7 +371,7 @@ export default function SecretsAdmin() {
                     <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-gray-400 w-12">#</th>
                     <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-gray-400">Key</th>
                     <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-gray-400">Value</th>
-                    <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-gray-400 w-32">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-wider text-gray-400 w-20">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -389,55 +387,24 @@ export default function SecretsAdmin() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        {s.isEditing ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              value={s.editValue}
-                              onChange={e => setSecrets(prev => prev.map(p => p.key === s.key ? { ...p, editValue: e.target.value } : p))}
-                              className="flex-1 min-w-0 px-3 py-1.5 rounded-lg text-xs font-mono border border-orange-300 outline-none focus:ring-2 focus:ring-orange-100"
-                              autoFocus
-                            />
-                            <button
-                              onClick={() => updateSecret(s.key, s.editValue)}
-                              disabled={savingKey === s.key}
-                              className="p-1.5 rounded-lg text-green-600 hover:bg-green-50 transition-colors"
-                            >
-                              {savingKey === s.key ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                            </button>
-                            <button
-                              onClick={() => setSecrets(prev => prev.map(p => p.key === s.key ? { ...p, isEditing: false, editValue: p.value } : p))}
-                              className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <code className="font-mono text-xs text-gray-600 truncate max-w-[300px] block">
-                              {s.isSensitive && !showSensitive ? maskValue(s.value, s.key) : s.value}
-                            </code>
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(s.value);
-                                toast({ title: "Copied", description: `${s.key} copied to clipboard` });
-                              }}
-                              className="p-1 rounded text-gray-400 hover:text-gray-600 transition-colors"
-                              title="Copy value"
-                            >
-                              <Copy className="w-3 h-3" />
-                            </button>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <code className="font-mono text-xs text-gray-600 truncate max-w-[300px] block">
+                            {s.isSensitive && !showSensitive ? maskValue(s.value, s.key) : s.value}
+                          </code>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(s.value);
+                              toast({ title: "Copied", description: `${s.key} copied to clipboard` });
+                            }}
+                            className="p-1 rounded text-gray-400 hover:text-gray-600 transition-colors"
+                            title="Copy value"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => setSecrets(prev => prev.map(p => p.key === s.key ? { ...p, isEditing: !p.isEditing, editValue: p.value } : p))}
-                            className="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
-                            title="Edit"
-                          >
-                            <KeyRound className="w-3.5 h-3.5" />
-                          </button>
                           {s.isSensitive && (
                             <button
                               onClick={() => setSecrets(prev => prev.map(p => p.key === s.key ? { ...p, showValue: !p.showValue } : p))}
@@ -457,7 +424,7 @@ export default function SecretsAdmin() {
           </div>
         )}
 
-        {/* Import Modal */}
+        {/* Legacy import modal is intentionally unreachable; runtime secret writes are disabled. */}
         <AnimatePresence>
           {importModal && (
             <motion.div

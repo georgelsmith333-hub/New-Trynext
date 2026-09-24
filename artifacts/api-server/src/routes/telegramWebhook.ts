@@ -57,7 +57,7 @@ async function saveAdminChatId(chatId: number | string): Promise<void> {
       .values({ key: "telegram_chat_id", value: id, updatedAt: new Date() })
       .onConflictDoUpdate({ target: settingsTable.key, set: { value: id, updatedAt: new Date() } });
     setChatIdOverride(id);
-    logger.info({ chatId: id }, "[telegram] Admin chat ID saved to settings");
+    logger.info({ chatIdSuffix: id.slice(-4) }, "[telegram] Admin chat ID saved to settings");
   } catch (err) {
     logger.warn({ err }, "[telegram] Failed to persist admin chat ID");
   }
@@ -72,7 +72,7 @@ export async function loadSavedChatId(): Promise<void> {
       .limit(1);
     if (row?.value) {
       setChatIdOverride(row.value);
-      logger.info({ chatId: row.value }, "[telegram] Loaded saved admin chat ID from DB");
+      logger.info({ chatIdSuffix: row.value.slice(-4) }, "[telegram] Loaded saved admin chat ID from DB");
     }
   } catch (err) {
     logger.warn({ err }, "[telegram] Could not load saved chat ID from DB");
@@ -495,20 +495,10 @@ router.post("/telegram/webhook", async (req, res) => {
     if (!chatId) return;
 
     if (!isAdminChat(chatId)) {
-      const configuredId = getEffectiveChatId();
-      if (!configuredId) {
-        // First person to message — auto-register as admin
-        await saveAdminChatId(chatId);
-        await tgReply(chatId,
-          `✅ <b>Trynext Admin Bot — Registered!</b>\n\n` +
-          `Your chat (<code>${chatId}</code>) is now set as the admin chat.\n\n` +
-          `Order notifications will arrive here. Send /help to see all commands.`
-        );
-        // Fall through to process the /start command normally
-      } else {
-        await tgReply(chatId, "⛔ Unauthorized. This bot only responds to the Trynext admin.");
-        return;
-      }
+      // Never bootstrap from an inbound message. The first-stranger path could
+      // grant access to orders, customer data, promotions, and /deploy.
+      await tgReply(chatId, "⛔ Unauthorized. The bot owner must register this private chat before use.");
+      return;
     }
 
     const parts = text.split(/\s+/);
@@ -662,13 +652,14 @@ router.get("/admin/telegram/setup", requireAdmin, async (_req, res) => {
 // ── Admin: Register a specific chat ID as admin ────────────────────────────────
 router.post("/admin/telegram/register-chat", requireAdmin, async (req, res) => {
   const { chatId } = req.body;
-  if (!chatId) {
-    res.status(400).json({ ok: false, message: "chatId is required" });
+  const normalized = String(chatId ?? "").trim();
+  if (!/^-?\d{5,20}$/.test(normalized)) {
+    res.status(400).json({ ok: false, message: "A numeric private Telegram chat ID is required." });
     return;
   }
   try {
-    await saveAdminChatId(String(chatId));
-    res.json({ ok: true, message: `Chat ID ${chatId} registered as admin chat.` });
+    await saveAdminChatId(normalized);
+    res.json({ ok: true, message: "Telegram owner chat registered. Set TELEGRAM_CHAT_ID in Render as the durable source of truth." });
   } catch (err) {
     res.status(500).json({ ok: false, message: "Failed to save chat ID" });
   }

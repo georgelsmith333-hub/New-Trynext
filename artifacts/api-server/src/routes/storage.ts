@@ -1,6 +1,8 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 import { requireAdmin } from "../middlewares/adminAuth";
+import { validateAdminSession } from "../lib/adminSessions";
+import { extractCustomerToken, verifyCustomerToken } from "../lib/customerAuth";
 import { z } from "zod";
 import sharp from "sharp";
 
@@ -84,6 +86,27 @@ const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
 
 /**
+ * Private originals and payment evidence must never be readable through an
+ * unauthenticated URL. Accept either a valid admin session or a customer JWT;
+ * the object id remains opaque and is only issued by the upload flow.
+ */
+async function requirePrivateObjectAccess(req: Request, res: Response, next: () => void): Promise<void> {
+  const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, "").trim();
+  const adminToken = bearer ?? req.cookies?.admin_token;
+  const customerToken = extractCustomerToken(req);
+
+  if (adminToken && await validateAdminSession(adminToken)) {
+    next();
+    return;
+  }
+  if (customerToken && verifyCustomerToken(customerToken)) {
+    next();
+    return;
+  }
+  res.status(401).json({ error: "unauthorized", message: "Authentication required for private object access" });
+}
+
+/**
  * POST /storage/uploads/request-url
  * Returns an upload URL the client sends the file to.
  * - R2/S3 backends: returns a presigned PUT URL pointing at the cloud bucket.
@@ -108,7 +131,10 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
     });
   } catch (error) {
     req.log.error({ err: error }, "Error generating upload URL");
-    res.status(500).json({ error: "Failed to generate upload URL" });
+    res.status(500).json({
+      error: "storage_presign_failed",
+      message: "The configured object storage could not prepare an upload. Please try again later.",
+    });
   }
 });
 
@@ -219,7 +245,7 @@ router.get("/storage/public-objects/*filePath", async (req: Request, res: Respon
  * GET /storage/objects/<id>
  * Serves a private uploaded object (e.g. the original print-ready design file).
  */
-router.get("/storage/objects/*path", async (req: Request, res: Response) => {
+router.get("/storage/objects/*path", requirePrivateObjectAccess, async (req: Request, res: Response) => {
   try {
     const raw = req.params.path;
     const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;

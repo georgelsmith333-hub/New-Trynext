@@ -26,6 +26,31 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      - key: ADMIN_JWT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      # Durable private artwork storage. These are intentionally unpopulated
+      # in source control and must be entered in Render's secret manager.
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: API_PUBLIC_URL
+        sync: false
+      # Telegram is owner-configured after the bot's private chat is verified.
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: TELEGRAM_BOT_USERNAME
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
     # The API mounts health routes under /api; use the meaningful dependency check.
     healthCheckPath: /api/health/readiness
     healthCheckInterval: 10
