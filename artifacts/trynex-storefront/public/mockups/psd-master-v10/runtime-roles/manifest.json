@@ -15303,7 +15303,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/white/front-protected.png",
-          "sha256": "3498eecebe77c07acf06865b1265bca93369a3774a8f9641bc31c45133b70bc1",
+          "sha256": "ffed94f4041b3a8a2010aa45469a44cf7ee6ef0502a9484064e6225a97cd5efb",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -15403,7 +15403,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/white/back-protected.png",
-          "sha256": "d1abc2e8339a9dd5a3d62291705995fc6f54ca8756c37a29627d518890321ea2",
+          "sha256": "f8713313758a0d9da40e33c62fbac5f29b7ac4da73cbdd4817a9b69e9237c31c",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -15503,7 +15503,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/black/front-protected.png",
-          "sha256": "780229d12d65b5c225f4449ef3997722f954c68f36f81242aad3ca80686f7cb5",
+          "sha256": "752f49d2f7e624a7f34dafcb6c1dd0ee7b29717722a2a6e923b3507c032413ce",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -15603,7 +15603,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/black/back-protected.png",
-          "sha256": "7e8f4aa27843b9427528aa6286a3764432bf29e33fcc06010c8629c3fce658e1",
+          "sha256": "bfe906a35cb41c87a3675be86d1479a1e4ba26bbb8d92364ba48d26eec5bd294",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -15703,7 +15703,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/navy/front-protected.png",
-          "sha256": "c794db4aca269647111e3975f24132a12ae360ee9fe2680a43ae576d4b3adec0",
+          "sha256": "2a74250b2210aebfcf3e6f6f6717b28f47131f25da8dc2f35e567ab412cd87a4",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -15803,7 +15803,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/navy/back-protected.png",
-          "sha256": "b3d22285c71a3209f67bb541266ce5e35421d421b54f31e63b30d5f8d892740e",
+          "sha256": "cfb739749bab0c2bc3a45efd82e5340d1a86c639c528b98588ac6fb970549891",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -15903,7 +15903,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/maroon/front-protected.png",
-          "sha256": "c9bf59791513c1e32da88fb71879370e42a88c53fdecbb222d4a882f7360639c",
+          "sha256": "5891083e5c18cf469a892bea7766f00d4cfa12eaa615991bf63da27fb568db1f",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -16003,7 +16003,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/maroon/back-protected.png",
-          "sha256": "b631f862972b421f2db3e79ec28d778217ebb773afa69b0304b6d48321000d30",
+          "sha256": "02e5c2593bbd71dbdc8d121dc698047460464ac208c8c4a394844776d186cd59",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -16103,7 +16103,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/olive/front-protected.png",
-          "sha256": "a149ca8ec77e7bafff687537a1d04ed3066eaedb6a1fe318b81ed1c0546637ea",
+          "sha256": "7f0f43c7443be49e1ae8fc208dd26500ff597595d0ed7ceb3ec51538c336b8e3",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -16203,7 +16203,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/olive/back-protected.png",
-          "sha256": "9c1ea0ef7570ce042cbeb52207b55deeeda68b90208b4e09fd4ccb5ba81c52bc",
+          "sha256": "27ce17f7fb96391e7ecac81b9b003d5755b3c379de149dedfb0e661ceb249caf",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -16303,7 +16303,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/red/front-protected.png",
-          "sha256": "540f57f138c6685da7607099f342e8c322a3c64b0986cb676c55b05b86b24095",
+          "sha256": "ed3e3cce156165dac0cca23205a87450e5b1dc11fdc2057d0958ed7070d1cb1c",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -16403,7 +16403,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/red/back-protected.png",
-          "sha256": "2f9a29063d6b2437bffa997717346aa9e83c4d73096178253d183e2db61fc360",
+          "sha256": "f539d65243ada4c8ffaa12caffa3ccc6b43c4c511f90098c44b93d8f307ce585",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -16503,7 +16503,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/grey/front-protected.png",
-          "sha256": "26f252154f7de05d5d844f35ddb6e9b4705b245036156642e00a95d4d6b0bf9e",
+          "sha256": "5bd05618b64a6c3f440946b3174309327e3d14d5dd478a77c4de9241f91271fa",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -16603,7 +16603,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/grey/back-protected.png",
-          "sha256": "1261613c1dd769aa33e5e13ae44b6d950e4de735bc50d4f07b248f5fdce02483",
+          "sha256": "d58e35c33b4b405d9fa267216958d58675193bf811a56e884b8526634dd26308",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -16703,7 +16703,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/forest/front-protected.png",
-          "sha256": "c82b0429e5c6ccfa50afd921c6cca3d8f7053482bf6d87d616e87f364c61215b",
+          "sha256": "76e8b2092e5ce12e88fe08a8ff94b4aa645b8d458022ef92005e5a84f2003a22",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {
@@ -16803,7 +16803,7 @@
         },
         "protected": {
           "path": "artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/cap/forest/back-protected.png",
-          "sha256": "9563ad8312540bfce346c5d6ec67a1792fa7679991ad65f3d8586c6e0b9fee42",
+          "sha256": "a445cf1375ed9ea89f98d1144af2fd2ccf15c4dc83f10071b99f004214ce3017",
           "sourceLayerPrefix": "40 Protected Details"
         },
         "highlight": {

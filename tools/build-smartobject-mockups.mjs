@@ -391,6 +391,8 @@ export function highlightMap(base) {
  * collars, hood cords, stitching, rims, handles, cap seams, and bottle
  * hardware while remaining transparent over ordinary body fabric.
  */
+const CAP_PRINT_ZONE_EDGE_THRESHOLD = 24;
+
 export function protectedDetails(base, family, view, zone) {
   const data = new Uint8Array(base.data.length);
   const isApparel = family === "tshirt" || family === "longsleeve" || family === "hoodie";
@@ -441,12 +443,17 @@ export function protectedDetails(base, family, view, zone) {
       // Ordinary body edges outside the printable region are safe to retain
       // and make the role useful for handles, hems, and outer seams. Inside
       // the zone only the edge/detail signal is allowed through.
-      const allowed = normalizedEdge >= threshold || bottleHardware || rearCapHardware;
-      if (!allowed) continue;
+      // Cap canvas weave measures ~12-15 on this edge signal across the whole
+      // front panel, so the family threshold (8) turned over half the print
+      // zone into opaque fabric pixels painted over the customer's design.
+      // Inside the print zone require seam-strength edges (top few percent).
       const inside = inZone(x, y);
+      const edgeThreshold = inside && family === "cap" ? CAP_PRINT_ZONE_EDGE_THRESHOLD : threshold;
+      const allowed = normalizedEdge >= edgeThreshold || bottleHardware || rearCapHardware;
+      if (!allowed) continue;
       const detailAlpha = bottleHardware || rearCapHardware
         ? 210
-        : Math.max(0, Math.min(235, Math.round((normalizedEdge - threshold) * edgeGain)));
+        : Math.max(0, Math.min(235, Math.round((normalizedEdge - edgeThreshold) * edgeGain)));
       if (inside && isApparel && view === "neck-label") {
         // Neck-label is a flat detail crop; keep its seam signal slightly
         // stronger so the label boundary survives artwork placed on it.
