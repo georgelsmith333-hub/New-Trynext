@@ -103,4 +103,29 @@ describe("Smart v10.3 mockup renderer", () => {
     expect(response.status).toBe(400);
     expect(response.body.message).toBe("image_must_be_data_url");
   });
+  it("keeps transparent artwork pixels transparent inside the print zone (no black box)", async () => {
+    const fixture = await createFixture();
+    // Every role image is the same light-grey 4x4 fixture, so the garment
+    // and print mask are uniform; a fully transparent artwork must leave the
+    // print zone showing the garment, not opaque black.
+    const transparent = await sharp({
+      create: { width: 4, height: 4, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    } as any).png().toBuffer();
+    const transparentUrl = `data:image/png;base64,${transparent.toString("base64")}`;
+    fixture.artwork = transparentUrl;
+    // Real protected-detail layers are mostly transparent (collar/seam edges
+    // only); an opaque one would paint over the print zone and hide the bug.
+    (fixture.surface.runtimeRoles as any).protected.sha256 = checksum(transparent);
+    (fixture.runtimeRoleImages as any).protected = transparentUrl;
+    const response = await request(app)
+      .post("/api/mockup/render")
+      .buffer(true)
+      .parse((res, done) => { const chunks: Buffer[] = []; res.on("data", (c: Buffer) => chunks.push(c)); res.on("end", () => done(null, Buffer.concat(chunks))); })
+      .send(fixture);
+
+    expect(response.status).toBe(200);
+    const { data } = await sharp(response.body as Buffer).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+    const centre = (2 * 4 + 2) * 3;
+    expect(data[centre]).toBeGreaterThan(150);
+  });
 });

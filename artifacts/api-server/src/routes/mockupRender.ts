@@ -109,17 +109,25 @@ async function applyServerDisplacement(
   return sharp(out, { raw: { width: canvasW, height: canvasH, channels: 4 } }).png().toBuffer();
 }
 
+/** Scale the image's own alpha. The previous version replaced the alpha
+ *  channel with a constant, making transparent pixels opaque black. */
 async function applyOpacity(image: Buffer, opacity: number): Promise<Buffer> {
   if (opacity >= 1) return image;
-  const metadata = await sharp(image).metadata();
-  const width = metadata.width ?? 1;
-  const height = metadata.height ?? 1;
-  const alpha = Buffer.alloc(width * height, Math.round(opacity * 255));
-  return sharp(image)
-    .removeAlpha()
-    .joinChannel(alpha, { raw: { width, height, channels: 1 } })
-    .png()
-    .toBuffer();
+  const { data, info } = await sharp(image).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  for (let i = 3; i < data.length; i += 4) data[i] = Math.round(data[i] * opacity);
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}
+
+/** Clip artwork to the print mask by multiplying alphas. Replacing the
+ *  artwork's alpha with the mask (the previous behavior) turned every
+ *  transparent pixel inside the print zone into an opaque black box —
+ *  visible in cart and order previews behind any logo with a transparent
+ *  background. */
+async function clipToMask(image: Buffer, maskGrey: Buffer): Promise<Buffer> {
+  const { data, info } = await sharp(image).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const mask = await sharp(maskGrey).resize(info.width, info.height, { fit: "fill" }).greyscale().raw().toBuffer();
+  for (let p = 0, i = 3; p < mask.length; p++, i += 4) data[i] = Math.round((data[i] * mask[p]) / 255);
+  return sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
 }
 
 router.post("/mockup/render", async (req: Request, res: Response) => {
@@ -174,11 +182,7 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
       .greyscale()
       .png()
       .toBuffer();
-    const maskedArtwork = await sharp(renderedArtwork)
-      .removeAlpha()
-      .joinChannel(mask)
-      .png()
-      .toBuffer();
+    const maskedArtwork = await clipToMask(renderedArtwork, mask);
 
     // Same pipeline as the browser compositor: place the design on a
     // transparent canvas-sized layer, bend it with the fabric folds where a

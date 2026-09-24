@@ -659,12 +659,17 @@ export default function DesignStudioV2() {
         }).catch(() => {
           // Auto-fix is an enhancement, never a reason to reject a valid upload.
         });
-        // A successful upload should land on the image-edit tab rather than the
-        // layer list, so mobile customers immediately see background removal,
-        // HD preparation, and brightness/contrast controls for the selected art.
+        // Land on the image-edit tab so the tools are one tap away, but leave
+        // the mobile sheet closed: auto-opening it covered the whole screen
+        // (preview and Add to Cart) right when the customer wants to see the
+        // design on the product.
         setActiveTab("upload");
-        if (isMobile) setMobileToolOpen(true);
-        toast({ title: "✓ Design placed!", description: "Your image tools are open—remove the background, improve print quality, or adjust it before checkout." });
+        toast({
+          title: "✓ Design placed!",
+          description: isMobile
+            ? "Tap “All tools” to remove the background, improve print quality, or adjust it."
+            : "Use the image tools to remove the background, improve print quality, or adjust it before checkout.",
+        });
       } catch (error) {
         console.error("Design upload failed", error);
         toast({ title: "Upload failed", description: "This image could not be prepared. Try a JPG, PNG, or WebP under 10MB.", variant: "destructive" });
@@ -1524,7 +1529,7 @@ export default function DesignStudioV2() {
                 <div className="w-10 h-1 rounded-full bg-gray-300 mb-2" />
                 <div className="w-full flex items-center justify-between px-5 pb-2">
                   <span className="text-sm font-black text-gray-800 uppercase tracking-wider">Design Tools</span>
-                  <button onClick={() => setMobileToolOpen(false)} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100"><X className="w-4 h-4" /></button>
+                  <button type="button" aria-label="Close design tools" onClick={() => setMobileToolOpen(false)} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100"><X className="w-4 h-4" /></button>
                 </div>
               </div>
             )}
