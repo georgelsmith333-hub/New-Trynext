@@ -9,10 +9,11 @@ import {
   type RuntimeRole,
   type SmartMockupIngestionManifest,
 } from "../lib/mockupContract";
+import { applyServerPhotoLighting } from "../lib/photoLighting";
 
 /** Matches the browser compositor's own bound (composer.ts
  *  DISPLACEMENT_MAX_OFFSET_PX_AT_1024) so server and browser renders agree. */
-const DISPLACEMENT_MAX_OFFSET_PX_AT_1024 = 10;
+const DISPLACEMENT_MAX_OFFSET_PX_AT_1024 = 4;
 
 const router = Router();
 const MAX_INPUT_BYTES = 12 * 1024 * 1024;
@@ -179,23 +180,25 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
       .png()
       .toBuffer();
 
-    // Pilot surfaces only: warp the placed artwork to follow the garment's
-    // real photographed fold structure, matching the browser compositor's
-    // applyDisplacementMap. Surfaces without a displacement role place the
-    // artwork exactly as before.
-    let artworkComposite: OverlayOptions;
+    // Same pipeline as the browser compositor: place the design on a
+    // transparent canvas-sized layer, bend it with the fabric folds where a
+    // displacement map exists, relight only its pixels with the product
+    // photo's own light, then composite. The shadow/highlight role images
+    // are still required and checksum-verified as part of the asset
+    // contract, but are no longer multiplied over the whole frame: that
+    // darkened the bare garment (a visible rectangle / dull dark garments).
+    let artworkLayer: Buffer = await sharp({
+      create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    })
+      .composite([{ input: maskedArtwork, left, top }])
+      .png()
+      .toBuffer();
     if (roles.displacement) {
-      const placedOnCanvas = await sharp({
-        create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
-      })
-        .composite([{ input: maskedArtwork, left, top }])
-        .png()
-        .toBuffer();
-      const displaced = await applyServerDisplacement(placedOnCanvas, roles.displacement, canvasW, canvasH);
-      artworkComposite = { input: displaced, left: 0, top: 0 };
-    } else {
-      artworkComposite = { input: maskedArtwork, left, top };
+      artworkLayer = await applyServerDisplacement(artworkLayer, roles.displacement, canvasW, canvasH);
     }
+    artworkLayer = await applyServerPhotoLighting(artworkLayer, roles.base, canvasW, canvasH, {
+      x0: zoneX, y0: zoneY, x1: zoneX + zoneW, y1: zoneY + zoneH,
+    });
 
     const background = await sharp(roles.studioBackground)
       .resize(canvasW, canvasH, { fit: "fill" })
@@ -204,9 +207,7 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
       .toBuffer();
     const composites: OverlayOptions[] = [
       { input: roles.base, left: 0, top: 0 },
-      artworkComposite,
-      { input: await sharp(roles.shadow).resize(canvasW, canvasH, { fit: "fill" }).ensureAlpha().png().toBuffer(), left: 0, top: 0, blend: "multiply" },
-      { input: await sharp(roles.highlight).resize(canvasW, canvasH, { fit: "fill" }).ensureAlpha().png().toBuffer(), left: 0, top: 0, blend: "screen" },
+      { input: artworkLayer, left: 0, top: 0 },
       { input: await sharp(roles.protected).resize(canvasW, canvasH, { fit: "fill" }).ensureAlpha().png().toBuffer(), left: 0, top: 0 },
     ];
 

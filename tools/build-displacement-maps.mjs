@@ -37,7 +37,7 @@ const DEFAULT_STAGING_ROOT = path.join(REPO, "dist-mockups", "staging", "smart-v
 const CANVAS = 1024;
 const BLUR_SIGMA = 16; // smooths away fabric micro-texture/print noise, keeps fold structure
 const GRADIENT_SAMPLE = 3; // px offset for the central-difference gradient
-export const MAX_DISPLACEMENT_PX = 10; // clamp so artwork bends with folds without visibly buckling
+export const MAX_DISPLACEMENT_PX = 4; // gentle: real prints follow folds, they don't tear; matches composer.ts/mockupRender.ts
 
 /** Flat-apparel families, front+back only (their authentic-preserved
  *  views). Zones are pulled from CANONICAL so this can never drift out of
@@ -58,6 +58,11 @@ function pilotTargets() {
 
 const CALIBRATION_COLOR = "white"; // best fold visibility, least color interference
 const NORMALIZATION_PERCENTILE = 0.97;
+/** A near-flat photo's tiny gradients are mostly sensor noise; normalizing
+ *  them up to full strength turned noise into jagged tears in real artwork.
+ *  Gradients below this (luminance units across 2*GRADIENT_SAMPLE px) never
+ *  reach full offset, so a flat photo yields a correspondingly flat print. */
+const MIN_FOLD_GRADIENT = 10;
 
 function sha256(buffer) {
   return createHash("sha256").update(buffer).digest("hex");
@@ -108,7 +113,7 @@ async function buildDisplacementMap(sourceRoot, family, view, zone) {
     }
   }
   zoneMagnitudes.sort((a, b) => a - b);
-  const scale = Math.max(1, percentile(zoneMagnitudes, NORMALIZATION_PERCENTILE));
+  const scale = Math.max(MIN_FOLD_GRADIENT, percentile(zoneMagnitudes, NORMALIZATION_PERCENTILE));
 
   const out = Buffer.alloc(CANVAS * CANVAS * 4);
   for (let y = 0; y < CANVAS; y++) {
@@ -127,7 +132,7 @@ async function buildDisplacementMap(sourceRoot, family, view, zone) {
   // A light final blur smooths pixel-level jaggedness in the offset field
   // into a gentler warp, without erasing the underlying fold structure.
   const png = await sharp(out, { raw: { width: CANVAS, height: CANVAS, channels: 4 } })
-    .blur(2)
+    .blur(6)
     .png()
     .toBuffer();
   return { png, sourcePath, scale };

@@ -554,7 +554,7 @@ export async function composeLayers(opts: ComposeOptions): Promise<HTMLCanvasEle
  *  map channel (0 or 255) represents. Matches the generator's own bound
  *  (tools/build-displacement-maps.mjs MAX_DISPLACEMENT_PX) at the 1024px
  *  canvas the maps were authored at; scaled here for other output sizes. */
-const DISPLACEMENT_MAX_OFFSET_PX_AT_1024 = 10;
+const DISPLACEMENT_MAX_OFFSET_PX_AT_1024 = 4;
 
 /** Warp an isolated (transparent-background) artwork canvas in place using a
  *  two-channel displacement map: R encodes horizontal offset, G vertical,
@@ -600,65 +600,153 @@ function applyDisplacementMap(
   ctx.putImageData(out, 0, 0);
 }
 
+/** Lighting transfer: how strongly the product photo's own folds, shadows,
+ *  and fabric grain modulate the printed artwork. 1 would copy the photo's
+ *  relative brightness exactly; slightly above 1 reads better at thumbnail
+ *  sizes. Clamps keep ink from turning black in deep folds or blowing out. */
+const LIGHTING_GAIN = 1.4;
+const GRAIN_GAIN = 0.5;
+const SHADE_MIN = 0.55;
+const SHADE_MAX = 1.18;
+/** Dark garments have low reference luminance; dividing by it raw would turn
+ *  photo noise into blotches on the print. */
+const MIN_REFERENCE_LUMINANCE = 28;
+
+const shadeFieldCache = new Map<string, Float32Array>();
+
+function boxBlur(src: Float32Array, size: number, radius: number): Float32Array {
+  const tmp = new Float32Array(src.length);
+  const out = new Float32Array(src.length);
+  const span = radius * 2 + 1;
+  for (let y = 0; y < size; y++) {
+    let acc = 0;
+    for (let k = -radius; k <= radius; k++) acc += src[y * size + Math.min(size - 1, Math.max(0, k))];
+    for (let x = 0; x < size; x++) {
+      tmp[y * size + x] = acc / span;
+      const add = Math.min(size - 1, x + radius + 1);
+      const sub = Math.max(0, x - radius);
+      acc += src[y * size + add] - src[y * size + sub];
+    }
+  }
+  for (let x = 0; x < size; x++) {
+    let acc = 0;
+    for (let k = -radius; k <= radius; k++) acc += tmp[Math.min(size - 1, Math.max(0, k)) * size + x];
+    for (let y = 0; y < size; y++) {
+      out[y * size + x] = acc / span;
+      const add = Math.min(size - 1, y + radius + 1);
+      const sub = Math.max(0, y - radius);
+      acc += tmp[add * size + x] - tmp[sub * size + x];
+    }
+  }
+  return out;
+}
+
+/** Per-pixel shade factor from the real product photo: 1 = the garment's
+ *  typical brightness inside the print area, <1 in folds and shadows, >1 in
+ *  highlights. Folds come from a blurred luminance field, fabric grain from
+ *  what the blur removed. Computed once per photo/size/zone and cached. */
+function getShadeField(base: HTMLImageElement, outSize: number, zone: { x0: number; y0: number; x1: number; y1: number }): Float32Array | null {
+  const key = `${base.src}|${outSize}|${zone.x0},${zone.y0},${zone.x1},${zone.y1}`;
+  const cached = shadeFieldCache.get(key);
+  if (cached) return cached;
+  const c = document.createElement("canvas");
+  c.width = outSize;
+  c.height = outSize;
+  const cx = c.getContext("2d", { willReadFrequently: true });
+  if (!cx) return null;
+  cx.drawImage(base, 0, 0, outSize, outSize);
+  const px = cx.getImageData(0, 0, outSize, outSize).data;
+  const lum = new Float32Array(outSize * outSize);
+  for (let i = 0; i < lum.length; i++) {
+    lum[i] = 0.2126 * px[i * 4] + 0.7152 * px[i * 4 + 1] + 0.0722 * px[i * 4 + 2];
+  }
+  const radius = Math.max(2, Math.round(outSize / 300));
+  const blurred = boxBlur(boxBlur(lum, outSize, radius), outSize, radius);
+
+  const hist = new Uint32Array(256);
+  let count = 0;
+  for (let y = zone.y0; y < zone.y1; y++) {
+    for (let x = zone.x0; x < zone.x1; x++) {
+      hist[Math.min(255, Math.max(0, Math.round(blurred[y * outSize + x])))]++;
+      count++;
+    }
+  }
+  let reference = 128;
+  for (let v = 0, seen = 0; v < 256; v++) {
+    seen += hist[v];
+    if (seen >= count / 2) { reference = v; break; }
+  }
+  const denom = Math.max(reference, MIN_REFERENCE_LUMINANCE);
+
+  const shade = new Float32Array(outSize * outSize).fill(1);
+  for (let y = zone.y0; y < zone.y1; y++) {
+    for (let x = zone.x0; x < zone.x1; x++) {
+      const i = y * outSize + x;
+      const fold = (blurred[i] - reference) / denom;
+      const grain = (lum[i] - blurred[i]) / denom;
+      shade[i] = Math.min(SHADE_MAX, Math.max(SHADE_MIN, 1 + LIGHTING_GAIN * fold + GRAIN_GAIN * grain));
+    }
+  }
+  if (shadeFieldCache.size > 24) shadeFieldCache.delete(shadeFieldCache.keys().next().value!);
+  shadeFieldCache.set(key, shade);
+  return shade;
+}
+
+/** Relight an isolated (transparent-background) artwork canvas with the
+ *  product photo's own light: multiply in folds/shadows, screen toward white
+ *  in highlights. Only artwork pixels change, so the bare garment around the
+ *  design is never darkened (the old print-zone-wide shadow/highlight overlay
+ *  did that, which drew a visible rectangle behind every design on dark
+ *  garments and muddied bright ink). */
+function applyPhotoLighting(
+  artworkCanvas: HTMLCanvasElement,
+  base: HTMLImageElement,
+  printZone: ComposerPrintZone,
+  scale: number,
+  outSize: number,
+) {
+  const ctx = artworkCanvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return;
+  const zone = {
+    x0: Math.max(0, Math.floor(printZone.x * scale)),
+    y0: Math.max(0, Math.floor(printZone.y * scale)),
+    x1: Math.min(outSize, Math.ceil((printZone.x + printZone.w) * scale)),
+    y1: Math.min(outSize, Math.ceil((printZone.y + printZone.h) * scale)),
+  };
+  if (zone.x1 <= zone.x0 || zone.y1 <= zone.y0) return;
+  const shade = getShadeField(base, outSize, zone);
+  if (!shade) return;
+  const w = zone.x1 - zone.x0;
+  const h = zone.y1 - zone.y0;
+  const img = ctx.getImageData(zone.x0, zone.y0, w, h);
+  const d = img.data;
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (d[i + 3] === 0) continue;
+      const s = shade[(zone.y0 + y) * outSize + zone.x0 + x];
+      if (s < 1) {
+        d[i] *= s; d[i + 1] *= s; d[i + 2] *= s;
+      } else {
+        const t = s - 1;
+        d[i] += (255 - d[i]) * t; d[i + 1] += (255 - d[i + 1]) * t; d[i + 2] += (255 - d[i + 2]) * t;
+      }
+    }
+  }
+  ctx.putImageData(img, zone.x0, zone.y0);
+}
+
+/** Protected details (collars, seams, handles, bottle hardware) redrawn above
+ *  the artwork. Lighting is applied to the artwork itself by
+ *  applyPhotoLighting; the shadow/highlight role PNGs stay part of the
+ *  verified asset contract but are no longer painted as a print-zone overlay. */
 async function drawRuntimeRoles(opts: {
   ctx: CanvasRenderingContext2D;
   runtimeRoles: SmartMockupRuntimeRoles;
-  printZone: ComposerPrintZone;
   outSize: number;
   imageCache?: Map<string, HTMLImageElement>;
-  scale: number;
 }) {
-  const { ctx, runtimeRoles, printZone, outSize, imageCache, scale } = opts;
-  const effectCanvas = document.createElement("canvas");
-  effectCanvas.width = outSize;
-  effectCanvas.height = outSize;
-  const effectCtx = effectCanvas.getContext("2d");
-  if (!effectCtx) return;
-
-  const shadow = await loadImage(runtimeRoles.shadow, imageCache);
-  const highlight = await loadImage(runtimeRoles.highlight, imageCache);
-  const printMask = await loadImage(runtimeRoles.printMask, imageCache);
-
-  // Keep the geometric clip as a defensive guard, then apply the reviewed
-  // grayscale print mask as an alpha mask. The mask is grayscale (not alpha),
-  // so destination-in alone would incorrectly leave black outside pixels in
-  // the effect layer.
-  effectCtx.save();
-  effectCtx.beginPath();
-  tracePrintZone(effectCtx, printZone, scale, scale);
-  effectCtx.clip();
-  effectCtx.globalCompositeOperation = "multiply";
-  effectCtx.drawImage(shadow, 0, 0, outSize, outSize);
-  effectCtx.globalCompositeOperation = "screen";
-  effectCtx.drawImage(highlight, 0, 0, outSize, outSize);
-  effectCtx.restore();
-
-  const maskCanvas = document.createElement("canvas");
-  maskCanvas.width = outSize;
-  maskCanvas.height = outSize;
-  const maskCtx = maskCanvas.getContext("2d", { willReadFrequently: true });
-  if (maskCtx) {
-    maskCtx.drawImage(printMask, 0, 0, outSize, outSize);
-    const maskData = maskCtx.getImageData(0, 0, outSize, outSize);
-    for (let index = 0; index < maskData.data.length; index += 4) {
-      const luminance = maskData.data[index];
-      maskData.data[index] = 255;
-      maskData.data[index + 1] = 255;
-      maskData.data[index + 2] = 255;
-      maskData.data[index + 3] = luminance;
-    }
-    maskCtx.putImageData(maskData, 0, 0);
-    effectCtx.save();
-    effectCtx.globalCompositeOperation = "destination-in";
-    effectCtx.drawImage(maskCanvas, 0, 0);
-    effectCtx.restore();
-  }
-
-  ctx.save();
-  ctx.globalCompositeOperation = "source-over";
-  ctx.drawImage(effectCanvas, 0, 0);
-  ctx.restore();
-
+  const { ctx, runtimeRoles, outSize, imageCache } = opts;
   // This pass deliberately stays outside the artwork clip. Reviewed alpha
   // detail exports keep collars, seams, handles, cuffs, and bottle hardware
   // above artwork without ever redrawing a second full product silhouette.
@@ -744,12 +832,12 @@ export async function composeGarmentMockup(opts: {
   const glum = (0.299 * gr + 0.587 * gg + 0.114 * gb) / 255;
   const hasVisibleLayers = layers.some((layer) => layer.visible);
 
-  if (runtimeRoles?.displacement && hasVisibleLayers) {
-    // Pilot surfaces only: render the artwork in isolation (transparent
-    // background) so displacement can warp exactly its own pixels without
-    // disturbing the garment photo beneath it, then composite the warped
-    // result onto the main canvas. Every surface without a displacement
-    // role skips this branch entirely and keeps today's flat placement.
+  if (runtimeRoles && hasVisibleLayers) {
+    // Every runtime surface (all six products): render the design in
+    // isolation on a transparent canvas, bend it with the fabric's folds
+    // where a displacement map exists, relight it with the product photo's
+    // own light, then place it on the garment. Working on the isolated design
+    // is what keeps the bare garment around it untouched.
     const artworkCanvas = document.createElement("canvas");
     artworkCanvas.width = outSize;
     artworkCanvas.height = outSize;
@@ -764,17 +852,21 @@ export async function composeGarmentMockup(opts: {
       imageCache,
       clipToPrintZone: true,
       blendMode: "source-over",
-      textBlendMode: glum > 0.92 ? "multiply" : "source-over",
+      textBlendMode: "source-over",
       curvature,
       fabricTexture: false,
       clearCanvas: true,
     });
-    const displacementImg = await loadImage(runtimeRoles.displacement, imageCache);
-    applyDisplacementMap(artworkCanvas, displacementImg, outSize);
+    if (runtimeRoles.displacement) {
+      const displacementImg = await loadImage(runtimeRoles.displacement, imageCache);
+      applyDisplacementMap(artworkCanvas, displacementImg, outSize);
+    }
+    applyPhotoLighting(artworkCanvas, garmentImg, printZone, s, outSize);
     ctx.save();
     ctx.globalCompositeOperation = "source-over";
     ctx.drawImage(artworkCanvas, 0, 0);
     ctx.restore();
+    await drawRuntimeRoles({ ctx, runtimeRoles, outSize, imageCache });
   } else {
     await composeLayers({
       canvas,
@@ -792,29 +884,6 @@ export async function composeGarmentMockup(opts: {
       fabricTexture,
       clearCanvas: false,
     });
-  }
-
-  if (runtimeRoles && layers.some((layer) => layer.visible)) {
-    await drawRuntimeRoles({
-      ctx,
-      runtimeRoles,
-      printZone,
-      outSize,
-      imageCache,
-      scale: s,
-    });
-  }
-
-  // Do not redraw the full garment over the artwork here. A whole-frame
-  // multiply pass creates the duplicate/ghost silhouette users see on dark
-  // variants. The clipped luminosity masks below are the single shading source.
-  if (fabricTexture && layers.some(l => l.visible)) {
-    ctx.save();
-    ctx.beginPath();
-    tracePrintZone(ctx, printZone, s, s);
-    ctx.clip();
-    applyFabricGrain(ctx, outSize, outSize, 0.035);
-    ctx.restore();
   }
 
   return canvas;
@@ -966,13 +1035,13 @@ export async function composeDesignTexture(opts: {
   if (opts.runtimeRoles && opts.layers.some((layer) => layer.visible)) {
     const ctx = result.getContext("2d");
     if (ctx) {
+      const base = await loadImage(opts.runtimeRoles.base, opts.imageCache);
+      applyPhotoLighting(result, base, opts.printZone, opts.outSize / 1000, opts.outSize);
       await drawRuntimeRoles({
         ctx,
         runtimeRoles: opts.runtimeRoles,
-        printZone: opts.printZone,
         outSize: opts.outSize,
         imageCache: opts.imageCache,
-        scale: opts.outSize / 1000,
       });
     }
   }
