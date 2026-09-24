@@ -30,7 +30,6 @@ export function StickyAddToCart({
 }: StickyAddToCartProps) {
   const [visible, setVisible] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const stickyOffset = "calc(var(--mobile-sticky-offset, 0px) + env(safe-area-inset-bottom, 0px))";
 
   useEffect(() => {
     const el = triggerRef.current;
@@ -79,7 +78,10 @@ export function StickyAddToCart({
         // Safari from routing touches to a translated-off-screen element.
         visibility: visible ? "visible" : "hidden",
         pointerEvents: visible ? "auto" : "none",
-        bottom: stickyOffset,
+        // The bar itself sits at the screen edge. --mobile-sticky-offset is what
+        // this bar publishes so floating buttons can clear it; using it here
+        // too lifted the bar 76px and put the Back-to-top button on its Add button.
+        bottom: 0,
         paddingBottom: "env(safe-area-inset-bottom, 0px)",
       }}
       aria-hidden={!visible}
