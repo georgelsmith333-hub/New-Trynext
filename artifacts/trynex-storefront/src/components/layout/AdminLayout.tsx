@@ -108,7 +108,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const activeGroup = MENU_GROUPS.find((group) => group.items.some((item) => item === activeItem));
 
   return (
-    <div className="min-h-[100dvh] flex bg-[var(--admin-canvas)] text-[var(--admin-ink)]">
+    <div className="admin-shell min-h-[100dvh] flex bg-[var(--admin-canvas)] text-[var(--admin-ink)]">
       {sidebarOpen && (
         <button
           type="button"

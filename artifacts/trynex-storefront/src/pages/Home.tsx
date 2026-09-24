@@ -21,6 +21,10 @@ import {
 import { motion, useInView } from "framer-motion";
 import React, { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { TypewriterHero } from "@/components/home/TypewriterHero";
+import {
+  defaultHomeLayout, parseHomeLayout, HOME_SECTION_PADDING_CLASS,
+  type HomeSectionSettings, type HomeSectionType,
+} from "@/lib/homepageLayout";
 
 const MARQUEE_ITEMS = [
   "PREMIUM QUALITY", "CUSTOM DESIGNS", "FAST DELIVERY", "MADE IN BANGLADESH",
@@ -525,7 +529,7 @@ function useTopPosts() {
   });
 }
 
-function HomeTopPostsWidget() {
+function HomeTopPostsWidget({ title }: { title?: string }) {
   const { data, isLoading, isError } = useTopPosts();
   const posts = data?.posts ?? [];
 
@@ -551,7 +555,7 @@ function HomeTopPostsWidget() {
             <TrendingUp className="w-3.5 h-3.5" /> Top Posts
           </motion.span>
           <h2 className="text-2xl sm:text-3xl font-black font-display tracking-tight text-gray-900 mt-2">
-            Most Popular on the Blog
+            {title || "Most Popular on the Blog"}
           </h2>
           <p className="text-gray-400 text-sm mt-2">The articles our readers love most — dive in.</p>
         </div>
@@ -667,6 +671,35 @@ export default function Home() {
     location: t.location || "",
   }));
 
+  // Page Builder: render sections in the admin-saved order/visibility, or the
+  // built-in default order when no layout has been published.
+  const homeLayout = useMemo(
+    () => parseHomeLayout(settings.homepage_layout) ?? defaultHomeLayout(),
+    [settings.homepage_layout],
+  );
+  const renderHomeSections = (
+    blocks: Record<HomeSectionType, (c: HomeSectionSettings) => React.ReactNode>,
+  ) => homeLayout.filter(section => section.visible).map(section => {
+    const node = blocks[section.type]?.(section.settings);
+    if (!node) return null;
+    const { bgColor, padding } = section.settings;
+    const className = [
+      "home-section",
+      bgColor ? "home-section-custom-bg" : "",
+      padding ? HOME_SECTION_PADDING_CLASS[padding] : "",
+    ].filter(Boolean).join(" ");
+    return (
+      <div
+        key={section.id}
+        className={className}
+        data-home-section={section.type}
+        style={bgColor ? ({ "--home-section-bg": bgColor } as React.CSSProperties) : undefined}
+      >
+        {node}
+      </div>
+    );
+  });
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <SEOHead
@@ -748,12 +781,10 @@ export default function Home() {
       <Navbar />
       <SpinWheel autoOpen forceOpen={spinWheelOpen} onClose={() => setSpinWheelOpen(false)} />
 
-      <TypewriterHero />
-
-      {/* ═══════════════════════════════════════
-          MARQUEE TICKER
-      ═══════════════════════════════════════ */}
-      <section className="py-4 overflow-hidden border-y border-orange-100"
+      {renderHomeSections({
+        hero: () => <TypewriterHero />,
+        /* MARQUEE TICKER */
+        announcement: () => (<section className="py-4 overflow-hidden border-y border-orange-100"
         style={{ background: 'linear-gradient(135deg, #FFF4EA, #FFF8F2)' }}>
         <div className="animate-marquee">
           {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
@@ -765,15 +796,9 @@ export default function Home() {
           ))}
         </div>
       </section>
-
-      {/* ═══════════════════════════════════════
-          SPECIAL OFFERS + FEATURED PRODUCTS
-          (placed RIGHT AFTER the marquee ticker so the
-           "Special Offers" hero card + offer products
-           appear immediately under the marquee, before
-           the Payment Trust Ribbon and Categories grid.)
-      ═══════════════════════════════════════ */}
-      {settings.sectionFeaturedEnabled !== false && <section className="py-20 px-4 bg-white" data-testid="section-special-offers">
+        ),
+        /* SPECIAL OFFERS + FEATURED PRODUCTS (right after the marquee) */
+        "products": (c) => settings.sectionFeaturedEnabled !== false && (<section className="py-20 px-4 bg-white" data-testid="section-special-offers">
         <div className="container-wide mx-auto">
           {/* Promo banner */}
           <motion.div
@@ -794,7 +819,7 @@ export default function Home() {
                   <Sparkles className="w-3 h-3" /> Limited Time
                 </span>
                 <h2 className="font-display font-black text-2xl sm:text-3xl lg:text-4xl mt-3 leading-tight">
-                  Special Offers — Save Big Today
+                  {c.title || "Special Offers — Save Big Today"}
                 </h2>
                 <p className="text-white/80 text-sm sm:text-base mt-2 max-w-xl">
                   Hand-picked best sellers at exclusive prices. Free design preview &amp; fast nationwide delivery.
@@ -859,12 +884,10 @@ export default function Home() {
             </ErrorBoundary>
           )}
         </div>
-      </section>}
-
-      {/* ═══════════════════════════════════════
-          PAYMENT TRUST RIBBON
-      ═══════════════════════════════════════ */}
-      <section className="py-6 px-4 bg-white border-b border-gray-100">
+      </section>)
+        ,
+        /* PAYMENT TRUST RIBBON */
+        "payment-ribbon": () => (<section className="py-6 px-4 bg-white border-b border-gray-100">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -912,11 +935,9 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* ═══════════════════════════════════════
-          CATEGORIES GRID
-      ═══════════════════════════════════════ */}
-      {settings.sectionCategoriesEnabled !== false && <section className="py-20 px-4" style={{ background: '#FAFAFA' }}>
+        ),
+        /* CATEGORIES GRID */
+        "categories": (c) => settings.sectionCategoriesEnabled !== false && (<section className="py-20 px-4" style={{ background: '#FAFAFA' }}>
         <div className="container-wide mx-auto px-4 md:px-8 lg:px-16">
           <div className="text-center mb-10 md:mb-16">
             <motion.span
@@ -928,7 +949,7 @@ export default function Home() {
               <Package className="w-3 h-3" /> Our Collections
             </motion.span>
             <h2 className="section-heading mt-4">
-              <SplitTextReveal text="Shop by Category" delay={0.05} />
+              <SplitTextReveal text={c.title || "Shop by Category"} delay={0.05} />
             </h2>
             <motion.p
               initial={{ opacity: 0, y: 12 }}
@@ -1021,15 +1042,10 @@ export default function Home() {
             })}
           </div>
         </div>
-      </section>}
-
-      {/* ═══════════════════════════════════════
-          FLASH SALE BANNER
-          (12-hour rolling countdown — never stops:
-           06:00↔18:00 BST = Day Sale,
-           18:00↔06:00 BST = Night Sale)
-      ═══════════════════════════════════════ */}
-      {settings.sectionFlashSaleEnabled !== false && <section className="py-8 sm:py-12 px-4" style={{ background: 'white' }}>
+      </section>)
+        ,
+        /* FLASH SALE BANNER (12-hour rolling countdown: 06:00-18:00 BST Day Sale, 18:00-06:00 BST Night Sale) */
+        "flash-sale": () => settings.sectionFlashSaleEnabled !== false && (<section className="py-8 sm:py-12 px-4" style={{ background: 'white' }}>
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -1087,12 +1103,10 @@ export default function Home() {
             </Link>
           </motion.div>
         </div>
-      </section>}
-
-      {/* ═══════════════════════════════════════
-          FEATURES / WHY CHOOSE US
-      ═══════════════════════════════════════ */}
-      <section className="py-20 px-4" style={{ background: 'linear-gradient(180deg, #FFF8F3 0%, #FFF4EC 100%)' }}>
+      </section>)
+        ,
+        /* FEATURES / WHY CHOOSE US */
+        "features": (c) => (<section className="py-20 px-4" style={{ background: 'linear-gradient(180deg, #FFF8F3 0%, #FFF4EC 100%)' }}>
         <div className="container-wide mx-auto px-4 md:px-8 lg:px-16">
           <div className="text-center mb-16">
             <motion.span
@@ -1104,7 +1118,7 @@ export default function Home() {
               <Award className="w-3 h-3" /> Why Trynext?
             </motion.span>
             <h2 className="section-heading mt-4">
-              <SplitTextReveal text="Built for Bangladesh" delay={0.04} />
+              <SplitTextReveal text={c.title || "Built for Bangladesh"} delay={0.04} />
             </h2>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -1158,11 +1172,9 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ═══════════════════════════════════════
-          HOW IT WORKS — Animated SVG connector
-      ═══════════════════════════════════════ */}
-      <section className="py-20 px-4 bg-white" ref={howItWorksRef}>
+        ),
+        /* HOW IT WORKS - Animated SVG connector */
+        "how-it-works": (c) => (<section className="py-20 px-4 bg-white" ref={howItWorksRef}>
         <div className="max-w-4xl mx-auto px-4 md:px-8 lg:px-16">
           <div className="text-center mb-16">
             <motion.span
@@ -1174,7 +1186,7 @@ export default function Home() {
               <Clock className="w-3 h-3" /> How It Works
             </motion.span>
             <h2 className="section-heading mt-4">
-              <SplitTextReveal text="Simple as 1-2-3" delay={0.04} />
+              <SplitTextReveal text={c.title || "Simple as 1-2-3"} delay={0.04} />
             </h2>
           </div>
 
@@ -1216,11 +1228,9 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* ═══════════════════════════════════════
-          DESIGN STUDIO CTA BANNER
-      ═══════════════════════════════════════ */}
-      <section className="py-14 px-4 overflow-hidden relative" style={{ background: 'linear-gradient(135deg, #1C1917 0%, #2d2116 100%)' }}>
+        ),
+        /* DESIGN STUDIO CTA BANNER */
+        "studio-cta": () => (<section className="py-14 px-4 overflow-hidden relative" style={{ background: 'linear-gradient(135deg, #1C1917 0%, #2d2116 100%)' }}>
         <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: 'radial-gradient(ellipse 60% 80% at 15% 50%, rgba(232,93,4,0.12) 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 85% 50%, rgba(251,133,0,0.08) 0%, transparent 70%)' }} />
         <div className="container-wide flex flex-col md:flex-row items-center gap-8 md:gap-12 relative">
           <div className="flex-1 text-center md:text-left">
@@ -1306,12 +1316,9 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
-      {/* ═══════════════════════════════════════
-          KEYWORD LANDING PAGE CARDS
-          "Most Popular Custom Products"
-      ═══════════════════════════════════════ */}
-      <section className="py-14 bg-white">
+        ),
+        /* KEYWORD LANDING PAGE CARDS - Most Popular Custom Products */
+        "popular-products": (c) => (<section className="py-14 bg-white">
         <div className="container-wide mx-auto px-4 md:px-8 lg:px-16">
           <div className="text-center mb-10">
             <motion.span
@@ -1329,7 +1336,7 @@ export default function Home() {
               transition={{ delay: 0.1 }}
               className="font-display font-black text-2xl md:text-3xl text-gray-900 mt-4"
             >
-              Most Popular Custom Products in Bangladesh
+              {c.title || "Most Popular Custom Products in Bangladesh"}
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 8 }}
@@ -1376,9 +1383,9 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Stats Bar */}
-      {settings.sectionStatsEnabled !== false && <section className="py-12 bg-gray-50/50">
+        ),
+        /* STATS BAR */
+        "stats": () => settings.sectionStatsEnabled !== false && (<section className="py-12 bg-gray-50/50">
         <div className="container-wide mx-auto px-4 md:px-8 lg:px-16">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {BASE_STATS.map((stat, i) => {
@@ -1406,12 +1413,10 @@ export default function Home() {
             })}
           </div>
         </div>
-      </section>}
-
-      {/* ═══════════════════════════════════════
-          TESTIMONIALS
-      ═══════════════════════════════════════ */}
-      {settings.sectionTestimonialsEnabled !== false && testimonials.length > 0 && <section className="py-20 px-4" style={{ background: 'linear-gradient(180deg, #FAFAFA 0%, #FFF4EC 100%)' }}>
+      </section>)
+        ,
+        /* TESTIMONIALS */
+        "testimonials": (c) => settings.sectionTestimonialsEnabled !== false && testimonials.length > 0 && (<section className="py-20 px-4" style={{ background: 'linear-gradient(180deg, #FAFAFA 0%, #FFF4EC 100%)' }}>
         <div className="container-wide mx-auto px-4 md:px-8 lg:px-16">
           <div className="text-center mb-12">
             <motion.span
@@ -1423,7 +1428,7 @@ export default function Home() {
               <Star className="w-3 h-3" /> Customer Feedback
             </motion.span>
             <h2 className="section-heading mt-4">
-              <SplitTextReveal text="Feedback From Our Customers" delay={0.025} />
+              <SplitTextReveal text={c.title || "Feedback From Our Customers"} delay={0.025} />
             </h2>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -1490,12 +1495,10 @@ export default function Home() {
             })()}
           </div>
         </div>
-      </section>}
-
-      {/* ═══════════════════════════════════════
-          TRUST BADGES
-      ═══════════════════════════════════════ */}
-      <section className="py-12 px-4 bg-white border-y border-gray-100">
+      </section>)
+        ,
+        /* TRUST BADGES */
+        "trust-badges": () => (<section className="py-12 px-4 bg-white border-y border-gray-100">
         <div className="container-wide">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
@@ -1534,17 +1537,17 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <HomeTopPostsWidget />
-
-      {/* Recently Viewed + Instagram */}
-      <RecentlyViewed />
-      <ConnectWithUs />
-
-      {/* ═══════════════════════════════════════
-          CTA SECTION — Glowing animated border
-      ═══════════════════════════════════════ */}
-      <section className="py-24 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1C1917 0%, #292524 100%)' }}>
+        ),
+        blog: (c) => <HomeTopPostsWidget title={c.title} />,
+        /* Recently Viewed + Instagram */
+        "recently-viewed": () => (
+          <>
+            <RecentlyViewed />
+            <ConnectWithUs />
+          </>
+        ),
+        /* CTA SECTION - Glowing animated border */
+        cta: () => (<section className="py-24 px-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1C1917 0%, #292524 100%)' }}>
         {/* Animated glow rings */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <motion.div
@@ -1606,6 +1609,8 @@ export default function Home() {
           </div>
         </motion.div>
       </section>
+        ),
+      })}
 
       <Footer />
     </div>

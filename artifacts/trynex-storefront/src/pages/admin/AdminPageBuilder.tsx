@@ -1,114 +1,152 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { useGetSettings, useUpdateSettings } from "@workspace/api-client-react";
 import { Loader } from "@/components/ui/Loader";
 import { getAuthHeaders } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { 
-  GripVertical, Eye, EyeOff, Edit2, Trash2, Plus, Save, 
-  Layout, Image as ImageIcon, ShoppingBag, Info, MessageSquare, 
+import {
+  GripVertical, Eye, EyeOff, Trash2, Plus, Save,
+  Layout, Image as ImageIcon, ShoppingBag, Info, MessageSquare,
   BarChart3, ShieldCheck, Newspaper, MousePointer2, Megaphone,
-  ChevronUp, ChevronDown
+  ChevronUp, ChevronDown, CreditCard, Grid, Flame, Award, Palette,
+  Package, History, RotateCcw, ExternalLink, AlertCircle, type LucideIcon,
 } from "lucide-react";
+import {
+  HOME_SECTION_INFO, HOME_SECTION_TYPES, defaultHomeLayout, parseHomeLayout, serializeHomeLayout,
+  type HomeSectionConfig, type HomeSectionPadding, type HomeSectionSettings, type HomeSectionType,
+} from "@/lib/homepageLayout";
 
-interface SectionConfig {
-  id: string;
-  type: string;
-  visible: boolean;
-  settings: Record<string, any>;
-}
-
-const SECTION_LIBRARY = [
-  { type: "hero", name: "Hero Banner", icon: Layout, description: "Main promotional header" },
-  { type: "categories", name: "Category Grid", icon: Layout, description: "Circular category links" },
-  { type: "products", name: "Featured Products", icon: ShoppingBag, description: "Dynamic product grid" },
-  { type: "how-it-works", name: "How It Works", icon: Info, description: "Step-by-step process" },
-  { type: "testimonials", name: "Testimonials", icon: MessageSquare, description: "Customer reviews" },
-  { type: "stats", name: "Stats Bar", icon: BarChart3, description: "Trust indicators & numbers" },
-  { type: "trust-badges", name: "Trust Badges", icon: ShieldCheck, description: "Security & shipping badges" },
-  { type: "blog", name: "Blog Previews", icon: Newspaper, description: "Recent articles" },
-  { type: "cta", name: "CTA Banner", icon: Megaphone, description: "Call to action strip" },
-  { type: "announcement", name: "Announcement Bar", icon: Megaphone, description: "Top scrolling ticker" },
-];
+const SECTION_ICONS: Record<HomeSectionType, LucideIcon> = {
+  hero: ImageIcon,
+  announcement: Megaphone,
+  products: ShoppingBag,
+  "payment-ribbon": CreditCard,
+  categories: Grid,
+  "flash-sale": Flame,
+  features: Award,
+  "how-it-works": Info,
+  "studio-cta": Palette,
+  "popular-products": Package,
+  stats: BarChart3,
+  testimonials: MessageSquare,
+  "trust-badges": ShieldCheck,
+  blog: Newspaper,
+  "recently-viewed": History,
+  cta: Megaphone,
+};
 
 export default function AdminPageBuilder() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { data: settings, isLoading } = useGetSettings({ 
-    request: { headers: getAuthHeaders() }, 
-    query: { staleTime: 0, refetchOnMount: "always" } as any 
+  const { data: settings, isLoading } = useGetSettings({
+    request: { headers: getAuthHeaders() },
+    query: { staleTime: 0, refetchOnMount: "always" } as any
   });
   const { mutateAsync: updateSettings, isPending } = useUpdateSettings({
     request: { headers: getAuthHeaders() }
   });
 
-  const [layout, setLayout] = useState<SectionConfig[]>([]);
+  const [layout, setLayout] = useState<HomeSectionConfig[]>([]);
+  const [isCustomLayout, setIsCustomLayout] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const dragOverTargetRef = useRef("");
+  const loadedRef = useRef(false);
+  const settingsPanelRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (settings?.homepage_layout) {
-      try {
-        const parsed = JSON.parse(settings.homepage_layout as string);
-        if (Array.isArray(parsed)) setLayout(parsed);
-      } catch (e) {
-        console.error("Failed to parse homepage layout", e);
-      }
-    }
-  }, [settings]);
-
-  const saveLayout = async (newLayout: SectionConfig[]) => {
-    try {
-      await updateSettings({
-        data: {
-          homepage_layout: JSON.stringify(newLayout)
-        } as any
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
-      toast({ title: "Layout saved successfully" });
-    } catch (e) {
-      toast({ title: "Failed to save layout", variant: "destructive" });
+  // On narrow screens the settings panel sits below the list; bring it into
+  // view when a section is tapped so the edit controls are discoverable.
+  const selectSection = (id: string) => {
+    setSelectedSectionId(id);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      requestAnimationFrame(() => settingsPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
     }
   };
 
-  const addSection = (type: string) => {
-    const newSection: SectionConfig = {
+  // Load once from the server. Later refetches (window focus etc.) must not
+  // wipe unsaved edits in progress.
+  useEffect(() => {
+    if (!settings || loadedRef.current) return;
+    loadedRef.current = true;
+    const saved = parseHomeLayout((settings as { homepage_layout?: string | null }).homepage_layout);
+    setIsCustomLayout(saved !== null);
+    setLayout(saved ?? defaultHomeLayout());
+  }, [settings]);
+
+  const edit = (updater: (prev: HomeSectionConfig[]) => HomeSectionConfig[]) => {
+    setLayout(updater);
+    setDirty(true);
+  };
+
+  const saveLayout = async () => {
+    try {
+      const saved = await updateSettings({
+        data: { homepage_layout: serializeHomeLayout(layout) } as any
+      });
+      const stored = parseHomeLayout((saved as { homepage_layout?: string | null } | undefined)?.homepage_layout);
+      if (!stored) throw new Error("The server did not store the layout.");
+      queryClient.invalidateQueries({ queryKey: ["/api/settings"] });
+      setIsCustomLayout(true);
+      setDirty(false);
+      toast({ title: "Layout published", description: "The homepage now uses this section order." });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Please try again.";
+      toast({ title: "Failed to save layout", description: msg, variant: "destructive" });
+    }
+  };
+
+  const resetToDefault = () => {
+    setLayout(defaultHomeLayout());
+    setSelectedSectionId(null);
+    setDirty(true);
+  };
+
+  const usedTypes = new Set(layout.map(s => s.type));
+
+  const addSection = (type: HomeSectionType) => {
+    if (usedTypes.has(type)) return;
+    const newSection: HomeSectionConfig = {
       id: Math.random().toString(36).slice(2, 11),
       type,
       visible: true,
       settings: {}
     };
-    const next = [...layout, newSection];
-    setLayout(next);
+    edit(prev => [...prev, newSection]);
     setSelectedSectionId(newSection.id);
   };
 
   const removeSection = (id: string) => {
-    const next = layout.filter(s => s.id !== id);
-    setLayout(next);
+    edit(prev => prev.filter(s => s.id !== id));
     if (selectedSectionId === id) setSelectedSectionId(null);
   };
 
   const toggleVisibility = (id: string) => {
-    const next = layout.map(s => s.id === id ? { ...s, visible: !s.visible } : s);
-    setLayout(next);
+    edit(prev => prev.map(s => s.id === id ? { ...s, visible: !s.visible } : s));
   };
 
-  const updateSectionSettings = (id: string, newSettings: Record<string, any>) => {
-    const next = layout.map(s => s.id === id ? { ...s, settings: { ...s.settings, ...newSettings } } : s);
-    setLayout(next);
+  const updateSectionSettings = (id: string, patch: Partial<HomeSectionSettings>) => {
+    edit(prev => prev.map(s => {
+      if (s.id !== id) return s;
+      const next: HomeSectionSettings = { ...s.settings, ...patch };
+      (Object.keys(next) as (keyof HomeSectionSettings)[]).forEach(k => { if (!next[k]) delete next[k]; });
+      return { ...s, settings: next };
+    }));
   };
 
-  // Drag and Drop (desktop)
-  const dragOverTargetRef = { current: "" as string };
-  const onDragStart = (id: string) => setDraggingId(id);
+  // Drag and Drop (mouse). Touch devices use the up/down buttons.
+  const onDragStart = (e: React.DragEvent, id: string) => {
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+    setDraggingId(id);
+  };
   const onDragOver = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     if (!draggingId || draggingId === targetId || dragOverTargetRef.current === targetId) return;
     dragOverTargetRef.current = targetId;
-    setLayout(prev => {
+    edit(prev => {
       const draggingIdx = prev.findIndex(s => s.id === draggingId);
       const targetIdx = prev.findIndex(s => s.id === targetId);
       if (draggingIdx === -1 || targetIdx === -1) return prev;
@@ -120,73 +158,98 @@ export default function AdminPageBuilder() {
   };
   const onDragEnd = () => { setDraggingId(null); dragOverTargetRef.current = ""; };
 
-  // Touch-based reorder helpers for mobile
-  const moveUp = (id: string) => setLayout(prev => {
+  const move = (id: string, delta: -1 | 1) => edit(prev => {
     const idx = prev.findIndex(s => s.id === id);
-    if (idx <= 0) return prev;
+    const target = idx + delta;
+    if (idx === -1 || target < 0 || target >= prev.length) return prev;
     const next = [...prev];
-    [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
-    return next;
-  });
-  const moveDown = (id: string) => setLayout(prev => {
-    const idx = prev.findIndex(s => s.id === id);
-    if (idx >= prev.length - 1) return prev;
-    const next = [...prev];
-    [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+    [next[idx], next[target]] = [next[target], next[idx]];
     return next;
   });
 
   const selectedSection = layout.find(s => s.id === selectedSectionId);
+  const selectedInfo = selectedSection ? HOME_SECTION_INFO[selectedSection.type] : null;
 
   if (isLoading) return <AdminLayout><Loader /></AdminLayout>;
 
   return (
     <AdminLayout>
       <div className="flex flex-col min-h-0">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-wrap justify-between items-start gap-3 mb-4">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-gray-900">Page Builder</h1>
-            <p className="text-sm text-gray-500">Drag and drop to manage your homepage sections.</p>
+            <p className="text-sm text-gray-500">Reorder, hide and customise your homepage sections, then publish.</p>
           </div>
-          <button
-            onClick={() => saveLayout(layout)}
-            disabled={isPending}
-            className="flex items-center gap-2 px-6 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all disabled:opacity-50"
-          >
-            <Save className="w-4 h-4" />
-            {isPending ? "Saving..." : "Save Changes"}
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {dirty && (
+              <span className="flex items-center gap-1.5 text-xs font-bold text-amber-600 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200">
+                <AlertCircle className="w-3.5 h-3.5" /> Unsaved changes
+              </span>
+            )}
+            <a href="/" target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50">
+              <ExternalLink className="w-4 h-4" /> View homepage
+            </a>
+            <button
+              onClick={saveLayout}
+              disabled={isPending || !dirty}
+              className="flex items-center gap-2 px-6 py-2.5 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition-all disabled:opacity-50"
+            >
+              <Save className="w-4 h-4" />
+              {isPending ? "Saving..." : "Save & Publish"}
+            </button>
+          </div>
         </div>
+
+        {!isCustomLayout && (
+          <div className="mb-4 px-4 py-3 rounded-xl text-sm bg-blue-50 border border-blue-200 text-blue-800">
+            The homepage is using the built-in default layout shown below. Changes go live after you click <strong>Save &amp; Publish</strong>.
+          </div>
+        )}
 
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 flex-1 min-h-0">
           {/* Left Sidebar - Library */}
-          <div className="lg:w-64 w-full bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col lg:max-h-none max-h-48">
+          <div className="lg:w-64 w-full bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col lg:max-h-none max-h-60">
             <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-xs uppercase tracking-widest text-gray-500">
               Available Sections
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {SECTION_LIBRARY.map(item => (
-                <button
-                  key={item.type}
-                  onClick={() => addSection(item.type)}
-                  className="w-full text-left p-3 rounded-xl border border-transparent hover:border-orange-200 hover:bg-orange-50 group transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-white flex items-center justify-center text-gray-500 group-hover:text-orange-600 transition-colors">
-                      <item.icon className="w-4 h-4" />
+              {HOME_SECTION_TYPES.map(type => {
+                const item = HOME_SECTION_INFO[type];
+                const Icon = SECTION_ICONS[type];
+                const added = usedTypes.has(type);
+                return (
+                  <button
+                    key={type}
+                    onClick={() => addSection(type)}
+                    disabled={added}
+                    title={added ? "Already on the page" : `Add ${item.name}`}
+                    className="w-full text-left p-3 rounded-xl border border-transparent hover:border-orange-200 hover:bg-orange-50 group transition-all disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:border-transparent disabled:cursor-not-allowed"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gray-100 group-hover:bg-white flex items-center justify-center text-gray-500 group-hover:text-orange-600 transition-colors">
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold text-gray-800">{item.name}</div>
+                        <div className="text-[10px] text-gray-400 leading-tight">{added ? "On the page" : item.description}</div>
+                      </div>
+                      {!added && <Plus className="w-3.5 h-3.5 text-gray-300 group-hover:text-orange-500" />}
                     </div>
-                    <div>
-                      <div className="text-sm font-bold text-gray-800">{item.name}</div>
-                      <div className="text-[10px] text-gray-400 leading-tight">{item.description}</div>
-                    </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="p-3 border-t border-gray-100">
+              <button onClick={resetToDefault}
+                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-bold text-gray-500 hover:bg-gray-100">
+                <RotateCcw className="w-3.5 h-3.5" /> Reset to default layout
+              </button>
             </div>
           </div>
 
           {/* Center - Layout */}
-          <div className="flex-1 bg-gray-100/50 border border-gray-200 rounded-2xl p-4 lg:p-6 overflow-y-auto">
+          <div className="flex-1 bg-gray-100/50 border border-gray-200 rounded-2xl p-3 sm:p-4 lg:p-6 overflow-y-auto">
             <div className="max-w-xl mx-auto space-y-3">
               {layout.length === 0 && (
                 <div className="text-center py-20 border-2 border-dashed border-gray-300 rounded-3xl">
@@ -198,17 +261,20 @@ export default function AdminPageBuilder() {
                 </div>
               )}
               {layout.map((section, idx) => {
-                const libInfo = SECTION_LIBRARY.find(l => l.type === section.type);
+                const info = HOME_SECTION_INFO[section.type];
+                const Icon = SECTION_ICONS[section.type] ?? Layout;
                 return (
                   <div
                     key={section.id}
+                    data-testid={`builder-section-${section.type}`}
                     draggable
-                    onDragStart={() => onDragStart(section.id)}
+                    onDragStart={(e) => onDragStart(e, section.id)}
                     onDragOver={(e) => onDragOver(e, section.id)}
+                    onDrop={(e) => e.preventDefault()}
                     onDragEnd={onDragEnd}
-                    onClick={() => setSelectedSectionId(section.id)}
+                    onClick={() => selectSection(section.id)}
                     className={`
-                      group relative flex items-center gap-3 p-4 bg-white border rounded-2xl transition-all cursor-move select-none
+                      group relative flex items-center gap-2 sm:gap-3 p-3 sm:p-4 bg-white border rounded-2xl transition-all cursor-move select-none
                       ${selectedSectionId === section.id ? 'border-orange-400 ring-2 ring-orange-50' : 'border-gray-200 hover:border-gray-300 shadow-sm'}
                       ${draggingId === section.id ? 'opacity-40 scale-[0.98]' : ''}
                       ${!section.visible ? 'bg-gray-50/50 grayscale opacity-60' : ''}
@@ -217,32 +283,38 @@ export default function AdminPageBuilder() {
                     <div className="hidden sm:block text-gray-300 group-hover:text-gray-400 cursor-grab active:cursor-grabbing">
                       <GripVertical className="w-5 h-5" />
                     </div>
-                    {/* Mobile up/down arrows */}
-                    <div className="flex sm:hidden flex-col gap-0.5">
-                      <button onClick={(e) => { e.stopPropagation(); moveUp(section.id); }} disabled={idx === 0}
-                        className="p-1 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30"><ChevronUp className="w-3.5 h-3.5" /></button>
-                      <button onClick={(e) => { e.stopPropagation(); moveDown(section.id); }} disabled={idx === layout.length - 1}
-                        className="p-1 rounded text-gray-400 hover:text-gray-600 disabled:opacity-30"><ChevronDown className="w-3.5 h-3.5" /></button>
+                    {/* Up/down buttons — work with touch as well as mouse */}
+                    <div className="flex flex-col gap-0.5">
+                      <button onClick={(e) => { e.stopPropagation(); move(section.id, -1); }} disabled={idx === 0}
+                        aria-label={`Move ${info.name} up`} title="Move up"
+                        className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30"><ChevronUp className="w-4 h-4" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); move(section.id, 1); }} disabled={idx === layout.length - 1}
+                        aria-label={`Move ${info.name} down`} title="Move down"
+                        className="p-1 rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 disabled:opacity-30"><ChevronDown className="w-4 h-4" /></button>
                     </div>
-                    <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500 shrink-0">
-                      {libInfo?.icon ? <libInfo.icon className="w-4 h-4" /> : <Layout className="w-4 h-4" />}
+                    <div className="hidden sm:flex w-9 h-9 rounded-xl bg-gray-100 items-center justify-center text-gray-500 shrink-0">
+                      <Icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-gray-900 truncate">{libInfo?.name || section.type}</div>
-                      <div className="text-[10px] text-gray-400 font-medium">Position {idx + 1} of {layout.length}</div>
+                      <div className="text-sm font-bold text-gray-900 truncate">{info.name}</div>
+                      <div className="text-[10px] text-gray-400 font-medium truncate">
+                        Position {idx + 1} of {layout.length}{section.settings.title ? ` · “${section.settings.title}”` : ""}{!section.visible ? " · Hidden" : ""}
+                      </div>
                     </div>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={(e) => { e.stopPropagation(); toggleVisibility(section.id); }}
                         className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg"
                         title={section.visible ? "Hide section" : "Show section"}
+                        aria-label={section.visible ? `Hide ${info.name}` : `Show ${info.name}`}
                       >
                         {section.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); removeSection(section.id); }}
                         className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
-                        title="Delete section"
+                        title="Remove section"
+                        aria-label={`Remove ${info.name}`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -254,41 +326,42 @@ export default function AdminPageBuilder() {
           </div>
 
           {/* Right Sidebar - Settings */}
-          <div className="lg:w-80 w-full bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col">
+          <div ref={settingsPanelRef} className="lg:w-80 w-full bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col scroll-mt-20">
             <div className="p-4 border-b border-gray-100 bg-gray-50 font-bold text-xs uppercase tracking-widest text-gray-500">
               Section Settings
             </div>
             <div className="flex-1 overflow-y-auto p-5">
-              {selectedSection ? (
+              {selectedSection && selectedInfo ? (
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
                     <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600">
                       {(() => {
-                        const Icon = SECTION_LIBRARY.find(l => l.type === selectedSection.type)?.icon || Layout;
+                        const Icon = SECTION_ICONS[selectedSection.type] ?? Layout;
                         return <Icon className="w-5 h-5" />;
                       })()}
                     </div>
                     <div>
-                      <div className="font-bold text-gray-900">
-                        {SECTION_LIBRARY.find(l => l.type === selectedSection.type)?.name}
-                      </div>
-                      <div className="text-xs text-gray-400">Editing configuration</div>
+                      <div className="font-bold text-gray-900">{selectedInfo.name}</div>
+                      <div className="text-xs text-gray-400">{selectedInfo.description}</div>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <div>
-                      <label className="block text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2">
-                        Section Title
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedSection.settings.title || ""}
-                        onChange={(e) => updateSectionSettings(selectedSection.id, { title: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all"
-                        placeholder="Main title text"
-                      />
-                    </div>
+                    {selectedInfo.supportsTitle && (
+                      <div>
+                        <label className="block text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2">
+                          Section Title
+                        </label>
+                        <input
+                          type="text"
+                          value={selectedSection.settings.title || ""}
+                          onChange={(e) => updateSectionSettings(selectedSection.id, { title: e.target.value })}
+                          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-100 focus:border-orange-400 transition-all"
+                          placeholder="Leave blank for the default heading"
+                          maxLength={160}
+                        />
+                      </div>
+                    )}
 
                     <div>
                       <label className="block text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2">
@@ -297,17 +370,26 @@ export default function AdminPageBuilder() {
                       <div className="flex gap-2">
                         <input
                           type="color"
+                          aria-label="Background color"
                           value={selectedSection.settings.bgColor || "#ffffff"}
                           onChange={(e) => updateSectionSettings(selectedSection.id, { bgColor: e.target.value })}
                           className="w-10 h-10 rounded-lg border border-gray-200 p-0.5"
                         />
                         <input
                           type="text"
-                          value={selectedSection.settings.bgColor || "#ffffff"}
-                          onChange={(e) => updateSectionSettings(selectedSection.id, { bgColor: e.target.value })}
-                          className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-mono"
+                          value={selectedSection.settings.bgColor || ""}
+                          onChange={(e) => updateSectionSettings(selectedSection.id, { bgColor: e.target.value.trim() })}
+                          placeholder="Default"
+                          className="flex-1 min-w-0 px-4 py-2 bg-white border border-gray-200 rounded-xl text-xs font-mono"
                         />
+                        {selectedSection.settings.bgColor && (
+                          <button onClick={() => updateSectionSettings(selectedSection.id, { bgColor: undefined })}
+                            className="px-3 text-xs font-bold text-gray-500 hover:text-gray-800">Reset</button>
+                        )}
                       </div>
+                      {selectedSection.settings.bgColor && !/^#[0-9a-f]{3,8}$/i.test(selectedSection.settings.bgColor) && (
+                        <p className="text-xs text-red-500 mt-1">Use a hex colour like #FFF4EA — other values are ignored.</p>
+                      )}
                     </div>
 
                     <div>
@@ -315,43 +397,21 @@ export default function AdminPageBuilder() {
                         Padding (Vertical)
                       </label>
                       <select
-                        value={selectedSection.settings.padding || "md"}
-                        onChange={(e) => updateSectionSettings(selectedSection.id, { padding: e.target.value })}
+                        value={selectedSection.settings.padding || ""}
+                        onChange={(e) => updateSectionSettings(selectedSection.id, { padding: (e.target.value || undefined) as HomeSectionPadding | undefined })}
                         className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-orange-400"
                       >
+                        <option value="">Default</option>
                         <option value="none">None</option>
-                        <option value="sm">Small (py-8)</option>
-                        <option value="md">Medium (py-16)</option>
-                        <option value="lg">Large (py-24)</option>
-                        <option value="xl">Extra Large (py-32)</option>
+                        <option value="sm">Small</option>
+                        <option value="md">Medium</option>
+                        <option value="lg">Large</option>
+                        <option value="xl">Extra Large</option>
                       </select>
                     </div>
-
-                    {selectedSection.type === 'cta' && (
-                      <div>
-                        <label className="block text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2">
-                          Button Link
-                        </label>
-                        <input
-                          type="text"
-                          value={selectedSection.settings.buttonLink || "/products"}
-                          onChange={(e) => updateSectionSettings(selectedSection.id, { buttonLink: e.target.value })}
-                          className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-orange-400"
-                          placeholder="/products"
-                        />
-                      </div>
-                    )}
                   </div>
 
-                  <div className="pt-6 border-t border-gray-100">
-                    <button
-                      onClick={() => saveLayout(layout)}
-                      className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-all flex items-center justify-center gap-2"
-                    >
-                      <Save className="w-4 h-4" />
-                      Save Section
-                    </button>
-                  </div>
+                  <p className="text-xs text-gray-400">Settings apply when you click <strong>Save &amp; Publish</strong>.</p>
                 </div>
               ) : (
                 <div className="h-full flex flex-col items-center justify-center text-center py-10">

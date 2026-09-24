@@ -64,6 +64,59 @@ mobile app, promotional experience, and brand-system artifact.
 
 ## Current open work
 
+### Admin panel wiring pass (2026-09-24)
+
+```text
+Status: ready for review — local only, uncommitted, not deployed
+Last completed: Drove every admin page in Playwright (desktop + 390px touch
+  for Page Builder / AI Developer), fixed wiring bugs, re-drove the fixed pages,
+  cleaned up all test records in the local sandbox DB.
+Stopped at: After storefront + API typecheck/tests and final re-drive.
+Files/areas changed:
+  - Page Builder now actually drives the homepage: new shared contract
+    src/lib/homepageLayout.ts (stored as {"version":2,"sections":[...]} in the
+    homepage_layout setting); Home.tsx renders sections in that order with
+    visibility/title/background/padding overrides (index.css .home-section-*).
+    Legacy bare-array values (never rendered before) are ignored so a deploy
+    cannot strip a live homepage; no saved v2 layout = previous default order.
+    AdminPageBuilder rewritten on the contract (reorder via drag or up/down
+    buttons on all sizes, hide/remove/add, reset, unsaved indicator).
+  - Designer: hero "Shop" CTA text/link now wired (TypewriterHero; API/public
+    defaults changed from "Shop Now"//shop to "" = built-in button); heroTitle
+    is not rendered by the animated hero — Designer/Settings now say so.
+  - Settings saves refresh the browser's cached /api/settings (cache:"reload")
+    so the storefront reflects admin saves immediately (lib/api-client-react).
+  - getListProductsQueryKey()/getListOrdersQueryKey() with no params returned
+    [path, undefined], which never matched, so admin product create/edit/delete
+    did not refresh the list. Admin (Bearer) catalogue reads are now no-store.
+  - AI Developer: tool calls lacked Content-Type (every tool/audit failed);
+    /api/ai/developer/* exempted from the 10-per-5-min public AI limiter;
+    context/get_settings no longer return credential rows; explicit
+    unconfigured provider returns a clear error instead of silent fallback;
+    network errors are friendly; feature toggles persist; auto-audit works;
+    streaming toggle hidden; mobile layout usable.
+  - Blog: blank/relative image URLs rejected every post without an absolute
+    image URL (fixed); drafts no longer publicly readable by slug/id; save
+    button/toast reflect draft vs published.
+  - Reviews: API now also returns `text` (stored as body; admin + product page
+    read text); deleting an approved review recomputes product rating/count.
+  - Secrets page fetched /admin/secrets without /api (always empty).
+  - Storefront announcement ticker no longer overlays admin pages; admin
+    headings no longer inherit the storefront display h1–h4 sizes.
+  - Roles shows "admin" role; Dashboard action errors show server message.
+Remaining work: Commit/deploy after review. Not wired (needs external keys or
+  network): external AI providers, Telegram test, Google ping/GSC submit.
+Blocker: None for local. src/pages/studio/DesignStudioV2.mobile-workflow.test.ts
+  fails (other engineer's in-progress studio work, not touched here).
+Next safe action: Review the diff, run the API build + storefront tests, then
+  commit on a branch.
+Verification: storefront tsc OK, vitest 68/69 (studio test above); API tsc OK,
+  vitest 38/38; Playwright re-drives of page builder, designer, AI developer,
+  products, categories, promo codes, orders, customers, hampers, blog,
+  reviews, newsletter, referrals, security, logs rollback, backup, roles,
+  secrets, deployment, settings passed.
+```
+
 ### Storefront performance checkpoint (2026-09-16)
 
 ```text

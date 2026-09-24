@@ -317,7 +317,7 @@ export default function AdminBlog() {
         toast({ title: "✓ Post updated!" });
       } else {
         await createMutation.mutateAsync({ data: payload as BlogPostInput, ...reqOpts });
-        toast({ title: "✓ Post published!" });
+        toast({ title: payload.published ? "✓ Post published!" : "✓ Draft saved", description: payload.published ? undefined : "Switch the status to Published to make it visible." });
       }
       invalidateBlog();
       closeEditor();
@@ -798,7 +798,7 @@ export default function AdminBlog() {
                   {isSaving ? (
                     <><span className="animate-spin inline-block">↻</span> Saving...</>
                   ) : (
-                    <><Save className="w-4 h-4" /> {editing.id ? "Update Post" : "Publish Post"}</>
+                    <><Save className="w-4 h-4" /> {editing.id ? "Update Post" : editing.published ? "Publish Post" : "Save Draft"}</>
                   )}
                 </button>
               </div>

@@ -492,7 +492,8 @@ function SystemHealthWidget() {
       if (res.ok) {
         toast({ title: action === "flush-cache" ? "Cache flushed" : "Telegram test sent", description: "Action completed successfully." });
       } else {
-        toast({ title: "Action failed", description: "Check server logs for details.", variant: "destructive" });
+        const body = await res.json().catch(() => ({})) as { message?: string; error?: string };
+        toast({ title: "Action failed", description: body.message || body.error || `HTTP ${res.status}`, variant: "destructive" });
       }
     } catch (err) {
       toast({ title: "Connection error", description: "Could not reach the server.", variant: "destructive" });

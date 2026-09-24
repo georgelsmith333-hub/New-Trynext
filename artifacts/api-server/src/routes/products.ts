@@ -77,6 +77,15 @@ const ProductUpdateSchema = ProductFieldsSchema.partial().extend({
 
 const router: IRouter = Router();
 
+// Admin-authenticated reads (the admin catalogue) must not be browser-cached:
+// with a public max-age the admin list kept showing the pre-save catalogue for
+// up to 15s after creating/editing/deleting a product.
+function catalogCacheControl(req: { headers: { authorization?: string } }): string {
+  return /^Bearer\s+\S+/i.test(req.headers.authorization ?? "")
+    ? "no-store"
+    : "public, max-age=15, s-maxage=60, stale-while-revalidate=300";
+}
+
 // ── Product list cache ────────────────────────────────────────────────────────
 // Cache simple (no-search) paginated product listings for 60 s.
 // A generation prefix lets mutations invalidate the whole product cache with
@@ -193,7 +202,7 @@ router.get("/products", async (req, res) => {
       if (local && local.expiresAt > Date.now()) {
         res.set({
           "X-Cache-Status": "LOCAL-HIT",
-          "Cache-Control": "public, max-age=15, s-maxage=60, stale-while-revalidate=300",
+          "Cache-Control": catalogCacheControl(req),
         });
         res.json(local.payload);
         return;
@@ -218,7 +227,7 @@ router.get("/products", async (req, res) => {
         if (localKey) localProductCache.set(localKey, { payload: cached, expiresAt: Date.now() + PROD_TTL_S * 1000 });
         res.set({
           "X-Cache-Status": "HIT",
-          "Cache-Control": "public, max-age=15, s-maxage=60, stale-while-revalidate=300",
+          "Cache-Control": catalogCacheControl(req),
         });
         res.json(cached);
         return;
@@ -285,7 +294,7 @@ router.get("/products", async (req, res) => {
       if (localKey) localProductCache.set(localKey, { payload, expiresAt: Date.now() + PROD_TTL_S * 1000 });
       res.set("X-Cache-Status", "MISS");
     }
-    if (!search) res.set("Cache-Control", "public, max-age=15, s-maxage=60, stale-while-revalidate=300");
+    if (!search) res.set("Cache-Control", catalogCacheControl(req));
     res.json(payload);
   } catch (err) {
     req.log.error({ err }, "Failed to list products");

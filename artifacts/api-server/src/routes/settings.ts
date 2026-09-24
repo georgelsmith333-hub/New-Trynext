@@ -168,8 +168,9 @@ async function buildSettings(map: Record<string, string | null>) {
     // Visual Designer settings (Task #7)
     heroImageUrl: map["heroImageUrl"] ?? "",
     heroGradient: map["heroGradient"] ?? "",
-    heroCTAText: map["heroCTAText"] ?? "Shop Now",
-    heroCTALink: map["heroCTALink"] ?? "/shop",
+    // Blank = storefront hero keeps its built-in "Shop Best Sellers" button.
+    heroCTAText: map["heroCTAText"] ?? "",
+    heroCTALink: map["heroCTALink"] ?? "",
     primaryColor: map["primaryColor"] ?? "#E85D04",
     announcementColor: map["announcementColor"] ?? "#E85D04",
     trustBadge1Title: map["trustBadge1Title"] ?? "100% Secure Payments",
@@ -393,8 +394,8 @@ router.get("/admin/designer-settings", requireAdmin, async (req, res) => {
       announcementColor: s["announcementColor"] ?? "#E85D04",
       heroImageUrl: s["heroImageUrl"] ?? "",
       heroGradient: s["heroGradient"] ?? "",
-      heroCTAText: s["heroCTAText"] ?? "Shop Now",
-      heroCTALink: s["heroCTALink"] ?? "/products",
+      heroCTAText: s["heroCTAText"] ?? "",
+      heroCTALink: s["heroCTALink"] ?? "",
       heroTitle: s["heroTitle"] ?? "",
       heroSubtitle: s["heroSubtitle"] ?? "",
       announcementBar: s["announcementBar"] ?? "",

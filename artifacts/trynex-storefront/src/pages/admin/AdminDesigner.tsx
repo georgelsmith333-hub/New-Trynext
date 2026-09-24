@@ -632,7 +632,7 @@ export default function AdminDesigner() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <Field label="Hero Title Override" full>
                     <input {...reg("heroTitle")} className={inputClass} style={inputStyle} placeholder="Premium Custom Apparel" />
-                    <p className="text-xs text-gray-400 mt-1.5">Leave blank to use the animated product-name rotator.</p>
+                    <p className="text-xs text-amber-600 mt-1.5">Not shown by the current animated hero headline. To change the rotating words, edit <strong>Settings → Hero Typewriter Phrases</strong>.</p>
                   </Field>
                   <Field label="Hero Subtitle Override" full>
                     <textarea {...reg("heroSubtitle")} className={inputClass} style={inputStyle} rows={2} placeholder="You imagine it — we craft it with premium 320GSM fabric." />
@@ -644,12 +644,13 @@ export default function AdminDesigner() {
                   <Field label="Background Gradient (CSS)" full>
                     <input {...reg("heroGradient")} className={inputClass} style={inputStyle} placeholder="linear-gradient(135deg, #FFFDF8 0%, #FFF4EA 100%)" />
                   </Field>
-                  <Field label="CTA Button Text">
-                    <input {...reg("heroCTAText")} className={inputClass} style={inputStyle} placeholder="Shop Now" />
+                  <Field label="Shop Button Text">
+                    <input {...reg("heroCTAText")} className={inputClass} style={inputStyle} placeholder="Shop Best Sellers" />
                   </Field>
-                  <Field label="CTA Button Link">
-                    <input {...reg("heroCTALink")} className={inputClass} style={inputStyle} placeholder="/products" />
+                  <Field label="Shop Button Link">
+                    <input {...reg("heroCTALink")} className={inputClass} style={inputStyle} placeholder="/products?sort=bestsellers" />
                   </Field>
+                  <p className="md:col-span-2 -mt-3 text-xs text-gray-400">Controls the hero's second button (next to “Start Designing”). Leave blank for the default.</p>
                 </div>
               </SectionCard>
 

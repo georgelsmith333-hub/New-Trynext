@@ -869,7 +869,7 @@ router.post("/ai/developer/chat", requireAdmin, async (req: Request, res: Respon
   }
 
   const {
-    messages, model, providerId = "pollinations",
+    messages, model, providerId,
     systemPrompt, temperature = 0.7,
   } = req.body as {
     messages:     Array<{ role: string; content: string }>;
@@ -883,7 +883,15 @@ router.post("/ai/developer/chat", requireAdmin, async (req: Request, res: Respon
 
   const wanted = DEV_PROVIDERS.find(p => p.id === providerId) as DevProvider | undefined;
   const hasCreds = (p: DevProvider) => !p.needsKey || !!process.env[p.envKey];
-  const provider: DevProvider = (wanted && hasCreds(wanted)) ? wanted : DEV_PROVIDERS.find(hasCreds) ?? DEV_PROVIDERS[0];
+  // An explicitly chosen provider without server credentials used to fall
+  // back silently to another provider; tell the admin instead.
+  if (wanted && !hasCreds(wanted)) {
+    res.status(400).json({
+      error: `${wanted.name} is not configured on the server (its API key is not set). Choose "Trynext Local Agent" or ask an operator to add the key in Secrets.`,
+    });
+    return;
+  }
+  const provider: DevProvider = wanted ?? DEV_PROVIDERS.find(hasCreds) ?? DEV_PROVIDERS[0];
   const apiKey  = provider.needsKey ? (process.env[provider.envKey] ?? "") : "";
   const safeModel = provider.models.some((m: { id: string }) => m.id === model)
     ? model!
@@ -966,7 +974,12 @@ router.post("/ai/developer/chat", requireAdmin, async (req: Request, res: Respon
     res.end();
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    send({ type: "error", error: msg.includes("abort") ? "Request timed out. Try again." : msg });
+    const friendly = msg.includes("abort")
+      ? "Request timed out. Try again."
+      : /fetch failed|ENOTFOUND|ECONNREFUSED|ECONNRESET|ETIMEDOUT|EAI_AGAIN/i.test(msg)
+        ? `Could not reach ${provider.name} from the server (network error). Check the server's outbound internet access, or switch to "Trynext Local Agent".`
+        : msg;
+    send({ type: "error", error: friendly });
     res.end();
   }
 });
@@ -981,6 +994,15 @@ router.get("/ai/developer/models", requireAdmin, (_req, res) => {
     })),
   });
 });
+
+/* Settings rows also hold credentials (remove.bg key, Meta CAPI token,
+   GitHub token, deploy hooks, reset-key hash). The context/tool responses are
+   shown in the browser and may be forwarded to an external AI provider, so
+   never include them. */
+const SECRET_SETTING_KEY = /(api_?key|token|secret|hash|password|hook)/i;
+function publicSettingsMap(rows: Array<{ key: string; value: string | null }>): Record<string, string | null> {
+  return Object.fromEntries(rows.filter(r => !SECRET_SETTING_KEY.test(r.key)).map(r => [r.key, r.value]));
+}
 
 /* ── GET /api/ai/developer/context — live store data for AI context ── */
 router.get("/ai/developer/context", requireAdmin, async (_req, res: Response): Promise<void> => {
@@ -998,13 +1020,13 @@ router.get("/ai/developer/context", requireAdmin, async (_req, res: Response): P
         total: ordersTable.total, createdAt: ordersTable.createdAt,
         paymentMethod: ordersTable.paymentMethod,
       }).from(ordersTable).orderBy(desc(ordersTable.createdAt)).limit(30),
-      db.select().from(settingsTable).limit(40),
+      db.select().from(settingsTable),
     ]);
 
     const totalRevenue = recentOrders.reduce((s, o) => s + Number(o.total ?? 0), 0);
     const pendingOrders = recentOrders.filter(o => o.status === "pending").length;
     const processingOrders = recentOrders.filter(o => o.status === "processing").length;
-    const settingsMap = Object.fromEntries(settings.map(s => [s.key, s.value]));
+    const settingsMap = publicSettingsMap(settings);
     const lowStock = products.filter(p => p.stock <= 5);
 
     res.json({
@@ -1030,7 +1052,7 @@ router.get("/ai/developer/context", requireAdmin, async (_req, res: Response): P
 
 /* ── POST /api/ai/developer/tool — execute named tool for AI agent ── */
 router.post("/ai/developer/tool", requireAdmin, async (req: Request, res: Response): Promise<void> => {
-  const { tool, params } = req.body as { tool: string; params?: Record<string, unknown> };
+  const { tool, params } = (req.body ?? {}) as { tool?: string; params?: Record<string, unknown> };
   if (!tool) { res.status(400).json({ error: "tool name required" }); return; }
 
   try {
@@ -1067,8 +1089,8 @@ router.post("/ai/developer/tool", requireAdmin, async (req: Request, res: Respon
         res.json({ tool, result: cats }); break;
       }
       case "get_settings": {
-        const settings2 = await db.select().from(settingsTable).limit(40);
-        res.json({ tool, result: Object.fromEntries(settings2.map(s => [s.key, s.value])) }); break;
+        const settings2 = await db.select().from(settingsTable);
+        res.json({ tool, result: publicSettingsMap(settings2) }); break;
       }
       case "check_health": {
         const t0 = Date.now();

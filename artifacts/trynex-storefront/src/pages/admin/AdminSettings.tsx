@@ -516,6 +516,7 @@ export default function AdminSettings() {
           </Field>
           <Field label="Hero Section Title" full>
             <input {...register("heroTitle")} className={inputClass} style={inputStyle} placeholder="Premium Custom Apparel" />
+            <p className="text-xs text-amber-600 mt-1">Not shown by the current animated hero headline — use Hero Typewriter Phrases below to change the rotating words.</p>
           </Field>
           <Field label="Hero Subtitle" full>
             <input {...register("heroSubtitle")} className={inputClass} style={inputStyle} placeholder="Elevate your wardrobe with bespoke custom apparel." />

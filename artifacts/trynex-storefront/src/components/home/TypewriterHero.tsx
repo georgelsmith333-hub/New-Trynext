@@ -321,12 +321,12 @@ export function TypewriterHero() {
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 relative transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
-              href="/products?sort=bestsellers"
+              href={settings.heroCTALink?.trim() || "/products?sort=bestsellers"}
               className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-gray-800 text-[0.95rem] sm:text-base bg-white/90 backdrop-blur-sm border-2 border-gray-200 hover:border-orange-300 hover:text-orange-600 hover:shadow-lg transition-all"
               data-testid="hero-cta-secondary"
             >
               <Sparkles className="w-4 h-4" aria-hidden="true" />
-              Shop Best Sellers
+              {settings.heroCTAText?.trim() || "Shop Best Sellers"}
             </Link>
           </motion.div>
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { Flame, Megaphone, Gift, Zap, CreditCard, Award, Star, X } from "lucide-react";
 
@@ -16,7 +17,12 @@ export function AnnouncementBar() {
   const announcements = settings.announcementBar
     ? settings.announcementBar.split('|').map(t => t.trim()).filter(Boolean)
     : [];
-  const showing = enabled && visible && announcements.length > 0;
+  // The storefront ticker is fixed to the top of the viewport; the admin
+  // console has its own header and does not reserve space for it, so the bar
+  // covered the admin top bar on every admin page.
+  const [location] = useLocation();
+  const isAdminRoute = location.startsWith("/admin");
+  const showing = enabled && visible && announcements.length > 0 && !isAdminRoute;
 
   // Reset visibility whenever the bar is re-enabled or messages change so admin toggles take effect.
   useEffect(() => {

@@ -10,7 +10,7 @@ interface AdminSession {
   id: number;
   tokenHash: string;
   adminId: number | null;
-  role: string;
+  role?: string;
   createdAt: string;
   lastUsedAt: string;
   expiresAt: string;
@@ -124,7 +124,8 @@ export default function AdminRoles() {
                       <td className="px-5 py-4">
                         <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-50 text-purple-600 border border-purple-100 w-fit">
                           <KeyRound className="w-3 h-3" />
-                          {session.role}
+                          {/* The sessions API has no per-session role yet; every admin uses the single "admin" role. */}
+                          {session.role || "admin"}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-xs text-gray-500 font-medium">

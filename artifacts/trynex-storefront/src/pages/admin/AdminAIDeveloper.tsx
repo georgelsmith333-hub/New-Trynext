@@ -237,20 +237,24 @@ export default function AdminAIDeveloper() {
   const [systemPrompt,    setSystemPrompt]    = useState(TRYNEXT_SYSTEM);
   const [promptLoaded,    setPromptLoaded]    = useState(false);
   useEffect(() => {
-    fetch(getApiUrl("/api/settings/aiSystemPrompt"), {
+    fetch(getApiUrl("/api/admin/studio-settings"), {
       headers: { ...getAuthHeaders() },
     })
-      .then(r => r.json())
+      .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        if (d.value && d.value.trim()) {
-          setSystemPrompt(d.value);
-        }
+        const saved = typeof d?.aiSystemPrompt === "string" ? d.aiSystemPrompt : "";
+        if (saved.trim()) setSystemPrompt(saved);
       })
       .catch(() => { /* fall back to hardcoded default */ })
       .finally(() => setPromptLoaded(true));
   }, []);
   const [activeTab,       setActiveTab]       = useState<"chat" | "context" | "tools" | "settings">("chat");
-  const [features,        setFeatures]        = useState<FeatureFlags>(DEFAULT_FEATURES);
+  const [features,        setFeatures]        = useState<FeatureFlags>(() => {
+    try { return { ...DEFAULT_FEATURES, ...JSON.parse(localStorage.getItem("trynext_ai_dev_features") ?? "{}") }; } catch { return DEFAULT_FEATURES; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("trynext_ai_dev_features", JSON.stringify(features)); } catch {}
+  }, [features]);
   const [storeContext,    setStoreContext]    = useState<StoreContext | null>(null);
   const [contextLoading,  setContextLoading]  = useState(false);
   const [attachedFiles,   setAttachedFiles]   = useState<AttachedFile[]>([]);
@@ -278,7 +282,7 @@ export default function AdminAIDeveloper() {
           const first = d.providers.find((p: Provider) => p.available) ?? d.providers[0];
           if (first) { setSelectedProv(first.id); setSelectedModel(first.models[0]?.id ?? ""); }
         }
-      }).catch(() => {});
+      }).catch(() => toast({ title: "Could not load AI providers", description: "Check that the API server is reachable.", variant: "destructive" }));
   }, []);
 
   /* Load store context */
@@ -287,7 +291,10 @@ export default function AdminAIDeveloper() {
     try {
       const r = await fetch(getApiUrl("/api/ai/developer/context"), { headers: getAuthHeaders() });
       if (r.ok) { const d = await r.json(); setStoreContext(d); }
-    } catch {}
+      else toast({ title: "Could not load store context", description: `HTTP ${r.status}`, variant: "destructive" });
+    } catch {
+      toast({ title: "Could not load store context", description: "Network error", variant: "destructive" });
+    }
     setContextLoading(false);
   }, []);
 
@@ -317,11 +324,11 @@ export default function AdminAIDeveloper() {
   const executeTool = useCallback(async (tool: string, params: Record<string, unknown> = {}): Promise<unknown> => {
     const r = await fetch(getApiUrl("/api/ai/developer/tool"), {
       method: "POST",
-      headers: getAuthHeaders(),
+      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       body: JSON.stringify({ tool, params }),
     });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error ?? "Tool failed");
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error ?? d.message ?? `Tool failed (HTTP ${r.status})`);
     return d.result ?? d;
   }, []);
 
@@ -572,6 +579,15 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
     setAuditLoading(false);
   };
 
+  /* Auto audit on page open (Settings → Feature Toggles) */
+  const autoAuditRan = useRef(false);
+  useEffect(() => {
+    if (!features.autoAudit || autoAuditRan.current) return;
+    autoAuditRan.current = true;
+    runAudit();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [features.autoAudit]);
+
   const toggleFeature = (key: keyof FeatureFlags) => {
     setFeatures(prev => ({ ...prev, [key]: !prev[key] }));
   };
@@ -579,12 +595,12 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
   /* ─────────────────── Render ─────────────────── */
   return (
     <AdminLayout>
-      <div className="flex h-[calc(100vh-64px)] bg-gray-50 overflow-hidden">
+      <div className="flex flex-col md:flex-row h-[calc(100dvh-64px)] bg-gray-50 overflow-hidden">
 
         {/* ── Left sidebar ─────────────────────────── */}
-        <div className="w-64 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col overflow-hidden">
+        <div className="w-full md:w-64 flex-shrink-0 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col md:overflow-hidden">
           {/* Header */}
-          <div className="px-4 pt-4 pb-3 border-b border-gray-100">
+          <div className="hidden md:block px-4 pt-4 pb-3 border-b border-gray-100">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-sm">
                 <Bot className="w-4 h-4 text-white" />
@@ -656,14 +672,14 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
             </div>
           </div>
 
-          {/* Navigation tabs */}
-          <div className="px-3 py-2 border-b border-gray-100">
+          {/* Navigation tabs (horizontal row on phones) */}
+          <div className="px-3 py-2 border-b border-gray-100 flex md:block gap-1 overflow-x-auto">
             {(["chat", "context", "tools", "settings"] as const).map(tab => {
               const Icon = tab === "chat" ? MessageSquare : tab === "context" ? Database : tab === "tools" ? Wrench : Settings;
               const label = tab.charAt(0).toUpperCase() + tab.slice(1);
               return (
                 <button key={tab} onClick={() => setActiveTab(tab)}
-                  className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium mb-0.5 transition-all ${activeTab === tab ? "bg-orange-50 text-orange-600" : "text-gray-600 hover:bg-gray-50"}`}>
+                  className={`flex items-center gap-2 shrink-0 md:w-full px-3 py-2 rounded-lg text-sm font-medium mb-0.5 transition-all ${activeTab === tab ? "bg-orange-50 text-orange-600" : "text-gray-600 hover:bg-gray-50"}`}>
                   <Icon className="w-3.5 h-3.5" />
                   {label}
                   {tab === "tools" && toolLog.length > 0 && (
@@ -675,7 +691,7 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
           </div>
 
           {/* Quick templates */}
-          <div className="px-3 py-2 flex-1 overflow-y-auto">
+          <div className="hidden md:block px-3 py-2 flex-1 overflow-y-auto">
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Quick Start</p>
             {QUICK_TEMPLATES.map((t, i) => {
               const Icon = t.icon;
@@ -690,7 +706,7 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
           </div>
 
           {/* Bottom actions */}
-          <div className="px-3 py-3 border-t border-gray-100 flex gap-2">
+          <div className="hidden md:flex px-3 py-3 border-t border-gray-100 gap-2">
             <button onClick={clearHistory} title="Clear chat" className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs text-gray-500 hover:bg-red-50 hover:text-red-500 border border-gray-200 transition-colors">
               <Trash2 className="w-3 h-3" /> Clear
             </button>
@@ -701,7 +717,7 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
         </div>
 
         {/* ── Main panel ─────────────────────────────── */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
 
           {/* Tab: CHAT */}
           {activeTab === "chat" && (
@@ -806,7 +822,7 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
 
                 {/* Context side panel */}
                 {contextPanel && storeContext && (
-                  <div className="w-64 flex-shrink-0 border-l border-gray-200 bg-white overflow-y-auto px-3 py-3">
+                  <div className="hidden lg:block w-64 flex-shrink-0 border-l border-gray-200 bg-white overflow-y-auto px-3 py-3">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-xs font-bold text-gray-700">Live Store Data</p>
                       <button onClick={loadContext} className="text-gray-400 hover:text-orange-500 transition-colors">
@@ -834,7 +850,7 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
               </div>
 
               {/* Input area */}
-              <div className="bg-white border-t border-gray-200 px-4 py-3">
+              <div className="bg-white border-t border-gray-200 px-4 py-3 pr-20 md:pr-4">
                 {/* System prompt toggle */}
                 <div className="flex items-center gap-2 mb-2">
                   <button onClick={() => setShowSysPrompt(v => !v)} className="flex items-center gap-1 text-xs text-gray-400 hover:text-orange-500 transition-colors">
@@ -1108,14 +1124,14 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
                     <h3 className="text-sm font-bold text-gray-900">Feature Toggles</h3>
                   </div>
                   <div className="space-y-3">
-                    {(Object.entries(features) as [keyof FeatureFlags, boolean][]).map(([key, val]) => {
+                    {(Object.entries(features) as [keyof FeatureFlags, boolean][]).filter(([key]) => key !== "streaming").map(([key, val]) => {
                       const labels: Record<keyof FeatureFlags, string> = {
                         contextInjection: "Store Context Injection — Auto-injects live store data into AI context",
                         toolCalling: "Tool Calling — AI can query products, orders, stats in real-time",
                         streaming: "Streaming Responses — Real-time character-by-character AI output",
                         chatHistory: "Chat History — Save conversation in localStorage",
                         fileUpload: "File Upload — Attach files (images, code, JSON, CSV) to messages",
-                        autoAudit: "Auto Audit — Run health check on every page load",
+                        autoAudit: "Auto Audit — Run the store audit each time this page opens",
                       };
                       const [title, desc] = labels[key].split(" — ");
                       return (
@@ -1154,14 +1170,15 @@ System uptime: ${Math.floor(storeContext.health.uptime / 60)} min, Memory: ${sto
                     <div className="flex items-center gap-2 mt-2">
                       <button onClick={async () => {
                         try {
-                          await fetch(getApiUrl("/api/settings"), {
+                          const r = await fetch(getApiUrl("/api/settings"), {
                             method: "PUT",
                             headers: { "Content-Type": "application/json", ...getAuthHeaders() },
                             body: JSON.stringify({ aiSystemPrompt: systemPrompt }),
                           });
+                          if (!r.ok) throw new Error(`HTTP ${r.status}`);
                           toast({ title: "System prompt saved to settings!" });
-                        } catch {
-                          toast({ title: "Failed to save", variant: "destructive" });
+                        } catch (err) {
+                          toast({ title: "Failed to save", description: String(err), variant: "destructive" });
                         }
                       }} className="text-xs bg-orange-500 text-white px-3 py-1.5 rounded-lg hover:bg-orange-600 transition-colors font-bold">Save to Settings</button>
                       <button onClick={() => setSystemPrompt(TRYNEXT_SYSTEM)} className="text-xs text-orange-500 hover:underline">Reset to default</button>

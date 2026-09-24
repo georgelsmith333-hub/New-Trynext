@@ -2,12 +2,13 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("mobile Design Studio upload workflow", () => {
-  it("opens the selected image's edit controls after a successful upload", () => {
+  it("selects the image tools after upload without covering the mobile preview", () => {
     const source = readFileSync(new URL("./DesignStudioV2.tsx", import.meta.url), "utf8");
     const uploadHandler = source.slice(source.indexOf("const handleFileUpload"), source.indexOf("const replaceSelectedImage"));
 
     expect(uploadHandler).toContain('setActiveTab("upload")');
-    expect(uploadHandler).toContain("setMobileToolOpen(true)");
+    // Auto-opening the sheet hid the design and Add to Cart on phones.
+    expect(uploadHandler).not.toContain("setMobileToolOpen(true)");
     expect(uploadHandler).not.toContain('setActiveTab("layers")');
   });
 

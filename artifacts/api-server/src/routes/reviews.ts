@@ -7,6 +7,25 @@ import { tgSend } from "../lib/telegram";
 
 const router: IRouter = Router();
 
+// Review text is stored in the `body` column, but the storefront product page
+// and the admin Reviews page (and the shared `Review` client type) read
+// `text`, so submitted review text was never displayed. Expose both.
+async function recomputeProductRating(productId: number): Promise<void> {
+  const approvedReviews = await db.select().from(reviewsTable)
+    .where(and(eq(reviewsTable.productId, productId), eq(reviewsTable.approved, true)));
+  const avgRating = approvedReviews.length
+    ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length
+    : 0;
+  await db.update(productsTable).set({
+    rating: avgRating.toFixed(2),
+    reviewCount: approvedReviews.length,
+  }).where(eq(productsTable.id, productId));
+}
+
+function withReviewText<T extends { body: string | null }>(review: T): T & { text: string | null } {
+  return { ...review, text: review.body };
+}
+
 router.get("/reviews/:productId", async (req, res) => {
   try {
     const productId = parseInt(req.params.productId, 10);
@@ -26,7 +45,7 @@ router.get("/reviews/:productId", async (req, res) => {
     }, { total: 0, sum: 0, distribution: {} as Record<number, number> });
 
     res.json({
-      reviews,
+      reviews: reviews.map(withReviewText),
       stats: {
         total: stats.total,
         average: stats.total > 0 ? Math.round((stats.sum / stats.total) * 10) / 10 : 0,
@@ -102,7 +121,7 @@ router.post("/reviews", async (req, res) => {
 router.get("/admin/reviews", requireAdmin, async (req, res) => {
   try {
     const reviews = await db.select().from(reviewsTable).orderBy(desc(reviewsTable.createdAt));
-    res.json({ reviews });
+    res.json({ reviews: reviews.map(withReviewText) });
   } catch (err) {
     req.log.error({ err }, "Failed to list all reviews");
     res.status(500).json({ error: "internal_error", message: "Failed to list reviews" });
@@ -126,13 +145,7 @@ router.put("/admin/reviews/:id/approve", requireAdmin, async (req, res) => {
       return;
     }
 
-    const approvedReviews = await db.select().from(reviewsTable)
-      .where(and(eq(reviewsTable.productId, review.productId), eq(reviewsTable.approved, true)));
-    const avgRating = approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length;
-    await db.update(productsTable).set({
-      rating: avgRating.toFixed(2),
-      reviewCount: approvedReviews.length,
-    }).where(eq(productsTable.id, review.productId));
+    await recomputeProductRating(review.productId);
 
     logActivity({ action: "update", entity: "review", entityId: id, entityName: `Review by ${review.customerName}`, before: (beforeSnap ?? null) as unknown as Record<string, unknown>, after: review as unknown as Record<string, unknown>, adminId: getAdminId(req) });
     res.json(review);
@@ -151,6 +164,9 @@ router.delete("/admin/reviews/:id", requireAdmin, async (req, res) => {
     }
     const [beforeSnap] = await db.select().from(reviewsTable).where(eq(reviewsTable.id, id));
     await db.delete(reviewsTable).where(eq(reviewsTable.id, id));
+    // Deleting an approved review used to leave the product's rating and
+    // review count unchanged (still counting the removed review).
+    if (beforeSnap?.approved && beforeSnap.productId) await recomputeProductRating(beforeSnap.productId);
     if (beforeSnap) logActivity({ action: "delete", entity: "review", entityId: id, entityName: `Review by ${beforeSnap.customerName}`, before: beforeSnap as unknown as Record<string, unknown>, adminId: getAdminId(req) });
     res.json({ success: true });
   } catch (err) {

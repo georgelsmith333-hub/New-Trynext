@@ -1025,3 +1025,28 @@ iframe[src*="badge.replit"] {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Page Builder section overrides (see lib/homepageLayout.ts) ──
+   Each home section is wrapped in a display:contents div so the wrapper does
+   not affect layout; admin-chosen background/padding override the section's
+   own root element. */
+.home-section { display: contents; }
+.home-section-custom-bg > * { background: var(--home-section-bg) !important; }
+.home-section-pad-none > * { padding-top: 0 !important; padding-bottom: 0 !important; }
+.home-section-pad-sm > * { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+.home-section-pad-md > * { padding-top: 4rem !important; padding-bottom: 4rem !important; }
+.home-section-pad-lg > * { padding-top: 6rem !important; padding-bottom: 6rem !important; }
+.home-section-pad-xl > * { padding-top: 8rem !important; padding-bottom: 8rem !important; }
+
+/* ── Admin console heading scale ──
+   The storefront's base h1–h4 sizes (clamp up to 4.5rem) also applied inside
+   the admin console, so admin card titles without an explicit text-* size
+   (e.g. Security → "Two-Factor Authentication") rendered at display size.
+   :where() keeps specificity equal to the base rule, so any explicit Tailwind
+   text-* utility on a heading still wins. */
+@layer base {
+  :where(.admin-shell) h1 { font-size: 1.5rem; line-height: 2rem; }
+  :where(.admin-shell) h2 { font-size: 1.125rem; line-height: 1.75rem; }
+  :where(.admin-shell) h3 { font-size: 1rem; line-height: 1.5rem; }
+  :where(.admin-shell) h4 { font-size: 0.875rem; line-height: 1.25rem; }
+}

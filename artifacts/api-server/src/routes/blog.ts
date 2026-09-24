@@ -16,15 +16,26 @@ const DEFAULT_BLOG_CATEGORIES = ["Lifestyle", "Business", "Design Tips", "Custom
 // ---------------------------------------------------------------------------
 // Zod schemas for blog mutation endpoints
 // ---------------------------------------------------------------------------
+// Image fields: the admin editor sends "" when no image is set and a
+// same-origin path ("/api/storage/objects/...") after an upload; both used to
+// fail z.string().url(), so a post could not be saved without an absolute
+// image URL. Accept http(s) URLs or site-relative paths; blank means none.
+const optionalImageUrl = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? null : v),
+  z.string().max(2048)
+    .refine((v) => /^https?:\/\//i.test(v) || /^\/(?!\/)/.test(v), "Image URL must be an http(s) URL or a site path")
+    .optional().nullable(),
+);
+
 const BlogCreateSchema = z.object({
   title:               z.string().min(1, "title is required").max(300),
   slug:                z.string().min(1, "slug is required").max(300).regex(/^[a-z0-9-]+$/, "slug must be lowercase-kebab"),
   content:             z.string().min(1, "content is required"),
   excerpt:             z.string().max(1000).optional().nullable(),
-  imageUrl:            z.string().url().max(2048).optional().nullable(),
+  imageUrl:            optionalImageUrl,
   author:              z.string().max(100).optional().nullable(),
   authorBio:           z.string().max(1000).optional().nullable(),
-  authorAvatarUrl:     z.string().url().max(2048).optional().nullable(),
+  authorAvatarUrl:     optionalImageUrl,
   category:            z.string().max(100).optional().nullable(),
   tags:                z.array(z.string().max(60)).max(20).optional(),
   published:           z.boolean().optional(),
@@ -35,7 +46,7 @@ const BlogCreateSchema = z.object({
 
 const BlogUpdateSchema = BlogCreateSchema.partial();
 
-function parseBlogBody<T>(schema: z.ZodSchema<T>, body: unknown):
+function parseBlogBody<T>(schema: z.ZodType<T, z.ZodTypeDef, unknown>, body: unknown):
   | { ok: true; data: T }
   | { ok: false; message: string } {
   const result = schema.safeParse(body);
@@ -370,6 +381,14 @@ router.get("/blog/:id", async (req, res) => {
       [post] = await db.select().from(blogPostsTable).where(eq(blogPostsTable.id, numericId));
     } else {
       [post] = await db.select().from(blogPostsTable).where(eq(blogPostsTable.slug, idOrSlug));
+    }
+
+    // Drafts ("Hidden from public" in the admin editor) are only readable by
+    // an authenticated admin; everyone else gets the same 404 as a missing post.
+    if (post && !post.published) {
+      const token = req.headers.authorization?.replace("Bearer ", "") ?? req.cookies?.admin_token;
+      const isAdmin = token ? await validateToken(token) : false;
+      if (!isAdmin) post = undefined;
     }
 
     if (!post) {

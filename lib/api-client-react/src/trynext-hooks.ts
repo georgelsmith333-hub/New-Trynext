@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UseQueryOptions } from "@tanstack/react-query";
+import type { UseQueryOptions, QueryClient } from "@tanstack/react-query";
 import { customFetch } from "./custom-fetch";
 
 // Public reads may briefly fail while a free-tier standby wakes up. Keep the
@@ -382,6 +382,22 @@ export const useGetSettings = (_opts?: ReqOpts) => {
   });
 };
 
+/**
+ * `/api/settings` is served with `Cache-Control: max-age=10,
+ * stale-while-revalidate=60`, so after an admin save the browser would keep
+ * serving the old response to the storefront for up to ~70s. Re-fetch it with
+ * `cache: "reload"` so this browser's HTTP cache (and the React Query cache)
+ * hold the saved values immediately.
+ */
+async function refreshPublicSettings(qc: QueryClient): Promise<void> {
+  try {
+    const fresh = await customFetch<SiteSettings>("/api/settings", { cache: "reload" });
+    qc.setQueryData(["/api/settings"], fresh);
+  } catch {
+    qc.invalidateQueries({ queryKey: ["/api/settings"] });
+  }
+}
+
 export const useUpdateSettings = (opts?: ReqOpts) => {
   const qc = useQueryClient();
   return useMutation({
@@ -391,17 +407,21 @@ export const useUpdateSettings = (opts?: ReqOpts) => {
         headers: { "Content-Type": "application/json", ...(opts?.request?.headers ?? {}) },
         body: JSON.stringify(args.data),
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["/api/settings"] });
+    onSuccess: async () => {
       qc.invalidateQueries({ queryKey: ["/api/admin/designer-settings"] });
+      await refreshPublicSettings(qc);
     },
   });
 };
 
 // ─── Product Hooks ───────────────────────────────────────────────────────────
 
+// Called with no params this must return the bare prefix: a trailing
+// `undefined` element does not partially match `["/api/products", {...}]`, so
+// invalidateQueries({ queryKey: getListProductsQueryKey() }) silently refreshed
+// nothing (e.g. a newly created product never appeared in the admin list).
 export const getTrynexListProductsQueryKey = (params?: Record<string, unknown>) =>
-  ["/api/products", params] as const;
+  (params === undefined ? ["/api/products"] : ["/api/products", params]) as readonly unknown[];
 
 export const useTrynexListProducts = (
   params?: {
@@ -621,8 +641,12 @@ export const useTrackOrder = () => {
   });
 };
 
+// Called with no params this must return the bare prefix: a trailing
+// `undefined` element does not partially match `["/api/orders", {...}]`, so
+// invalidateQueries({ queryKey: getListOrdersQueryKey() }) silently refreshed
+// nothing (e.g. a newly created product never appeared in the admin list).
 export const getTrynexListOrdersQueryKey = (params?: Record<string, unknown>) =>
-  ["/api/orders", params] as const;
+  (params === undefined ? ["/api/orders"] : ["/api/orders", params]) as readonly unknown[];
 
 export const useTrynexListOrders = (params?: {
   status?: string;
@@ -866,6 +890,7 @@ export const useGetDesignerSettings = (opts?: ReqOpts) => {
 };
 
 export const usePatchDesignerSettings = (opts?: ReqOpts) => {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ data }: { data: DesignerSettings }) =>
       customFetch<{ success: boolean }>("/api/admin/designer-settings", {
@@ -873,6 +898,7 @@ export const usePatchDesignerSettings = (opts?: ReqOpts) => {
         headers: { "Content-Type": "application/json", ...(opts?.request?.headers ?? {}) },
         body: JSON.stringify(data),
       }),
+    onSuccess: () => refreshPublicSettings(qc),
   });
 };
 

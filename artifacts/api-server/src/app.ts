@@ -327,6 +327,11 @@ const aiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "rate_limited", message: "Too many AI generation requests. Please wait a few minutes." },
+  // The admin-only AI Developer console (/api/ai/developer/*) makes several
+  // cheap store-data calls per page load/audit (providers, context, tools),
+  // which exhausted this public budget after a couple of clicks. Those routes
+  // require an admin session and the chat route has its own limiter.
+  skip: (req) => req.path.startsWith("/developer/"),
 });
 app.use("/api/ai", aiLimiter);
 app.use("/api/admin/ai", aiLimiter);

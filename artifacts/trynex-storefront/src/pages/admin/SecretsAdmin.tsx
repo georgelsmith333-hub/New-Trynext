@@ -51,7 +51,7 @@ export default function SecretsAdmin() {
     try {
       const headers: Record<string, string> = { ...getAuthHeaders(), "Content-Type": "application/json" };
       if (raw && totp) headers["X-Admin-TOTP-Code"] = totp;
-      const res = await fetch(getApiUrl(raw ? "/admin/secrets/raw" : "/admin/secrets"), { headers });
+      const res = await fetch(getApiUrl(raw ? "/api/admin/secrets/raw" : "/api/admin/secrets"), { headers });
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
         throw new Error(errBody.message || "Failed to fetch secrets");
@@ -96,7 +96,7 @@ export default function SecretsAdmin() {
   async function updateSecret(key: string, value: string) {
     setSavingKey(key);
     try {
-      const res = await fetch(getApiUrl("/admin/secrets/update"), {
+      const res = await fetch(getApiUrl("/api/admin/secrets/update"), {
         method: "POST",
         headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
         body: JSON.stringify({ key, value }),
@@ -114,7 +114,7 @@ export default function SecretsAdmin() {
 
   async function bulkUpdate(updates: Record<string, string>) {
     try {
-      const res = await fetch(getApiUrl("/admin/secrets/bulk-update"), {
+      const res = await fetch(getApiUrl("/api/admin/secrets/bulk-update"), {
         method: "POST",
         headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
         body: JSON.stringify({ secrets: updates }),

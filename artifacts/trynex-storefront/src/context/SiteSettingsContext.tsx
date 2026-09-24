@@ -107,6 +107,8 @@ interface SiteSettings {
   seoTwitterHandle: string;
   metaCapiTokenConfigured: boolean;
   heroTypewriterPhrases: string;
+  /** Page Builder layout JSON (see lib/homepageLayout.ts). */
+  homepage_layout: string;
   isLoaded: boolean;
 }
 
@@ -180,8 +182,9 @@ const defaults: SiteSettings = {
   studioWaterbottleCustomizationFee: Number(c("studioWaterbottleCustomizationFee")) || 99,
   heroImageUrl: c("heroImageUrl") || "",
   heroGradient: c("heroGradient") || "",
-  heroCTAText: c("heroCTAText") || "Shop Now",
-  heroCTALink: c("heroCTALink") || "/shop",
+  // Blank = the hero's built-in "Shop Best Sellers" button.
+  heroCTAText: c("heroCTAText") || "",
+  heroCTALink: c("heroCTALink") || "",
   primaryColor: c("primaryColor") || "#E85D04",
   announcementColor: c("announcementColor") || "#E85D04",
   trustBadge1Title: c("trustBadge1Title") || "100% Secure Payments",
@@ -231,6 +234,7 @@ const defaults: SiteSettings = {
   seoTwitterHandle: c("seoTwitterHandle") || "",
   metaCapiTokenConfigured: c("metaCapiTokenConfigured") ?? false,
   heroTypewriterPhrases: c("heroTypewriterPhrases") || "",
+  homepage_layout: c("homepage_layout") || "",
   isLoaded: false,
 };
 
