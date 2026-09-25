@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, ShoppingCart, Settings, LogOut, Menu, X,
   FileText, Users, HardDrive, Sparkles, Star, Code2, BookOpen, Paintbrush,
   GitBranch, Gift, Layers, History, Shield, Search, Tag, Share2, Mail,
-  ChevronRight, DatabaseZap, Images, Bot, KeyRound, Store, CircleUserRound,
+  ChevronRight, DatabaseZap, Images, Bot, KeyRound, Store, CircleUserRound, Zap,
 } from "lucide-react";
 import { useAdminLogout, useAdminMe } from "@workspace/api-client-react";
 import React, { useEffect, useState } from "react";
@@ -62,6 +62,7 @@ const MENU_GROUPS: MenuGroup[] = [
       { name: "AI Developer", href: "/admin/ai-developer", icon: Bot, badge: "AI" },
       { name: "Secrets", href: "/admin/secrets", icon: KeyRound },
       { name: "Settings", href: "/admin/settings", icon: Settings },
+      { name: "Automation", href: "/admin/automation", icon: Zap },
       { name: "Backup", href: "/admin/backup", icon: HardDrive },
       { name: "Activity Log", href: "/admin/logs", icon: History },
       { name: "Security", href: "/admin/security", icon: Shield },

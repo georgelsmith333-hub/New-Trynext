@@ -3,6 +3,7 @@ import { eq, and, desc, gte, sql, lte } from "drizzle-orm";
 import { logger } from "./logger";
 import { tgSend, tgIsConfigured } from "./telegram";
 import { runBackupSync, type TargetSyncResult } from "./dbBackupSync";
+import { getAutomationConfig, appendAutomationLog, markJobChecked, getLastCheckedMs, type AutomationJobId } from "./automationConfig";
 
 const BST_OFFSET_MS = 6 * 60 * 60 * 1000;
 
@@ -24,10 +25,13 @@ function startOfDayUTC(): Date {
 // ── Daily Summary ────────────────────────────────────────────────────────────
 let lastDailySummaryDate = "";
 
-async function sendDailySummary(): Promise<void> {
-  if (!tgIsConfigured()) return;
+async function sendDailySummary(manual = false): Promise<void> {
+  markJobChecked("dailySummary");
+  const config = await getAutomationConfig();
+  if (!config.dailySummaryEnabled && !manual) return;
+  if (!tgIsConfigured() && !manual) return;
   const today = todayKeyBST();
-  if (lastDailySummaryDate === today) return;
+  if (!manual && lastDailySummaryDate === today) return;
   lastDailySummaryDate = today;
 
   try {
@@ -75,8 +79,15 @@ async function sendDailySummary(): Promise<void> {
     }
 
     lines.push(``, `🌐 trynext.shop`);
-    await tgSend(lines.join("\n"));
-    logger.info("[scheduler] Daily summary sent");
+    const delivered = tgIsConfigured();
+    if (delivered) await tgSend(lines.join("\n"));
+    logger.info({ delivered }, "[scheduler] Daily summary computed");
+    await appendAutomationLog({
+      job: "dailySummary",
+      triggeredBy: manual ? "manual" : "schedule",
+      summary: `Orders today: ${todayRow.count}, revenue: ৳${Math.round(todayRow.revenue).toLocaleString()}, pending: ${pendingRow.count}`
+        + (delivered ? "" : " (Telegram not configured — no message sent)"),
+    });
   } catch (err) {
     logger.warn({ err }, "[scheduler] Daily summary failed");
   }
@@ -85,26 +96,45 @@ async function sendDailySummary(): Promise<void> {
 // ── Low Stock Check ──────────────────────────────────────────────────────────
 let lastLowStockKey = "";
 
-async function checkAndAlertLowStock(): Promise<void> {
-  if (!tgIsConfigured()) return;
+async function checkAndAlertLowStock(manual = false): Promise<void> {
+  markJobChecked("lowStock");
+  const config = await getAutomationConfig();
+  if (!config.lowStockEnabled && !manual) return;
+  if (!tgIsConfigured() && !manual) return;
   const bst = nowBST();
   const key = `${todayKeyBST()}-${bst.getUTCHours() < 14 ? "am" : "pm"}`;
-  if (lastLowStockKey === key) return;
+  if (!manual && lastLowStockKey === key) return;
   lastLowStockKey = key;
 
   try {
     const items = await db.select({ name: productsTable.name, stock: productsTable.stock })
-      .from(productsTable).where(lte(productsTable.stock, 3));
+      .from(productsTable).where(lte(productsTable.stock, config.lowStockThreshold));
 
-    if (items.length === 0) return;
+    if (items.length === 0) {
+      if (manual) {
+        await appendAutomationLog({
+          job: "lowStock",
+          triggeredBy: "manual",
+          summary: `No items at or below stock threshold ${config.lowStockThreshold}`,
+        });
+      }
+      return;
+    }
 
     const list = items.map(p => {
       const dot = (p.stock ?? 0) === 0 ? "🔴 OUT" : (p.stock ?? 0) <= 1 ? "🔴" : "🟠";
       return `${dot} ${p.name}: ${p.stock} left`;
     }).join("\n");
 
-    await tgSend(`🚨 <b>Low Stock Alert</b>\n\n${list}\n\n👉 Admin → Products to restock`);
-    logger.info({ count: items.length }, "[scheduler] Low stock alert sent");
+    const delivered = tgIsConfigured();
+    if (delivered) await tgSend(`🚨 <b>Low Stock Alert</b>\n\n${list}\n\n👉 Admin → Products to restock`);
+    logger.info({ count: items.length, delivered }, "[scheduler] Low stock alert computed");
+    await appendAutomationLog({
+      job: "lowStock",
+      triggeredBy: manual ? "manual" : "schedule",
+      summary: `${items.length} item(s) at or below stock threshold ${config.lowStockThreshold}`
+        + (delivered ? "" : " (Telegram not configured — no message sent)"),
+    });
   } catch (err) {
     logger.warn({ err }, "[scheduler] Low stock check failed");
   }
@@ -113,15 +143,18 @@ async function checkAndAlertLowStock(): Promise<void> {
 // ── Pending Order Re-engagement ──────────────────────────────────────────────
 let lastPendingKey = "";
 
-async function checkStalePendingOrders(): Promise<void> {
-  if (!tgIsConfigured()) return;
+async function checkStalePendingOrders(manual = false): Promise<void> {
+  markJobChecked("staleOrders");
+  const config = await getAutomationConfig();
+  if (!config.staleOrdersEnabled && !manual) return;
+  if (!tgIsConfigured() && !manual) return;
   const bst = nowBST();
   const key = `${todayKeyBST()}-${Math.floor(bst.getUTCHours() / 2)}`;
-  if (lastPendingKey === key) return;
+  if (!manual && lastPendingKey === key) return;
   lastPendingKey = key;
 
   try {
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const cutoff = new Date(Date.now() - config.staleOrdersHours * 60 * 60 * 1000);
     const stale = await db.select({
       orderNumber: ordersTable.orderNumber,
       customerName: ordersTable.customerName,
@@ -134,9 +167,18 @@ async function checkStalePendingOrders(): Promise<void> {
       .orderBy(desc(ordersTable.createdAt))
       .limit(5);
 
-    if (stale.length === 0) return;
+    if (stale.length === 0) {
+      if (manual) {
+        await appendAutomationLog({
+          job: "staleOrders",
+          triggeredBy: "manual",
+          summary: `No pending orders older than ${config.staleOrdersHours}h`,
+        });
+      }
+      return;
+    }
 
-    const lines = [`⏰ <b>Stale Pending Orders (>24h old)</b>\n`];
+    const lines = [`⏰ <b>Stale Pending Orders (>${config.staleOrdersHours}h old)</b>\n`];
     for (const o of stale) {
       const hrs = Math.floor((Date.now() - new Date(o.createdAt).getTime()) / 3_600_000);
       lines.push(`• #${o.orderNumber} — ${o.customerName} — ৳${o.total} — ${hrs}h ago`);
@@ -144,8 +186,15 @@ async function checkStalePendingOrders(): Promise<void> {
     }
     lines.push(`\n💡 Call customers or update status in Admin Panel`);
 
-    await tgSend(lines.join("\n"));
-    logger.info({ count: stale.length }, "[scheduler] Pending re-engagement alert sent");
+    const delivered = tgIsConfigured();
+    if (delivered) await tgSend(lines.join("\n"));
+    logger.info({ count: stale.length, delivered }, "[scheduler] Pending re-engagement alert computed");
+    await appendAutomationLog({
+      job: "staleOrders",
+      triggeredBy: manual ? "manual" : "schedule",
+      summary: `${stale.length} order(s) pending longer than ${config.staleOrdersHours}h`
+        + (delivered ? "" : " (Telegram not configured — no message sent)"),
+    });
   } catch (err) {
     logger.warn({ err }, "[scheduler] Pending order check failed");
   }
@@ -156,8 +205,11 @@ const MILESTONES = [10_000, 25_000, 50_000, 100_000, 200_000, 500_000, 1_000_000
 const firedMilestones = new Set<number>();
 let milestoneDateKey = "";
 
-export async function checkRevenueMilestone(): Promise<void> {
-  if (!tgIsConfigured()) return;
+export async function checkRevenueMilestone(manual = false): Promise<void> {
+  markJobChecked("revenueMilestones");
+  const config = await getAutomationConfig();
+  if (!config.revenueMilestonesEnabled && !manual) return;
+  if (!tgIsConfigured() && !manual) return;
   const today = todayKeyBST();
   if (milestoneDateKey !== today) {
     firedMilestones.clear();
@@ -170,15 +222,36 @@ export async function checkRevenueMilestone(): Promise<void> {
     }).from(ordersTable).where(gte(ordersTable.createdAt, startOfDayUTC()));
 
     const total = row?.revenue ?? 0;
+    let fired = false;
 
     for (const milestone of MILESTONES) {
       if (!firedMilestones.has(milestone) && total >= milestone) {
+        fired = true;
         firedMilestones.add(milestone);
-        await tgSend(
-          `🎉 <b>Revenue Milestone!</b>\n\nToday's revenue just crossed <b>৳${milestone.toLocaleString()}</b>!\n\n💰 Current: ৳${Math.round(total).toLocaleString()}\n\n🚀 Keep it up, Trynext!`
-        );
-        logger.info({ milestone, total }, "[scheduler] Revenue milestone fired");
+        const delivered = tgIsConfigured();
+        if (delivered) {
+          await tgSend(
+            `🎉 <b>Revenue Milestone!</b>\n\nToday's revenue just crossed <b>৳${milestone.toLocaleString()}</b>!\n\n💰 Current: ৳${Math.round(total).toLocaleString()}\n\n🚀 Keep it up, Trynext!`
+          );
+        }
+        logger.info({ milestone, total, delivered }, "[scheduler] Revenue milestone fired");
+        await appendAutomationLog({
+          job: "revenueMilestones",
+          triggeredBy: manual ? "manual" : "schedule",
+          summary: `Crossed ৳${milestone.toLocaleString()} — today's revenue ৳${Math.round(total).toLocaleString()}`
+            + (delivered ? "" : " (Telegram not configured — no message sent)"),
+        });
       }
+    }
+
+    if (!fired && manual) {
+      const nextMilestone = MILESTONES.find((m) => !firedMilestones.has(m));
+      await appendAutomationLog({
+        job: "revenueMilestones",
+        triggeredBy: "manual",
+        summary: `No new milestone crossed — today's revenue ৳${Math.round(total).toLocaleString()}`
+          + (nextMilestone ? `, next at ৳${nextMilestone.toLocaleString()}` : ""),
+      });
     }
   } catch (err) {
     logger.warn({ err }, "[scheduler] Revenue milestone check failed");
@@ -192,9 +265,12 @@ export async function checkRevenueMilestone(): Promise<void> {
 let lastPingMs = 0;
 const PING_INTERVAL_MS = 14 * 60 * 1000;
 
-async function keepAlive(): Promise<void> {
+async function keepAlive(manual = false): Promise<void> {
+  markJobChecked("keepAlive");
+  const config = await getAutomationConfig();
+  if (!config.keepAliveEnabled && !manual) return;
   const now = Date.now();
-  if (now - lastPingMs < PING_INTERVAL_MS) return;
+  if (!manual && now - lastPingMs < PING_INTERVAL_MS) return;
   lastPingMs = now;
 
   // Prefer self-ping via localhost (always works regardless of external URL).
@@ -205,8 +281,20 @@ async function keepAlive(): Promise<void> {
   try {
     const res = await fetch(localUrl, { signal: AbortSignal.timeout(8_000) });
     logger.info({ status: res.status }, "[scheduler] Keep-alive ping sent");
+    await appendAutomationLog({
+      job: "keepAlive",
+      triggeredBy: manual ? "manual" : "schedule",
+      summary: `Ping to ${localUrl} responded ${res.status}`,
+    });
   } catch (err) {
     logger.warn({ err }, "[scheduler] Keep-alive ping failed (non-critical)");
+    if (manual) {
+      await appendAutomationLog({
+        job: "keepAlive",
+        triggeredBy: "manual",
+        summary: `Ping failed: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
   }
 }
 
@@ -315,6 +403,26 @@ async function runScheduledBackupSync(): Promise<void> {
       logger.error("[scheduler] Backup sync circuit OPENED after repeated exceptions");
     }
   }
+}
+
+// ── Manual Run-Now + Status (for the admin Automation Center) ───────────────
+export async function runAutomationJobNow(job: AutomationJobId): Promise<void> {
+  switch (job) {
+    case "dailySummary":
+      return sendDailySummary(true);
+    case "lowStock":
+      return checkAndAlertLowStock(true);
+    case "staleOrders":
+      return checkStalePendingOrders(true);
+    case "revenueMilestones":
+      return checkRevenueMilestone(true);
+    case "keepAlive":
+      return keepAlive(true);
+  }
+}
+
+export function getAutomationStatus(): { lastCheckedMs: Partial<Record<AutomationJobId, number>> } {
+  return { lastCheckedMs: getLastCheckedMs() };
 }
 
 // ── Main Scheduler ───────────────────────────────────────────────────────────

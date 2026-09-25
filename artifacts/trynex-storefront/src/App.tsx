@@ -90,6 +90,7 @@ const AdminSettings        = lazyWithRetry(() => import("./pages/admin/AdminSett
 const AdminBlog            = lazyWithRetry(() => import("./pages/admin/AdminBlog"));
 const AdminCustomers       = lazyWithRetry(() => import("./pages/admin/AdminCustomers"));
 const AdminBackup          = lazyWithRetry(() => import("./pages/admin/AdminBackup"));
+const AdminAutomation      = lazyWithRetry(() => import("./pages/admin/AdminAutomation"));
 const AdminFacebookImport  = lazyWithRetry(() => import("./pages/admin/AdminFacebookImport"));
 const AdminReviews         = lazyWithRetry(() => import("./pages/admin/AdminReviews"));
 const AdminTechStack       = lazyWithRetry(() => import("./pages/admin/AdminTechStack"));
@@ -214,6 +215,7 @@ function Router() {
             <Route path="/admin/blog"          component={AdminBlog} />
             <Route path="/admin/customers"     component={AdminCustomers} />
             <Route path="/admin/backup"        component={AdminBackup} />
+            <Route path="/admin/automation"    component={AdminAutomation} />
             <Route path="/admin/settings"      component={AdminSettings} />
             <Route path="/admin/facebook-import" component={AdminFacebookImport} />
             <Route path="/admin/reviews"       component={AdminReviews} />
