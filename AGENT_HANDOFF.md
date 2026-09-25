@@ -2612,3 +2612,44 @@ with status `candidate`; `pnpm run typecheck` passed; storefront tests passed
 19 files/69 tests; API tests passed 11 files/38 tests; storefront and API builds
 passed; `git diff --check` passed; both workflows restarted cleanly; live
 critical-flow smoke checks passed 30/30.
+
+---
+
+## 2026-09-26 real PSD compositor checkpoint
+
+Status: blocked — real compositor launch succeeded, Smart Object compositing
+failed visual validation
+
+Last completed: Downloaded Patchy v0.99 `PatchyLinux.flatpak` from the public
+release and verified its published SHA-256. Flatpak deployment could not finish
+through the sandbox's missing D-Bus service, but the app and KDE runtime commits
+were imported and Patchy's own runtime loader launched the genuine binary.
+Ran the repository's actual two-stage pipeline against
+`cap/cap-black-back.psd`: `replaceSmartObjectContent` replaced the linked bytes,
+then `render-smart-object.js` opened and exported the modified PSD through
+Patchy's documented headless CLI.
+
+Result: the output was a valid non-empty 1024×1024 RGBA PNG, but it was
+byte-for-byte identical to Patchy's export of the untouched PSD
+(`196996e9d6e6a6d332a23e25ef13cd0ac7223170244023e22b7ada125e5e1387`).
+The replacement artwork therefore did not enter the Smart Object composite;
+the renderer trusted the stale cached raster. This is a genuine compositor
+failure, not a structural PSD failure.
+
+Files/areas changed: `artifacts/api-server/src/lib/mockupRenderer.ts` now
+resolves its script path with `fileURLToPath(import.meta.url)`, which works in
+the configured `tsx`/CommonJS execution path; the previous `import.meta.dirname`
+expression was undefined there. The renderer status comment records the
+Patchy result. No runtime assets or template activation state was changed.
+
+Remaining work: Find a PSD compositor that recomputes Smart Object pixels from
+updated linked content, or add an explicitly approved render worker using one.
+Do not activate the 188 candidate templates or replace the current browser
+compositor based on this Patchy result.
+
+Blocker: Patchy v0.99's documented `app.open`/`doc.exportAs` path does not
+refresh the modified Smart Object composite in this repository's masters.
+
+Verification: API typecheck passed; real renderer returned `engine: patchy`,
+`outputWidth: 1024`, `outputHeight: 1024`, and a non-empty PNG; untouched and
+modified exports compared equal with `cmp`; all templates remain fail-closed.

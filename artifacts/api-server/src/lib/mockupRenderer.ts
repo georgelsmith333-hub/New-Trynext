@@ -3,28 +3,30 @@
  * file (routes, queue, frontend) knows which engine actually renders a job.
  *
  * Current state, stated honestly:
- *   PatchyRenderer is wired to genuinely invoke Patchy's headless CLI
+ *   PatchyRenderer genuinely invokes Patchy's headless CLI
  *   (--headless --run-script ..., its only documented automation surface —
- *   see scripts/render-smart-object.js). It is NOT verified end-to-end yet:
- *   this environment cannot reach any host to install the Patchy binary
- *   (see AGENT_HANDOFF.md's mockup-renderer checkpoint), so PATCHY_BINARY_PATH
- *   is unset here and every render call fails clearly with
- *   RendererNotConfiguredError rather than returning a fake image.
+ *   see scripts/render-smart-object.js). Patchy v0.99 was launched with its
+ *   verified Linux runtime and one real cap PSD was opened/exported. The export
+ *   succeeded, but it was byte-for-byte identical to exporting the untouched
+ *   PSD: Patchy did not regenerate the Smart Object composite after the linked
+ *   bytes were replaced. The real-render gate therefore remains failed and no
+ *   templates may be activated. When PATCHY_BINARY_PATH is unset, every render
+ *   call still fails clearly with RendererNotConfiguredError rather than
+ *   returning a fake image.
  *
  *   The two-stage design — psdSmartObject.replaceSmartObjectContent() swaps
  *   the Smart Object's linked bytes first (real, verified: see that module),
  *   then this renderer only needs to open and export the already-modified
  *   PSD, using nothing beyond Patchy's actually-documented scripting API
- *   (app.open, doc.exportAs) — is a real hypothesis, not a confirmed result.
- *   Whether Patchy's engine regenerates the Smart Object's composited pixels
- *   from the updated linked bytes on open (likely, for a real Photoshop-
- *   compatible app) or trusts a stale cached raster (like ag-psd does) is
- *   exactly what the first real render must confirm.
+ *   (app.open, doc.exportAs). The first real run disproved the hypothesis for
+ *   this release: Patchy exported the stale cached raster, so it is not an
+ *   acceptable Smart Object compositor for this pipeline.
  */
 import { spawn } from "node:child_process";
 import { writeFile, unlink, readFile, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { logger } from "./logger";
 import { replaceSmartObjectContent } from "./psdSmartObject";
 
@@ -39,6 +41,8 @@ export interface RenderOptions {
   outputFormat: "png" | "webp" | "jpg";
   outputQuality?: number;
   timeoutMs?: number;
+  /** Admin validation only: export the source PSD without replacing its Smart Object. */
+  skipSmartObjectReplacement?: boolean;
 }
 
 export interface RenderResult {
@@ -107,16 +111,19 @@ export class PatchyRenderer implements MockupRenderer {
       );
     }
 
-    const swapStart = Date.now();
     const originalBytes = await readFile(template.filePath);
-    const swappedPsd = replaceSmartObjectContent(originalBytes, template.smartObjectId, artworkBytes, artworkExt as any);
-    const psdSwapMs = Date.now() - swapStart;
+    const swapStart = Date.now();
+    const swappedPsd = options.skipSmartObjectReplacement
+      ? originalBytes
+      : replaceSmartObjectContent(originalBytes, template.smartObjectId, artworkBytes, artworkExt as any);
+    const psdSwapMs = options.skipSmartObjectReplacement ? 0 : Date.now() - swapStart;
 
     const workDir = await mkdtemp(path.join(tmpdir(), "mockup-render-"));
     const inputPath = path.join(workDir, `template.${template.fileFormat}`);
     const outputPath = path.join(workDir, `output.${options.outputFormat}`);
     const scriptOutputPath = path.join(workDir, "script-output.txt");
-    const scriptPath = path.resolve(import.meta.dirname, "..", "..", "scripts", "render-smart-object.js");
+    const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+    const scriptPath = path.resolve(moduleDir, "..", "..", "scripts", "render-smart-object.js");
 
     try {
       await writeFile(inputPath, swappedPsd);

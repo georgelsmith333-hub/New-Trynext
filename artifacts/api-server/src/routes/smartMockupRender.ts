@@ -273,9 +273,23 @@ router.post("/admin/smart-mockups/templates/:id/test-render", requireAdmin, asyn
       validation.test6_outputDimensions = { pass: result.width > 0 && result.height > 0, width: result.width, height: result.height };
       const nonZeroBytes = result.outputBytes.some((b) => b !== 0);
       validation.test7_outputNotBlank = { pass: nonZeroBytes };
-      const differsFromOriginal = sha256(result.outputBytes) !== sha256(originalBytes);
-      validation.test8_differsFromBlank = { pass: differsFromOriginal };
-      validation.test9_withinTimeout = { pass: Date.now() - start < timeoutMs, elapsedMs: Date.now() - start };
+      // Compare against a real export of the untouched source PSD. Comparing
+      // PNG bytes with PSD bytes would always pass, even when the compositor
+      // simply returns the stale cached Smart Object raster.
+      const baseline = await renderer.render(
+        { filePath: path.resolve(template.filePath), fileFormat: template.fileFormat as "psd" | "psb", smartObjectId: template.smartObjectId },
+        parsed.bytes,
+        parsed.ext,
+        { outputFormat: "png", timeoutMs, skipSmartObjectReplacement: true },
+      );
+      const differsFromBaseline = sha256(result.outputBytes) !== sha256(baseline.outputBytes);
+      validation.test8_differsFromBlank = {
+        pass: differsFromBaseline,
+        renderedSha256: sha256(result.outputBytes),
+        baselineSha256: sha256(baseline.outputBytes),
+      };
+      const withinTimeout = result.metrics.totalMs <= timeoutMs && baseline.metrics.totalMs <= timeoutMs;
+      validation.test9_withinTimeout = { pass: withinTimeout, elapsedMs: Date.now() - start, renderMs: result.metrics.totalMs, baselineRenderMs: baseline.metrics.totalMs };
 
       await db
         .update(mockupTemplatesTable)
