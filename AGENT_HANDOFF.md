@@ -2340,3 +2340,86 @@ Verification: storefront typecheck clean; storefront tests 69/69 pass;
   claude/ecom-customization-itpg9o and main (confirmed origin/main was
   still at 2527c4f — no one else's work — before this push).
 ```
+
+## Checkpoint: removed 3D/2D toggle; Add to Cart no longer blocks on image quality (2026-09-25)
+
+```text
+Status: complete for the scope built this checkpoint
+Last completed: The owner explicitly said to remove the 3D/2D split
+  ("3D / 2D NOT LIKE THIS, REMOVE THESE"), said the studio should work
+  like Printify/Printful end to end, reported that uploading an image and
+  trying to add it to cart was failing, and said the resolution-warning
+  messaging was too technical for real customers. Before changing
+  anything, ran an automated sweep of all 188 product/color/face
+  combinations across all 6 families (T-shirt, long sleeve, hoodie, mug,
+  cap, water bottle) through the live studio — zero "surface unavailable"
+  states, zero console errors. Mockup completeness was already solid; the
+  real problems were UX/architecture:
+  - Removed the "3D Preview" toggle and deleted
+    pages/design-studio/ProductViewer3D.tsx entirely (nothing else
+    imported it — garment3d.tsx, the shared 3D helper, is also used by the
+    separate, unrelated CartViewer3D.tsx, which was left untouched since
+    it isn't rendered anywhere and wasn't part of this report). Root cause
+    of the "3D preview unavailable" failure: `<Environment preset="studio">`
+    fetched an HDRI file from raw.githack.com (an unofficial third-party
+    mirror) at runtime; this sandbox's own egress proxy blocks that domain,
+    so it couldn't be fully confirmed broken for real customers, but it's
+    now moot — the whole feature is gone, so the previous checkpoint's
+    "self-host the HDR" follow-up no longer applies. The 2D compositor
+    (composeGarmentMockup/composeMockupSurface, carrying the fabric
+    shading fix from the prior checkpoint) is now the only view; curved
+    products (mug/cap/bottle) keep their curvature warp, which was always
+    driven by that same 2D compositor's `liveCurvature`/drawImageCurved,
+    not by the removed 3D viewer.
+  - Found the real add-to-cart bug: any uploaded image under 600px on its
+    shortest edge hard-disabled Add to Cart (two enforcement points —
+    addToCartBlockReason and a duplicate check inside handleAddToCart),
+    with a message quoting raw pixel dimensions. Removed both blocking
+    checks; image quality is now informational only, matching how
+    Printify/Printful handle it. Reworded StudioQualityBanner from "Print
+    check: blocked until fixed" to a calm, dismissible "A quick tip before
+    you order" with plain-language copy (no px numbers, no "danger" tone).
+    Genuine blockers are unchanged: no artwork uploaded, or a surface that
+    fails the smart-mockup contract.
+  - Removed show3D/setShow3D from useDesignStore.ts and
+    pages/studio/types.ts.
+  - Checked mobile at 390px: no horizontal overflow on load or after
+    upload. One full-page screenshot appeared to show the canvas missing
+    after upload — turned out to be a position:fixed screenshot-stitching
+    artifact from StudioStickyPurchaseBar, not a real bug; scrolling to the
+    canvas (or a viewport-only screenshot) shows it rendering correctly
+    with the design placed and selection handles working. Not fixed this
+    checkpoint, flagged as a known minor density issue below.
+Stopped at: All changes committed together, tested, and pushed. Nothing
+  left mid-edit.
+Files/areas changed: artifacts/trynex-storefront/src/hooks/useDesignStore.ts,
+  artifacts/trynex-storefront/src/pages/design-studio/ProductViewer3D.tsx
+  (deleted), artifacts/trynex-storefront/src/pages/studio/{DesignStudioV2.tsx,
+  types.ts, v1-components/V1StudioSupport.tsx}.
+Remaining work: None for the approved scope. One real, minor, honestly-
+  scoped follow-up if the owner wants it: on a phone-height viewport
+  (~844px), the onboarding tip banner + toolbar + face tabs push the
+  actual product canvas mostly below the fold on first upload — not
+  broken (no overflow, canvas renders correctly once scrolled to), just
+  denser than ideal. Lowest-risk fix would be collapsing
+  StudioQualityBanner's detail list on mobile by default, mirroring the
+  pattern StudioFirstUseGuide already uses (collapsed steps under
+  639px). Left alone this checkpoint since it isn't broken and the
+  reported bugs (can't add to cart, technical messaging, 3D toggle) are
+  now fixed.
+Blocker: None.
+Next safe action: If the owner wants the mobile density follow-up above,
+  it's a small, isolated change to V1StudioSupport.tsx's
+  StudioQualityBanner (add the same `expanded` + matchMedia pattern
+  StudioFirstUseGuide already has).
+Verification: storefront typecheck clean; storefront tests 69/69 pass;
+  production build succeeds (confirmed no ProductViewer3D chunk remains
+  in dist/assets); re-ran the full 188-combo sweep after all changes —
+  still zero unavailable surfaces, zero errors; verified in a real browser
+  that a deliberately tiny (300×300) uploaded image no longer blocks Add
+  to Cart and reaches a correct cart summary; checked mobile viewport
+  (390×844) for overflow (none) and confirmed the canvas renders
+  correctly. Committed as 0c9fc39 and pushed to both
+  claude/ecom-customization-itpg9o and main (confirmed origin/main was
+  still at 4612a1d — no one else's work — before this push).
+```
