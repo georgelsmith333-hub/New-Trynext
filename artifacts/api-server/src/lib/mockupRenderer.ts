@@ -3,6 +3,12 @@
  * file (routes, queue, frontend) knows which engine actually renders a job.
  *
  * Current state, stated honestly:
+ *   PhotopeaRenderer uses Photopea's supported iframe API through a local
+ *   headless Chromium process. It sends the PSD as an ArrayBuffer, waits for
+ *   "done", executes app.activeDocument.saveToOE("png"), and receives the
+ *   returned ArrayBuffer. The admin validation route compares the changed
+ *   export with an untouched baseline before a template can be activated.
+ *
  *   PatchyRenderer genuinely invokes Patchy's headless CLI
  *   (--headless --run-script ..., its only documented automation surface —
  *   see scripts/render-smart-object.js). Patchy v0.99 was launched with its
@@ -23,7 +29,8 @@
  *   acceptable Smart Object compositor for this pipeline.
  */
 import { spawn } from "node:child_process";
-import { writeFile, unlink, readFile, mkdtemp } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { access, writeFile, unlink, readFile, mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -123,7 +130,7 @@ export class PatchyRenderer implements MockupRenderer {
     const outputPath = path.join(workDir, `output.${options.outputFormat}`);
     const scriptOutputPath = path.join(workDir, "script-output.txt");
     const moduleDir = path.dirname(fileURLToPath(import.meta.url));
-    const scriptPath = path.resolve(moduleDir, "..", "..", "scripts", "render-smart-object.js");
+    const scriptPath = path.resolve(moduleDir, "..", "scripts", "render-smart-object.js");
 
     try {
       await writeFile(inputPath, swappedPsd);
@@ -189,14 +196,117 @@ export class PatchyRenderer implements MockupRenderer {
   }
 }
 
+export class PhotopeaRenderer implements MockupRenderer {
+  readonly engineName = "photopea";
+
+  private chromiumPath(): string {
+    return process.env.PHOTOPEA_CHROMIUM_PATH?.trim() || "/repl/tools/bin/chromium";
+  }
+
+  async isAvailable(): Promise<{ available: boolean; reason?: string }> {
+    try {
+      await access(this.chromiumPath());
+      return { available: true };
+    } catch {
+      return {
+        available: false,
+        reason: `Photopea requires a Chromium executable at ${this.chromiumPath()} (set PHOTOPEA_CHROMIUM_PATH to override).`,
+      };
+    }
+  }
+
+  async render(
+    template: RenderTemplate,
+    artworkBytes: Buffer,
+    artworkExt: string,
+    options: RenderOptions,
+  ): Promise<RenderResult> {
+    const totalStart = Date.now();
+    const availability = await this.isAvailable();
+    if (!availability.available) {
+      throw new RendererNotConfiguredError(this.engineName, availability.reason ?? "Chromium is unavailable.");
+    }
+
+    const originalBytes = await readFile(template.filePath);
+    const swapStart = Date.now();
+    const swappedPsd = options.skipSmartObjectReplacement
+      ? originalBytes
+      : replaceSmartObjectContent(originalBytes, template.smartObjectId, artworkBytes, artworkExt as any);
+    const psdSwapMs = options.skipSmartObjectReplacement ? 0 : Date.now() - swapStart;
+
+    const workDir = await mkdtemp(path.join(tmpdir(), "mockup-photopea-"));
+    const inputPath = path.join(workDir, `template.${template.fileFormat}`);
+    const outputPath = path.join(workDir, `output.${options.outputFormat}`);
+    const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+    const scriptPath = path.resolve(moduleDir, "..", "scripts", "render-photopea.js");
+    const renderStart = Date.now();
+
+    try {
+      await writeFile(inputPath, swappedPsd);
+      await this.runPhotopea(
+        scriptPath,
+        inputPath,
+        outputPath,
+        options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+      );
+      const renderMs = Date.now() - renderStart;
+      const outputBytes = await readFile(outputPath);
+      const sharp = (await import("sharp")).default;
+      const meta = await sharp(outputBytes).metadata();
+      return {
+        outputBytes,
+        outputFormat: options.outputFormat,
+        width: meta.width ?? 0,
+        height: meta.height ?? 0,
+        engine: this.engineName,
+        metrics: { psdSwapMs, renderMs, totalMs: Date.now() - totalStart },
+      };
+    } finally {
+      await unlink(inputPath).catch(() => {});
+      await unlink(outputPath).catch(() => {});
+    }
+  }
+
+  private runPhotopea(scriptPath: string, inputPath: string, outputPath: string, timeoutMs: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const child = spawn(process.execPath, [scriptPath, "--input", inputPath, "--output", outputPath], {
+        stdio: "ignore",
+        env: { ...process.env, PHOTOPEA_TIMEOUT_MS: String(timeoutMs) },
+      });
+      const timer = setTimeout(() => {
+        child.kill("SIGKILL");
+        reject(new RenderTimeoutError(timeoutMs));
+      }, timeoutMs + 2_000);
+      child.on("error", (error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+      child.on("exit", (code) => {
+        clearTimeout(timer);
+        if (code === 0) resolve();
+        else reject(new Error(`Photopea renderer exited with code ${code}`));
+      });
+    });
+  }
+}
+
 let cachedRenderer: MockupRenderer | null = null;
-/** Single seam the rest of the app depends on. Swapping engines later
- *  (ExternalPsdRenderer, a paid API, etc.) means changing only this
- *  function — nothing else in routes/queue/frontend references PatchyRenderer
- *  directly. */
+/** Single seam the rest of the app depends on. Select with PSD_RENDERER:
+ * photopea, patchy, or auto. Auto chooses Photopea when Chromium is present,
+ * otherwise it preserves the explicit Patchy fail-closed path. No engine is
+ * considered a successful compositor until the admin validation route proves
+ * the modified export differs from baseline. */
 export function getMockupRenderer(): MockupRenderer {
   if (!cachedRenderer) {
-    cachedRenderer = new PatchyRenderer();
+    const requested = (process.env.PSD_RENDERER?.trim().toLowerCase() || "auto");
+    if (requested === "patchy") {
+      cachedRenderer = new PatchyRenderer();
+    } else if (requested === "photopea") {
+      cachedRenderer = new PhotopeaRenderer();
+    } else {
+      const chromiumPath = process.env.PHOTOPEA_CHROMIUM_PATH?.trim() || "/repl/tools/bin/chromium";
+      cachedRenderer = existsSync(chromiumPath) ? new PhotopeaRenderer() : new PatchyRenderer();
+    }
     logger.info({ engine: cachedRenderer.engineName }, "[mockupRenderer] Active rendering engine");
   }
   return cachedRenderer;

@@ -2653,3 +2653,62 @@ refresh the modified Smart Object composite in this repository's masters.
 Verification: API typecheck passed; real renderer returned `engine: patchy`,
 `outputWidth: 1024`, `outputHeight: 1024`, and a non-empty PNG; untouched and
 modified exports compared equal with `cmp`; all templates remain fail-closed.
+
+---
+
+## 2026-09-26 Photopea renderer integration checkpoint
+
+Status: in progress — Photopea engine implemented; real export remains blocked by
+the headless environment's Cloudflare challenge
+
+Last completed: Added a genuine Photopea renderer behind the existing
+`MockupRenderer` seam. It launches the available Chromium executable through the
+DevTools protocol, loads a configurable Photopea URL, sends the modified PSD as
+an ArrayBuffer, waits for Photopea's `done` message, executes
+`app.activeDocument.saveToOE("png")`, receives the exported image ArrayBuffer,
+and writes the PNG without touching its pixels. `PSD_RENDERER=photopea`,
+`patchy`, or `auto` selects the engine; auto prefers Photopea when Chromium is
+present. Fixed the compiled API helper-script path for both renderer scripts.
+
+The source inventory is complete for the active staged release: 188 PSD/PSB
+masters, 200 source PNGs, 188 previews, 188 proof previews, and the public
+1,128-role runtime matrix. The structural master audit, staging checksum
+matrix, runtime-role validator, API tests, and full workspace typecheck all
+pass.
+
+Stopped at: A real Chromium invocation reached the Photopea URL but received
+only the Cloudflare challenge and therefore never emitted `done`; no exported
+PNG was accepted. This is an external access blocker, not a PSD parse,
+Smart Object replacement, or renderer-cleanup failure.
+
+Files/areas changed:
+  - `artifacts/api-server/scripts/render-photopea.js`
+  - `artifacts/api-server/src/lib/mockupRenderer.ts`
+  - `replit.md`
+  - `.agents/memory/photopea-smart-object-renderer.md`
+  - `.agents/memory/MEMORY.md`
+  - this handoff
+
+Remaining work: Run the Photopea renderer once from an environment that can
+pass the Photopea/Cloudflare challenge, confirm the modified export differs
+from the untouched baseline, and only then validate/activate templates. No
+customer-facing renderer replacement or candidate activation is permitted
+before that evidence exists.
+
+Blocker: Photopea is reachable from this headless Chromium only as a
+Cloudflare challenge in the current environment. Patchy remains rejected
+because its export was byte-for-byte identical after Smart Object replacement.
+
+Next safe action: Set `PSD_RENDERER=photopea` and a reachable
+`PHOTOPEA_URL`/Chromium path in an approved worker environment, run the admin
+template test-render on one cap master, and require tests 4–9 — especially the
+changed-vs-baseline export check — before scaling beyond the representative
+surface.
+
+Verification: Photopea helper syntax check passed; API typecheck and bundle
+build passed; API tests passed 11 files/38 tests; full workspace typecheck
+passed; the 188-master audit passed; the 188-surface staging checksum matrix
+passed; the public runtime validator passed 188 surfaces/1,128 roles; API
+liveness/readiness returned 200 after restart. The real Photopea attempt
+failed closed with `Photopea did not return an export before the timeout`;
+no runtime assets or template activation state changed.

@@ -43,6 +43,7 @@ Do not place secrets or private session values in these files.
 - `pnpm --filter @workspace/trynext-promo run dev` — promo animation (video-js style artifact)
 - `pnpm run typecheck` — full typecheck across all packages
 - Required env: `DATABASE_URL` / `DATABASE_URL_MAIN` (Neon Postgres), `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` (cache), `R2_ACCOUNT_ID`/`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`/`R2_BUCKET` (Cloudflare R2 object storage), `JWT_SECRET`/`ADMIN_JWT_SECRET`/`ADMIN_PASSWORD` (auth), `TELEGRAM_BOT_TOKEN` (order notifications; chat ID is stored in the `settings` table via Admin → Telegram, not an env var), `CLOUDFLARE_API_TOKEN` (deploy hooks)
+- Optional real Smart Object renderer: `PSD_RENDERER=photopea|patchy|auto` (auto prefers Photopea when Chromium is available), `PHOTOPEA_URL`, `PHOTOPEA_CHROMIUM_PATH`, and `PHOTOPEA_TIMEOUT_MS`. Photopea uses the supported PSD ArrayBuffer → `done` → `app.activeDocument.saveToOE("png")` flow. Candidate templates remain inactive until the modified export differs from an untouched baseline.
 
 ## Stack
 
