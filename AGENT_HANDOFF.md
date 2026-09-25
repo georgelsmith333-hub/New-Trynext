@@ -2423,3 +2423,156 @@ Verification: storefront typecheck clean; storefront tests 69/69 pass;
   claude/ecom-customization-itpg9o and main (confirmed origin/main was
   still at 4612a1d — no one else's work — before this push).
 ```
+
+## Checkpoint: real Smart Object mockup renderer — investigation + first infra slice (2026-09-25)
+
+```text
+Status: in progress — real infrastructure built and verified end-to-end;
+  the actual photorealistic render step remains blocked on a reachable
+  PSD-compositing engine
+Last completed: The owner asked for a production-grade pipeline
+  (customer artwork -> real PSD Smart Object -> real render -> photorealistic
+  image), explicitly forbidding hand-coded product geometry/fake canvas
+  overlays, and asked to investigate github.com/SethRobinson/Patchy as the
+  renderer. Required "first response before coding" (repo architecture +
+  Patchy's actual documented API) before any implementation — did that
+  first, then built the parts that turned out to be genuinely achievable.
+
+  Patchy investigation (read directly from the repo, not training-data
+  memory): README, scripts/bundled/scripting-guide.md, AGENTS.md,
+  docs/smart-objects.md, docs/smart-object-editing.md, docs/ai-control.md,
+  RELEASE-HISTORY.md. Confirmed real strengths (MIT, native+WASM, 98.83%
+  perceptual PSD fidelity, genuine Smart Object/blend-mode/mask/layer-style
+  support) and one load-bearing gap: the documented JS scripting API and
+  MCP connector have zero methods for Smart Object detection or content
+  replacement — docs/smart-object-editing.md states plainly this is
+  GUI-menu-only today. CLI automation (--headless --run-script
+  script.js --script-output out.txt, patchy.args.key, patchy.setResult())
+  is real and documented for general layer/pixel/export operations.
+
+  This sandbox's network policy only allows npm/PyPI/crates.io/Go-modules/
+  Anthropic APIs (confirmed via the proxy's own rejection log) — Flathub,
+  GitHub releases, Patchy's own WASM web build (patchyimageeditor.com), and
+  Photopea were all individually tested and all rejected at the proxy
+  (connect_rejected, policy denial), not a per-host issue. npm itself was
+  checked for any Patchy package/WASM distribution — none exists (the only
+  "patchy" on npm is an unrelated 2013 diff-patching utility). This is a
+  hard environment boundary, not a Patchy-specific problem: no native
+  binary, WASM build, or hosted web editor could be reached to actually
+  install/run/test a real PSD compositor from inside this sandbox.
+
+  Found real, git-committed PSD/PSB Smart Object masters already exist in
+  this repo: dist-mockups/staging/smart-v10-v3/masters/ — 188 files (every
+  product x color x face), passing tools/audit_psd_masters.mjs's structural
+  check 188/188. Important honest caveat found and reported to the owner:
+  their Smart Object placement is a hard-coded rectangle per product/view
+  (tools/build-smartobject-mockups.mjs's CANONICAL table) — programmatically
+  authored, not hand-warped by a human in real Photoshop — and the repo's
+  own most rigorous existing test (tools/verify-smartobject-roundtrip.mjs)
+  admits in its own comments that its "recomposite" step is a flat
+  nearest-neighbor rectangle paste, not real blend-mode/mask-aware
+  rendering. Confirmed by direct code reading (lines 256-258 of that
+  script) that ag-psd itself does not regenerate a Smart Object layer's
+  composited pixels from its transform when linked content changes — it
+  only swaps linked bytes at the container level. An initially-promising
+  "two-stage" idea (ag-psd swaps linked bytes, Patchy just needs to open+
+  export using only documented API) was tested against this and could not
+  be confirmed to work with tools available here — genuinely unresolved,
+  not dismissed; flagged as the specific thing the first real Patchy run
+  must prove or disprove.
+
+  Built, tested, and verified through the real running dev server (not
+  just typechecked):
+  - lib/psdSmartObject.ts: real ag-psd Smart Object discovery
+    (inspectTemplate — works regardless of layer name, walks groups) and
+    linked-content replacement (replaceSmartObjectContent).
+  - lib/mockupRenderer.ts: MockupRenderer interface + PatchyRenderer
+    (shells out to PATCHY_BINARY_PATH via the documented CLI surface;
+    throws RendererNotConfiguredError, never fakes output, when unset).
+  - scripts/render-smart-object.js: the actual Patchy automation script,
+    using only app.open/doc.exportAs/patchy.args/patchy.setResult — no
+    invented Smart Object API.
+  - mockup_templates + mockup_jobs tables (migration 007) and
+    lib/mockupQueue.ts: DB-backed job queue (Redis isn't provisioned —
+    REDIS_URL is an unpopulated optional secret in render.yaml), worker
+    concurrency via MOCKUP_WORKER_CONCURRENCY, retry limit, render caching
+    by templateVersion+artworkHash+options cache key.
+  - routes/smartMockupRender.ts: admin template create/inspect/select-
+    smart-object/test-render(9-point)/activate/deactivate, plus customer
+    POST /api/smart-mockups/render and GET /api/smart-mockups/jobs/:id.
+    Deliberately new/additive — does not touch routes/mockups.ts (the
+    existing Mockup Gallery admin content feature, built on the pre-
+    existing mockupsTable) or routes/mockupRender.ts (the current
+    canvas-compositor render path at POST /api/mockup/render used by
+    server-mockup-render.ts on the frontend). CAUTION for the next agent:
+    this session's first attempt at this file overwrote the pre-existing
+    routes/mockups.ts by mistake (recovered immediately via
+    `git checkout --`, nothing lost) — this is exactly why the new file is
+    named smartMockupRender.ts and not mockups.ts/mockupRender.ts; do not
+    rename it back into either of those names without re-checking for
+    collision first.
+  - tools/seed-mockup-templates.mjs: registered all 188 real masters
+    through the live admin HTTP API (not a DB shortcut) — 188/188 created,
+    inspected, and had their (single, auto-detected) Smart Object
+    auto-selected, with zero errors.
+
+  Verified live against the running dev server, via curl, not assumed:
+  templates list shows 188 rows, all active:false (fail-closed default);
+  a real test-render on template id 1 correctly passed tests 1-3
+  (open/find-smart-object/replace-content — genuinely real ag-psd
+  operations) and correctly, honestly failed test 4 (render) with
+  "PATCHY_BINARY_PATH is not set" rather than fabricating output;
+  activate was correctly refused (409 not_validated) on that
+  failed-validation template; a customer render POST was correctly refused
+  (409 template_not_active); security checks all correct: non-image/SVG
+  artwork rejected (400), missing templateId rejected (400), a path-
+  traversal attempt on template registration rejected (400, "escapes the
+  configured template root").
+Stopped at: All of the above committed together, tested, and pushed.
+  Nothing left mid-edit. The rendering engine itself is the one piece not
+  yet real — everything upstream and downstream of it is.
+Files/areas changed: lib/db/src/schema/index.ts (mockup_templates,
+  mockup_jobs tables), lib/db/migrations/007_add_mockup_templates_and_jobs.sql,
+  artifacts/api-server/src/lib/{psdSmartObject.ts, mockupRenderer.ts,
+  mockupQueue.ts, objectStorage.ts (added saveBuffer)},
+  artifacts/api-server/src/routes/{smartMockupRender.ts (new), index.ts},
+  artifacts/api-server/scripts/render-smart-object.js,
+  artifacts/api-server/src/index.ts (starts the worker),
+  tools/seed-mockup-templates.mjs.
+Remaining work: The rendering engine. Two real paths, both requiring
+  either the owner or a different environment, not cleverness from inside
+  this sandbox: (1) the owner uploads Patchy's Linux build (Flatpak or an
+  AppImage/tarball if one exists) directly as a file into this session —
+  bypasses the network block entirely, could be tested within minutes;
+  (2) build a small Dockerized worker service and deploy it to Render
+  (env: docker, not the current env: node — no Dockerfile exists in this
+  repo yet), since Render's build/runtime environment has normal internet
+  access unlike this coding sandbox — this is a real infra/cost change the
+  owner should approve before it's built, not something to do silently.
+  Once either unblocks it: run the first real render, confirm or disprove
+  the two-stage hypothesis in lib/mockupRenderer.ts's own doc comment, and
+  only then activate templates and build the customer-facing Design Studio
+  integration (uploading via the existing studio UI into POST
+  /api/smart-mockups/render, polling job status, replacing the current
+  canvas-compositor preview) and the admin template-management UI page —
+  neither of those frontend pieces exist yet, by design, since building
+  them around an unverified renderer would risk exactly the "looks done,
+  isn't" outcome the owner explicitly warned against repeating.
+Blocker: No PSD-compositing renderer is reachable from this sandbox by any
+  means (native binary, WASM build, or hosted web editor — all individually
+  confirmed blocked by this environment's network policy, not a Patchy-
+  specific problem).
+Next safe action: Owner uploads a real Patchy Linux build as a file into
+  this session (fastest), or approves building+deploying a Dockerized
+  render worker to Render. Either way, the very next step after that is
+  running one real render against template id 1 (cap black back, already
+  registered and Smart-Object-mapped) and honestly reporting whether the
+  two-stage architecture actually reproduces Photoshop-fidelity output.
+Verification: api-server typecheck clean, tests 38/38 pass; lib/db
+  declarations rebuilt after the schema change; migration 007 applied
+  cleanly against the local dev DB (confirmed in server boot logs); all
+  188 real templates registered/inspected/smart-object-selected through
+  the live HTTP API with zero errors; every fail-closed gate (activation,
+  customer render on inactive template) and every security check (format
+  allowlist, path traversal) verified against real requests, not assumed.
+```
