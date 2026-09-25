@@ -3,6 +3,7 @@ import { logger } from "./lib/logger";
 import { runMigrations, autoSeedIfEmpty } from "./lib/autoSeed";
 import { logActiveStorageBackend, ObjectStorageService } from "./lib/objectStorage";
 import { startScheduler } from "./lib/scheduler";
+import { startMockupWorker } from "./lib/mockupQueue";
 import { loadSavedChatId } from "./routes/telegramWebhook";
 
 const rawPort = process.env["PORT"] || "8080";
@@ -137,6 +138,7 @@ const server = app.listen(port, "0.0.0.0", async () => {
   await autoSeedIfEmpty();
   await loadSavedChatId();
   startScheduler();
+  startMockupWorker();
   // NOTE: GitHub PAT is intentionally NOT persisted to the database.
   // It is read at runtime from environment secrets (GITHUB_PERSONAL_ACCESS_TOKEN
   // or GITHUB_TOKEN) by the code that needs it. Persisting tokens in the DB

@@ -402,3 +402,87 @@ export type Notification = typeof notificationsTable.$inferSelect;
 export type InsertNotification = typeof notificationsTable.$inferInsert;
 export type Mockup = typeof mockupsTable.$inferSelect;
 export type InsertMockup = typeof mockupsTable.$inferInsert;
+
+/**
+ * Registry of PSD/PSB Smart Object mockup templates — the "product → template
+ * → Smart Object" mapping. Admin-managed; the render pipeline never hard-codes
+ * this mapping in frontend or backend code. A template is `active` only after
+ * a successful test render (see mockup_jobs), per the fail-closed rule: never
+ * ship an unreviewed generated surface.
+ */
+export const mockupTemplatesTable = pgTable("mockup_templates", {
+  id: serial("id").primaryKey(),
+  productType: text("product_type").notNull(),
+  name: text("name").notNull(),
+  color: text("color"),
+  face: text("face"),
+  /** Private storage path — never under public/. */
+  filePath: text("file_path").notNull(),
+  fileFormat: text("file_format").notNull(),
+  fileSha256: text("file_sha256").notNull(),
+  fileSize: integer("file_size").notNull(),
+  /** Selected by an admin from the inspector's smart-object listing; null until chosen. */
+  smartObjectId: text("smart_object_id"),
+  smartObjectName: text("smart_object_name"),
+  /** Full smart-object inventory from the last inspection, for the admin picker UI. */
+  inspectionJson: jsonb("inspection_json"),
+  outputWidth: integer("output_width"),
+  outputHeight: integer("output_height"),
+  active: boolean("active").notNull().default(false),
+  version: integer("version").notNull().default(1),
+  lastValidatedAt: timestamp("last_validated_at"),
+  lastValidationStatus: text("last_validation_status"),
+  lastValidationJson: jsonb("last_validation_json"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  productTypeIdx: index("mockup_templates_product_type_idx").on(table.productType),
+  activeIdx: index("mockup_templates_active_idx").on(table.active),
+  fileFormatCheck: check("mockup_templates_file_format_check", sql`${table.fileFormat} IN ('psd', 'psb')`),
+  validationStatusCheck: check(
+    "mockup_templates_validation_status_check",
+    sql`${table.lastValidationStatus} IS NULL OR ${table.lastValidationStatus} IN ('pass', 'fail')`,
+  ),
+}));
+
+/**
+ * Async render job queue (Section 7/8). A DB-backed queue — Redis isn't
+ * provisioned in this environment yet; this table doubles as both the queue
+ * and the durable job-status record polled by the frontend.
+ */
+export const mockupJobsTable = pgTable("mockup_jobs", {
+  id: text("id").primaryKey(),
+  templateId: integer("template_id").notNull().references(() => mockupTemplatesTable.id, { onDelete: "restrict" }),
+  templateVersion: integer("template_version").notNull(),
+  status: text("status").notNull().default("queued"),
+  progress: integer("progress").notNull().default(0),
+  /** Private storage path to the customer's uploaded artwork bytes. */
+  artworkPath: text("artwork_path").notNull(),
+  artworkHash: text("artwork_hash").notNull(),
+  renderOptions: jsonb("render_options").default({}),
+  /** SHA256(templateVersion + artworkHash + renderOptions) — see Section 19 caching. */
+  cacheKey: text("cache_key").notNull(),
+  renderingEngine: text("rendering_engine"),
+  previewUrl: text("preview_url"),
+  finalUrl: text("final_url"),
+  errorMessage: text("error_message"),
+  attempts: integer("attempts").notNull().default(0),
+  maxAttempts: integer("max_attempts").notNull().default(3),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  statusIdx: index("mockup_jobs_status_idx").on(table.status),
+  cacheKeyIdx: index("mockup_jobs_cache_key_idx").on(table.cacheKey),
+  templateIdIdx: index("mockup_jobs_template_id_idx").on(table.templateId),
+  statusCheck: check(
+    "mockup_jobs_status_check",
+    sql`${table.status} IN ('queued', 'processing', 'completed', 'failed')`,
+  ),
+}));
+
+export type MockupTemplate = typeof mockupTemplatesTable.$inferSelect;
+export type InsertMockupTemplate = typeof mockupTemplatesTable.$inferInsert;
+export type MockupJob = typeof mockupJobsTable.$inferSelect;
+export type InsertMockupJob = typeof mockupJobsTable.$inferInsert;
