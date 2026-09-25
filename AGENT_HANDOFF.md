@@ -2251,3 +2251,92 @@ Verification: api-server typecheck clean, storefront typecheck clean;
   main; confirmed origin/main was still at 844ed51 — no one else's work —
   before this push).
 ```
+
+## Checkpoint: T-shirt print realism — fabric texture + render-path parity (2026-09-25)
+
+```text
+Status: complete for the scope built this checkpoint
+Last completed: The owner asked "does my design actually look printed on
+  the product" and, separately mid-session, demanded the fast/live studio
+  preview match the post-add-to-cart render and that designs read as
+  printed-into-fabric rather than pasted on top. Investigated end-to-end
+  with a real uploaded test artwork (a red/yellow badge PNG with real
+  alpha transparency) driven through Playwright, not just code reading:
+  - Confirmed the live studio canvas (LiveCompositorPreview), the manual
+    PNG export, and the cart's server-rendered thumbnail are architecturally
+    meant to share one compositor (composer.ts's composeGarmentMockup /
+    composeDesignTexture), so this was the right place to look.
+  - Found the T-shirt's actual base garment photo
+    (public/mockups/psd-master-v10/runtime-roles/tshirt/white/front-base.png)
+    is a very clean, flat studio shot with almost no luminance variation in
+    the chest print zone, so the existing per-pixel lighting-transfer pass
+    (applyPhotoLighting/getShadeField — real, correctly-implemented code,
+    not a stub) had nothing to pick up there; confirmed by sampling pixel
+    values through the exported print on both white and black shirts —
+    near-zero gradient.
+  - Found fabricTexture (the woven-grain overlay, applyFabricGrain) was
+    real, working code gated behind an undiscoverable manual toggle,
+    defaulted OFF with a comment saying new designs must never carry grain
+    "before the user explicitly enables it" — exactly backwards from what
+    was asked. Flipped the default to true in useDesignStore.ts.
+  - That change exposed a real, previously-latent bug: canvas blend modes
+    (soft-light included) paint fully into fully-transparent destination
+    pixels rather than staying invisible, so grain filled the *entire*
+    print-zone rectangle, not just the artwork's own shape — a visible
+    ghost box around every design once texture was on by default. Fixed in
+    composer.ts by snapshotting the artwork's alpha silhouette before
+    painting the grain and compositing with destination-in afterward to
+    punch it back down to that shape.
+  - Found a real inconsistency: renderApprovedMockupOnServer (used for both
+    the cart's imageUrl thumbnail and the manual "Export PNG" button) built
+    its artwork crop via composeDesignTexture without passing runtimeRoles
+    or fabricTexture — the only caller of that shared function that
+    omitted them — so the cart thumbnail always skipped the lighting
+    transfer and grain that the live preview and print texture already
+    applied. Added `runtimeRoles` to the ServerRenderableSurface Pick type,
+    added a `fabricTexture` param, and threaded the studio's live
+    fabricTexture state into both DesignStudioV2.tsx call sites.
+  - Also found (secondary, not fixed): clicking "3D Preview" throws
+    "Could not load studio_small_03_1k.hdr: Failed to fetch" and falls back
+    to 2D with a toast — root cause is `<Environment preset="studio" />`
+    (ProductViewer3D.tsx) fetching an HDRI from
+    https://raw.githack.com/pmndrs/drei-assets/... at runtime, an
+    unofficial third-party CDN never self-hosted for this project. This
+    sandbox's own egress proxy blocks that domain by policy (confirmed via
+    direct curl: 403 from the proxy itself), so it is NOT proven broken for
+    real customers — but it is a genuinely fragile dependency (a free
+    GitHack mirror, not a paid/reliable CDN) for a customer-facing feature,
+    worth self-hosting the .hdr file under public/ instead. Left alone this
+    checkpoint since the owner's request was specifically about print
+    realism/consistency, not 3D preview, and the graceful 2D fallback means
+    it fails safe rather than breaking checkout.
+Stopped at: All four fixes committed together, tested, and pushed. Nothing
+  left mid-edit.
+Files/areas changed: artifacts/trynex-storefront/src/hooks/useDesignStore.ts,
+  artifacts/trynex-storefront/src/pages/design-studio/composer.ts,
+  artifacts/trynex-storefront/src/pages/design-studio/server-mockup-render.ts,
+  artifacts/trynex-storefront/src/pages/studio/DesignStudioV2.tsx.
+Remaining work: None for the approved scope. Two real, honestly-scoped
+  follow-ups exist if the owner wants them: (1) self-host the 3D preview's
+  HDRI under public/ instead of fetching it from raw.githack.com at
+  runtime — likely the actual root cause of any customer reports of 3D
+  Preview failing; (2) if a customer ever complains a specific product's
+  print still looks too flat even with texture on, the real lever is a
+  base garment photo with more visible fold/lighting variation in the
+  print zone (the shading code already transfers whatever variation
+  exists — it can't invent detail the source photo doesn't have).
+Blocker: None.
+Next safe action: If the owner wants (1) above, fetch
+  https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d99b8bcce736/hdri/studio_small_03_1k.hdr
+  from an environment that can reach it, add it under
+  artifacts/trynex-storefront/public/, and change ProductViewer3D.tsx's
+  `<Environment preset="studio" />` to `<Environment files="/<path>.hdr" />`.
+Verification: storefront typecheck clean; storefront tests 69/69 pass;
+  production build succeeds; verified in a real browser via Playwright on
+  four surfaces (T-shirt white, T-shirt black, mug, hoodie) — grain is
+  visibly present with no box artifact on any of them, exported PNG and
+  the cart's server-rendered thumbnail are visually identical, and no new
+  console/page errors. Committed as 33e8861 and pushed to both
+  claude/ecom-customization-itpg9o and main (confirmed origin/main was
+  still at 2527c4f — no one else's work — before this push).
+```
