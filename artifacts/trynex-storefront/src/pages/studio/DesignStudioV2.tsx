@@ -1129,6 +1129,7 @@ export default function DesignStudioV2() {
         surface: frontMockup,
         printZone: frontPZ,
         layers: frontLayers,
+        fabricTexture,
       });
     } catch (err) {
       console.error("Mockup compose failed", err);
@@ -1255,6 +1256,7 @@ export default function DesignStudioV2() {
          surface: exportMockup,
          printZone: exportPrintZone,
          layers: activeLayers,
+         fabricTexture,
        });
        const a = document.createElement("a"); a.href = serverImage; a.download = `trynext-${selectedProduct.id}-${activeFace}-design.png`; a.click();
        toast({ title: "PNG exported!", description: "The validated server-rendered mockup was saved to your downloads." });

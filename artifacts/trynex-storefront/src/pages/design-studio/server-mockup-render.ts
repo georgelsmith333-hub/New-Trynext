@@ -58,7 +58,7 @@ type ServerSurfaceManifest = {
   blendModes: { shadow: "multiply"; highlight: "screen"; protected: "source-over" };
 };
 
-type ServerRenderableSurface = Pick<UnifiedMockupSurface, "sourceKitKey" | "runtimeStatus" | "disabledReason" | "contractErrors">;
+type ServerRenderableSurface = Pick<UnifiedMockupSurface, "sourceKitKey" | "runtimeStatus" | "disabledReason" | "contractErrors" | "runtimeRoles">;
 
 const RELEASE_MANIFEST_URL = "/mockups/psd-master-v10/runtime-roles/manifest.json";
 const RUNTIME_ROOT = "/mockups/psd-master-v10/runtime-roles";
@@ -233,11 +233,13 @@ export async function renderApprovedMockupOnServer({
   printZone,
   layers,
   curvature = 0,
+  fabricTexture = false,
 }: {
   surface: ServerRenderableSurface;
   printZone: ComposerPrintZone;
   layers: ComposerLayer[];
   curvature?: number;
+  fabricTexture?: boolean;
 }): Promise<string> {
   const serverSurface = await getServerSurface(surface);
   const artworkCanvas = document.createElement("canvas");
@@ -249,6 +251,11 @@ export async function renderApprovedMockupOnServer({
     imageCache: new Map(),
     clipToPrintZone: true,
     curvature,
+    fabricTexture,
+    // Relight the artwork with the same garment-photo shade field the live
+    // preview and print texture use, so the cart/order thumbnail this
+    // produces isn't flatter than what the customer designed against.
+    runtimeRoles: surface.runtimeRoles,
   });
   const response = await fetch(getApiUrl("/api/mockup/render"), {
     method: "POST",

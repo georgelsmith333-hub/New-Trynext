@@ -543,7 +543,22 @@ export async function composeLayers(opts: ComposeOptions): Promise<HTMLCanvasEle
   }
 
   if (fabricTexture) {
-    applyFabricGrain(ctx, outW, outH, 0.035);
+    // Canvas blend modes (soft-light included) paint fully into fully-
+    // transparent destination pixels rather than staying invisible there, so
+    // grain applied directly would bleed across the whole print-zone
+    // rectangle, not just the artwork silhouette. Snapshot the artwork alpha
+    // first and punch the grain back down to it afterwards.
+    const silhouette = document.createElement("canvas");
+    silhouette.width = outW;
+    silhouette.height = outH;
+    silhouette.getContext("2d")?.drawImage(canvas, 0, 0);
+
+    applyFabricGrain(ctx, outW, outH, 0.08);
+
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-in";
+    ctx.drawImage(silhouette, 0, 0);
+    ctx.restore();
   }
 
   if (clipToPrintZone) ctx.restore();
