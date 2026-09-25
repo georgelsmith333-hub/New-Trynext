@@ -24,6 +24,7 @@ const ALLOWED_ARTWORK_EXT = ["png", "jpg", "jpeg", "webp"] as const;
 const MAX_ARTWORK_BYTES = 10 * 1024 * 1024; // 10MB
 const MAX_ARTWORK_PIXELS = 8000 * 8000; // guards against decompression bombs
 const MAX_PSD_BYTES = 100 * 1024 * 1024; // 100MB — real Smart Object masters run several MB each
+const MAX_BROWSER_PSD_BYTES = 15 * 1024 * 1024; // keep the browser validation response below the API JSON limit
 
 function parseDataUrl(dataUrl: unknown): { ext: "png" | "jpg" | "jpeg" | "webp"; bytes: Buffer } | null {
   if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:")) return null;
@@ -105,6 +106,92 @@ function resolveTemplatePath(relativePath: string): string {
   }
   return resolved;
 }
+
+/** Browser-side validation catalog. The PSDs remain private; this endpoint
+ * exposes only the safe relative selector and Smart Object id to an admin. */
+router.get("/admin/smart-mockups/browser-catalog", requireAdmin, async (_req, res) => {
+  try {
+    const stagingRoot = path.dirname(templateRoot());
+    const manifestPath = path.join(stagingRoot, "manifest.json");
+    const manifest = JSON.parse(await readFile(manifestPath, "utf8")) as {
+      surfaces?: Array<{
+        surfaceKey: string;
+        family: string;
+        color: string;
+        view: string;
+        masterFormat: "psd" | "psb";
+        smartObject?: { id?: string; layerName?: string };
+      }>;
+    };
+    const surfaces = (manifest.surfaces ?? [])
+      .filter((surface) => typeof surface.smartObject?.id === "string")
+      .map((surface) => ({
+        surfaceKey: surface.surfaceKey,
+        family: surface.family,
+        color: surface.color,
+        view: surface.view,
+        relativePath: `${surface.family}/${surface.family}-${surface.color}-${surface.view}.${surface.masterFormat}`,
+        masterFormat: surface.masterFormat,
+        smartObjectId: surface.smartObject?.id,
+        smartObjectName: surface.smartObject?.layerName ?? null,
+      }));
+    res.json({ surfaces });
+  } catch (err) {
+    logger.error({ err }, "[smartMockupRender] Browser catalog failed");
+    res.status(500).json({ error: "internal_error", message: "The staged Smart Mockup catalog is unavailable." });
+  }
+});
+
+/** Prepares a private PSD pair for the browser-side Photopea validator. The
+ * server performs the genuine linked Smart Object byte replacement; the user's
+ * normal browser performs the actual Photopea composite/export. */
+router.post("/admin/smart-mockups/browser-payload", requireAdmin, async (req, res) => {
+  try {
+    const { relativePath, smartObjectId } = req.body ?? {};
+    if (typeof relativePath !== "string" || !relativePath || typeof smartObjectId !== "string" || !smartObjectId) {
+      res.status(400).json({ error: "validation_error", message: "relativePath and smartObjectId are required." });
+      return;
+    }
+    const parsed = parseDataUrl(req.body?.artwork);
+    if (!parsed) {
+      res.status(400).json({ error: "validation_error", message: "Provide artwork as a PNG/JPG/WEBP data URL." });
+      return;
+    }
+    await validateArtworkImage(parsed.bytes);
+
+    const fullPath = resolveTemplatePath(relativePath);
+    const originalBytes = await readFile(fullPath);
+    if (originalBytes.length > MAX_BROWSER_PSD_BYTES) {
+      res.status(413).json({ error: "file_too_large", message: "This master is too large for browser-side validation." });
+      return;
+    }
+    const fileFormat = /\.psb$/i.test(fullPath) ? "psb" : /\.psd$/i.test(fullPath) ? "psd" : null;
+    if (!fileFormat) {
+      res.status(400).json({ error: "validation_error", message: "The selected master is not a PSD/PSB." });
+      return;
+    }
+    const inspection = inspectTemplate(originalBytes);
+    if (!inspection.smartObjects.some((smartObject) => smartObject.id === smartObjectId)) {
+      res.status(400).json({ error: "validation_error", message: "The selected Smart Object is not present in this master." });
+      return;
+    }
+    const swappedBytes = replaceSmartObjectContent(originalBytes, smartObjectId, parsed.bytes, parsed.ext);
+    res.json({
+      fileFormat,
+      relativePath,
+      smartObjectId,
+      documentWidth: inspection.documentWidth,
+      documentHeight: inspection.documentHeight,
+      originalPsdBase64: originalBytes.toString("base64"),
+      modifiedPsdBase64: swappedBytes.toString("base64"),
+      originalPsdSha256: sha256(originalBytes),
+      modifiedPsdSha256: sha256(swappedBytes),
+    });
+  } catch (err) {
+    logger.error({ err }, "[smartMockupRender] Browser payload failed");
+    res.status(400).json({ error: "validation_error", message: err instanceof Error ? err.message : "Could not prepare browser validation." });
+  }
+});
 
 router.post("/admin/smart-mockups/templates", requireAdmin, async (req, res) => {
   try {

@@ -1,0 +1,41 @@
+Photopea’s live API confirms the exact flow needed: send the modified PSD as an ArrayBuffer, wait for its "done" message, execute app.activeDocument.saveToOE("png"), and receive the exported image as an ArrayBuffer. I’m running that flow in headless Chromium against the same modified cap PSD that Patchy failed to refresh.
+
+Photopea’s browser path is reachable only as a Cloudflare challenge in this headless environment, so it did not initialize its live API. I’m not treating that as the end: I’m checking open-source Photoshop-compatible engines and the repository’s available runtimes for a local alternative, then I’ll use whichever can genuinely refresh Smart Objects rather than falling back to a flat paste.
+
+const result = await webSearch({ query: "open source PSD renderer Smart Objects compositing headless Linux", searchQueries: ["open source PSD Smart Object renderer", "PSD renderer Smart Objects Linux", "Photoshop compatible PSD compositing library Smart Object"], count: 8, isTextExtended: true }); for (const page of result.resultPages) console.log(JSON.stringify({title:page.title,url:page.url,snippet:page.snippet}));
+
+The open-source search confirms psd-tools can extract Smart Objects but explicitly cannot edit/render them, so it is not a valid replacement. I’m now inspecting Patchy’s own source and scripting implementation for a supported Smart Object replacement/refresh command; the likely issue is that our PSD-byte replacement updates the linked payload but not Patchy’s cached composite. If Patchy exposes an actual content-replace operation, I can use that instead of relying on app.open to refresh stale pixels.
+
+Check all things previously agent was working on to build up the mockups sources missing things also adding but stopped at points left off thode and just start ready to work for me now. Fully complete.
+
+Completed — I’m taking over the mockup-source and Smart Object refresh work, including the stopped Patchy investigation.
+
+Last stopping point — Photopea’s headless route is blocked by Cloudflare, and Patchy can open/export masters but leaves the stale Smart Object composite after linked-byte replacement.
+
+Remaining work — audit the current mockup source inventory and release gates, identify missing or incomplete editable sources, inspect Patchy’s supported replacement path, implement the strongest local refresh path available, then verify the generated/runtime outputs and update the handoff.
+
+Blockers — no confirmed local engine yet that refreshes Photoshop Smart Object composites correctly; I’ll treat any engine as a blocker unless it passes a pixel-level refresh check.
+
+Plan — read the handoff and relevant source/runtime notes, audit the current files and validation commands, investigate Patchy and available runtimes in parallel, repair or complete source kits, run the repository’s focused validation, and leave the next action explicit.
+
+Existing behavior to preserve — customer-facing runtime mockups, reviewed visual assets, editable PSD/PSB provenance, Smart Object release gates, immutable source photos, and the distinction between visual approval and structural release status.
+
+Verification — focused source/manifest audits, Smart Object round-trip checks where supported, type/build checks only where relevant, and a final runtime asset/matrix validation.
+
+Safe parallel work — inventory and source provenance auditing can proceed independently from the local engine investigation; runtime changes will wait until the refresh path is proven.
+
+I’ve confirmed the project’s governing rules and the durable Smart Mockup constraints. The source-kit path is intentionally quarantined from the live storefront, and Patchy is already known to produce identical exports after linked-byte replacement, so I won’t promote it based on a successful exit alone.
+
+Next I’m narrowing the audit to the latest handoff checkpoints, source-kit manifests, validators, and the exact Patchy/runtime code paths.
+
+Trynext Lifestyle Design System
+Design System
+Trynext Lifestyle
+Trynext Lifestyle
+Website
+Trynext Promo Animation
+Animation
+Trynext Mobile
+Mobile
+Search tools…
+Open Trynext Mobile
