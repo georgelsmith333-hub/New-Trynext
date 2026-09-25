@@ -52,7 +52,6 @@ export interface DesignStoreState {
   productPickerCategory: "all" | DesignProduct["category"];
   mobileToolOpen: boolean;
   mobileTab: "product" | "color" | "edit";
-  show3D: boolean;
   isMobile: boolean;
 
   linkedStoreProduct: LinkedStoreProduct | null;
@@ -111,7 +110,6 @@ export interface DesignStoreActions {
   setProductPickerCategory: (cat: "all" | DesignProduct["category"]) => void;
   setMobileToolOpen: (open: boolean) => void;
   setMobileTab: (tab: "product" | "color" | "edit") => void;
-  setShow3D: (show: boolean) => void;
   setIsMobile: (mobile: boolean) => void;
 
   setLinkedStoreProduct: (product: LinkedStoreProduct | null) => void;
@@ -159,7 +157,6 @@ const initialState: DesignStoreState = {
   productPickerCategory: "all",
   mobileToolOpen: false,
   mobileTab: "product",
-  show3D: false,
   isMobile: false,
 
   linkedStoreProduct: null,
@@ -497,11 +494,6 @@ export const useDesignStore = create<DesignStore>()(
     setMobileTab: (tab) => {
       set((state: DS) => {
         state.mobileTab = tab;
-      });
-    },
-    setShow3D: (show) => {
-      set((state: DS) => {
-        state.show3D = show;
       });
     },
     setIsMobile: (mobile) => {

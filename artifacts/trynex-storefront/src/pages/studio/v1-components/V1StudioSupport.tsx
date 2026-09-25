@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { ChevronRight, Eye, ShieldAlert, Sparkles, X } from "lucide-react";
+import { ChevronRight, Eye, Sparkles, X } from "lucide-react";
 
 type GuidanceStep = {
   id: string;
@@ -108,27 +108,19 @@ export function StudioQualityBanner({
   issues: QualityIssue[];
   onShowPrintZone?: () => void;
 }) {
-  const summary = useMemo(() => {
-    const danger = issues.filter((issue) => issue.tone === "danger").length;
-    const warning = issues.filter((issue) => issue.tone === "warning").length;
-    return { danger, warning };
-  }, [issues]);
-
   if (issues.length === 0) return null;
 
   return (
-    <section className="rounded-3xl border border-amber-200 bg-amber-50/90 p-4 shadow-sm" aria-label="Print quality status">
+    <section className="rounded-3xl border border-amber-200 bg-amber-50/90 p-4 shadow-sm" aria-label="Print tips">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="mt-0.5 flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-amber-700">
-            <ShieldAlert className="h-5 w-5" aria-hidden="true" />
+            <Sparkles className="h-5 w-5" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-amber-950">
-              Print check: {summary.danger > 0 ? "blocked until fixed" : "review before checkout"}
-            </p>
+            <p className="text-sm font-semibold text-amber-950">A quick tip before you order</p>
             <p className="mt-1 text-sm leading-6 text-amber-900">
-              {summary.warning > 0 ? `${summary.warning} warning${summary.warning === 1 ? "" : "s"}` : "No warnings"}{summary.danger > 0 ? ` and ${summary.danger} blocking issue${summary.danger === 1 ? "" : "s"}` : ""}.
+              You can add this to your cart right now — just a couple of things you might want to check first.
             </p>
           </div>
         </div>

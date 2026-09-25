@@ -44,24 +44,6 @@ import { FONT_FAMILIES, type Layer, type ImageLayer, type TextLayer, type ShapeL
 import { StudioFirstUseGuide, StudioQualityBanner } from "./v1-components/V1StudioSupport";
 import { StudioStickyPurchaseBar } from "./StudioStickyPurchaseBar";
 
-const LazyProductViewer3D = lazy(() => import("../design-studio/ProductViewer3D"));
-
-// Scopes 3D-viewer failures (e.g. the third-party HDRI environment asset
-// failing to fetch) to the viewer itself, falling back to the always-working
-// 2D editor instead of tripping the app-wide AppErrorBoundary and losing the
-// customer's in-progress design.
-class Studio3DErrorBoundary extends Component<{ onError: () => void; children: ReactNode }, { hasError: boolean }> {
-  state = { hasError: false };
-  static getDerivedStateFromError() { return { hasError: true }; }
-  componentDidCatch(error: unknown) {
-    console.error("[Studio3DErrorBoundary] 3D preview failed, falling back to 2D editor:", error);
-    this.props.onError();
-  }
-  render() {
-    return this.state.hasError ? null : this.props.children;
-  }
-}
-
 function getSwitchPrintZone(
   face: Face,
   product: DesignProduct,
@@ -270,11 +252,11 @@ export default function DesignStudioV2() {
   const store = useDesignStore();
   const {
     selectedProduct, selectedColor, activeFace, mugMode, selectedSize, quantity,
-    layers, selectedIds, linkedStoreProduct, showPrintZone, show3D, activeTab, activeTool,
+    layers, selectedIds, linkedStoreProduct, showPrintZone, activeTab, activeTool,
     saveStatus, hasDraft, isMobile, fabricTexture, mobileToolOpen, zoom, panX, panY,
      setProduct, setColor, setFace, setMugMode, setMugView, switchProduct, setSize, setQuantity,
     addLayer, updateLayer, deleteLayer, moveLayer, setLayerVisibility, selectLayer, clearSelection, setLayers, commit,
-    undo, redo, setShowPrintZone, setActiveTab, setActiveTool, setShow3D, setLinkedStoreProduct, setSaveStatus, setHasDraft, setMobileToolOpen, setShowProductPicker, setIsMobile,
+    undo, redo, setShowPrintZone, setActiveTab, setActiveTool, setLinkedStoreProduct, setSaveStatus, setHasDraft, setMobileToolOpen, setShowProductPicker, setIsMobile,
   } = store;
 
   const selectedLayerId = selectedIds[0] ?? null;
@@ -408,10 +390,6 @@ export default function DesignStudioV2() {
 
   const isBlackGarment = isNearBlack(selectedColor.hex);
   const isLightGarment = isLightTint(selectedColor.hex);
-
-  useEffect(() => {
-    if (isPsdTshirtStaging) setShow3D(false);
-  }, [isPsdTshirtStaging, setShow3D]);
 
   useEffect(() => {
     const onResize = () => {
@@ -1011,22 +989,25 @@ export default function DesignStudioV2() {
 
   const frontLayers = useMemo(() => layers.filter(l => (l.face ?? "front") === "front") as unknown as ComposerLayer[], [layers]);
   const backLayers = useMemo(() => layers.filter(l => (l.face ?? "front") === "back") as unknown as ComposerLayer[], [layers]);
+  // Informational only — a soft-looking image is the customer's own choice to
+  // make, not something the store should refuse their order over. Printify
+  // and Printful both let low-resolution uploads through with a gentle nudge
+  // rather than blocking checkout.
   const qualityIssues = useMemo(() => {
     return layers
       .filter((layer): layer is ImageLayer => layer.type === "image" && layer.visible)
       .flatMap((layer) => {
         const shortestEdge = Math.min(layer.naturalW, layer.naturalH);
         if (!Number.isFinite(shortestEdge) || shortestEdge >= 1_200) return [];
-        const surface = layer.face === "back" ? "back" : layer.face === "left-sleeve"
-          ? "left sleeve" : layer.face === "right-sleeve" ? "right sleeve"
-          : layer.face === "neck-label" ? "neck label" : "front";
-        const blocking = shortestEdge < 600;
+        const reallySmall = shortestEdge < 600;
         return [{
           id: `resolution-${layer.id}`,
-          label: blocking ? "Image resolution is too low" : "Image resolution needs review",
-          detail: `${layer.name || "This image"} is ${Math.round(layer.naturalW)}×${Math.round(layer.naturalH)}px on the ${surface}. ${blocking ? "Replace it or use HD preparation before checkout to avoid a visibly soft print." : "For the sharpest print, use an image at least 1,200px on its shortest edge."}`,
-          tone: blocking ? "danger" as const : "warning" as const,
-          actionLabel: "Edit image",
+          label: reallySmall ? "This image is quite small" : "This image is a little low-res",
+          detail: reallySmall
+            ? "It may look noticeably blurry once printed. You can still add it to your cart, or swap in a bigger image for a crisp print."
+            : "It may look slightly soft once printed larger. You're welcome to continue, or use a bigger image for the sharpest result.",
+          tone: "warning" as const,
+          actionLabel: "Replace image",
           onAction: () => {
             setFace(layer.face ?? "front");
             selectLayer(layer.id);
@@ -1040,13 +1021,11 @@ export default function DesignStudioV2() {
   const addToCartBlockReason = useMemo(() => {
     if (isPsdTshirtStaging) return "Local staging preview cannot be ordered.";
     if (layers.length === 0) return "Upload artwork to continue.";
-    if (qualityIssues.some((issue) => issue.tone === "danger")) return "Improve image quality before checkout.";
     if (requiredArtworkSurfaceUnavailable) return unavailableSurfaceReason;
     return null;
   }, [
     isPsdTshirtStaging,
     layers.length,
-    qualityIssues,
     requiredArtworkSurfaceUnavailable,
     unavailableSurfaceReason,
   ]);
@@ -1061,10 +1040,6 @@ export default function DesignStudioV2() {
       }
       if (layers.length === 0) {
         toast({ title: "No design", description: "Add an image or text layer first.", variant: "destructive" });
-        return;
-      }
-      if (qualityIssues.some((issue) => issue.tone === "danger")) {
-        toast({ title: "Improve image quality first", description: "Replace the low-resolution image or use HD preparation before adding this design to cart.", variant: "destructive" });
         return;
       }
       if (requiredArtworkSurfaceUnavailable) {
@@ -1324,7 +1299,6 @@ export default function DesignStudioV2() {
             <button type="button" onClick={undo} disabled={store.history.length === 0} aria-label="Undo last change" className="p-2 rounded-xl bg-gray-100 text-gray-600 disabled:opacity-30 active:scale-95 transition-transform"><Undo2 className="w-3.5 h-3.5" /></button>
             <button type="button" onClick={redo} disabled={store.future.length === 0} aria-label="Redo last change" className="p-2 rounded-xl bg-gray-100 text-gray-600 disabled:opacity-30 active:scale-95 transition-transform"><Redo2 className="w-3.5 h-3.5" /></button>
             <button type="button" onClick={() => setShowPrintZone(!showPrintZone)} aria-pressed={showPrintZone} className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold ${showPrintZone ? "text-orange-500 bg-orange-50" : "text-gray-500 bg-gray-100 hover:bg-gray-200"}`}><Eye className="w-3 h-3" /> Print Zone</button>
-            {!isFlatZone && <button type="button" onClick={() => setShow3D(!show3D)} aria-pressed={show3D} className={`hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold ${show3D ? "text-blue-500 bg-blue-50" : "text-gray-500 bg-gray-100 hover:bg-gray-200"}`}><Package className="w-3 h-3" /> {show3D ? "2D Edit" : "3D Preview"}</button>}
               <motion.button type="button" onClick={handleAddToCart} disabled={isAddingToCart || Boolean(addToCartBlockReason)} aria-label={isAddingToCart ? "Adding design to cart" : addToCartBlockReason ? `Add to cart unavailable: ${addToCartBlockReason}` : "Add design to cart"} title={addToCartBlockReason ?? undefined} whileTap={{ scale: 0.97 }} className="hidden items-center gap-1 sm:flex sm:gap-2 px-2.5 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm text-white shadow-lg shadow-orange-500/20 disabled:cursor-not-allowed disabled:opacity-50" style={{ background: "linear-gradient(135deg, #E85D04, #FB8500)" }}>
                {isAddingToCart ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShoppingCart className="w-3.5 h-3.5" />} <span className="hidden sm:inline">{isAddingToCart ? "Preparing…" : "Add to Cart"}</span><span className="sm:hidden">{isAddingToCart ? "Wait" : "Cart"}</span>
             </motion.button>
@@ -1338,7 +1312,7 @@ export default function DesignStudioV2() {
             steps={[
               { id: "upload", title: "Upload your artwork", description: "Choose a JPG, PNG, or WebP and it will be fitted to the selected print area." },
               { id: "refine", title: "Refine the design", description: "Drag, resize, rotate, or add text. Switch surfaces to add artwork to the back or sleeves." },
-              { id: "review", title: "Preview and order", description: "Check print zone and quality warnings, preview curved products in 3D, then add to cart." },
+              { id: "review", title: "Preview and order", description: "Check the realistic preview, then add to cart." },
             ]}
             onFocusCanvas={() => containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
           />
@@ -1435,21 +1409,6 @@ export default function DesignStudioV2() {
                  </div>
                )}
               <div style={{ position: "relative", width: canvasSize, height: canvasSize, margin: "0 auto" }}>
-                 {show3D && !isFlatZone && !isPsdTshirtStaging && !activeSurfaceUnavailable && (
-                  <div className="absolute inset-0 z-20 rounded-3xl overflow-hidden flex items-center justify-center" style={{ background: "radial-gradient(ellipse at 50% 40%, #f4f4f4 0%, #e8e8e8 100%)" }}>
-                    <Suspense fallback={<Loader2 className="w-8 h-8 animate-spin text-blue-400" />}>
-                      <Studio3DErrorBoundary
-                        onError={() => {
-                          setShow3D(false);
-                          toast({ title: "3D preview unavailable", description: "Showing the 2D editor instead — your design and print zone are unaffected.", variant: "destructive" });
-                        }}
-                      >
-                        <LazyProductViewer3D product={selectedProduct} garmentColor={selectedColor.hex} front={{ layers: frontLayers, printZone: isMug ? (mugMode === "wrap" ? MUG_PZ : MUG_SIDE_PZ) : getZonePZ("front", selectedProduct, selectedColor.hex), baseHeight: selectedProduct.baseHeight, surface: { ...frontMockup, baseSrc: frontMockup.cutoutSrc, printZone: isMug ? (mugMode === "wrap" ? MUG_PZ : MUG_SIDE_PZ) : getZonePZ("front", selectedProduct, selectedColor.hex) } }} back={supportsBack && backLayers.length > 0 ? { layers: backLayers, printZone: isMug ? (mugMode === "wrap" ? MUG_WRAP_BACK_PZ : MUG_SIDE_BACK_PZ) : getZonePZ("back", selectedProduct, selectedColor.hex), baseHeight: selectedProduct.baseHeight, surface: { ...backMockup, baseSrc: backMockup.cutoutSrc, printZone: isMug ? (mugMode === "wrap" ? MUG_WRAP_BACK_PZ : MUG_SIDE_BACK_PZ) : getZonePZ("back", selectedProduct, selectedColor.hex) } } : undefined} activeFace={activeFace as "front" | "back"} isWrapMode={isMug && mugMode === "wrap"} />
-                      </Studio3DErrorBoundary>
-                    </Suspense>
-                     <button type="button" onClick={() => setShow3D(false)} aria-label="Return to 2D editor" className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-xs font-bold text-white shadow-xl" style={{ background: "rgba(17,24,39,0.85)", backdropFilter: "blur(8px)" }}><Eye className="w-3 h-3 inline mr-1" /> Back to 2D</button>
-                  </div>
-                )}
                 <CanvasArea
                   width={canvasSize}
                   height={canvasSize}
@@ -1492,7 +1451,7 @@ export default function DesignStudioV2() {
                     Local PSD T-shirt staging · {selectedColor.name} {activeFace} · 2D review · Cart and export disabled
                   </div>
                 )}
-                 {!show3D && !isFlatZone && layers.length === 0 && !activeSurfaceUnavailable && (
+                 {!isFlatZone && layers.length === 0 && !activeSurfaceUnavailable && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
                     <button
                       type="button"

@@ -140,7 +140,6 @@ export interface StudioUIState {
   productPickerCategory: "all" | DesignProduct["category"];
   mobileToolOpen: boolean;
   mobileTab: "product" | "color" | "edit";
-  show3D: boolean;
   showPrintZone: boolean;
   isMobile: boolean;
   canvasZoom: number;
