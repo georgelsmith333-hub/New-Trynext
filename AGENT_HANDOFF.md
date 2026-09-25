@@ -2173,3 +2173,81 @@ Verification: storefront 69/69, API 36/36 tests pass; both typecheck;
   server returned 401/401/200/403/200/0 as expected; post-fix crawl of all
   76 page-views shows no regressions.
 ```
+
+## Checkpoint: Automation Center admin page (2026-09-25)
+
+```text
+Status: complete for the scope built this checkpoint
+Last completed: Surfaced the existing in-process scheduler (lib/scheduler.ts
+  — daily summary, low-stock alert, stale-order alert, revenue milestones,
+  keep-alive ping) in the admin panel. Before this, all five jobs ran with
+  hardcoded thresholds and zero admin visibility; the only trace was a
+  Telegram message or a server log line, and an admin had no way to see a
+  job existed, disable it, change its threshold, or confirm it actually
+  fired.
+  - lib/automationConfig.ts (new): admin-editable config (per-job enabled
+    flags, lowStockThreshold, staleOrdersHours) + a capped 100-entry event
+    log, both stored as JSON under keys in the existing settings table —
+    same pattern already used for homepage_layout, so no schema migration.
+  - lib/scheduler.ts: every job now calls markJobChecked() on every tick
+    (proves the scheduler is alive even when nothing fires), respects its
+    config.*Enabled flag, uses the configurable threshold instead of the
+    old hardcoded 3 / 24h, and appends a real log entry whenever it
+    evaluates. Added a manual run-now path (sendDailySummary(manual),
+    checkAndAlertLowStock(manual), etc.) that bypasses the normal dedup
+    window and — critically — still computes and logs a real result even
+    when Telegram isn't configured (the dev sandbox has no Telegram set
+    up), so clicking "Run Now" is verifiable instead of silently doing
+    nothing. Exported runAutomationJobNow(job) and getAutomationStatus().
+  - routes/automation.ts (new): requireAdmin-gated GET status / PUT config
+    / GET log / POST run/:job, mirroring the existing routes/backup.ts
+    pattern exactly. Mounted in routes/index.ts.
+  - AdminAutomation.tsx (new): System-nav page (added between Settings and
+    Backup) with one status card per job (icon, schedule badge, live
+    enable toggle, last-checked time, Run Now button), inline threshold
+    inputs for low-stock and stale-orders, a read-only DB Backup Sync
+    summary card linking to the existing /admin/backup page, a Telegram-
+    not-configured banner, and an event log table. Nav entry in
+    AdminLayout.tsx, route in App.tsx.
+  Verified for real in a browser via Playwright, not just typecheck: logged
+  into /admin, opened /admin/automation, ran all 5 jobs via "Run Now" (each
+  produced a distinct, correct log entry — e.g. low-stock correctly showed
+  "No items at or below stock threshold 3", stale-orders showed the one
+  real pending order in the dev DB, revenue milestones showed "next at
+  ৳10,000"), toggled the low-stock switch off and back on, edited the
+  low-stock threshold to 7 and reloaded the page to confirm it persisted
+  server-side, then restored it to 3. No app-level console/page errors;
+  the only console noise was the sandbox's pre-existing GTM/Google
+  analytics calls being blocked by the outbound proxy, unrelated to this
+  page.
+Stopped at: Feature complete, tested, committed, and pushed. Nothing left
+  mid-edit.
+Files/areas changed: artifacts/api-server/src/lib/{automationConfig.ts (new),
+  scheduler.ts}, artifacts/api-server/src/routes/{automation.ts (new),
+  index.ts}, artifacts/trynex-storefront/src/{App.tsx,
+  components/layout/AdminLayout.tsx, pages/admin/AdminAutomation.tsx (new)}.
+Remaining work: None for the approved scope. The broader ask ("full admin
+  panel audit, confirm everything works") has now had two audit passes
+  across this and the prior checkpoint (page builder, designer, AI
+  developer, SEO, Tech Stack, Facebook Guide, Facebook Import, DB Cluster,
+  and now Automation) with real functional testing, not just page loads.
+  A further pass could still cover any admin page not explicitly named in
+  either audit if the owner wants that guarantee extended.
+Blocker: None. Telegram bot token/chat ID are still unset in this sandbox
+  (the owner said they'll configure Telegram themselves), so the four
+  Telegram-backed jobs run and log correctly but don't deliver a message
+  until that's set — this is expected and surfaced to the admin via the
+  banner on the new page, not a bug.
+Next safe action: Owner can open /admin/automation on the live site once
+  Cloudflare Pages redeploys main, and Render redeploys the API, to see it
+  live. If Telegram is configured, "Run Now" will start actually delivering
+  messages with no further code change needed.
+Verification: api-server typecheck clean, storefront typecheck clean;
+  api-server tests 38/38 pass, storefront tests 69/69 pass; storefront
+  production build succeeds (AdminAutomation chunk present in dist); all 5
+  jobs manually exercised end-to-end through the real HTTP API and then
+  through a real browser session; committed as f889b84 and pushed to both
+  claude/ecom-customization-itpg9o and main (Cloudflare Pages auto-deploys
+  main; confirmed origin/main was still at 844ed51 — no one else's work —
+  before this push).
+```
