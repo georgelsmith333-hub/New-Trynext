@@ -1,0 +1,53 @@
+The tightened SSE handling passes all checks: storefront 20/71 tests and build, API 10/36 tests and build, with no diff-format errors. I’m applying the rebuilt API once more and checking the final runtime logs; after that I’ll deliver the verified change set.
+
+Implemented and verified the current reliability/UX fixes.
+
+Changes made
+Linked signed-in orders to the authenticated customer server-side.
+Expanded customer order history lookup to support both customer ID and legacy normalized email matches.
+Fixed order-message notifications to use the valid order notification type.
+Improved Admin AI provider selection:
+Pollinations is treated as a server-managed free provider.
+The frontend prefers Pollinations when available, then local fallback.
+SSE parsing now handles CRLF frames and final unterminated events.
+Blank provider responses now show a retryable error instead of an empty assistant message.
+Provider keys remain server-only.
+Reduced Design Studio resize, rotate, and delete controls for mobile.
+Kept the primary toolbar compact with Select, Text, and Shape.
+Added contrasting default colors for new text layers.
+Updated the regression test for the compact handles.
+Verification
+Storefront typecheck: passed
+Storefront tests: 20 files, 71 tests passed
+Storefront production build: passed
+API typecheck: passed
+API tests: 10 files, 36 tests passed
+API production build: passed
+git diff --check: passed
+API and storefront workflows restarted successfully.
+Database connection and migrations completed successfully.
+Mobile /design-studio preview checked at 402px with no browser-console errors.
+No production data, real orders, or payments were created. Three focused follow-up tasks were proposed for the remaining authenticated end-to-end verification, customer message presentation, and add-to-cart regression coverage.
+
+v-51-trynext-lifestyle-new-elliotradiant-1--elliotradiant1
+Did u pushed everything live to site or not? Do that idont have more time to read all your texts. You decide behalf of me everything + verify all psd documents i mean mockups with online photo pea
+
+I’m taking over the decision: first I’ll check the actual deployment status and publish the verified build if it is not live. In parallel, I’ll audit every PSD/PSB mockup source and run the project’s structural checks; I’ll only call the live site ready if both the deployment and mockup checks pass.
+
+The workspace is not something I can silently publish by API—the final live publish action is user-initiated in Replit. I’m checking the real deployment record now so I can tell you in one line whether it is already live and give the exact next action if it is not. I’m also locating every PSD/PSB source and running the repository’s full mockup audits; the earlier search found only manifests, not editable masters at shallow depth.
+
+The live status check is definitive: nothing is published right now (isDeployed: false). I can’t press Replit’s final Publish control on your behalf, so I’ll leave the project ready and show you the one-click publish action. I’m now running the complete local PSD/PSB audit and mockup matrix validation; this is the reliable check available here because the masters are local/private and cannot be opened by Photopea without exposing them publicly.
+
+The audits found an important split: all 188 PSD/PSB masters pass the native structural audit, and all 188 runtime surfaces / 1,128 roles pass the accepted runtime matrix. Two older helper scripts are looking for retired smart-v10/editable-source manifest paths, so I’m checking the current Git/Cloudflare publishing path before I call anything live. The public smoke test already passes 30/30 at https://trynext.shop.
+
+Trynext Lifestyle Design System
+Design System
+Trynext Lifestyle
+Trynext Lifestyle
+Website
+Trynext Promo Animation
+Animation
+Trynext Mobile
+Mobile
+Search tools…
+Open Trynext Mobile
