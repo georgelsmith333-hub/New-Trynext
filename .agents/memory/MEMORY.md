@@ -72,3 +72,4 @@
 - [Print-area selection](print-area-selection.md) — selected images use a fixed active-face print mask with non-destructive transform handles
 - [Product image performance](product-image-performance.md) — static catalog PNG masters need generated WebP browsing variants; keep the rewrite narrowly scoped
 - [Native PSD audit parser](psd-audit-parser.md) — use the installed Node/ag-psd parser; Python psd_tools and native canvas are unavailable here
+- [Shared declaration refresh](db-declaration-refresh.md) — rebuild composite library declarations before API typechecks when new DB schema exports are added

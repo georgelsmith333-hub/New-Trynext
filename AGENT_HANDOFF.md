@@ -2576,3 +2576,39 @@ Verification: api-server typecheck clean, tests 38/38 pass; lib/db
   customer render on inactive template) and every security check (format
   allowlist, path traversal) verified against real requests, not assumed.
 ```
+
+---
+
+## 2026-09-26 audit and release checkpoint
+
+Status: ready for review
+Last completed: Audited the checkout against `github/main`, confirmed the local
+branch is exactly synchronized with the remote, verified the active 188-surface
+Smart Mockup staging tree and runtime-role matrix, rebuilt shared database
+declarations, passed the full workspace typecheck, passed storefront/API tests
+and production builds, restarted the API and storefront workflows, and passed
+the live non-mutating smoke suite 30/30 at `https://trynext.shop`.
+Stopped at: The public site is already live and the source is already pushed to
+GitHub `main`; only this audit checkpoint remains to be committed. The
+Smart Object renderer remains fail-closed because no Patchy/native renderer is
+available in this environment.
+Files/areas changed: This checkpoint updates this handoff and the durable agent
+memory only. No application source, runtime assets, or uploaded screenshots were
+added to the release.
+Remaining work: Provide a real PSD compositor binary or an approved external
+worker before activating the 188 Smart Object templates or replacing the current
+browser/runtime compositor.
+Blocker: No reachable PSD-compositing renderer is available in the current
+environment; structural PSD/PSB validity and runtime matrix validity do not
+prove Photoshop-fidelity output.
+Next safe action: Commit and push this documentation checkpoint. For the
+renderer work, upload a Patchy Linux build or explicitly approve a separate
+Dockerized worker deployment, then validate one real render before activation.
+Verification: `node tools/audit_psd_masters.mjs dist-mockups/staging/smart-v10-v3/masters`
+passed 188/188; `node tools/validate-smart-matrix.mjs
+dist-mockups/staging/smart-v10-v3` passed 188/188 with matching checksums;
+`node scripts/validate-mockup-matrix.mjs` passed 188 surfaces and 1,128 roles
+with status `candidate`; `pnpm run typecheck` passed; storefront tests passed
+19 files/69 tests; API tests passed 11 files/38 tests; storefront and API builds
+passed; `git diff --check` passed; both workflows restarted cleanly; live
+critical-flow smoke checks passed 30/30.
