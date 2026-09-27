@@ -2927,3 +2927,13 @@ Next safe action: Use the normal authenticated admin session at
 `https://trynext.shop/admin/mockups` and complete the documented Photopea
 proof. Keep every Smart Mockup template inactive until the modified export
 differs from the untouched baseline and the artwork is visually reviewed.
+
+---
+
+## Server-side Smart Object raster refresh fix (2026-09-27)
+
+Status: implemented on top of current main and locally verified; production deployment still pending.
+
+The browser validator previously replaced only linkedFiles.data, leaving the placed layer raster and stale document composite unchanged. The server now decodes artwork to the placed layer's native dimensions, updates the placed-layer raster, and reserializes the PSD so Photopea receives changed source and changed layer/composite data. This complements the current main browser-side placedLayerEditContents refresh flow.
+
+Verification: API 39/39 tests, workspace typecheck, storefront 69/69 tests, storefront build, API build, and PSD audit 188/188 passed. No templates were activated. The generic mockups:validate-matrix command still references the stale smart-v10 manifest path and is unrelated.
