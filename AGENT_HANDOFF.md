@@ -2712,3 +2712,33 @@ passed; the public runtime validator passed 188 surfaces/1,128 roles; API
 liveness/readiness returned 200 after restart. The real Photopea attempt
 failed closed with `Photopea did not return an export before the timeout`;
 no runtime assets or template activation state changed.
+
+---
+
+## 2026-09-28 Browser validator selector fix
+
+Status: fixed and running in the local preview; Smart Mockup templates remain
+fail-closed.
+
+Last completed: Fixed the Browser Photopea validator catalog normalization in
+`artifacts/api-server/src/routes/smartMockupRender.ts`. The staging manifest
+does not persist `surfaceKey`, so the API now derives the canonical
+`family/color/view` key before returning catalog rows. The frontend select in
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`
+is controlled directly by that normalized key. This fixes the issue where
+`cap / black / back` could be clicked but would immediately disappear because
+every option had an undefined value.
+
+Verification: API typecheck passed; storefront typecheck passed; API tests
+passed 11 files/38 tests; storefront tests passed 19 files/69 tests; API and
+storefront builds passed; both preview workflows restarted successfully and
+reported their ports as ready.
+
+Remaining work: Use the authenticated browser Photopea session to prove one
+modified export differs from its untouched baseline, then continue the
+representative-family and 188-surface validation. Do not activate templates or
+replace the customer compositor before that evidence exists.
+
+Next safe action: Open the local Replit preview at `/admin/mockups`, sign in
+normally, and confirm the normalized selector now retains `cap / black / back`
+before running the browser Photopea export proof.

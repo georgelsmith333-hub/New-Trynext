@@ -124,9 +124,16 @@ router.get("/admin/smart-mockups/browser-catalog", requireAdmin, async (_req, re
       }>;
     };
     const surfaces = (manifest.surfaces ?? [])
-      .filter((surface) => typeof surface.smartObject?.id === "string")
+      .filter((surface) =>
+        typeof surface.family === "string"
+        && typeof surface.color === "string"
+        && typeof surface.view === "string"
+        && typeof surface.smartObject?.id === "string",
+      )
       .map((surface) => ({
-        surfaceKey: surface.surfaceKey,
+        // Older staging manifests do not persist surfaceKey. Derive the
+        // canonical key so every option remains uniquely selectable.
+        surfaceKey: surface.surfaceKey || `${surface.family}/${surface.color}/${surface.view}`,
         family: surface.family,
         color: surface.color,
         view: surface.view,
