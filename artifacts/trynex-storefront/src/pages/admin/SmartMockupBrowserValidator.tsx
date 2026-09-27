@@ -47,13 +47,36 @@ async function adminFetch<T>(url: string, init: RequestInit = {}): Promise<T> {
   return body as T;
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Could not read the artwork file."));
-    reader.readAsDataURL(file);
-  });
+async function fileToDataUrl(file: File): Promise<string> {
+  const mimeByExtension: Record<string, string> = {
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    webp: "image/webp",
+  };
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  const mimeType = file.type.toLowerCase() || mimeByExtension[extension];
+  if (!mimeType || !["image/png", "image/jpeg", "image/webp"].includes(mimeType)) {
+    throw new Error("Choose a PNG, JPG, JPEG, or WebP artwork file.");
+  }
+  if (!file.size) {
+    throw new Error("The selected artwork file is empty.");
+  }
+
+  try {
+    // FileReader intermittently fails for files selected from Android's
+    // document picker. Reading the bytes directly is more reliable and keeps
+    // the private artwork in the browser until the authenticated API request.
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    }
+    return `data:${mimeType};base64,${btoa(binary)}`;
+  } catch {
+    throw new Error("Could not read the artwork file from this browser. Choose the file again or use a PNG under 10MB.");
+  }
 }
 
 function decodeBase64(value: string): Uint8Array {

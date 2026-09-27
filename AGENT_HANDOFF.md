@@ -2742,3 +2742,29 @@ replace the customer compositor before that evidence exists.
 Next safe action: Open the local Replit preview at `/admin/mockups`, sign in
 normally, and confirm the normalized selector now retains `cap / black / back`
 before running the browser Photopea export proof.
+
+---
+
+## 2026-09-28 Mobile artwork upload fix
+
+Status: fixed and live in the local preview.
+
+Observed issue: On Android, the validator showed the selected PNG filename but
+then displayed `Could not read the artwork file.` The API logs confirmed that
+admin login and the browser catalog both succeeded, so this was a client-side
+file-reader failure rather than an authentication or selector problem.
+
+Last completed: Replaced the validator's FileReader-based data URL conversion
+with `File.arrayBuffer()` and bounded chunked base64 conversion in
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`.
+The client now preserves PNG/JPG/JPEG/WebP MIME types and reports explicit
+unsupported or empty-file errors.
+
+Verification: Storefront typecheck passed; storefront tests passed 19
+files/69 tests; storefront build passed; the storefront workflow restarted
+successfully. API remained healthy and the authenticated catalog request
+returned HTTP 200.
+
+Remaining work: The real Photopea changed-vs-baseline export proof is still
+required before any Smart Mockup activation. No templates or customer
+compositor behavior were changed.
