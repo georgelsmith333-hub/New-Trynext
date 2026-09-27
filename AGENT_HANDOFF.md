@@ -2878,3 +2878,52 @@ Verification: Storefront tests passed 20 files/72 tests; API tests passed
 11 files/38 tests; both typechecks passed; API bundle build passed; the local
 cap master resolved the expected layer name and ID, and linked-art replacement
 changed the PSD SHA-256 from `22f3c0bf…` to `bfb9afb3…`.
+
+---
+
+## 2026-09-27 Production readiness continuation
+
+Status: ready for review — the merged API/gateway and storefront validator
+assets are live; Smart Mockup activation remains blocked on authenticated
+Photopea evidence.
+
+Last completed: Reconciled the reported `65cf5f5` merge with GitHub `main`.
+Commit `65cf5f5904dc4553ab155bdd00e6b7c2d50b11a8` contains the `a6c2044`
+validator fix, and GitHub `main` advanced to
+`89fe820bfa5f5414281963a16b26a7a098c40df1`, which includes both. GitHub's
+Cloudflare Pages check passed for that revision.
+
+Verification: The live root and `/admin/mockups` returned HTTP 200. Live
+`/api/health/liveness` and `/api/health/readiness` returned HTTP 200. An
+unauthenticated POST to
+`/api/admin/smart-mockups/browser-payload` returned the expected HTTP 401 in
+under one second. The live root bundle and lazy-loaded
+`AdminMockups-CsveVTho.js` bundle matched the fresh local production build by
+SHA-256; the admin chunk contains the
+`placedLayerEditContents` refresh marker and `browser-payload` route.
+Local API and storefront workflows restarted successfully; API connected to
+the healthy database candidate and completed migrations with no errors.
+
+Stopped at: The authenticated browser validator has not been run from this
+session, so there is still no accepted modified-vs-untouched PNG pair or
+visual proof for `cap / black / back`.
+
+Files/areas changed: No product/runtime source was changed during this
+readiness check. The storefront production bundle was rebuilt locally for
+comparison. This handoff entry records the live evidence.
+
+Remaining work: Sign in through the existing admin browser session, run the
+validator once for `cap / black / back` with asymmetric artwork, record both
+PNG dimensions and SHA-256 values, and require visible realistic artwork plus
+`changed composite: PASS`. Then repeat representative flat and curved checks
+and the documented 188-surface matrix.
+
+Blocker: This environment has no authenticated admin browser session and the
+headless Photopea path has previously been blocked by Photopea's Cloudflare
+challenge. Do not weaken authentication, activate templates, or replace the
+customer compositor to work around this.
+
+Next safe action: Use the normal authenticated admin session at
+`https://trynext.shop/admin/mockups` and complete the documented Photopea
+proof. Keep every Smart Mockup template inactive until the modified export
+differs from the untouched baseline and the artwork is visually reviewed.
