@@ -88,6 +88,19 @@ export interface MockupRenderer {
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 
+export async function convertPhotopeaPng(
+  outputBytes: Buffer,
+  outputFormat: RenderOptions["outputFormat"],
+  outputQuality = 82,
+): Promise<Buffer> {
+  if (outputFormat === "png") return outputBytes;
+  const sharp = (await import("sharp")).default;
+  const pipeline = sharp(outputBytes);
+  return outputFormat === "jpg"
+    ? pipeline.jpeg({ quality: outputQuality }).toBuffer()
+    : pipeline.webp({ quality: outputQuality }).toBuffer();
+}
+
 export class PatchyRenderer implements MockupRenderer {
   readonly engineName = "patchy";
 
@@ -236,7 +249,9 @@ export class PhotopeaRenderer implements MockupRenderer {
 
     const workDir = await mkdtemp(path.join(tmpdir(), "mockup-photopea-"));
     const inputPath = path.join(workDir, `template.${template.fileFormat}`);
-    const outputPath = path.join(workDir, `output.${options.outputFormat}`);
+    // render-photopea.js always writes a PNG, regardless of the output path
+    // extension. Conversion happens below before the result is returned.
+    const outputPath = path.join(workDir, "output.png");
     const moduleDir = path.dirname(fileURLToPath(import.meta.url));
     const scriptPath = path.resolve(moduleDir, "..", "scripts", "render-photopea.js");
     const renderStart = Date.now();
@@ -250,7 +265,8 @@ export class PhotopeaRenderer implements MockupRenderer {
         options.timeoutMs ?? DEFAULT_TIMEOUT_MS,
       );
       const renderMs = Date.now() - renderStart;
-      const outputBytes = await readFile(outputPath);
+      const renderedPng = await readFile(outputPath);
+      const outputBytes = await convertPhotopeaPng(renderedPng, options.outputFormat, options.outputQuality);
       const sharp = (await import("sharp")).default;
       const meta = await sharp(outputBytes).metadata();
       return {
