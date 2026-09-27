@@ -211,3 +211,17 @@ mtime_ms = 1788400732012
 storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:93fcfc3e-9531-4b79-82c3-bffd85d9441b/a56ee804-3a31-44e2-82eb-2742f2a04dc5/44eed155-c528-4070-b7a5-0751c2241a32"
 storage_version_token = "1788401991940358"
 content_type = "application/pdf"
+
+[[outputs]]
+id = "3BLjbgxjm99n1snS2PWJS"
+uri = "file://attached_assets/smart-object-test-artwork.png"
+type = "image"
+title = "Smart Object test artwork"
+description = "High-contrast 1200×1200 PNG for the browser Photopea validation. Upload this file as the artwork input."
+logical_id = "2849a092-a746-4eb9-9e40-e5e243a20316"
+content_hash = "sha256:1f63165f4997d79be8ef04abd7a377509e79b5def8aa657dd529df4b0637e8fd"
+size = 103246
+mtime_ms = 1790533386392
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:b97ac4b5-48af-4eb1-b7ae-b9ef885bb51f/2849a092-a746-4eb9-9e40-e5e243a20316/ed15d21f-1944-4f34-bc7a-eeda5097193f"
+storage_version_token = "1790533392970747"
+content_type = "image/png"
