@@ -57,6 +57,25 @@ function sha256(buf: Buffer): string {
   return createHash("sha256").update(buf).digest("hex");
 }
 
+export function validationPassed(validation: Record<string, unknown>): boolean {
+  return Object.entries(validation).every(([key, value]) => {
+    if (key === "rendererAvailable") {
+      return Boolean(
+        value
+        && typeof value === "object"
+        && "available" in value
+        && (value as { available?: unknown }).available === true,
+      );
+    }
+    return Boolean(
+      value
+      && typeof value === "object"
+      && "pass" in value
+      && (value as { pass?: unknown }).pass === true,
+    );
+  });
+}
+
 // ── Section 4: template inspection ──────────────────────────────────────────
 
 /** Inspects a PSD/PSB already stored at an admin-owned template's filePath. */
@@ -322,6 +341,12 @@ router.post("/admin/smart-mockups/templates/:id/test-render", requireAdmin, asyn
       test9_withinTimeout: null,
       rendererAvailable: availability,
     };
+    const persistValidation = async (status: "pass" | "fail") => {
+      await db
+        .update(mockupTemplatesTable)
+        .set({ lastValidatedAt: new Date(), lastValidationStatus: status, lastValidationJson: validation, updatedAt: new Date() })
+        .where(eq(mockupTemplatesTable.id, id));
+    };
 
     const originalBytes = await readFile(path.resolve(template.filePath));
     validation.test1_openPsd = { pass: true };
@@ -330,6 +355,7 @@ router.post("/admin/smart-mockups/templates/:id/test-render", requireAdmin, asyn
     const found = inspection.smartObjects.some((so) => so.id === template.smartObjectId);
     validation.test2_findSmartObject = { pass: found };
     if (!found) {
+      await persistValidation("fail");
       res.json({ allPassed: false, validation, note: "Configured smart_object_id was not found in the current file." });
       return;
     }
@@ -341,12 +367,14 @@ router.post("/admin/smart-mockups/templates/:id/test-render", requireAdmin, asyn
       validation.test3_replaceContent = { pass: true };
     } catch (err) {
       validation.test3_replaceContent = { pass: false, error: err instanceof Error ? err.message : String(err) };
+      await persistValidation("fail");
       res.json({ allPassed: false, validation });
       return;
     }
 
     if (!availability.available) {
       validation.test4_render = { pass: false, error: availability.reason };
+      await persistValidation("fail");
       res.json({
         allPassed: false,
         validation,
@@ -364,7 +392,9 @@ router.post("/admin/smart-mockups/templates/:id/test-render", requireAdmin, asyn
         { filePath: tmpIn, fileFormat: template.fileFormat as "psd" | "psb", smartObjectId: template.smartObjectId },
         parsed.bytes,
         parsed.ext,
-        { outputFormat: "png", timeoutMs },
+        // The temporary file already contains the verified Smart Object
+        // replacement from test3. Do not replace it a second time.
+        { outputFormat: "png", timeoutMs, skipSmartObjectReplacement: true },
       );
       validation.test4_render = { pass: true, metrics: result.metrics };
       validation.test5_outputExists = { pass: result.outputBytes.length > 0 };
@@ -389,12 +419,9 @@ router.post("/admin/smart-mockups/templates/:id/test-render", requireAdmin, asyn
       const withinTimeout = result.metrics.totalMs <= timeoutMs && baseline.metrics.totalMs <= timeoutMs;
       validation.test9_withinTimeout = { pass: withinTimeout, elapsedMs: Date.now() - start, renderMs: result.metrics.totalMs, baselineRenderMs: baseline.metrics.totalMs };
 
-      await db
-        .update(mockupTemplatesTable)
-        .set({ lastValidatedAt: new Date(), lastValidationStatus: "pass", lastValidationJson: validation, updatedAt: new Date() })
-        .where(eq(mockupTemplatesTable.id, id));
-
-      res.json({ allPassed: Object.values(validation).every((v: any) => v?.pass !== false), validation });
+      const allPassed = validationPassed(validation);
+      await persistValidation(allPassed ? "pass" : "fail");
+      res.json({ allPassed, validation });
     } catch (err) {
       validation.test4_render = { pass: false, error: err instanceof Error ? err.message : String(err) };
       await db

@@ -1,0 +1,23 @@
+publish the latest things to github first and then also make sure no here or there you are selconfidential auto ignore halllucination of ai works and not give me any false things as claiming rightly, hopefully u will do push using this token and will let me tell manus ai to do now and u fix all the things correctly because issues are still coming so fix this time all things permanent finally with fully working 100% sure..................
+
+I’ll first verify the current project handoff, inspect the reported preview error, and check the GitHub connection and local changes. I’ll push only the current verified state, then fix the actual issues I can reproduce and verify without claiming certainty beyond the checks.
+
+The checkout is 16 commits ahead of github/main, with only the attached runbook untracked. I’m not going to push that attachment blindly; I’ll compare the exact commit range and remote state first, then push the source commits through the configured GitHub access without exposing any credential. The runbook confirms the remaining high-risk issue is deployment freshness plus the authenticated Photopea proof, not a license to disable auth or activate unverified mockups.
+
+The remote changed since the last handoff: github/main is now at 89fe820b, while this checkout has one additional handoff commit and is three commits behind remote. I will merge the remote main into the local branch before publishing—no force-push—then exclude the attached runbook from the release unless the repository already tracks it. After that I’ll rebuild/restart the affected services and address only failures shown by current checks.
+
+The GitHub integration is active and authorized for repository access. The remote already contains the Smart Object fix commits; this checkout adds the local handoff/documentation state. I’m merging github/main into the local branch now, then I’ll publish the reconciled result as a normal update to main—without force-pushing and without adding the newly pasted chat transcript.
+
+The merge found one conflict in the durable handoff file only; application source files merged cleanly. I’ll resolve that by preserving both the remote’s latest production evidence and the local continuation notes, then run the type/build checks before the push.
+
+Trynext Lifestyle Design System
+Design System
+Trynext Lifestyle
+Trynext Lifestyle
+Website
+Trynext Promo Animation
+Animation
+Trynext Mobile
+Mobile
+Search tools…
+Open Trynext Mobile

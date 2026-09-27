@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, ShieldCheck, Upload
 import { getApiUrl, getAuthHeaders } from "@/lib/utils";
 import {
   buildSmartObjectRefreshScript,
+  SMART_OBJECT_ERROR_MARKER,
   SMART_OBJECT_REFRESH_MARKER,
 } from "./photopeaSmartObject";
 
@@ -35,18 +36,33 @@ interface BrowserResult {
 }
 
 const PHOTOPEA_URL = "https://www.photopea.com/";
+const PHOTOPEA_ORIGIN = new URL(PHOTOPEA_URL).origin;
 const PHOTOPEA_TIMEOUT_MS = 60_000;
+const ADMIN_REQUEST_TIMEOUT_MS = 45_000;
 
 async function adminFetch<T>(url: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(getApiUrl(url), {
-    ...init,
-    headers: {
-      "Content-Type": "application/json",
-      "X-Requested-With": "XMLHttpRequest",
-      ...getAuthHeaders(),
-      ...(init.headers ?? {}),
-    },
-  });
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), ADMIN_REQUEST_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(getApiUrl(url), {
+      ...init,
+      signal: init.signal ?? controller.signal,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+        ...getAuthHeaders(),
+        ...(init.headers ?? {}),
+      },
+    });
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error("The API took too long to prepare the private PSD pair. Retry once the API is healthy.");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
   const body = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error((body as { message?: string }).message ?? `Request failed (${response.status})`);
   return body as T;
@@ -97,6 +113,14 @@ function asArrayBuffer(bytes: Uint8Array): ArrayBuffer {
   return copy.buffer;
 }
 
+function readPhotopeaExport(value: unknown): Uint8Array | null {
+  if (value instanceof ArrayBuffer) return new Uint8Array(value);
+  if (ArrayBuffer.isView(value)) {
+    return new Uint8Array(value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength));
+  }
+  return null;
+}
+
 async function sha256(bytes: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest("SHA-256", asArrayBuffer(bytes));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -117,12 +141,13 @@ function renderPsdInPhotopea(
   return new Promise((resolve, reject) => {
     let finished = false;
     let refreshRequested = false;
+    let exportRequested = false;
     const timeout = window.setTimeout(() => finishReject(new Error("Photopea did not finish. Make sure the editor is open in this browser.")), PHOTOPEA_TIMEOUT_MS);
 
     const cleanup = () => {
       window.clearTimeout(timeout);
       window.removeEventListener("message", onMessage);
-      iframe.onload = null;
+      iframe.removeEventListener("load", onLoad);
     };
     const finishResolve = (value: Uint8Array) => {
       if (finished) return;
@@ -136,10 +161,19 @@ function renderPsdInPhotopea(
       cleanup();
       reject(error);
     };
+    const requestExport = () => {
+      if (exportRequested || !iframe.contentWindow) return;
+      exportRequested = true;
+      iframe.contentWindow.postMessage('app.activeDocument.saveToOE("png")', PHOTOPEA_ORIGIN);
+    };
     const onMessage = (event: MessageEvent) => {
       if (event.source !== iframe.contentWindow) return;
+      if (event.origin !== PHOTOPEA_ORIGIN) return;
       if (event.data === SMART_OBJECT_REFRESH_MARKER) {
-        iframe.contentWindow?.postMessage('app.activeDocument.saveToOE("png")', "*");
+        // The refresh script exports the parent document directly. This
+        // marker remains a compatibility fallback for older Photopea sessions
+        // or scripts that finish before saveToOE() is scheduled.
+        requestExport();
         return;
       }
       if (event.data === "done") {
@@ -152,24 +186,39 @@ function renderPsdInPhotopea(
         // Wait for the explicit echo marker after save/close before exporting
         // the parent document.
         if (refreshRequested) return;
-        iframe.contentWindow?.postMessage('app.activeDocument.saveToOE("png")', "*");
+        requestExport();
         return;
       }
-      if (event.data instanceof ArrayBuffer) {
-        finishResolve(new Uint8Array(event.data));
+      const exportBytes = readPhotopeaExport(event.data);
+      if (exportBytes) {
+        if (exportBytes.byteLength === 0) {
+          finishReject(new Error("Photopea returned an empty PNG export."));
+          return;
+        }
+        finishResolve(exportBytes);
         return;
       }
       if (typeof event.data === "string" && /^error/i.test(event.data)) {
         finishReject(new Error(event.data));
+        return;
+      }
+      if (typeof event.data === "string" && event.data.startsWith(SMART_OBJECT_ERROR_MARKER)) {
+        finishReject(new Error(event.data.slice(SMART_OBJECT_ERROR_MARKER.length) || "Photopea Smart Object refresh failed."));
       }
     };
 
-    window.addEventListener("message", onMessage);
-    iframe.onload = () => {
+    const onLoad = () => {
       const bytes = decodeBase64(base64);
       const buffer = asArrayBuffer(bytes);
-      iframe.contentWindow?.postMessage(buffer, "*", [buffer]);
+      if (!iframe.contentWindow) {
+        finishReject(new Error("Photopea loaded without a usable browser window."));
+        return;
+      }
+      iframe.contentWindow.postMessage(buffer, PHOTOPEA_ORIGIN, [buffer]);
     };
+
+    window.addEventListener("message", onMessage);
+    iframe.addEventListener("load", onLoad, { once: true });
     iframe.src = `${PHOTOPEA_URL}?trynext=${Date.now()}`;
   });
 }
@@ -179,6 +228,7 @@ export default function SmartMockupBrowserValidator() {
   const [surfaceKey, setSurfaceKey] = useState("cap/black/back");
   const [artwork, setArtwork] = useState<File | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "rendering" | "complete" | "error">("idle");
+  const [renderPhase, setRenderPhase] = useState<"modified" | "baseline" | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [result, setResult] = useState<BrowserResult | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -220,6 +270,7 @@ export default function SmartMockupBrowserValidator() {
     }
     setResult(null);
     setStatus("loading");
+    setRenderPhase(null);
     setStatusMessage("Preparing the private PSD pair…");
     try {
       const payload = await adminFetch<BrowserPayload>("/api/admin/smart-mockups/browser-payload", {
@@ -233,12 +284,14 @@ export default function SmartMockupBrowserValidator() {
 
       if (!iframeRef.current) throw new Error("Photopea frame is not ready.");
       setStatus("rendering");
+      setRenderPhase("modified");
       setStatusMessage("Rendering the modified Smart Object in your browser…");
       const modifiedBytes = await renderPsdInPhotopea(
         iframeRef.current,
         payload.modifiedPsdBase64,
         payload.smartObjectName,
       );
+      setRenderPhase("baseline");
       setStatusMessage("Rendering the untouched baseline in your browser…");
       const baselineBytes = await renderPsdInPhotopea(iframeRef.current, payload.originalPsdBase64);
       const [renderedSha256, baselineSha256, dimensions] = await Promise.all([
@@ -262,6 +315,7 @@ export default function SmartMockupBrowserValidator() {
         ? "Photopea produced a changed composite. The Smart Object artwork entered the render."
         : "Photopea returned the same composite as the untouched baseline. The template remains unapproved.");
     } catch (error) {
+      setRenderPhase(null);
       setStatus("error");
       setStatusMessage(error instanceof Error ? error.message : "Browser-side Photopea validation failed.");
     }
@@ -321,13 +375,17 @@ export default function SmartMockupBrowserValidator() {
             className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-black text-white transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {status === "loading" || status === "rendering" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            {status === "loading" ? "Preparing…" : status === "rendering" ? "Rendering in Photopea…" : "Run browser validation"}
+            {status === "loading"
+              ? "Preparing…"
+              : status === "rendering"
+                ? renderPhase === "baseline" ? "Rendering baseline…" : "Rendering modified export…"
+                : "Run browser validation"}
           </button>
 
           {statusMessage && (
             <div className={`flex gap-2 rounded-xl border px-3 py-2.5 text-xs leading-5 ${status === "complete" ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200" : status === "error" ? "border-red-400/30 bg-red-400/10 text-red-200" : "border-white/10 bg-white/5 text-slate-300"}`}>
               {status === "complete" ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" /> : status === "error" ? <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> : <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin" />}
-              <span>{statusMessage}</span>
+              <span aria-live="polite">{statusMessage}</span>
             </div>
           )}
 
