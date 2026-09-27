@@ -2791,3 +2791,46 @@ release gate is still one real Photopea modified-vs-untouched PNG comparison,
 followed by representative-family checks and the full 188-surface run. Until
 those exports differ and are visually reviewed, do not claim all 188 work,
 activate templates, or replace the customer compositor.
+
+---
+
+## Current continuation — browser payload gateway timeout (2026-09-27)
+
+Status: ready for review — the confirmed production gateway failure is fixed in
+the local source and committed, but the Pages deployment still needs to publish
+the change.
+
+Last completed: Compared the attached blocker report with the live route and
+source. The POST `/api/admin/smart-mockups/browser-payload` request was routed
+as a primary write and could be aborted by the shared 3.5-second edge timeout.
+Added a route-specific 30-second primary budget for that endpoint only, in both
+Cloudflare gateway copies, with regression coverage. Ordinary API writes keep
+the 3.5-second timeout.
+
+Stopped at: The focused gateway test, storefront typecheck, API typecheck, local
+API/storefront restart, and unauthenticated production probes are complete.
+Production POST reaches the primary and returns the expected 401 without admin
+credentials; no authenticated PSD pair was requested or accepted.
+
+Files/areas changed: `functions/gateway-config.ts`,
+`functions/api/[[path]].ts`, `artifacts/trynex-storefront/functions/gateway-config.ts`,
+`artifacts/trynex-storefront/functions/api/[[path]].ts`, and
+`artifacts/trynex-storefront/functions/api/gateway.test.ts`.
+
+Remaining work: Publish the reviewed commit to GitHub/Pages, then use an
+authenticated browser session to confirm the endpoint returns both PSD payloads
+and run the changed-vs-untouched Photopea export proof. Keep all templates
+inactive until that proof differs and is visually reviewed.
+
+Blocker: The current headless environment still cannot complete the Photopea
+Cloudflare challenge. This checkpoint does not claim Smart Object rendering or
+188-surface readiness.
+
+Next safe action: After Pages deploys, run the existing authenticated browser
+validator on `cap/black/back`; inspect response timing and require modified and
+baseline PNG hashes before any activation.
+
+Verification: Local PSD inspection plus Smart Object replacement measured
+126–208ms on the reported cap master. Gateway tests passed 14/14; storefront
+and API typechecks passed; local liveness/products probes returned 200; local
+and production unauthenticated browser-payload POST probes returned 401.
