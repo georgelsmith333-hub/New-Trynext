@@ -27,6 +27,12 @@
  */
 
 export const REQUEST_TIMEOUT_MS = 3_500;
+/** Expensive admin PSD preparation gets an explicit budget without weakening
+ * the timeout used by ordinary API writes. */
+export const SMART_MOCKUP_BROWSER_PAYLOAD_TIMEOUT_MS = 30_000;
+export const LONG_RUNNING_PRIMARY_PREFIXES = [
+  "/admin/smart-mockups/browser-payload",
+] as const;
 export const READ_TOTAL_BUDGET_MS = 7_000;
 export const RETRYABLE_STATUSES = new Set([502, 503, 504]);
 export const ORIGIN_DOWN_SKIP_MS = 15_000;
@@ -138,4 +144,10 @@ export function isSafePublicRead(method: string, path: string, request: Request)
 export function isPrimaryOnlyRead(method: string, path: string): boolean {
   if (method !== "GET" && method !== "HEAD") return false;
   return PRIMARY_ONLY_READ_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
+}
+
+export function primaryRequestTimeoutMs(path: string): number {
+  return LONG_RUNNING_PRIMARY_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
+    ? SMART_MOCKUP_BROWSER_PAYLOAD_TIMEOUT_MS
+    : REQUEST_TIMEOUT_MS;
 }

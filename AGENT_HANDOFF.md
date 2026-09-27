@@ -2713,39 +2713,176 @@ liveness/readiness returned 200 after restart. The real Photopea attempt
 failed closed with `Photopea did not return an export before the timeout`;
 no runtime assets or template activation state changed.
 
+---
 
-## Browser Photopea validator root-cause fix (2026-09-27)
+## 2026-09-28 Browser validator selector fix
 
-```text
-Status: fixed in source; verified locally; not yet deployed to trynext.shop
+Status: fixed and running in the local preview; Smart Mockup templates remain
+fail-closed.
 
-Live symptom: POST /api/admin/smart-mockups/browser-payload eventually returned a
-PSD pair, but Photopea's modified and untouched exports had the same SHA-256.
-The API was not the final fault. psdSmartObject.replaceSmartObjectContent() only
-replaced linkedFiles.data and name. It left the placed layer's imageData and the
-PSD document's original composite imageData unchanged, so Photopea could display
-and export the stale original composite.
+Last completed: Fixed the Browser Photopea validator catalog normalization in
+`artifacts/api-server/src/routes/smartMockupRender.ts`. The staging manifest
+does not persist `surfaceKey`, so the API now derives the canonical
+`family/color/view` key before returning catalog rows. The frontend select in
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`
+is controlled directly by that normalized key. This fixes the issue where
+`cap / black / back` could be clicked but would immediately disappear because
+every option had an undefined value.
 
-Fix: added prepareSmartObjectArtworkImage(), which decodes/resizes artwork with
-sharp to the placed layer's native raster dimensions. Browser payload and admin
-test-render now pass that PixelData into replaceSmartObjectContent(). The
-replacement updates the placed layer raster and removes the stale document
-composite before reserialization, while preserving the linked source bytes,
-transform, masks, blend modes, and protected layers.
+Verification: API typecheck passed; storefront typecheck passed; API tests
+passed 11 files/38 tests; storefront tests passed 19 files/69 tests; API and
+storefront builds passed; both preview workflows restarted successfully and
+reported their ports as ready.
 
-Regression: artifacts/api-server/src/lib/psdSmartObject.test.ts uses the exact
-staged cap/black/back master and verifies the placed raster, changed composite,
-and changed PSD after reopen.
+Remaining work: Use the authenticated browser Photopea session to prove one
+modified export differs from its untouched baseline, then continue the
+representative-family and 188-surface validation. Do not activate templates or
+replace the customer compositor before that evidence exists.
 
-Verification: API 39/39 tests passed; API typecheck passed; API build passed;
-workspace typecheck passed; storefront 69/69 tests passed; storefront production
-build passed; PSD audit 188/188 masters openable with Smart Object gate passed.
-The generic mockups:validate-matrix command remains blocked by its stale path to
-smart-v10/manifest.json; current staging is smart-v10-v3 and this is unrelated to
-the replacement fix.
+Next safe action: Open the local Replit preview at `/admin/mockups`, sign in
+normally, and confirm the normalized selector now retains `cap / black / back`
+before running the browser Photopea export proof.
 
-Next action: commit/push this verified branch, deploy the API bundle and
-staging masters, then rerun the live cap/black/back proof. Do not activate any
-template until modified and baseline Photopea PNG hashes differ and the artwork
-is visibly composited with product shading/protected details intact.
-```
+---
+
+## 2026-09-28 Mobile artwork upload fix
+
+Status: fixed and live in the local preview.
+
+Observed issue: On Android, the validator showed the selected PNG filename but
+then displayed `Could not read the artwork file.` The API logs confirmed that
+admin login and the browser catalog both succeeded, so this was a client-side
+file-reader failure rather than an authentication or selector problem.
+
+Last completed: Replaced the validator's FileReader-based data URL conversion
+with `File.arrayBuffer()` and bounded chunked base64 conversion in
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`.
+The client now preserves PNG/JPG/JPEG/WebP MIME types and reports explicit
+unsupported or empty-file errors.
+
+Verification: Storefront typecheck passed; storefront tests passed 19
+files/69 tests; storefront build passed; the storefront workflow restarted
+successfully. API remained healthy and the authenticated catalog request
+returned HTTP 200.
+
+Remaining work: The real Photopea changed-vs-baseline export proof is still
+required before any Smart Mockup activation. No templates or customer
+compositor behavior were changed.
+
+---
+
+## 2026-09-28 GitHub publication checkpoint
+
+Status: reviewed validator source published to GitHub `main`; Smart Mockup
+activation remains blocked pending real Photopea evidence.
+
+Published commit: `efdf2c2d6e42229130a65e64c7f4c773c2391866` in
+`georgelsmith333-hub/New-Trynext`. The GitHub integration verified the branch
+ref and confirmed the published catalog normalization, mobile artwork reader,
+and Photopea renderer files.
+
+The publication intentionally included functional source and project
+documentation only. Local screenshots, pasted evidence files, and the
+upload-only test artwork were not copied into the GitHub release commit.
+
+Remaining work: A successful code build, selector response, or PSD byte
+replacement is not evidence that all 188 Smart Objects render. The next
+release gate is still one real Photopea modified-vs-untouched PNG comparison,
+followed by representative-family checks and the full 188-surface run. Until
+those exports differ and are visually reviewed, do not claim all 188 work,
+activate templates, or replace the customer compositor.
+
+---
+
+## Current continuation — browser payload gateway timeout (2026-09-27)
+
+Status: ready for review — the confirmed production gateway failure is fixed in
+the local source and committed, but the Pages deployment still needs to publish
+the change.
+
+Last completed: Compared the attached blocker report with the live route and
+source. The POST `/api/admin/smart-mockups/browser-payload` request was routed
+as a primary write and could be aborted by the shared 3.5-second edge timeout.
+Added a route-specific 30-second primary budget for that endpoint only, in both
+Cloudflare gateway copies, with regression coverage. Ordinary API writes keep
+the 3.5-second timeout.
+
+Stopped at: The focused gateway test, storefront typecheck, API typecheck, local
+API/storefront restart, and unauthenticated production probes are complete.
+Production POST reaches the primary and returns the expected 401 without admin
+credentials; no authenticated PSD pair was requested or accepted.
+
+Files/areas changed: `functions/gateway-config.ts`,
+`functions/api/[[path]].ts`, `artifacts/trynex-storefront/functions/gateway-config.ts`,
+`artifacts/trynex-storefront/functions/api/[[path]].ts`, and
+`artifacts/trynex-storefront/functions/api/gateway.test.ts`.
+
+Remaining work: Publish the reviewed commit to GitHub/Pages, then use an
+authenticated browser session to confirm the endpoint returns both PSD payloads
+and run the changed-vs-untouched Photopea export proof. Keep all templates
+inactive until that proof differs and is visually reviewed.
+
+Blocker: The current headless environment still cannot complete the Photopea
+Cloudflare challenge. This checkpoint does not claim Smart Object rendering or
+188-surface readiness.
+
+Next safe action: After Pages deploys, run the existing authenticated browser
+validator on `cap/black/back`; inspect response timing and require modified and
+baseline PNG hashes before any activation.
+
+Verification: Local PSD inspection plus Smart Object replacement measured
+126–208ms on the reported cap master. Gateway tests passed 14/14; storefront
+and API typechecks passed; local liveness/products probes returned 200; local
+and production unauthenticated browser-payload POST probes returned 401.
+
+---
+
+## 2026-09-27 Photopea Smart Object refresh fix
+
+Status: in progress — the next source fix is implemented and locally verified;
+the authenticated production retry is still required.
+
+Last completed: Reviewed the new live evidence for `cap/black/back`. The API
+returned both PSDs, Photopea opened and exported both 1024×1024 PNGs, and the
+modified and baseline SHA-256 values were identical
+(`9d83297530b244eb2c921b94682b8ac39cb725d6dcd95e3894d76af98b7e9889`).
+The artwork was not visible, so the surface correctly remained unapproved.
+
+Root cause addressed: The server-side `ag-psd` replacement changes the linked
+Smart Object bytes, but the browser validator opened the parent PSD and
+exported immediately. Photopea can retain the parent's cached Smart Object
+composite until the placed layer is explicitly opened, saved, and closed.
+
+Files/areas changed: `artifacts/api-server/src/routes/smartMockupRender.ts`
+now returns the exact selected Smart Object layer name. The browser validator
+now runs Photopea's documented `placedLayerEditContents` → save → close flow
+for the modified PSD, waits for an explicit completion marker, and then
+exports the parent. The untouched baseline still exports without mutation.
+The script builder and its focused test are in
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.ts` and
+`photopeaSmartObject.test.ts`.
+
+Remaining work: Publish this source fix and rerun the authenticated browser
+validator on `cap/black/back`. Require a changed modified-vs-baseline hash and
+visual artwork evidence before any template activation or broader matrix run.
+
+Blocker: The local headless environment is still blocked by Photopea's
+Cloudflare challenge, so this fix has not been claimed as a real compositor
+success.
+
+Next safe action: Deploy the updated API and storefront, run the same uploaded
+artwork through the validator, and inspect the browser console/status if the
+refresh marker is not received. Keep all templates inactive on any failure.
+
+Verification: Storefront tests passed 20 files/72 tests; API tests passed
+11 files/38 tests; both typechecks passed; API bundle build passed; the local
+cap master resolved the expected layer name and ID, and linked-art replacement
+changed the PSD SHA-256 from `22f3c0bf…` to `bfb9afb3…`.
+
+## Server-side Smart Object raster refresh fix (2026-09-27)
+
+Status: implemented on top of current main and locally verified; production deployment still pending.
+
+The browser validator previously replaced only linkedFiles.data, leaving the placed layer raster and stale document composite unchanged. The server now decodes artwork to the placed layer's native dimensions, updates the placed-layer raster, and reserializes the PSD so Photopea receives changed source and changed layer/composite data. This complements the current main browser-side placedLayerEditContents refresh flow.
+
+Verification: API 39/39 tests, workspace typecheck, storefront 69/69 tests, storefront build, API build, and PSD audit 188/188 passed. No templates were activated. The generic mockups:validate-matrix command still references the stale smart-v10 manifest path and is unrelated.

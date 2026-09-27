@@ -1,0 +1,84 @@
+The blocker is **the live Smart Mockup backend API**, not your browser session.
+
+### What happened, step by step
+
+1. **Authentication succeeded**
+   - The live admin page opened successfully.
+   - I could see the operator console and Mockup Gallery.
+   - This confirms the browser session was connected correctly.
+
+2. **The live catalog loaded**
+   - The catalog endpoint returned **188 surfaces**.
+   - `cap / black / back` was available and selected.
+   - This confirms the live database/catalog request is working.
+
+3. **The artwork upload succeeded**
+   - The high-contrast 1200×1200 TEST PNG was accepted by the browser.
+   - This confirms the file and upload control were working.
+
+4. **Validation started**
+   - The page changed to **“Preparing…”**.
+   - At this stage, the frontend sends a request to:
+
+   ```text
+   POST /api/admin/smart-mockups/browser-payload
+   ```
+
+   That endpoint must prepare and return two PSD payloads:
+
+   - A modified PSD containing the uploaded artwork
+   - The untouched original PSD for the baseline comparison
+
+5. **That API request failed**
+   - The live UI displayed:
+
+   > **The API is temporarily unavailable.**
+
+   - Because the PSD pair was never returned, Photopea never received the files.
+   - Therefore, neither export was generated.
+
+### What was **not** the problem
+
+- Not your login
+- Not browser permission
+- Not the selected surface
+- Not the artwork PNG
+- Not the 188-surface catalog
+- Not a hash mismatch
+- Not a Photopea compositing failure
+- Not an activated template
+
+### What remains unknown
+
+The browser only exposes the generic API failure message. The underlying cause could be one of the live backend dependencies, such as:
+
+- Smart Mockup API deployment
+- PSD/template storage
+- Database lookup
+- Smart Object metadata lookup
+- Server-side payload preparation
+- Live API routing or availability
+
+But it is important that the failure occurred **before the Photopea export stage**, so we cannot honestly call this a Photopea validation failure yet.
+
+### Current status
+
+```text
+Catalog: 188/188 visible
+Representative surface selected: cap/black/back
+Artwork uploaded: yes
+Modified PSD received: no
+Baseline PSD received: no
+Photopea export produced: no
+Hashes available: no
+Template activated: no
+Result: BLOCKED
+```
+
+The exact issue to fix is the live production endpoint:
+
+```text
+https://trynext.shop/api/admin/smart-mockups/browser-payload
+```
+
+Until that endpoint successfully returns the modified and untouched PSD payloads, the real Smart Object proof cannot proceed.

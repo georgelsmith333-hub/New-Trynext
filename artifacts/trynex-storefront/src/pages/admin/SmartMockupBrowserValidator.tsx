@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, ShieldCheck, Upload } from "lucide-react";
 import { getApiUrl, getAuthHeaders } from "@/lib/utils";
+import {
+  buildSmartObjectRefreshScript,
+  SMART_OBJECT_REFRESH_MARKER,
+} from "./photopeaSmartObject";
 
 interface BrowserSurface {
   surfaceKey: string;
@@ -16,6 +20,7 @@ interface BrowserSurface {
 interface BrowserPayload {
   originalPsdBase64: string;
   modifiedPsdBase64: string;
+  smartObjectName: string;
   documentWidth: number;
   documentHeight: number;
 }
@@ -47,13 +52,36 @@ async function adminFetch<T>(url: string, init: RequestInit = {}): Promise<T> {
   return body as T;
 }
 
-function fileToDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Could not read the artwork file."));
-    reader.readAsDataURL(file);
-  });
+async function fileToDataUrl(file: File): Promise<string> {
+  const mimeByExtension: Record<string, string> = {
+    png: "image/png",
+    jpg: "image/jpeg",
+    jpeg: "image/jpeg",
+    webp: "image/webp",
+  };
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  const mimeType = file.type.toLowerCase() || mimeByExtension[extension];
+  if (!mimeType || !["image/png", "image/jpeg", "image/webp"].includes(mimeType)) {
+    throw new Error("Choose a PNG, JPG, JPEG, or WebP artwork file.");
+  }
+  if (!file.size) {
+    throw new Error("The selected artwork file is empty.");
+  }
+
+  try {
+    // FileReader intermittently fails for files selected from Android's
+    // document picker. Reading the bytes directly is more reliable and keeps
+    // the private artwork in the browser until the authenticated API request.
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    }
+    return `data:${mimeType};base64,${btoa(binary)}`;
+  } catch {
+    throw new Error("Could not read the artwork file from this browser. Choose the file again or use a PNG under 10MB.");
+  }
 }
 
 function decodeBase64(value: string): Uint8Array {
@@ -81,9 +109,14 @@ async function readImageDimensions(bytes: Uint8Array): Promise<{ width: number; 
   return dimensions;
 }
 
-function renderPsdInPhotopea(iframe: HTMLIFrameElement, base64: string): Promise<Uint8Array> {
+function renderPsdInPhotopea(
+  iframe: HTMLIFrameElement,
+  base64: string,
+  smartObjectName?: string,
+): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
     let finished = false;
+    let refreshRequested = false;
     const timeout = window.setTimeout(() => finishReject(new Error("Photopea did not finish. Make sure the editor is open in this browser.")), PHOTOPEA_TIMEOUT_MS);
 
     const cleanup = () => {
@@ -105,7 +138,20 @@ function renderPsdInPhotopea(iframe: HTMLIFrameElement, base64: string): Promise
     };
     const onMessage = (event: MessageEvent) => {
       if (event.source !== iframe.contentWindow) return;
+      if (event.data === SMART_OBJECT_REFRESH_MARKER) {
+        iframe.contentWindow?.postMessage('app.activeDocument.saveToOE("png")', "*");
+        return;
+      }
       if (event.data === "done") {
+        if (smartObjectName && !refreshRequested) {
+          refreshRequested = true;
+          iframe.contentWindow?.postMessage(buildSmartObjectRefreshScript(smartObjectName), "*");
+          return;
+        }
+        // Opening the linked Smart Object can emit another "done" message.
+        // Wait for the explicit echo marker after save/close before exporting
+        // the parent document.
+        if (refreshRequested) return;
         iframe.contentWindow?.postMessage('app.activeDocument.saveToOE("png")', "*");
         return;
       }
@@ -188,7 +234,11 @@ export default function SmartMockupBrowserValidator() {
       if (!iframeRef.current) throw new Error("Photopea frame is not ready.");
       setStatus("rendering");
       setStatusMessage("Rendering the modified Smart Object in your browser…");
-      const modifiedBytes = await renderPsdInPhotopea(iframeRef.current, payload.modifiedPsdBase64);
+      const modifiedBytes = await renderPsdInPhotopea(
+        iframeRef.current,
+        payload.modifiedPsdBase64,
+        payload.smartObjectName,
+      );
       setStatusMessage("Rendering the untouched baseline in your browser…");
       const baselineBytes = await renderPsdInPhotopea(iframeRef.current, payload.originalPsdBase64);
       const [renderedSha256, baselineSha256, dimensions] = await Promise.all([
@@ -240,7 +290,7 @@ export default function SmartMockupBrowserValidator() {
             <label className="text-xs font-bold text-slate-300">
               Staged Smart Mockup surface
               <select
-                value={selectedSurface?.surfaceKey ?? ""}
+                value={surfaceKey}
                 onChange={(event) => setSurfaceKey(event.target.value)}
                 disabled={status === "loading" || status === "rendering"}
                 className="mt-1.5 w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2.5 text-sm font-medium text-white outline-none focus:border-orange-400"

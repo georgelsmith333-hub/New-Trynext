@@ -142,6 +142,51 @@ describe("four-render multi-route Pages gateway", () => {
     expect(response.headers.get("X-Trynext-Route")).toBe("write");
   });
 
+  it("gives browser PSD preparation its explicit long-running primary budget", async () => {
+    let timeoutSignal: AbortSignal | undefined;
+    const fetchMock = vi.fn(async (_input: Request, init?: RequestInit) => {
+      timeoutSignal = init?.signal as AbortSignal | undefined;
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await onRequest(context(
+      "POST",
+      "admin/smart-mockups/browser-payload",
+      { API_PRIMARY_ORIGIN: "https://render-main.example" },
+      JSON.stringify({ relativePath: "cap/cap-black-back.psd" }),
+    ));
+
+    expect(response.status).toBe(200);
+    expect(timeoutSignal).toBeDefined();
+    expect(timeoutSignal?.aborted).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps ordinary primary writes on the short timeout", async () => {
+    let timeoutSignal: AbortSignal | undefined;
+    const fetchMock = vi.fn(async (_input: Request, init?: RequestInit) => {
+      timeoutSignal = init?.signal as AbortSignal | undefined;
+      return new Response("primary wrote", { status: 201 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await onRequest(context(
+      "POST",
+      "orders",
+      { API_PRIMARY_ORIGIN: "https://render-main.example" },
+      JSON.stringify({ customerName: "QA" }),
+    ));
+
+    expect(response.status).toBe(201);
+    expect(timeoutSignal).toBeDefined();
+    expect(timeoutSignal?.aborted).toBe(false);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("pins admin and authenticated reads to the PRIMARY (no standby leak)", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: "unauthorized" }), {
       status: 401,

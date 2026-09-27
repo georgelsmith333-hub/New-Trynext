@@ -27,6 +27,7 @@ import {
   ORIGIN_DOWN_THRESHOLD,
   isSafePublicRead,
   isPrimaryOnlyRead,
+  primaryRequestTimeoutMs,
   resolveOrigins,
 } from "../gateway-config";
 
@@ -227,8 +228,11 @@ export const onRequest: PagesFunction<GatewayEnv> = async (context) => {
     const proxyRequest = new Request(targetUrl.toString(), requestInit);
 
     try {
+      const timeoutMs = routeKind === "read"
+        ? Math.min(REQUEST_TIMEOUT_MS, remainingReadBudget)
+        : primaryRequestTimeoutMs(apiPath);
       const response = await fetch(proxyRequest, {
-        signal: AbortSignal.timeout(Math.min(REQUEST_TIMEOUT_MS, remainingReadBudget)),
+        signal: AbortSignal.timeout(timeoutMs),
       });
       lastStatus = response.status;
       if (routeKind === "read" && shouldRetryReadResponse(response)) {

@@ -124,9 +124,16 @@ router.get("/admin/smart-mockups/browser-catalog", requireAdmin, async (_req, re
       }>;
     };
     const surfaces = (manifest.surfaces ?? [])
-      .filter((surface) => typeof surface.smartObject?.id === "string")
+      .filter((surface) =>
+        typeof surface.family === "string"
+        && typeof surface.color === "string"
+        && typeof surface.view === "string"
+        && typeof surface.smartObject?.id === "string",
+      )
       .map((surface) => ({
-        surfaceKey: surface.surfaceKey,
+        // Older staging manifests do not persist surfaceKey. Derive the
+        // canonical key so every option remains uniquely selectable.
+        surfaceKey: surface.surfaceKey || `${surface.family}/${surface.color}/${surface.view}`,
         family: surface.family,
         color: surface.color,
         view: surface.view,
@@ -171,7 +178,8 @@ router.post("/admin/smart-mockups/browser-payload", requireAdmin, async (req, re
       return;
     }
     const inspection = inspectTemplate(originalBytes);
-    if (!inspection.smartObjects.some((smartObject) => smartObject.id === smartObjectId)) {
+    const selectedSmartObject = inspection.smartObjects.find((smartObject) => smartObject.id === smartObjectId);
+    if (!selectedSmartObject) {
       res.status(400).json({ error: "validation_error", message: "The selected Smart Object is not present in this master." });
       return;
     }
@@ -181,6 +189,7 @@ router.post("/admin/smart-mockups/browser-payload", requireAdmin, async (req, re
       fileFormat,
       relativePath,
       smartObjectId,
+      smartObjectName: selectedSmartObject.name,
       documentWidth: inspection.documentWidth,
       documentHeight: inspection.documentHeight,
       originalPsdBase64: originalBytes.toString("base64"),
