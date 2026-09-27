@@ -2768,3 +2768,26 @@ returned HTTP 200.
 Remaining work: The real Photopea changed-vs-baseline export proof is still
 required before any Smart Mockup activation. No templates or customer
 compositor behavior were changed.
+
+---
+
+## 2026-09-28 GitHub publication checkpoint
+
+Status: reviewed validator source published to GitHub `main`; Smart Mockup
+activation remains blocked pending real Photopea evidence.
+
+Published commit: `efdf2c2d6e42229130a65e64c7f4c773c2391866` in
+`georgelsmith333-hub/New-Trynext`. The GitHub integration verified the branch
+ref and confirmed the published catalog normalization, mobile artwork reader,
+and Photopea renderer files.
+
+The publication intentionally included functional source and project
+documentation only. Local screenshots, pasted evidence files, and the
+upload-only test artwork were not copied into the GitHub release commit.
+
+Remaining work: A successful code build, selector response, or PSD byte
+replacement is not evidence that all 188 Smart Objects render. The next
+release gate is still one real Photopea modified-vs-untouched PNG comparison,
+followed by representative-family checks and the full 188-surface run. Until
+those exports differ and are visually reviewed, do not claim all 188 work,
+activate templates, or replace the customer compositor.
