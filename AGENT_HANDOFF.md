@@ -2712,3 +2712,40 @@ passed; the public runtime validator passed 188 surfaces/1,128 roles; API
 liveness/readiness returned 200 after restart. The real Photopea attempt
 failed closed with `Photopea did not return an export before the timeout`;
 no runtime assets or template activation state changed.
+
+
+## Browser Photopea validator root-cause fix (2026-09-27)
+
+```text
+Status: fixed in source; verified locally; not yet deployed to trynext.shop
+
+Live symptom: POST /api/admin/smart-mockups/browser-payload eventually returned a
+PSD pair, but Photopea's modified and untouched exports had the same SHA-256.
+The API was not the final fault. psdSmartObject.replaceSmartObjectContent() only
+replaced linkedFiles.data and name. It left the placed layer's imageData and the
+PSD document's original composite imageData unchanged, so Photopea could display
+and export the stale original composite.
+
+Fix: added prepareSmartObjectArtworkImage(), which decodes/resizes artwork with
+sharp to the placed layer's native raster dimensions. Browser payload and admin
+test-render now pass that PixelData into replaceSmartObjectContent(). The
+replacement updates the placed layer raster and removes the stale document
+composite before reserialization, while preserving the linked source bytes,
+transform, masks, blend modes, and protected layers.
+
+Regression: artifacts/api-server/src/lib/psdSmartObject.test.ts uses the exact
+staged cap/black/back master and verifies the placed raster, changed composite,
+and changed PSD after reopen.
+
+Verification: API 39/39 tests passed; API typecheck passed; API build passed;
+workspace typecheck passed; storefront 69/69 tests passed; storefront production
+build passed; PSD audit 188/188 masters openable with Smart Object gate passed.
+The generic mockups:validate-matrix command remains blocked by its stale path to
+smart-v10/manifest.json; current staging is smart-v10-v3 and this is unrelated to
+the replacement fix.
+
+Next action: commit/push this verified branch, deploy the API bundle and
+staging masters, then rerun the live cap/black/back proof. Do not activate any
+template until modified and baseline Photopea PNG hashes differ and the artwork
+is visibly composited with product shading/protected details intact.
+```
