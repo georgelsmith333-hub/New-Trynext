@@ -77,3 +77,4 @@
 - [Photopea Smart Object renderer](photopea-smart-object-renderer.md) — Photopea can refresh PSDs through ArrayBuffer/done/saveToOE, but modified-vs-baseline export comparison remains mandatory
 - [Browser validator surface keys](browser-validator-surface-keys.md) — staging manifests may omit surfaceKey; derive family/color/view keys before exposing selector options
 - [Mobile validator file reading](mobile-validator-file-reading.md) — Android document-picker files can fail FileReader; use File.arrayBuffer with chunked base64 conversion
+- [Gateway long-running routes](gateway-long-running-routes.md) — expensive admin PSD preparation needs a route-specific edge budget; keep ordinary writes short
