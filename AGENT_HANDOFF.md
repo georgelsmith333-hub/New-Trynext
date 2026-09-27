@@ -2930,6 +2930,43 @@ differs from the untouched baseline and the artwork is visually reviewed.
 
 ---
 
+## 2026-09-27 GitHub publication and preview verification
+
+Status: published and locally verified; Smart Mockup activation remains blocked
+on authenticated Photopea evidence.
+
+Last completed: Reconciled the local branch with GitHub `main` without a force
+push, published the handoff/runbook updates and the latest attached preview
+troubleshooting notes, rebuilt the API and storefront, restarted both managed
+workflows, and verified the local and production preview boundaries.
+
+Verification: Local root and `/admin/mockups` returned HTTP 200; local
+liveness/readiness returned HTTP 200; production root and `/admin/mockups`
+returned HTTP 200; production liveness returned HTTP 200; unauthenticated
+browser-payload requests returned the expected HTTP 401. API tests passed
+12 files/39 tests, storefront tests passed 20 files/72 tests, API and
+storefront typechecks passed, shared library typecheck passed, and both
+production builds passed. The local screenshot rendered the storefront with
+no browser console errors. GitHub `main` was published at
+`627f8a8ae5a6da761c9f5f97b1ae1ff3f3d421dc`; CI and active app verification
+were still in progress at the time of this entry.
+
+Remaining work: Complete the authenticated `cap / black / back` browser
+validator run, record the modified and untouched PNG hashes, and require
+visible artwork plus `changed composite: PASS` before activating any Smart
+Mockup template or replacing the customer compositor.
+
+Blocker: This session has no authenticated admin browser session, and the
+headless Photopea path has previously been blocked by Photopea's Cloudflare
+challenge. Do not weaken authentication or activate templates to work around
+this.
+
+Next safe action: Open the normal authenticated admin session at
+`https://trynext.shop/admin/mockups`, run the validator once with asymmetric
+artwork, and review both output images and hashes.
+
+---
+
 ## Server-side Smart Object raster refresh fix (2026-09-27)
 
 Status: implemented on top of current main and locally verified; production deployment still pending.
