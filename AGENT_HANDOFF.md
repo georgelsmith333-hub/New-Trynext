@@ -2612,3 +2612,159 @@ with status `candidate`; `pnpm run typecheck` passed; storefront tests passed
 19 files/69 tests; API tests passed 11 files/38 tests; storefront and API builds
 passed; `git diff --check` passed; both workflows restarted cleanly; live
 critical-flow smoke checks passed 30/30.
+
+---
+
+## 2026-09-26 real PSD compositor checkpoint
+
+Status: blocked — real compositor launch succeeded, Smart Object compositing
+failed visual validation
+
+Last completed: Downloaded Patchy v0.99 `PatchyLinux.flatpak` from the public
+release and verified its published SHA-256. Flatpak deployment could not finish
+through the sandbox's missing D-Bus service, but the app and KDE runtime commits
+were imported and Patchy's own runtime loader launched the genuine binary.
+Ran the repository's actual two-stage pipeline against
+`cap/cap-black-back.psd`: `replaceSmartObjectContent` replaced the linked bytes,
+then `render-smart-object.js` opened and exported the modified PSD through
+Patchy's documented headless CLI.
+
+Result: the output was a valid non-empty 1024×1024 RGBA PNG, but it was
+byte-for-byte identical to Patchy's export of the untouched PSD
+(`196996e9d6e6a6d332a23e25ef13cd0ac7223170244023e22b7ada125e5e1387`).
+The replacement artwork therefore did not enter the Smart Object composite;
+the renderer trusted the stale cached raster. This is a genuine compositor
+failure, not a structural PSD failure.
+
+Files/areas changed: `artifacts/api-server/src/lib/mockupRenderer.ts` now
+resolves its script path with `fileURLToPath(import.meta.url)`, which works in
+the configured `tsx`/CommonJS execution path; the previous `import.meta.dirname`
+expression was undefined there. The renderer status comment records the
+Patchy result. No runtime assets or template activation state was changed.
+
+Remaining work: Find a PSD compositor that recomputes Smart Object pixels from
+updated linked content, or add an explicitly approved render worker using one.
+Do not activate the 188 candidate templates or replace the current browser
+compositor based on this Patchy result.
+
+Blocker: Patchy v0.99's documented `app.open`/`doc.exportAs` path does not
+refresh the modified Smart Object composite in this repository's masters.
+
+Verification: API typecheck passed; real renderer returned `engine: patchy`,
+`outputWidth: 1024`, `outputHeight: 1024`, and a non-empty PNG; untouched and
+modified exports compared equal with `cmp`; all templates remain fail-closed.
+
+---
+
+## 2026-09-26 Photopea renderer integration checkpoint
+
+Status: in progress — Photopea engine implemented; real export remains blocked by
+the headless environment's Cloudflare challenge
+
+Last completed: Added a genuine Photopea renderer behind the existing
+`MockupRenderer` seam. It launches the available Chromium executable through the
+DevTools protocol, loads a configurable Photopea URL, sends the modified PSD as
+an ArrayBuffer, waits for Photopea's `done` message, executes
+`app.activeDocument.saveToOE("png")`, receives the exported image ArrayBuffer,
+and writes the PNG without touching its pixels. `PSD_RENDERER=photopea`,
+`patchy`, or `auto` selects the engine; auto prefers Photopea when Chromium is
+present. Fixed the compiled API helper-script path for both renderer scripts.
+
+The source inventory is complete for the active staged release: 188 PSD/PSB
+masters, 200 source PNGs, 188 previews, 188 proof previews, and the public
+1,128-role runtime matrix. The structural master audit, staging checksum
+matrix, runtime-role validator, API tests, and full workspace typecheck all
+pass.
+
+Stopped at: A real Chromium invocation reached the Photopea URL but received
+only the Cloudflare challenge and therefore never emitted `done`; no exported
+PNG was accepted. This is an external access blocker, not a PSD parse,
+Smart Object replacement, or renderer-cleanup failure.
+
+Files/areas changed:
+  - `artifacts/api-server/scripts/render-photopea.js`
+  - `artifacts/api-server/src/lib/mockupRenderer.ts`
+  - `replit.md`
+  - `.agents/memory/photopea-smart-object-renderer.md`
+  - `.agents/memory/MEMORY.md`
+  - this handoff
+
+Remaining work: Run the Photopea renderer once from an environment that can
+pass the Photopea/Cloudflare challenge, confirm the modified export differs
+from the untouched baseline, and only then validate/activate templates. No
+customer-facing renderer replacement or candidate activation is permitted
+before that evidence exists.
+
+Blocker: Photopea is reachable from this headless Chromium only as a
+Cloudflare challenge in the current environment. Patchy remains rejected
+because its export was byte-for-byte identical after Smart Object replacement.
+
+Next safe action: Set `PSD_RENDERER=photopea` and a reachable
+`PHOTOPEA_URL`/Chromium path in an approved worker environment, run the admin
+template test-render on one cap master, and require tests 4–9 — especially the
+changed-vs-baseline export check — before scaling beyond the representative
+surface.
+
+Verification: Photopea helper syntax check passed; API typecheck and bundle
+build passed; API tests passed 11 files/38 tests; full workspace typecheck
+passed; the 188-master audit passed; the 188-surface staging checksum matrix
+passed; the public runtime validator passed 188 surfaces/1,128 roles; API
+liveness/readiness returned 200 after restart. The real Photopea attempt
+failed closed with `Photopea did not return an export before the timeout`;
+no runtime assets or template activation state changed.
+
+---
+
+## 2026-09-28 Browser validator selector fix
+
+Status: fixed and running in the local preview; Smart Mockup templates remain
+fail-closed.
+
+Last completed: Fixed the Browser Photopea validator catalog normalization in
+`artifacts/api-server/src/routes/smartMockupRender.ts`. The staging manifest
+does not persist `surfaceKey`, so the API now derives the canonical
+`family/color/view` key before returning catalog rows. The frontend select in
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`
+is controlled directly by that normalized key. This fixes the issue where
+`cap / black / back` could be clicked but would immediately disappear because
+every option had an undefined value.
+
+Verification: API typecheck passed; storefront typecheck passed; API tests
+passed 11 files/38 tests; storefront tests passed 19 files/69 tests; API and
+storefront builds passed; both preview workflows restarted successfully and
+reported their ports as ready.
+
+Remaining work: Use the authenticated browser Photopea session to prove one
+modified export differs from its untouched baseline, then continue the
+representative-family and 188-surface validation. Do not activate templates or
+replace the customer compositor before that evidence exists.
+
+Next safe action: Open the local Replit preview at `/admin/mockups`, sign in
+normally, and confirm the normalized selector now retains `cap / black / back`
+before running the browser Photopea export proof.
+
+---
+
+## 2026-09-28 Mobile artwork upload fix
+
+Status: fixed and live in the local preview.
+
+Observed issue: On Android, the validator showed the selected PNG filename but
+then displayed `Could not read the artwork file.` The API logs confirmed that
+admin login and the browser catalog both succeeded, so this was a client-side
+file-reader failure rather than an authentication or selector problem.
+
+Last completed: Replaced the validator's FileReader-based data URL conversion
+with `File.arrayBuffer()` and bounded chunked base64 conversion in
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`.
+The client now preserves PNG/JPG/JPEG/WebP MIME types and reports explicit
+unsupported or empty-file errors.
+
+Verification: Storefront typecheck passed; storefront tests passed 19
+files/69 tests; storefront build passed; the storefront workflow restarted
+successfully. API remained healthy and the authenticated catalog request
+returned HTTP 200.
+
+Remaining work: The real Photopea changed-vs-baseline export proof is still
+required before any Smart Mockup activation. No templates or customer
+compositor behavior were changed.

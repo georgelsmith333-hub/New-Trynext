@@ -9,6 +9,7 @@ import {
   ChevronUp, ChevronDown, Filter,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import SmartMockupBrowserValidator from "./SmartMockupBrowserValidator";
 
 interface Mockup {
   id: number;
@@ -421,6 +422,8 @@ export default function AdminMockups() {
             </button>
           </div>
         </div>
+
+        <SmartMockupBrowserValidator />
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
