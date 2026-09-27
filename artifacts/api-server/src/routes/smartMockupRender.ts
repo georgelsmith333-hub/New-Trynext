@@ -14,7 +14,7 @@ import { db, mockupTemplatesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAdmin } from "../middlewares/adminAuth";
 import { logger } from "../lib/logger";
-import { inspectTemplate, replaceSmartObjectContent } from "../lib/psdSmartObject";
+import { inspectTemplate, prepareSmartObjectArtworkImage, replaceSmartObjectContent } from "../lib/psdSmartObject";
 import { enqueueRenderJob, getJob, TemplateNotActiveError } from "../lib/mockupQueue";
 import { getMockupRenderer } from "../lib/mockupRenderer";
 
@@ -183,7 +183,8 @@ router.post("/admin/smart-mockups/browser-payload", requireAdmin, async (req, re
       res.status(400).json({ error: "validation_error", message: "The selected Smart Object is not present in this master." });
       return;
     }
-    const swappedBytes = replaceSmartObjectContent(originalBytes, smartObjectId, parsed.bytes, parsed.ext);
+    const artworkImageData = await prepareSmartObjectArtworkImage(originalBytes, smartObjectId, parsed.bytes);
+    const swappedBytes = replaceSmartObjectContent(originalBytes, smartObjectId, parsed.bytes, parsed.ext, artworkImageData);
     res.json({
       fileFormat,
       relativePath,
@@ -335,7 +336,8 @@ router.post("/admin/smart-mockups/templates/:id/test-render", requireAdmin, asyn
 
     let swapped: Buffer;
     try {
-      swapped = replaceSmartObjectContent(originalBytes, template.smartObjectId, parsed.bytes, parsed.ext);
+      const artworkImageData = await prepareSmartObjectArtworkImage(originalBytes, template.smartObjectId, parsed.bytes);
+      swapped = replaceSmartObjectContent(originalBytes, template.smartObjectId, parsed.bytes, parsed.ext, artworkImageData);
       validation.test3_replaceContent = { pass: true };
     } catch (err) {
       validation.test3_replaceContent = { pass: false, error: err instanceof Error ? err.message : String(err) };

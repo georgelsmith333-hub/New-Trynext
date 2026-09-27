@@ -21,7 +21,7 @@
  *   (see mockupRenderer.ts). Swapping linked bytes alone proves the file
  *   format round-trips correctly; it is not a rendered mockup.
  */
-import { readPsd, writePsdUint8Array, initializeCanvas } from "ag-psd";
+import { readPsd, writePsdUint8Array, initializeCanvas, type PixelData } from "ag-psd";
 import { logger } from "./logger";
 
 // ag-psd needs a canvas backend to decode/encode 8bpc layer pixel data even
@@ -154,6 +154,29 @@ export class SmartObjectNotFoundError extends Error {
   }
 }
 
+/** Decode artwork to the placed layer's raster dimensions. */
+export async function prepareSmartObjectArtworkImage(
+  psdBytes: Buffer,
+  smartObjectId: string,
+  artworkBytes: Buffer,
+): Promise<PixelData> {
+  ensureCanvas();
+  const doc: any = readPsd(psdBytes, { useImageData: true, skipCompositeImageData: true });
+  const layers: any[] = [];
+  walkLayers(doc.children, layers);
+  const layer = layers.find((candidate) => candidate.placedLayer?.id === smartObjectId);
+  if (!layer?.imageData?.width || !layer.imageData.height) {
+    throw new SmartObjectNotFoundError(smartObjectId);
+  }
+  const sharp = (await import("sharp")).default;
+  const { data, info } = await sharp(artworkBytes)
+    .ensureAlpha()
+    .resize(layer.imageData.width, layer.imageData.height, { fit: "fill" })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  return { data: new Uint8Array(data), width: info.width, height: info.height };
+}
+
 /** Replaces one Smart Object's linked source bytes with new artwork bytes,
  *  leaving every other layer (shadow/highlight/protected-details, masks,
  *  blend modes, layer order, the chosen layer's own transform) untouched,
@@ -164,6 +187,7 @@ export function replaceSmartObjectContent(
   smartObjectId: string,
   artworkBytes: Buffer,
   artworkExt: "png" | "jpg" | "jpeg" | "webp",
+  artworkImageData?: PixelData,
 ): Buffer {
   ensureCanvas();
   const doc = readPsd(psdBytes, { useImageData: true });
@@ -172,6 +196,17 @@ export function replaceSmartObjectContent(
 
   linked.data = artworkBytes;
   linked.name = `artwork.${artworkExt}`;
+
+  if (artworkImageData) {
+    const layers: any[] = [];
+    walkLayers(doc.children, layers);
+    const placedLayer = layers.find((layer) => layer.placedLayer?.id === smartObjectId);
+    if (!placedLayer) throw new SmartObjectNotFoundError(smartObjectId);
+    placedLayer.imageData = artworkImageData;
+    // The source document composite is stale after replacing the linked file.
+    // Omitting it forces Photopea to composite the updated layer stack.
+    delete (doc as any).imageData;
+  }
 
   const rebuilt = writePsdUint8Array(doc, { generateThumbnail: false });
   logger.info(

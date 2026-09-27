@@ -2878,3 +2878,11 @@ Verification: Storefront tests passed 20 files/72 tests; API tests passed
 11 files/38 tests; both typechecks passed; API bundle build passed; the local
 cap master resolved the expected layer name and ID, and linked-art replacement
 changed the PSD SHA-256 from `22f3c0bf…` to `bfb9afb3…`.
+
+## Server-side Smart Object raster refresh fix (2026-09-27)
+
+Status: implemented on top of current main and locally verified; production deployment still pending.
+
+The browser validator previously replaced only linkedFiles.data, leaving the placed layer raster and stale document composite unchanged. The server now decodes artwork to the placed layer's native dimensions, updates the placed-layer raster, and reserializes the PSD so Photopea receives changed source and changed layer/composite data. This complements the current main browser-side placedLayerEditContents refresh flow.
+
+Verification: API 39/39 tests, workspace typecheck, storefront 69/69 tests, storefront build, API build, and PSD audit 188/188 passed. No templates were activated. The generic mockups:validate-matrix command still references the stale smart-v10 manifest path and is unrelated.
