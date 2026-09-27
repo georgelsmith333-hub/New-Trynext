@@ -17,6 +17,6 @@ describe("Photopea Smart Object refresh script", () => {
     expect(script).toContain("app.activeDocument.close()");
     expect(script).toContain('app.activeDocument.saveToOE("png")');
     expect(script).toContain(`app.echoToOE("${SMART_OBJECT_REFRESH_MARKER}")`);
-    expect(script).toContain(`app.echoToOE("${SMART_OBJECT_ERROR_MARKER}")`);
+    expect(script).toContain(`app.echoToOE("${SMART_OBJECT_ERROR_MARKER}" +`);
   });
 });
