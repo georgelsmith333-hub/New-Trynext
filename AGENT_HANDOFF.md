@@ -2974,3 +2974,45 @@ Status: implemented on top of current main and locally verified; production depl
 The browser validator previously replaced only linkedFiles.data, leaving the placed layer raster and stale document composite unchanged. The server now decodes artwork to the placed layer's native dimensions, updates the placed-layer raster, and reserializes the PSD so Photopea receives changed source and changed layer/composite data. This complements the current main browser-side placedLayerEditContents refresh flow.
 
 Verification: API 39/39 tests, workspace typecheck, storefront 69/69 tests, storefront build, API build, and PSD audit 188/188 passed. No templates were activated. The generic mockups:validate-matrix command still references the stale smart-v10 manifest path and is unrelated.
+
+---
+
+## 2026-09-28 Smart Mockup renderer publication and verification
+
+Status: ready for review — the current Smart Mockup source fixes are published and
+locally verified; authenticated Photopea visual approval remains intentionally
+pending.
+
+Last completed: Reauthorized the GitHub connection, reconciled against the live
+remote `main`, and published the current renderer/browser-validator changes as
+`85990e8f`. Published the follow-up validator test correction as
+`35eb68e1`. The pasted chat transcript was not added to the release.
+
+Files/areas changed: server-side Photopea output conversion and validation
+persistence, Smart Object placed-layer replacement/refresh handling, browser
+Photopea refresh and export handling, and the focused renderer/validator tests.
+
+Verification: API tests passed 42/42; storefront tests passed 72/72; workspace
+typecheck passed; API and storefront production builds passed; the PSD audit
+found 188/188 openable masters with one Smart Object each; the Smart Object
+release gate passed as `structurally-verified` for all 188 surfaces. Local
+liveness, readiness, and products probes returned 200. Protected browser-catalog
+and browser-payload probes returned the expected 401 without admin credentials.
+The storefront preview rendered without browser console errors.
+
+Stopped at: No authenticated admin browser session is available here, and the
+headless Photopea path has previously been blocked by Photopea's Cloudflare
+challenge. Therefore there is still no accepted modified-vs-untouched PNG pair
+or visual proof for `cap / black / back`.
+
+Remaining work: Run the existing authenticated browser validator with asymmetric
+artwork, require different modified and baseline PNG hashes plus visible artwork,
+then repeat representative flat/curved checks before any template activation.
+
+Blocker: Authenticated Photopea visual proof is unavailable in this session.
+Do not weaken authentication, activate templates, or replace the customer
+compositor to work around it.
+
+Next safe action: Open the normal authenticated admin session at
+`https://trynext.shop/admin/mockups`, run `cap / black / back`, and review the
+two exported images and their hashes.
