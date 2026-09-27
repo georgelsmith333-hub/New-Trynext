@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CheckCircle2, ExternalLink, Loader2, ShieldCheck, Upload } from "lucide-react";
 import { getApiUrl, getAuthHeaders } from "@/lib/utils";
+import {
+  buildSmartObjectRefreshScript,
+  SMART_OBJECT_REFRESH_MARKER,
+} from "./photopeaSmartObject";
 
 interface BrowserSurface {
   surfaceKey: string;
@@ -16,6 +20,7 @@ interface BrowserSurface {
 interface BrowserPayload {
   originalPsdBase64: string;
   modifiedPsdBase64: string;
+  smartObjectName: string;
   documentWidth: number;
   documentHeight: number;
 }
@@ -104,9 +109,14 @@ async function readImageDimensions(bytes: Uint8Array): Promise<{ width: number; 
   return dimensions;
 }
 
-function renderPsdInPhotopea(iframe: HTMLIFrameElement, base64: string): Promise<Uint8Array> {
+function renderPsdInPhotopea(
+  iframe: HTMLIFrameElement,
+  base64: string,
+  smartObjectName?: string,
+): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
     let finished = false;
+    let refreshRequested = false;
     const timeout = window.setTimeout(() => finishReject(new Error("Photopea did not finish. Make sure the editor is open in this browser.")), PHOTOPEA_TIMEOUT_MS);
 
     const cleanup = () => {
@@ -128,7 +138,20 @@ function renderPsdInPhotopea(iframe: HTMLIFrameElement, base64: string): Promise
     };
     const onMessage = (event: MessageEvent) => {
       if (event.source !== iframe.contentWindow) return;
+      if (event.data === SMART_OBJECT_REFRESH_MARKER) {
+        iframe.contentWindow?.postMessage('app.activeDocument.saveToOE("png")', "*");
+        return;
+      }
       if (event.data === "done") {
+        if (smartObjectName && !refreshRequested) {
+          refreshRequested = true;
+          iframe.contentWindow?.postMessage(buildSmartObjectRefreshScript(smartObjectName), "*");
+          return;
+        }
+        // Opening the linked Smart Object can emit another "done" message.
+        // Wait for the explicit echo marker after save/close before exporting
+        // the parent document.
+        if (refreshRequested) return;
         iframe.contentWindow?.postMessage('app.activeDocument.saveToOE("png")', "*");
         return;
       }
@@ -211,7 +234,11 @@ export default function SmartMockupBrowserValidator() {
       if (!iframeRef.current) throw new Error("Photopea frame is not ready.");
       setStatus("rendering");
       setStatusMessage("Rendering the modified Smart Object in your browser…");
-      const modifiedBytes = await renderPsdInPhotopea(iframeRef.current, payload.modifiedPsdBase64);
+      const modifiedBytes = await renderPsdInPhotopea(
+        iframeRef.current,
+        payload.modifiedPsdBase64,
+        payload.smartObjectName,
+      );
       setStatusMessage("Rendering the untouched baseline in your browser…");
       const baselineBytes = await renderPsdInPhotopea(iframeRef.current, payload.originalPsdBase64);
       const [renderedSha256, baselineSha256, dimensions] = await Promise.all([

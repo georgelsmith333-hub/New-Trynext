@@ -2834,3 +2834,47 @@ Verification: Local PSD inspection plus Smart Object replacement measured
 126–208ms on the reported cap master. Gateway tests passed 14/14; storefront
 and API typechecks passed; local liveness/products probes returned 200; local
 and production unauthenticated browser-payload POST probes returned 401.
+
+---
+
+## 2026-09-27 Photopea Smart Object refresh fix
+
+Status: in progress — the next source fix is implemented and locally verified;
+the authenticated production retry is still required.
+
+Last completed: Reviewed the new live evidence for `cap/black/back`. The API
+returned both PSDs, Photopea opened and exported both 1024×1024 PNGs, and the
+modified and baseline SHA-256 values were identical
+(`9d83297530b244eb2c921b94682b8ac39cb725d6dcd95e3894d76af98b7e9889`).
+The artwork was not visible, so the surface correctly remained unapproved.
+
+Root cause addressed: The server-side `ag-psd` replacement changes the linked
+Smart Object bytes, but the browser validator opened the parent PSD and
+exported immediately. Photopea can retain the parent's cached Smart Object
+composite until the placed layer is explicitly opened, saved, and closed.
+
+Files/areas changed: `artifacts/api-server/src/routes/smartMockupRender.ts`
+now returns the exact selected Smart Object layer name. The browser validator
+now runs Photopea's documented `placedLayerEditContents` → save → close flow
+for the modified PSD, waits for an explicit completion marker, and then
+exports the parent. The untouched baseline still exports without mutation.
+The script builder and its focused test are in
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.ts` and
+`photopeaSmartObject.test.ts`.
+
+Remaining work: Publish this source fix and rerun the authenticated browser
+validator on `cap/black/back`. Require a changed modified-vs-baseline hash and
+visual artwork evidence before any template activation or broader matrix run.
+
+Blocker: The local headless environment is still blocked by Photopea's
+Cloudflare challenge, so this fix has not been claimed as a real compositor
+success.
+
+Next safe action: Deploy the updated API and storefront, run the same uploaded
+artwork through the validator, and inspect the browser console/status if the
+refresh marker is not received. Keep all templates inactive on any failure.
+
+Verification: Storefront tests passed 20 files/72 tests; API tests passed
+11 files/38 tests; both typechecks passed; API bundle build passed; the local
+cap master resolved the expected layer name and ID, and linked-art replacement
+changed the PSD SHA-256 from `22f3c0bf…` to `bfb9afb3…`.
