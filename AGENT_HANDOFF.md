@@ -3202,3 +3202,27 @@ its GitHub job-log endpoint returned `Forbidden` and the check published no
 diagnostic summary. The same local API suite passes 14 files/42 tests, so do
 not claim the active workflow failure is a Photopea regression or invent its
 root cause without a rerun/log.
+
+---
+
+## 2026-09-29 Full mockup release gate status
+
+Status: structurally ready for all 188 surfaces; not visually approved for
+blanket activation.
+
+Completed directly in the workspace:
+- Smart Object release gate: passed, `188/188`, structurally verified.
+- Canonical matrix: passed, `188/188`, all checksum records match.
+- Runtime role matrix: passed, `188/188` surfaces and `1,128` runtime roles.
+- Editable masters remain outside public runtime paths.
+- Live representative browser evidence already passes for cap, tshirt, and mug.
+
+The authoritative manifests remain fail-closed by design:
+`release-manifest.status=structurally-verified`,
+`release-manifest.visualApproval=false`, and runtime roles remain
+`status=candidate`. Do not pass `--approve-visual`, activate templates, or
+promote all surfaces from structural checks alone.
+
+Remaining work: An authenticated browser operator must run the full documented
+188-surface Photopea review with visible artwork and changed-composite proof on
+every surface. Keep any failed or ambiguous surface inactive.
