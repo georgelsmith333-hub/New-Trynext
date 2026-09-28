@@ -3016,3 +3016,49 @@ compositor to work around it.
 Next safe action: Open the normal authenticated admin session at
 `https://trynext.shop/admin/mockups`, run `cap / black / back`, and review the
 two exported images and their hashes.
+
+---
+
+## 2026-09-28 Photopea browser bridge continuation
+
+Status: blocked — the validator hardening is published and locally verified;
+authenticated Photopea visual approval remains required.
+
+Last completed: Reconciled the current checkout with GitHub `main`, hardened the
+browser validator to accept Photopea live-messaging responses by documented
+origin rather than a fragile `event.source` identity, and published the reviewed
+three-file source change to GitHub `main` as `a596fbe8`. The pasted transcript and
+attached screenshots were not added to the release.
+
+Stopped at: Local services were restarted successfully, but this session still
+does not have an authenticated admin browser session for the final Photopea
+visual proof.
+
+Files/areas changed:
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`,
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.ts`, and
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.test.ts`.
+
+Remaining work: Run `cap / black / back` with asymmetric artwork in the normal
+authenticated admin browser, record modified and untouched PNG dimensions and
+SHA-256 values, require visible artwork plus a changed composite, then repeat
+representative flat and curved surfaces and the documented 188-surface review.
+Do not activate any Smart Mockup template before those gates pass.
+
+Blocker: No authenticated Photopea browser session is available in this
+session. Headless Photopea has previously been blocked by its Cloudflare
+challenge. Do not weaken authentication, bypass the changed-composite gate, or
+replace the customer compositor.
+
+Next safe action: Open `https://trynext.shop/admin/mockups` in the normal
+authenticated admin session, run the existing browser validator, and review both
+exports and their hashes.
+
+Verification: Storefront tests passed 20 files/72 tests; storefront typecheck
+and production build passed; API typecheck passed; local root and
+`/admin/mockups` returned 200; liveness, readiness, and products returned 200;
+the protected browser-payload probe returned the expected 401; both managed
+workflows restarted cleanly; and the storefront screenshot rendered without
+browser-console errors. The structural 188/188 and Smart Object gates remain
+verified from the prior checkpoint. No authenticated visual-composite proof was
+claimed.
