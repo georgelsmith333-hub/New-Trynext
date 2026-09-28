@@ -3343,17 +3343,18 @@ was changed or launched.
 
 ## 2026-09-29 Smart Mockup runtime promotion
 
-Status: promoted locally and verified; GitHub publication pending
+Status: complete — promoted, verified, and published to GitHub
 
-Last completed: Applied the explicit owner-authorized Smart Mockup promotion.
+Last completed: Applied the explicit owner-authorized Smart Mockup promotion,
+recreated the complete four-commit history through the authorized GitHub
+connection, and verified that GitHub `main` reaches the same local head.
 The v10.3 release manifest now reports `status:verified`,
 `visualApproval:true`, and 188 surfaces. The staging source-master manifest
 remains `candidate` by design, while both staging and public runtime-role
 manifests report `status:accepted` for the reviewed 188-surface runtime.
 
-Stopped at: Post-promotion storefront and API verification completed without
-activating legacy database template rows or changing customer/order/payment
-behavior.
+Stopped at: Publication completed without activating legacy database template
+rows or changing customer/order/payment behavior.
 
 Files/areas changed:
 `dist-mockups/staging/smart-v10-v3/release-manifest.json`,
@@ -3361,16 +3362,15 @@ Files/areas changed:
 `artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/manifest.json`,
 `tools/validate-smartobject-release.mjs`, and the capability verifier.
 
-Remaining work: Commit and publish the promotion changes, then confirm the
-published source is the same release. No further Smart Mockup visual review is
-required for the reported 188/188 authenticated gate.
+Remaining work: None for the approved promotion scope. No further Smart Mockup
+visual review is required for the reported 188/188 authenticated gate.
 
-Blocker: None for local promotion. The authenticated proof record remains in
-the external runner environment and was not independently re-executed here.
+Blocker: None for GitHub publication. The authenticated proof record remains
+in the external runner environment and was not independently re-executed here.
 
-Next safe action: Publish the validated changes through the existing GitHub
-main path. Do not mass-activate legacy database template rows; the canonical
-customer resolver uses the accepted v10.3 runtime-role package.
+Next safe action: Keep the accepted v10.3 runtime-role package active. Do not
+mass-activate legacy database template rows; the canonical customer resolver
+uses the accepted runtime-role package.
 
 Verification: Structural release validator passed 188/188 before and after
 approval; approval remained intact across a no-flag structural recheck;
@@ -3380,5 +3380,6 @@ passed; storefront typecheck, 20 files/74 tests, and production build passed;
 both workflows restarted cleanly; local `/`, `/design-studio`,
 `/api/health/liveness`, `/api/health/readiness`, and `/api/mockups` returned
 200; the API returned 188 rows; the public runtime manifest returned accepted
-with 188 surfaces; and the final Design Studio screenshot had no browser
-console errors.
+with 188 surfaces; the final Design Studio screenshot had no browser console
+errors; and GitHub `main` was verified at
+`0673192622029cce441487981c925371d81eef1d`.
