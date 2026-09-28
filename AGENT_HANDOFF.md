@@ -3062,3 +3062,50 @@ workflows restarted cleanly; and the storefront screenshot rendered without
 browser-console errors. The structural 188/188 and Smart Object gates remain
 verified from the prior checkpoint. No authenticated visual-composite proof was
 claimed.
+
+---
+
+## 2026-09-29 Photopea baseline isolation fix
+
+Status: blocked — the browser validator now isolates the untouched baseline
+render in a fresh Photopea iframe; authenticated visual approval remains
+required.
+
+Last completed: Reviewed the authenticated `cap / black / back` result from
+Manus. The modified export visibly contained the asymmetric artwork, but its
+SHA-256 matched the untouched baseline exactly, so the Smart Mockup activation
+gate correctly failed closed. The likely contamination point was reuse of the
+same Photopea session for both modified and baseline exports. Updated
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`
+to render the baseline in an isolated hidden Photopea session and remove it
+after completion. The modified preview remains in the visible session.
+
+Stopped at: The isolated-browser fix is locally verified but has not yet been
+rerun in the authenticated admin browser.
+
+Files/areas changed:
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`.
+The attached continuation transcript remains untracked and was not added to
+the release.
+
+Remaining work: Rerun `cap / black / back` with asymmetric artwork. Require
+visible artwork plus different modified and untouched PNG SHA-256 values.
+Then repeat representative flat and curved surfaces and the documented
+188-surface review before any Smart Mockup activation.
+
+Blocker: This session cannot perform the authenticated Photopea browser run.
+Headless Photopea has previously been blocked by its Cloudflare challenge.
+Do not weaken authentication, bypass the changed-composite gate, or replace
+the customer compositor.
+
+Next safe action: Open `https://trynext.shop/admin/mockups` in the normal
+authenticated admin session and rerun the validator after the new storefront
+bundle is deployed. Keep all templates inactive until the changed-composite
+gate passes.
+
+Verification: Storefront tests passed 20 files/72 tests (72/72); storefront
+and API typechecks passed; storefront and API production builds passed; local
+root, `/admin/mockups`, liveness, readiness, and products probes returned 200;
+the protected browser-payload probe returned the expected 401; both managed
+workflows restarted cleanly; and the storefront screenshot rendered without
+browser-console errors. No authenticated visual-composite proof was claimed.

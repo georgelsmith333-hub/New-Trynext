@@ -242,6 +242,22 @@ function renderPsdInPhotopea(
   });
 }
 
+function createIsolatedPhotopeaFrame(): HTMLIFrameElement {
+  const frame = document.createElement("iframe");
+  frame.title = "Photopea baseline validation session";
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.position = "fixed";
+  frame.style.left = "-10000px";
+  frame.style.top = "0";
+  frame.style.width = "1024px";
+  frame.style.height = "768px";
+  frame.style.border = "0";
+  frame.style.opacity = "0";
+  frame.style.pointerEvents = "none";
+  document.body.appendChild(frame);
+  return frame;
+}
+
 export default function SmartMockupBrowserValidator() {
   const [surfaces, setSurfaces] = useState<BrowserSurface[]>([]);
   const [surfaceKey, setSurfaceKey] = useState("cap/black/back");
@@ -291,6 +307,7 @@ export default function SmartMockupBrowserValidator() {
     setStatus("loading");
     setRenderPhase(null);
     setStatusMessage("Preparing the private PSD pair…");
+    let baselineFrame: HTMLIFrameElement | null = null;
     try {
       const payload = await adminFetch<BrowserPayload>("/api/admin/smart-mockups/browser-payload", {
         method: "POST",
@@ -312,7 +329,12 @@ export default function SmartMockupBrowserValidator() {
       );
       setRenderPhase("baseline");
       setStatusMessage("Rendering the untouched baseline in your browser…");
-      const baselineBytes = await renderPsdInPhotopea(iframeRef.current, payload.originalPsdBase64);
+      // Use a new Photopea session for the untouched source. Reusing the
+      // modified session can retain the saved Smart Object composite or
+      // deliver a late export from the previous document, making the
+      // modified-vs-baseline comparison falsely pass or falsely fail.
+      baselineFrame = createIsolatedPhotopeaFrame();
+      const baselineBytes = await renderPsdInPhotopea(baselineFrame, payload.originalPsdBase64);
       const [renderedSha256, baselineSha256, dimensions] = await Promise.all([
         sha256(modifiedBytes),
         sha256(baselineBytes),
@@ -337,6 +359,8 @@ export default function SmartMockupBrowserValidator() {
       setRenderPhase(null);
       setStatus("error");
       setStatusMessage(error instanceof Error ? error.message : "Browser-side Photopea validation failed.");
+    } finally {
+      baselineFrame?.remove();
     }
   };
 
