@@ -1,0 +1,29 @@
+## Live Browser Photopea validation completed
+
+I used the authenticated admin session at:
+
+https://trynext.shop/admin/mockups
+
+The refreshed readiness-gated validator completed all three representative tests successfully. **No PSD-open timeout occurred, no received-message error was reported, and no templates were activated.**
+
+### Results
+
+| Surface | Type | Output | Modified SHA-256 | Baseline SHA-256 | Visible artwork | Changed composite |
+|---|---|---:|---|---|---|---|
+| `cap / black / back` | Curved | 1024 × 1024 · 145,948 bytes | `06a2a11316380a8d4823858d5166428dcb2030f2ccd1992d7108f879445d40de` | `9d83297530b244eb2c921b94682b8ac39cb725d6dcd95e3894d76af98b7e9889` | **PASS** | **PASS** |
+| `tshirt / white / front` | Flat apparel | 1024 × 1024 · 461,024 bytes | `a21a3be1ba9074d6965189e650c9302efc551d6edd9eeccd60199580687b0976` | `6841336b11f556ee77e6cc20cdd8f68937f77ad697367d86f8c92094362777f0` | **PASS** | **PASS** |
+| `mug / white / front` | Curved product | 1024 × 1024 · 440,138 bytes | `2e18abfd824ef45181433a2ff7eedd9896bddc871580f7c3db600704444213d7` | `5621e8e72e20c85fee0e94a5dbf3e535644b44a916ea5d858ee19aa5c5c852c0` | **PASS** | **PASS** |
+
+### Gate confirmations
+
+- **Photopea initialization:** Completed for all three runs.
+- **Readiness/load sequence:** Each run progressed from private PSD preparation to successful Photopea rendering/export; the PSD-open timeout did not recur.
+- **Asymmetric artwork:** The red diagonal marks and blue right-side geometric marks were visibly rendered on each tested product.
+- **Hash comparison:** Modified and untouched baseline hashes differed in all three cases.
+- **Exact timeout diagnostics:** None. No timeout or received-message failure was reported.
+- **Activation:** **Not performed.** All templates remain inactive pending the documented full 188-surface review.
+
+Evidence screenshots:
+
+- [Passing cap proof](/home/ubuntu/screenshots/trynext_shop_2026-09-28_19-19-40_6024.webp)
+- [Passing mug proof](/home/ubuntu/screenshots/trynext_shop_2026-09-28_19-24-12_2145.webp)
