@@ -1,0 +1,66 @@
+Lets do continue next works correctly? Fix all issues for mockups as it was working but with more lovelyness and extra focused.
+
+I’ll first reconcile the current handoff, mockup-specific decisions, and the attached publishing note. Then I’ll identify the next broken mockup paths, make the smallest coordinated fixes, rebuild/restart the affected services, and verify the customer-facing result.
+
+Completed
+
+I read AGENTS.md, AGENT_HANDOFF.md, and replit.md.
+The latest documented source was already published previously, and the storefront/API preview boundaries were verified.
+The current local branch includes a newer, uncommitted Smart Object fix: server-side placed-layer refresh plus the browser-side Photopea refresh flow and focused tests.
+Last stopping point
+
+The current handoff stops at a real but incomplete Smart Mockup fix.
+The reported cap / black / back path produced identical modified and baseline exports, so the template was correctly not activated.
+The latest local source now adds another fix, but it has not yet been published or proven through the authenticated Photopea validator.
+Remaining work
+
+Reconcile the local branch with the latest GitHub main without force-pushing.
+Publish the current verified source changes first, as requested.
+Rebuild/restart the API and storefront.
+Check the mockup runtime, validator, and representative asset paths for any remaining regressions.
+Run all local checks that are available here and report the exact result.
+Keep Smart Mockup activation fail-closed unless the modified export visibly differs from the untouched baseline.
+Blockers
+
+This session has no authenticated admin browser session.
+The local headless Photopea path has previously been stopped by Photopea’s Cloudflare challenge.
+I will not weaken authentication, activate unproven templates, or claim the full 188-surface Smart Object release is working without the required evidence.
+Plan
+
+First read the GitHub/integration and secure-secret handling instructions.
+Fetch and reconcile GitHub main, preserving both remote application changes and local mockup fixes.
+Push only the reconciled source; do not add the pasted chat transcript as a release file.
+Build and restart the affected services.
+Run focused mockup tests, typechecks, PSD/runtime audits, and live local probes.
+Inspect the preview and update AGENT_HANDOFF.md with the exact stopping point and evidence.
+Existing behavior to preserve
+
+The current browser Design Studio compositor remains the customer runtime until Smart Object evidence passes.
+Uploads stay immediate and local.
+Curved-product 3D/final-render behavior, product-switch refitting, cart/checkout original assets, and the canonical white water bottle surfaces stay unchanged.
+Unknown/retired mockup releases continue to fail closed.
+No editable PSD/PSB masters are exposed under public/.
+Verification
+
+I will use the focused tests already added for the server payload and Photopea refresh flow, plus typechecks, local API/storefront probes, and the 188-surface structural/PSD gates where applicable.
+I will distinguish local proof from authenticated production proof; I will not present one as the other.
+Safe parallel work
+
+After the Git reconciliation, API and storefront builds/checks can run independently.
+Runtime asset audit and source-level validator checks can also run independently.
+Git reconciliation and the first publish must remain serialized before verification of the published state.
+I’ve established the safe scope: publish the current source first, then fix and verify only what current evidence supports. I’m now checking the GitHub access path and the exact local diff before touching anything.
+
+The local diff is narrowly scoped to the Smart Object renderer, browser validator, and their tests. I’m preserving it as the current release candidate, fetching the remote main with the secure GitHub path, and checking whether any newer remote commits require reconciliation before the push.
+
+Trynext Lifestyle Design System
+Design System
+Trynext Lifestyle
+Trynext Lifestyle
+Website
+Trynext Promo Animation
+Animation
+Trynext Mobile
+Mobile
+Search tools…
+Open Trynext Mobile
