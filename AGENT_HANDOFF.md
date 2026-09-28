@@ -3258,3 +3258,46 @@ Next safe action: publish this recovery fix, then resume at
 `longsleeve / black / back`. Record the existing 46 passes as prior evidence,
 rerun the failed surface, and continue through the remaining 141 surfaces.
 Do not activate templates until all 188 surfaces have explicit visual proof.
+
+---
+
+## 2026-09-29 Photopea timeout recovery publication
+
+Status: published and locally verified; the authenticated 188-surface visual
+review remains pending.
+
+Last completed: Fetched the newer GitHub `main`, merged it without rewriting
+history, preserved the readiness handshake, baseline isolation, and timeout
+retry behavior, reran the storefront checks, and published the reconciled
+history to GitHub `main`. The attached continuation transcript remains
+untracked and was not published.
+
+Stopped at: The source fix is live in the repository and local services are
+healthy. The browser review must resume at `longsleeve / black / back`, using
+the prior 46 recorded passes as evidence and requiring a fresh pass for the
+failed surface before continuing.
+
+Files/areas changed:
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`,
+`AGENT_HANDOFF.md`, and
+`.agents/memory/photopea-smart-object-renderer.md`.
+
+Remaining work: Use the normal authenticated admin browser to rerun
+`longsleeve / black / back`, continue the remaining documented surfaces, and
+keep every template inactive until all 188 surfaces have visible artwork and
+different modified/untouched PNG SHA-256 values.
+
+Blocker: This Agent session has no authenticated Photopea browser session.
+Headless Photopea remains blocked by its Cloudflare challenge. Do not weaken
+authentication, bypass the changed-composite gate, or replace the customer
+compositor.
+
+Next safe action: Open `https://trynext.shop/admin/mockups` in the normal
+authenticated admin session, rerun the failed surface, then continue the
+full review from that checkpoint.
+
+Verification: Photopea focused tests passed `3/3`; storefront tests passed
+`20 files / 74 tests`; storefront typecheck and production build passed; API
+typecheck and build passed; local storefront and API workflows restarted
+cleanly; local storefront/admin and API liveness/readiness/products routes
+returned 200; and GitHub `main` matches the reconciled local merge commit.
