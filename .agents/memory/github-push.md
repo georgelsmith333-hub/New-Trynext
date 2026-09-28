@@ -83,6 +83,20 @@ OAuth credential, and after approval repeat only the failed read/write once.
 
 **How to apply:** Verify the current remote ref first, build the new tree from that parent, create one commit, and update the branch with `force: false`. Record the returned commit SHA and verify the branch again. Guard each update against the SHA just read.
 
+## Connector payload sizing
+
+When publishing through `proxyFetch` and the Git Data API, transfer large blob
+contents as bounded base64 chunks assembled in the execution sandbox. Verify
+each returned blob SHA, then verify the tree and commit SHA before advancing the
+branch ref.
+
+**Why:** Large shell callback outputs can be truncated without changing the
+request's apparent success status, producing an unreferenced but corrupted
+GitHub blob. A non-force ref update must be the final guarded operation.
+
+**How to apply:** Keep each chunk below the callback output ceiling, upload
+blobs independently, and stop immediately on any SHA mismatch.
+
 If the checkout contains a very large unrelated local asset backlog, publish the
 focused reviewed source tree from the current remote parent instead of trying to
 replay hundreds of megabytes through the Git Data API. Keep the local backlog
