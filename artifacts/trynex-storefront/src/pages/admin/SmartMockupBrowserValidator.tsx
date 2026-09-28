@@ -135,7 +135,7 @@ async function readImageDimensions(bytes: Uint8Array): Promise<{ width: number; 
   return dimensions;
 }
 
-function renderPsdInPhotopea(
+export function renderPsdInPhotopea(
   iframe: HTMLIFrameElement,
   base64: string,
   smartObjectName?: string,
@@ -144,7 +144,11 @@ function renderPsdInPhotopea(
     let finished = false;
     let refreshRequested = false;
     let exportRequested = false;
-    let phase = "opening PSD";
+    let iframeLoaded = false;
+    let photopeaReady = false;
+    let documentSent = false;
+    let documentOpened = false;
+    let phase = "loading Photopea";
     const receivedMessageKinds = new Set<string>();
     let lastMessageOrigin = "";
     const timeout = window.setTimeout(() => {
@@ -177,6 +181,14 @@ function renderPsdInPhotopea(
       }
       iframe.contentWindow.postMessage(message, "*", transfer ?? []);
     };
+    const sendDocumentIfReady = () => {
+      if (finished || documentSent || !iframeLoaded || !photopeaReady) return;
+      documentSent = true;
+      phase = "opening the PSD";
+      const bytes = decodeBase64(base64);
+      const buffer = asArrayBuffer(bytes);
+      postToPhotopea(buffer, [buffer]);
+    };
     const requestExport = () => {
       if (exportRequested) return;
       exportRequested = true;
@@ -190,7 +202,8 @@ function renderPsdInPhotopea(
       // valid response from Photopea.
       if (event.origin !== PHOTOPEA_ORIGIN && event.origin !== "") return;
       lastMessageOrigin = event.origin;
-      if (event.data === "done") receivedMessageKinds.add("done");
+      if (event.data === "done" && !documentSent) receivedMessageKinds.add("ready");
+      else if (event.data === "done") receivedMessageKinds.add("done");
       else if (typeof event.data === "string") receivedMessageKinds.add(`string:${event.data.slice(0, 80)}`);
       else if (Object.prototype.toString.call(event.data) === "[object ArrayBuffer]" || ArrayBuffer.isView(event.data)) receivedMessageKinds.add("ArrayBuffer");
       else receivedMessageKinds.add(typeof event.data);
@@ -201,10 +214,23 @@ function renderPsdInPhotopea(
         return;
       }
       if (event.data === "done") {
-        if (smartObjectName && !refreshRequested) {
-          refreshRequested = true;
-          phase = "refreshing the Smart Object";
-          postToPhotopea(buildSmartObjectRefreshScript(smartObjectName));
+        if (!documentSent) {
+          // Photopea sends "done" once when the editor is initialized and
+          // again after each command/file is processed. Do not treat the
+          // initialization message as confirmation that the PSD opened.
+          photopeaReady = true;
+          sendDocumentIfReady();
+          return;
+        }
+        if (!documentOpened) {
+          documentOpened = true;
+          if (smartObjectName) {
+            refreshRequested = true;
+            phase = "refreshing the Smart Object";
+            postToPhotopea(buildSmartObjectRefreshScript(smartObjectName));
+            return;
+          }
+          requestExport();
           return;
         }
         // Opening the linked Smart Object can emit another "done" message.
@@ -233,14 +259,8 @@ function renderPsdInPhotopea(
     };
 
     const onLoad = () => {
-      phase = "opening the PSD";
-      const bytes = decodeBase64(base64);
-      const buffer = asArrayBuffer(bytes);
-      if (!iframe.contentWindow) {
-        finishReject(new Error("Photopea loaded without a usable browser window."));
-        return;
-      }
-      postToPhotopea(buffer, [buffer]);
+      iframeLoaded = true;
+      sendDocumentIfReady();
     };
 
     window.addEventListener("message", onMessage);
