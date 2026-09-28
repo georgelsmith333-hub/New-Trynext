@@ -3162,3 +3162,43 @@ restarted cleanly; the local admin route returned the expected unauthenticated
 401 boundary; the live root returned HTTP 200 with build marker
 `20260928190800`; and the live `AdminMockups` chunk contains the new readiness,
 PSD-open, refresh-marker, and phase-specific timeout strings.
+
+---
+
+## 2026-09-29 Authenticated Photopea representative validation
+
+Status: representative browser validation passed; full activation review remains
+pending.
+
+Last completed: The authenticated admin-browser report for the live site
+confirmed the readiness-gated validator passed all three representative
+surfaces: `cap / black / back`, `tshirt / white / front`, and
+`mug / white / front`. Each reported visible asymmetric artwork and different
+modified versus untouched PNG SHA-256 values. No PSD-open timeout or
+received-message error was reported, and no template was activated.
+
+Evidence:
+- `cap / black / back`: modified
+  `06a2a11316380a8d4823858d5166428dcb2030f2ccd1992d7108f879445d40de`;
+  baseline `9d83297530b244eb2c921b94682b8ac39cb725d6dcd95e3894d76af98b7e9889`.
+- `tshirt / white / front`: modified
+  `a21a3be1ba9074d6965189e650c9302efc551d6edd9eeccd60199580687b0976`;
+  baseline `6841336b11f556ee77e6cc20cdd8f68937f77ad697367d86f8c92094362777f0`.
+- `mug / white / front`: modified
+  `2e18abfd824ef45181433a2ff7eedd9896bddc871580f7c3db600704444213d7`;
+  baseline `5621e8e72e20c85fee0e94a5dbf3e535644b44a916ea5d858ee19aa5c5c852c0`.
+
+Stopped at: The report's two screenshot paths point to the separate browser
+environment and are not present in this workspace, so the recorded visual
+result is attributed to the authenticated browser report rather than
+independently re-opened here.
+
+Remaining work: Repeat the documented full 188-surface review before activating
+any Smart Mockup template.
+
+CI note: GitHub `CI` passed for the published source commit. The separate
+`Active app verification` workflow failed only at its `Run API tests` step;
+its GitHub job-log endpoint returned `Forbidden` and the check published no
+diagnostic summary. The same local API suite passes 14 files/42 tests, so do
+not claim the active workflow failure is a Photopea regression or invent its
+root cause without a rerun/log.
