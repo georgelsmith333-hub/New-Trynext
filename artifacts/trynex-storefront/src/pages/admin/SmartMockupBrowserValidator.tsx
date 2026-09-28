@@ -144,12 +144,13 @@ function renderPsdInPhotopea(
     let finished = false;
     let refreshRequested = false;
     let exportRequested = false;
+    let phase = "opening PSD";
     const receivedMessageKinds = new Set<string>();
     let lastMessageOrigin = "";
     const timeout = window.setTimeout(() => {
       const received = receivedMessageKinds.size > 0 ? ` Received: ${Array.from(receivedMessageKinds).join(", ")}.` : "";
       const origin = lastMessageOrigin ? ` Last origin: ${lastMessageOrigin}.` : "";
-      finishReject(new Error(`Photopea did not finish. Make sure the editor is open in this browser.${received}${origin}`));
+      finishReject(new Error(`Photopea timed out while ${phase}. Make sure the editor is open in this browser.${received}${origin}`));
     }, PHOTOPEA_TIMEOUT_MS);
 
     const cleanup = () => {
@@ -170,12 +171,16 @@ function renderPsdInPhotopea(
       reject(error);
     };
     const postToPhotopea = (message: string | ArrayBuffer, transfer?: Transferable[]) => {
-      if (!iframe.contentWindow) return;
+      if (!iframe.contentWindow) {
+        finishReject(new Error(`Photopea ${phase} failed because the editor frame is unavailable.`));
+        return;
+      }
       iframe.contentWindow.postMessage(message, "*", transfer ?? []);
     };
     const requestExport = () => {
-      if (exportRequested || !iframe.contentWindow) return;
+      if (exportRequested) return;
       exportRequested = true;
+      phase = "exporting the PNG";
       postToPhotopea('app.activeDocument.saveToOE("png")');
     };
     const onMessage = (event: MessageEvent) => {
@@ -198,6 +203,7 @@ function renderPsdInPhotopea(
       if (event.data === "done") {
         if (smartObjectName && !refreshRequested) {
           refreshRequested = true;
+          phase = "refreshing the Smart Object";
           postToPhotopea(buildSmartObjectRefreshScript(smartObjectName));
           return;
         }
@@ -211,22 +217,23 @@ function renderPsdInPhotopea(
       const exportBytes = readPhotopeaExport(event.data);
       if (exportBytes) {
         if (exportBytes.byteLength === 0) {
-          finishReject(new Error("Photopea returned an empty PNG export."));
+          finishReject(new Error(`Photopea returned an empty PNG export while ${phase}.`));
           return;
         }
         finishResolve(exportBytes);
         return;
       }
       if (typeof event.data === "string" && /^error/i.test(event.data)) {
-        finishReject(new Error(event.data));
+        finishReject(new Error(`Photopea ${phase} returned an error: ${event.data}`));
         return;
       }
       if (typeof event.data === "string" && event.data.startsWith(SMART_OBJECT_ERROR_MARKER)) {
-        finishReject(new Error(event.data.slice(SMART_OBJECT_ERROR_MARKER.length) || "Photopea Smart Object refresh failed."));
+        finishReject(new Error(`Photopea Smart Object refresh failed during ${phase}: ${event.data.slice(SMART_OBJECT_ERROR_MARKER.length) || "unknown error"}`));
       }
     };
 
     const onLoad = () => {
+      phase = "opening the PSD";
       const bytes = decodeBase64(base64);
       const buffer = asArrayBuffer(bytes);
       if (!iframe.contentWindow) {
