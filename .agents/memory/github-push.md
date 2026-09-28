@@ -65,6 +65,20 @@ shell. An attached GitHub integration may also not expose a helper named
 inside a `"use impure"` function and the returned connection's `proxyFetch` method
 to call the Git Data API; do not request or expose a token.
 
+If `proxyFetch` returns a connector-level 400 with
+`Connection is disconnected: Token validation failed with status 401`, do not
+switch to an environment secret or print a token. Reauthorize the existing
+GitHub connection, then retry the failed connector operation once with the
+fresh connection.
+
+**Why:** The integration can become stale independently of the repository and
+environment secret inventory; reauthorization repairs the managed credential
+without exposing credentials or creating a second connection.
+
+**How to apply:** Call the integration reauthorization-context check, present
+the existing connection for reauthorization when it reports a disconnected
+OAuth credential, and after approval repeat only the failed read/write once.
+
 **Why:** The integration can refresh its own authorization, while environment-provided tokens can expire independently. Publishing through the SDK also avoids putting credentials in process arguments or logs.
 
 **How to apply:** Verify the current remote ref first, build the new tree from that parent, create one commit, and update the branch with `force: false`. Record the returned commit SHA and verify the branch again. Guard each update against the SHA just read.
