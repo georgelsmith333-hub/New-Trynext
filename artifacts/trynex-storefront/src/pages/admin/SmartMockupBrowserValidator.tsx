@@ -114,7 +114,9 @@ function asArrayBuffer(bytes: Uint8Array): ArrayBuffer {
 }
 
 function readPhotopeaExport(value: unknown): Uint8Array | null {
-  if (value instanceof ArrayBuffer) return new Uint8Array(value);
+  if (Object.prototype.toString.call(value) === "[object ArrayBuffer]") {
+    return new Uint8Array(value as ArrayBuffer);
+  }
   if (ArrayBuffer.isView(value)) {
     return new Uint8Array(value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength));
   }
@@ -142,7 +144,13 @@ function renderPsdInPhotopea(
     let finished = false;
     let refreshRequested = false;
     let exportRequested = false;
-    const timeout = window.setTimeout(() => finishReject(new Error("Photopea did not finish. Make sure the editor is open in this browser.")), PHOTOPEA_TIMEOUT_MS);
+    const receivedMessageKinds = new Set<string>();
+    let lastMessageOrigin = "";
+    const timeout = window.setTimeout(() => {
+      const received = receivedMessageKinds.size > 0 ? ` Received: ${Array.from(receivedMessageKinds).join(", ")}.` : "";
+      const origin = lastMessageOrigin ? ` Last origin: ${lastMessageOrigin}.` : "";
+      finishReject(new Error(`Photopea did not finish. Make sure the editor is open in this browser.${received}${origin}`));
+    }, PHOTOPEA_TIMEOUT_MS);
 
     const cleanup = () => {
       window.clearTimeout(timeout);
@@ -161,25 +169,36 @@ function renderPsdInPhotopea(
       cleanup();
       reject(error);
     };
+    const postToPhotopea = (message: string | ArrayBuffer, transfer?: Transferable[]) => {
+      if (!iframe.contentWindow) return;
+      iframe.contentWindow.postMessage(message, "*", transfer ?? []);
+    };
     const requestExport = () => {
       if (exportRequested || !iframe.contentWindow) return;
       exportRequested = true;
-      iframe.contentWindow.postMessage('app.activeDocument.saveToOE("png")', PHOTOPEA_ORIGIN);
+      postToPhotopea('app.activeDocument.saveToOE("png")');
     };
     const onMessage = (event: MessageEvent) => {
-      if (event.source !== iframe.contentWindow) return;
-      if (event.origin !== PHOTOPEA_ORIGIN) return;
+      // Photopea's live-messaging contract identifies responses by their
+      // origin, not by a stable WindowProxy. Embedded browsers can report a
+      // nested frame (or null) as event.source even though the message is a
+      // valid response from Photopea.
+      if (event.origin !== PHOTOPEA_ORIGIN && event.origin !== "") return;
+      lastMessageOrigin = event.origin;
+      if (event.data === "done") receivedMessageKinds.add("done");
+      else if (typeof event.data === "string") receivedMessageKinds.add(`string:${event.data.slice(0, 80)}`);
+      else if (Object.prototype.toString.call(event.data) === "[object ArrayBuffer]" || ArrayBuffer.isView(event.data)) receivedMessageKinds.add("ArrayBuffer");
+      else receivedMessageKinds.add(typeof event.data);
       if (event.data === SMART_OBJECT_REFRESH_MARKER) {
-        // The refresh script exports the parent document directly. This
-        // marker remains a compatibility fallback for older Photopea sessions
-        // or scripts that finish before saveToOE() is scheduled.
+        // The refresh script only saves and closes the placed layer. Export
+        // the parent here so Photopea emits one unambiguous ArrayBuffer.
         requestExport();
         return;
       }
       if (event.data === "done") {
         if (smartObjectName && !refreshRequested) {
           refreshRequested = true;
-          iframe.contentWindow?.postMessage(buildSmartObjectRefreshScript(smartObjectName), "*");
+          postToPhotopea(buildSmartObjectRefreshScript(smartObjectName));
           return;
         }
         // Opening the linked Smart Object can emit another "done" message.
@@ -214,7 +233,7 @@ function renderPsdInPhotopea(
         finishReject(new Error("Photopea loaded without a usable browser window."));
         return;
       }
-      iframe.contentWindow.postMessage(buffer, PHOTOPEA_ORIGIN, [buffer]);
+      postToPhotopea(buffer, [buffer]);
     };
 
     window.addEventListener("message", onMessage);

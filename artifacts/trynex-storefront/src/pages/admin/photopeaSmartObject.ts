@@ -28,7 +28,6 @@ export function buildSmartObjectRefreshScript(layerName: string): string {
     '    executeAction(stringIDToTypeID("placedLayerEditContents"));',
     "    app.activeDocument.save();",
     "    app.activeDocument.close();",
-    '    app.activeDocument.saveToOE("png");',
     `    app.echoToOE(${JSON.stringify(SMART_OBJECT_REFRESH_MARKER)});`,
     "  } catch (error) {",
     `    app.echoToOE(${JSON.stringify(SMART_OBJECT_ERROR_MARKER)} + (error && error.message ? error.message : String(error)));`,
