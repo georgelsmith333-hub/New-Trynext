@@ -1,0 +1,82 @@
+Use a more capable model when needed for this request? Got it, staying on Free. Unsupported image Live Messaging You can insert Photopea into a webpage (using a frame). Let's call such webpage the Outer Environment (OE). OE can communicate with Photopea through Web Messaging.
+
+window.addEventListener("message", function(e) { alert(e.data); }); var wnd = document.getElementById("pp").contentWindow; wnd.postMessage(msg, "*"); OE can send two kinds of data to Photopea:
+
+String - contains a script, which will be executed by Photopea ArrayBuffer - a binary file: psd, svg, jpg, ... fonts, brushes, ... When Photopea is initialized and ready to accept commands, it sends the message "done". After your message is processed, Photopea also sends back the message "done".
+
+Some demos of live messsaging in Photopea: Demo 1 Demo 2 Demo 3
+
+Retrieving data from Photopea Photopea can send the current image to OE using the following command (inside a script):
+
+app.activeDocument.saveToOE("gif"); After you run the script above, PP will send a message with an ArrayBuffer of a GIF image, followed by a message with a String "done" (processing the script has finished).
+
+It can also send any String to OE using the following command (inside a script):
+
+app.echoToOE("Hello"); The full description at /learn/scripts.
+
+Examples of usage This API can replace the main API. Instad of letting Photopea communicate with your server directly, you can load files inside your progrm and transfer them to and from Photopea in a clients device.
+
+You can use Photopea as a "module", hide its UI and use only the messaging. You can create a batch-processor of images (resizing images, adding watermarks, converting between formats). You can make scripts, that would export each layer of the document as a PNG. You can make scripts, that would replace the text in each text layer by data from your user (to create a generator of business cards, etc.).
+
+Example: Integrating with a custom storage We can redefine the default behaviour of File - Open and File - Save.
+
+We can send Photopea any image in a message as ArrayBuffer We can call app.activeDocument.saveToOE("psd"); to send the current file to OE. We can call app.echoToOE("Hello"); to send any string to OE. We can read and write app.activeDocument.source String to identify files. We can set custom scripts to run after pressing Open or Save: customIO : open, save Now, we can do following:
+
+Set custom scripts to app.echoToOE("Open" / "Save"); to be notified, when the user presses the buttons. When the user wants to Open a file, show him your own file input (you can even let the user draw something, or take a picture of him). Once you have the image (ArrayBuffer), send it to Photopea and set the source: app.activeDocument.source="myID2353". When the user wants to Save a file, read the file (app.activeDocument.saveToOE("psd");) and its source app.echoToOE(app.activeDocument.source);, and save the new version into your storage. Disqus Comments
+
+We were unable to load Disqus. If you are a moderator please see our troubleshooting guide.
+
+Identifying a bug in loading process
+
+I’m noticing that if the initial phase happens before onLoad, it leads to issues when opening the PSD. Specifically, onMessage sets the phase to refreshing, but then onLoad sets it to opening the PSD again, creating a bug since the timeout indicates the PSD is still opening!
+
+To fix this, I'll need to wait for the iframe to load and for Photopea to be ready before posting the ArrayBuffer. It's essential to track when the document is sent and when Photopea is ready.Refining document handling logic
+
+I’m working on the logic that sets documentSent = true and changes the phase to "opening the PSD" before posting the buffer.
+
+In the onMessage handler, if event.data === "done", I need to check if documentSent is false, indicating readiness, in which case I won't add "done" and might want to track photopea-ready. If documentOpened is false, I'll set it to true. I need to determine whether to refresh the script or request an export based on smartObjectName.
+
+Also, I'm thinking about how to manage the timing of markers versus the "done" messages.
+
+The root cause is confirmed from Photopea’s own API contract: Photopea sends done twice in this flow—once when the editor is initialized and again after the PSD message is processed. The validator was treating the initialization done as “PSD opened,” sending the Smart Object script too early, then resetting the phase to opening when the iframe load completed. That exactly matches the reported Received: done plus timeout while opening.
+
+I’m fixing the handshake to wait for Photopea-ready and iframe-load in either order, send the PSD only once both are ready, and only then accept the next done as PSD-opened.
+
+Inspecting a bug in the code
+
+I need to dig into a bug with the documentOpened variable. When it's true and the done event follows the refresh request, everything seems okay. If there’s no smartObjectName, the first document open should still set documentOpened true before it requests export. I wonder if the photopeaReady might come before the iframe loads; that needs testing. I might update the tests or create a utility function, but I'll keep it simple for now. I should also clarify loading comments.
+
+You've reached your daily free quota limit. It will reset at 12:00 AM UTC.
+
+Do everything at free tier with no usage credits using as u have wasted my time
+
+You've reached your daily free quota limit. It will reset at 12:00 AM UTC.
+
+Trynext Lifestyle Design System Design System Trynext Lifestyle Trynext Lifestyle Website Trynext Promo Animation Animation Trynext Mobile Mobile Search tools… Open Trynext Mobile. === u continue with no more stupidity and do your all works completely at once now and if anything u need to do using live u do and if u knw u cant actually then dont halluconate and give me command to send for manus ai to take latest test of your works but u do the first works correctly right. So do thst all in 1 command prompt this command prompt. Do it + github session added so clearly correctly also make live because manus will check directly to the trynext.shop and which is binded with github so github push will live all changes. But you need to refix replan rebuild and built completed asap with all powers.
+
+Completed: the project is already split into the storefront, API, mobile app, promo, and design-system surfaces.
+Last stopping point: the Photopea Smart Object validator handshake was identified as the likely failure point; the fix was not completed.
+Remaining work: make the ready/iframe/PSD-open sequence deterministic, rebuild the API bundle, verify the affected flow, update the handoff, and deliver the published changes through the connected GitHub path if the connection permits it.
+Blockers: none confirmed yet; I will stop short of claiming live deployment if GitHub or the live endpoint rejects the update.
+Plan: inspect the handoff and Photopea path, patch the handshake state machine, run targeted checks and the project typecheck, rebuild/restart affected services, then push and verify the live path.
+Existing behavior to preserve: the Photopea done protocol, editable PSD provenance checks, candidate-vs-approved mockup safeguards, existing API routing, and all current storefront/mobile behavior.
+Verification: targeted Photopea tests, TypeScript checks, API build, workflow logs, and a live connectivity check after delivery.
+Safe parallel work: documentation/handoff inspection and the relevant integration/deployment guidance can be read in parallel; code edits wait until the handshake path is confirmed.
+
+The current code already contains a partial handshake patch, but it still lacks a focused regression test for the two-done protocol and has not been reconciled with the current GitHub branch state. I’m tightening that state machine now, then I’ll rebuild and use the existing GitHub connection to publish only after the local checks pass.
+
+I found the live issue in the current patch: the readiness ordering is partly fixed, but the open-document state is not explicit enough to protect the next done transitions. I’m making the phases mutually exclusive and adding a browser-message regression test that exercises both event orders, including the exact “ready done must not be treated as PSD-opened” case.
+
+
+
+Trynext Promo Animation
+Animation
+Trynext Mobile
+Mobile
+Trynext Lifestyle Design System
+Design System
+Trynext Lifestyle
+Trynext Lifestyle
+Website
+Search tools…
+Open Trynext Lifestyle
