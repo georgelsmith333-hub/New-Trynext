@@ -3117,3 +3117,48 @@ restarted cleanly; the live root returned 200 with the updated build marker;
 and the live lazy admin chunk contained the fresh baseline-session,
 phase-specific timeout, and Smart Object refresh markers. The final
 authenticated visual-composite proof remains intentionally unclaimed.
+
+---
+
+## 2026-09-29 Photopea readiness handshake fix
+
+Status: published and live — local verification complete; authenticated visual
+composite proof remains required.
+
+Last completed: Fixed the browser Photopea bridge so iframe load and Photopea's
+initial `done` readiness message may arrive in either order, but the PSD is sent
+only once both have occurred. The initialization `done` is no longer treated as
+PSD-opened; the next `done` after the PSD transfer is the document-open
+transition. Smart Object refresh and PNG export remain ordered behind that
+transition. Added regression coverage for both readiness orders and the
+ready-versus-open distinction. Published the verified validator source and test
+through the connected GitHub account; Cloudflare Pages served the new build.
+
+Stopped at: The live bundle is verified, but this session cannot perform the
+authenticated browser validation with asymmetric artwork.
+
+Files/areas changed:
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`,
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.test.ts`.
+
+Remaining work: Open `https://trynext.shop/admin/mockups` in the normal
+authenticated admin session and run `cap / black / back` with asymmetric
+artwork. Require visible artwork and different modified/untouched PNG SHA-256
+values before activating any template. Then repeat representative flat and
+curved surfaces and the documented 188-surface review.
+
+Blocker: No authenticated Photopea browser session is available to this Agent;
+headless Photopea has previously been blocked by its Cloudflare challenge.
+GitHub CI and active-app verification were still in progress at the last poll.
+
+Next safe action: Use the authenticated admin browser validator on
+`cap / black / back`; keep all templates inactive until the changed-composite
+gate passes.
+
+Verification: Focused Photopea tests passed 3/3; full storefront tests passed
+20 files/74 tests; storefront typecheck passed; full workspace typecheck
+passed; storefront production build passed; local storefront and API workflows
+restarted cleanly; the local admin route returned the expected unauthenticated
+401 boundary; the live root returned HTTP 200 with build marker
+`20260928190800`; and the live `AdminMockups` chunk contains the new readiness,
+PSD-open, refresh-marker, and phase-specific timeout strings.
