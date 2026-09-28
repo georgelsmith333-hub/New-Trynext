@@ -3301,3 +3301,40 @@ Verification: Photopea focused tests passed `3/3`; storefront tests passed
 typecheck and build passed; local storefront and API workflows restarted
 cleanly; local storefront/admin and API liveness/readiness/products routes
 returned 200; and GitHub `main` matches the reconciled local merge commit.
+
+---
+
+## 2026-09-29 Authenticated Photopea visual release gate
+
+Status: complete — authenticated visual gate passed; templates remain inactive
+
+Last completed: The authenticated browser runner completed the remaining
+Smart Mockup review and retried the previously unresolved
+`hoodie / burgundy / back` surface in a fresh Photopea session. The operator
+reported valid modified and untouched 1024×1024 PNG exports, visible
+asymmetric artwork, a changed composite, and different SHA-256 values.
+
+Stopped at: All 188 canonical surfaces have reported successful visual
+validation. No template approval, promotion, or activation action was used.
+
+Files/areas changed: `AGENT_HANDOFF.md` only. The proof log and screenshot
+remain in the external authenticated runner environment and were not available
+as local workspace files for independent inspection in this session.
+
+Remaining work: None for the authenticated 188-surface visual review. Any
+future template activation or production promotion is a separate explicit
+release action and must preserve the fail-closed approval gate.
+
+Blocker: None for the reported visual gate. This Agent session did not own the
+authenticated browser session, so the aggregate result is recorded as
+operator-reported evidence rather than locally re-executed evidence.
+
+Next safe action: Keep all templates inactive until the owner explicitly
+authorizes promotion. If promotion is requested, inspect the stored proof
+record, run the structural/runtime release checks, then perform only the
+approved activation path.
+
+Verification: Operator reported `188/188` live visual passes, zero timeout or
+message failures, zero hash-equality failures, zero unresolved surfaces, and
+successful retry evidence for `hoodie / burgundy / back`. No Meta Ads campaign
+was changed or launched.
