@@ -7,6 +7,7 @@ const studio = await readFile(path.join(root, "src", "pages", "studio", "DesignS
 const aiPanel = await readFile(path.join(root, "src", "pages", "studio", "AIPanel.tsx"), "utf8");
 const layerPanel = await readFile(path.join(root, "src", "pages", "studio", "panels", "LayerPanel.tsx"), "utf8");
 const productSwitcher = await readFile(path.join(root, "src", "pages", "studio", "toolbar", "ProductSwitcher.tsx"), "utf8");
+const backgroundRemoval = await readFile(path.join(root, "src", "lib", "backgroundRemoval.ts"), "utf8");
 const styles = await readFile(path.join(root, "src", "index.css"), "utf8");
 const mockups = await readFile(path.join(root, "src", "pages", "design-studio", "mockups.tsx"), "utf8");
 const smartV10Release = await readFile(path.join(root, "src", "pages", "design-studio", "smart-v10-release.ts"), "utf8");
@@ -27,7 +28,7 @@ const checks = {
   cartAndSessionReleaseProvenance: studio.includes("mockupRelease") && studio.includes("studio_session_") && studio.includes("addToCart({"),
   originalArtworkHandoff: studio.includes("originalAssets") && studio.includes("/api/storage/uploads/request-url"),
   canvasAndLayerWorkflow: studio.includes("composeMockupSurface") && studio.includes("layers.filter") && studio.includes("LayerPanel"),
-  backgroundRemovalFallback: studio.includes("handleRemoveBackground") && studio.includes("@imgly/background-removal"),
+  backgroundRemovalFallback: studio.includes("handleRemoveBackground") && studio.includes('import("@/lib/backgroundRemoval")') && backgroundRemoval.includes("onnxruntime-web") && backgroundRemoval.includes("export async function removeBackground"),
   operationSpecificClientAcceptance: studio.includes("inspectProcessedImage") && studio.includes('"remove-bg"') && studio.includes('"upscale"'),
   serverBackgroundOutputValidation: removeBgApi.includes("validateBackgroundRemovalOutput") && removeBgApi.includes("invalid_transformed_output") && transformedImageValidation.includes("missing_transparency"),
   hdUpscale: studio.includes("handleUpscale"),

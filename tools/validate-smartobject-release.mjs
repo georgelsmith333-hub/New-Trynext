@@ -4,7 +4,8 @@
  * This validates the full 188-surface staging matrix, re-open audit output,
  * checksums, embedded payloads, and public-path separation. It never promotes
  * files into public runtime directories. Pass --approve-visual only after the
- * generated contact sheets have been reviewed.
+ * authenticated visual review has been completed. A later structural recheck
+ * preserves an unchanged visual approval instead of silently revoking it.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -18,6 +19,7 @@ const manifestPath = path.join(root, "manifest.json");
 const auditPath = path.join(root, "structural-audit.json");
 const releasePath = path.join(root, "release-manifest.json");
 const runtimeRolesPath = path.join(root, "runtime-roles", "manifest.json");
+const approveVisualRequested = process.argv.includes("--approve-visual");
 
 function fail(message) {
   throw new Error(message);
@@ -34,6 +36,14 @@ if (!existsSync(runtimeRolesPath)) fail(`missing PSD-derived runtime role manife
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
 const audit = JSON.parse(readFileSync(auditPath, "utf8"));
 const runtimeRoles = JSON.parse(readFileSync(runtimeRolesPath, "utf8"));
+let existingRelease = null;
+if (existsSync(releasePath)) {
+  try {
+    existingRelease = JSON.parse(readFileSync(releasePath, "utf8"));
+  } catch {
+    existingRelease = null;
+  }
+}
 const errors = [];
 const seen = new Set();
 
@@ -136,14 +146,32 @@ if (errors.length) {
   process.exit(1);
 }
 
+const currentMasterChecksums = new Map(
+  (manifest.surfaces ?? []).map((row) => [
+    `${row.family}/${row.color}/${row.view}`,
+    row.masterChecksum,
+  ]),
+);
+const existingApprovalStillMatches =
+  existingRelease?.visualApproval === true &&
+  existingRelease.sourceManifest === path.relative(repo, manifestPath) &&
+  existingRelease.surfaceCount === 188 &&
+  Array.isArray(existingRelease.surfaces) &&
+  existingRelease.surfaces.length === 188 &&
+  existingRelease.surfaces.every((row) => {
+    const key = `${row.family}/${row.color}/${row.view}`;
+    return currentMasterChecksums.get(key) === row.masterChecksum;
+  });
+const visualApproval = approveVisualRequested || existingApprovalStillMatches;
+
 const output = {
   schema: "trynext-smart-mockup-release/v1",
-  status: approveVisual ? "verified" : "structurally-verified",
+  status: visualApproval ? "verified" : "structurally-verified",
   generatedAt: "2026-09-06",
   surfaceCount: 188,
   nativeSmartObjects: true,
   editableMastersOutsidePublic: true,
-  visualApproval: approveVisual,
+  visualApproval,
   visualEvidence: "verification/smart-v10-v3-contact-sheets",
   sourceManifest: path.relative(repo, manifestPath),
   structuralAudit: path.relative(repo, auditPath),
@@ -153,7 +181,7 @@ const output = {
     // keeps its "accepted" status. Never let a whole-release visual pass
     // downgrade evidence-backed status, and never let it upgrade an
     // unverified surface past what --approve-visual actually establishes.
-    reviewStatus: row.reviewStatus === "accepted" ? "accepted" : (approveVisual ? "verified" : "structurally-verified"),
+     reviewStatus: row.reviewStatus === "accepted" ? "accepted" : (visualApproval ? "verified" : "structurally-verified"),
   })),
 };
 writeFileSync(releasePath, `${JSON.stringify(output, null, 2)}\n`);

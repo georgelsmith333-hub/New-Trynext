@@ -3338,3 +3338,47 @@ Verification: Operator reported `188/188` live visual passes, zero timeout or
 message failures, zero hash-equality failures, zero unresolved surfaces, and
 successful retry evidence for `hoodie / burgundy / back`. No Meta Ads campaign
 was changed or launched.
+
+---
+
+## 2026-09-29 Smart Mockup runtime promotion
+
+Status: promoted locally and verified; GitHub publication pending
+
+Last completed: Applied the explicit owner-authorized Smart Mockup promotion.
+The v10.3 release manifest now reports `status:verified`,
+`visualApproval:true`, and 188 surfaces. The staging source-master manifest
+remains `candidate` by design, while both staging and public runtime-role
+manifests report `status:accepted` for the reviewed 188-surface runtime.
+
+Stopped at: Post-promotion storefront and API verification completed without
+activating legacy database template rows or changing customer/order/payment
+behavior.
+
+Files/areas changed:
+`dist-mockups/staging/smart-v10-v3/release-manifest.json`,
+`dist-mockups/staging/smart-v10-v3/runtime-roles/manifest.json`,
+`artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/manifest.json`,
+`tools/validate-smartobject-release.mjs`, and the capability verifier.
+
+Remaining work: Commit and publish the promotion changes, then confirm the
+published source is the same release. No further Smart Mockup visual review is
+required for the reported 188/188 authenticated gate.
+
+Blocker: None for local promotion. The authenticated proof record remains in
+the external runner environment and was not independently re-executed here.
+
+Next safe action: Publish the validated changes through the existing GitHub
+main path. Do not mass-activate legacy database template rows; the canonical
+customer resolver uses the accepted v10.3 runtime-role package.
+
+Verification: Structural release validator passed 188/188 before and after
+approval; approval remained intact across a no-flag structural recheck;
+capability verification passed 22/22; runtime matrix passed 188 surfaces and
+1,128 roles with `status:accepted`; API typecheck and 14 files/42 tests
+passed; storefront typecheck, 20 files/74 tests, and production build passed;
+both workflows restarted cleanly; local `/`, `/design-studio`,
+`/api/health/liveness`, `/api/health/readiness`, and `/api/mockups` returned
+200; the API returned 188 rows; the public runtime manifest returned accepted
+with 188 surfaces; and the final Design Studio screenshot had no browser
+console errors.

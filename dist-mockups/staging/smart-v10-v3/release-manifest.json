@@ -1,11 +1,11 @@
 {
   "schema": "trynext-smart-mockup-release/v1",
-  "status": "structurally-verified",
+  "status": "verified",
   "generatedAt": "2026-09-06",
   "surfaceCount": 188,
   "nativeSmartObjects": true,
   "editableMastersOutsidePublic": true,
-  "visualApproval": false,
+  "visualApproval": true,
   "visualEvidence": "verification/smart-v10-v3-contact-sheets",
   "sourceManifest": "dist-mockups/staging/smart-v10-v3/manifest.json",
   "structuralAudit": "dist-mockups/staging/smart-v10-v3/structural-audit.json",
@@ -261,7 +261,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/white/left-sleeve.png",
       "proofPreviewChecksum": "41e61b05f9c2859d86d76e6d21eee5df74b556bafa3040fc6bb94478cfea027f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -328,7 +328,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/white/right-sleeve.png",
       "proofPreviewChecksum": "25438c071821e83a0c4d6a57834f6f76aeceb94d324de47184304a295ad21de9",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -395,7 +395,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/white/neck-label.png",
       "proofPreviewChecksum": "f1fbf478ae09f1a7554d5b1fd637304460b5b75fde89b96c69b06d2d7bd5f435",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -648,7 +648,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/black/left-sleeve.png",
       "proofPreviewChecksum": "46345b6699d522679433dae3de6229c63d78bd4b6037605274dddc71466da58f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -715,7 +715,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/black/right-sleeve.png",
       "proofPreviewChecksum": "004e558854e90741c0742e12e6166d1b6c4244ffbdd2adfe73e51ae3e8889ddf",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -782,7 +782,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/black/neck-label.png",
       "proofPreviewChecksum": "a378fb058005dcf54c3b063ca5a179b7bedaac81821d38d2c75b613dc06952b4",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1035,7 +1035,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/navy/left-sleeve.png",
       "proofPreviewChecksum": "f52f61d534dc2af909643cd52011cb2818644d0e31edf41e08dcc6df2c3abaa9",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1102,7 +1102,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/navy/right-sleeve.png",
       "proofPreviewChecksum": "6f327ca109a7fc973f2b4d2d83bb823ee19dc1b12bcd9728d13a37807237889d",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1169,7 +1169,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/navy/neck-label.png",
       "proofPreviewChecksum": "2a7bbdd5882a64d2585dd0837b2891c4014a0d6b7585d7e564734362e33c94f8",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1422,7 +1422,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/maroon/left-sleeve.png",
       "proofPreviewChecksum": "0494dcf666fa2b09769e5b3c89bde5489c45a693259c13cb6be4109292608d6c",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1489,7 +1489,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/maroon/right-sleeve.png",
       "proofPreviewChecksum": "99d63cfe7b258268e30360f023dc8cf633029da8391529a305a9b427010a9c5c",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1556,7 +1556,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/maroon/neck-label.png",
       "proofPreviewChecksum": "c5b77aa9b53b6386eeb2ba09a2bc4f883b64e1d1bcad584cb556a465985708fc",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1809,7 +1809,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/olive/left-sleeve.png",
       "proofPreviewChecksum": "ede1c3d46026ff6b688efe69dade91f04b78c7dbf1f3ef13d8d1fc58a4bc4100",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1876,7 +1876,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/olive/right-sleeve.png",
       "proofPreviewChecksum": "b5a566697105e6652159993eeb48ce3fbb3e890b7f5e1612beb5d6846d8dc53f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -1943,7 +1943,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/olive/neck-label.png",
       "proofPreviewChecksum": "2b945e26aeb3e8ba9f3888c46725b9a89757638d5f485a8988c31736ee4be653",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2196,7 +2196,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/sky-blue/left-sleeve.png",
       "proofPreviewChecksum": "5092bed155f47fbc79368535737c72bc7eea2ca3e62afcaadfac42ead1779bc1",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2263,7 +2263,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/sky-blue/right-sleeve.png",
       "proofPreviewChecksum": "9ce92abbe30ea3544a578b6911c8a567f3003af3746a2c65ec3ea8ed6a5a85e9",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2330,7 +2330,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/sky-blue/neck-label.png",
       "proofPreviewChecksum": "06e9b56823ab9dbc59259de6237294e2420855cc479dfab836c2bca11d13deb2",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2583,7 +2583,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/grey/left-sleeve.png",
       "proofPreviewChecksum": "cf71cd0ede171a62af1a4b5481b5455898dee7713c43f037741c493d6a4c689e",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2650,7 +2650,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/grey/right-sleeve.png",
       "proofPreviewChecksum": "89a60b650101c02a8a98b0db70df88ea6be02403bbcdc2eb53ee94e281d39f8f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2717,7 +2717,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/grey/neck-label.png",
       "proofPreviewChecksum": "5220684814b0ff9916afee075e2538df808a39efe89578469063ebfd6c6e1e3c",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -2970,7 +2970,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/red/left-sleeve.png",
       "proofPreviewChecksum": "c81411843f9a10c1f3c52b898f81eb9124c7a1b6b2973d435c39cde6b84a6869",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3037,7 +3037,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/red/right-sleeve.png",
       "proofPreviewChecksum": "c4d243586dba90034557aea79930ec357ca14a6f8fc399d8ed3b538a8c826f63",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3104,7 +3104,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/tshirt/red/neck-label.png",
       "proofPreviewChecksum": "227e5f969e9bbcde8fbdbfe58f7d3b44e17f6cdaec0e2cfe82571291eea36e93",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3357,7 +3357,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/white/left-sleeve.png",
       "proofPreviewChecksum": "8eb321abebbb54dce20eeec98e33fe2bf7baa43e7595cbe09d63d676ea36f301",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3424,7 +3424,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/white/right-sleeve.png",
       "proofPreviewChecksum": "73a9e5d2a720a65c975205136281db8be5727bcf7b3c3565eb29f5807685092d",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3491,7 +3491,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/white/neck-label.png",
       "proofPreviewChecksum": "77f703ca20b97cbf3c7e3e6655988dfadcb65819a82af7be7fda03408cabede1",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3744,7 +3744,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/black/left-sleeve.png",
       "proofPreviewChecksum": "6b89f1d74579e1ad024d66067f4cf58289bce8d79e147d92fb6ab81350e3e1b6",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3811,7 +3811,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/black/right-sleeve.png",
       "proofPreviewChecksum": "bd8ad25d165278ef97c3b3850eaf14ea9cc61bcec134e25e1972d83b6f4368de",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -3878,7 +3878,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/black/neck-label.png",
       "proofPreviewChecksum": "d5f007e12e6b46faf6dc1ff0169c26337d1ab5144d9d216947f5a4597072f9e6",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4131,7 +4131,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/charcoal/left-sleeve.png",
       "proofPreviewChecksum": "c50e79a2974244677d49a3be1f3a9f516cc4e3351f846f9df851de0d2445e725",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4198,7 +4198,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/charcoal/right-sleeve.png",
       "proofPreviewChecksum": "36af487b7f1f74f8e8d3664c7253f15a456cce050290937c96910f4ca4f4b7fd",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4265,7 +4265,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/charcoal/neck-label.png",
       "proofPreviewChecksum": "cb2987bdf36bceb2f3168ac7317c08dfde97197496aeeabb443828c794944948",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4518,7 +4518,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/heather-grey/left-sleeve.png",
       "proofPreviewChecksum": "c78909bc43e9f92e4a71dd149ad0473792839e7c7975e33eedd3ef8d16674d32",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4585,7 +4585,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/heather-grey/right-sleeve.png",
       "proofPreviewChecksum": "e288a8790b1cf30dca7271745626895c14936c3ed8e31d8fe4a6a3aa9941b5e7",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4652,7 +4652,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/heather-grey/neck-label.png",
       "proofPreviewChecksum": "fb5820ca8d01a08af67f16a20b94c8606f2dbaafdd22eb7509a07c9b64b1bd4f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4905,7 +4905,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/navy/left-sleeve.png",
       "proofPreviewChecksum": "b47f43d4913cedc5924e9deea9d8bf2684e34a79ccd6500cfdf41e24852f49c6",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -4972,7 +4972,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/navy/right-sleeve.png",
       "proofPreviewChecksum": "1ec65cb38b4f4f54fe3b7ae3378843cd7992e623b292aa4255fe12d7f68a5201",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5039,7 +5039,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/navy/neck-label.png",
       "proofPreviewChecksum": "0687051ce6af235c086b7c461151f08801b5843d491fd5e4ead884cf22a30176",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5292,7 +5292,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/royal-blue/left-sleeve.png",
       "proofPreviewChecksum": "2d8fbb11349b180f3df059b8df874708b92cb5a5fb886dd4d50acfa2f935032c",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5359,7 +5359,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/royal-blue/right-sleeve.png",
       "proofPreviewChecksum": "23b86fe22d11f270980fdd24a3c747b527f526f4387fe3f9bbb935bf077b20dc",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5426,7 +5426,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/royal-blue/neck-label.png",
       "proofPreviewChecksum": "46aa78b069c1815b52fb30474eb7dc0f56eb5e160e97f74a03a6f946a0cfb930",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5679,7 +5679,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/forest-green/left-sleeve.png",
       "proofPreviewChecksum": "12c9545193fe280b62323eda0d45a50e2a111dc479d14a9113528559845c606f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5746,7 +5746,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/forest-green/right-sleeve.png",
       "proofPreviewChecksum": "353af4e6c7c3d10fd2be735185512041d39e5055587b0b2840505bf4f06005a1",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -5813,7 +5813,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/forest-green/neck-label.png",
       "proofPreviewChecksum": "e957870998dcde180042d393a728a9c135ae2126da053e3741d3e21b745d3efd",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6066,7 +6066,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/burgundy/left-sleeve.png",
       "proofPreviewChecksum": "253c1ab56fbf535b7d31dc3a071eb3fd724de0ce3d2325f1c18c7f0667d68302",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6133,7 +6133,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/burgundy/right-sleeve.png",
       "proofPreviewChecksum": "8467133f6655bd394c4de506e9c9b36790151bae7082d67b2e416901f7f77c6e",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6200,7 +6200,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/burgundy/neck-label.png",
       "proofPreviewChecksum": "1a8de10db00a5608c655a0c0f3a47e2e74c20b99a6d5f533a0f04505e3309390",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6453,7 +6453,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/red/left-sleeve.png",
       "proofPreviewChecksum": "18a76824eea6d8d00632216011e22d52d97b33e810ac5bb552c897aafd3a7103",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6520,7 +6520,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/red/right-sleeve.png",
       "proofPreviewChecksum": "793a6a32a87a4f5e925715c070b305571795a6c19d7b2ddf58c066dda0c8fe58",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6587,7 +6587,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/red/neck-label.png",
       "proofPreviewChecksum": "9796db512f9d4c3f37a1f31dfaa938e04798a5d01e49eb54121860173da5f41c",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6840,7 +6840,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/sand/left-sleeve.png",
       "proofPreviewChecksum": "8b13d1ca5ad99d942be155602a371748ea66e5f29386dd4a9630f5c08666e2e6",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6907,7 +6907,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/sand/right-sleeve.png",
       "proofPreviewChecksum": "35ab7323eec879b61febbba41991e0c9bf14100a7582fb1eb93075639787d6ae",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -6974,7 +6974,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/longsleeve/sand/neck-label.png",
       "proofPreviewChecksum": "e49cd3bace5320404da0d076844c72e61f5357e23bf377c791112e45f28539f0",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7227,7 +7227,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/white/left-sleeve.png",
       "proofPreviewChecksum": "25384285e46fc4567ba1855a5244663a935a437557d44b2f7ca705fa6db5d5e7",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7294,7 +7294,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/white/right-sleeve.png",
       "proofPreviewChecksum": "62aa06fea74b1a0996d2595278322023a54795242f94a687c90c718f43009568",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7361,7 +7361,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/white/neck-label.png",
       "proofPreviewChecksum": "6170dd9d51ca07e4e92f7319ae94fc1de0adc52441ab2293e31ec3dbe7314af4",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7614,7 +7614,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/black/left-sleeve.png",
       "proofPreviewChecksum": "8947d348f047b4a985aed07aa30b274f5bd18c3aaeb4563f2b39806565133caa",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7681,7 +7681,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/black/right-sleeve.png",
       "proofPreviewChecksum": "03922892645401efb08774359cb9af75faae41ee95d486cdda965aa2cfddaf41",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -7748,7 +7748,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/black/neck-label.png",
       "proofPreviewChecksum": "3cc6c95c688a70a974f5bccb2d3c3ef3e1d07351761b5e994b078033a603e622",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8001,7 +8001,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/charcoal/left-sleeve.png",
       "proofPreviewChecksum": "685dd885df3d79533abe4a485752f260a1cbd92ba737fdcfce584c7bb984fa5d",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8068,7 +8068,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/charcoal/right-sleeve.png",
       "proofPreviewChecksum": "faf090bcd46bb0a54b3fbee0ade244d052644cff4d7d041ed9736b4acf17cbee",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8135,7 +8135,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/charcoal/neck-label.png",
       "proofPreviewChecksum": "bc0569bca0f6fa18c6f5f5a45d61ea013e52efea36563bcc53a3235a0695da3f",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8388,7 +8388,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/heather-grey/left-sleeve.png",
       "proofPreviewChecksum": "2e3b0b6d95657533eedc64a1c08a83bb8f4657ba79992d03be9e37abc067b853",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8455,7 +8455,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/heather-grey/right-sleeve.png",
       "proofPreviewChecksum": "60e9603186d896f77729c7e931f38882cecd153f9f05102a5504c69972cc0f17",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8522,7 +8522,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/heather-grey/neck-label.png",
       "proofPreviewChecksum": "a7f13493387415bbd2094b59c809e140f90f8f19167fea3c5311ee3c2ddb6414",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8775,7 +8775,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/navy/left-sleeve.png",
       "proofPreviewChecksum": "46eb7022097252e70fb8ed965b5b2d7576ad0dcb3b7588b249eaba395886522a",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8842,7 +8842,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/navy/right-sleeve.png",
       "proofPreviewChecksum": "2e9bc472f25fd16f4bc044ff9bb07661e7d9b0b298bd8266a3bea2ecc83093cc",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -8909,7 +8909,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/navy/neck-label.png",
       "proofPreviewChecksum": "1cbf98d646ff423a5da9a7847457ab335c2942f00ac5f530365d65c5e6cd0056",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9162,7 +9162,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/royal-blue/left-sleeve.png",
       "proofPreviewChecksum": "2f70f2c199e59885f9446bd26c1d3f5761c41f239a1f07184bc48580937019bd",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9229,7 +9229,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/royal-blue/right-sleeve.png",
       "proofPreviewChecksum": "7b1cdc4608f8c4ac4423c88629acf67d1616df1d85bd8c4c59825e49b9cde1fd",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9296,7 +9296,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/royal-blue/neck-label.png",
       "proofPreviewChecksum": "263e929b18b69834d73bdaa83820ebb7ec386187ba122cc212b68bc49f0bb101",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9549,7 +9549,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/forest-green/left-sleeve.png",
       "proofPreviewChecksum": "ed1a16f0def2d45d89ac17c9f92f6afd883c04ad98ec734bae7b5ad917ed8d49",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9616,7 +9616,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/forest-green/right-sleeve.png",
       "proofPreviewChecksum": "41a5c38fc7c8fb00525e87cc637eaf47f58aef6a4a95be1ada071dadd24f2761",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9683,7 +9683,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/forest-green/neck-label.png",
       "proofPreviewChecksum": "8f909ae2ba74235aae3d4f3669e88e43a99787fada1d3a124ca26af97bfcd7bf",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -9936,7 +9936,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/burgundy/left-sleeve.png",
       "proofPreviewChecksum": "9d78f312744c1417a3576da3c657e3dfd7027674bdb7431ade858349a7354df1",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10003,7 +10003,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/burgundy/right-sleeve.png",
       "proofPreviewChecksum": "8bc4e16b56193ccdeeb2b26256fb003e51c37145d173d0bb576f19988cb34523",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10070,7 +10070,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/burgundy/neck-label.png",
       "proofPreviewChecksum": "0d7f3f5e7bb8d899d9527d1485953bf91d429f43e342491e75a345b68a9acffc",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10323,7 +10323,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/red/left-sleeve.png",
       "proofPreviewChecksum": "1e1c3c3e3dc4a3ee50459dc292a77efe281bbf4e05cf093a3780264abd90a8a4",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10390,7 +10390,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/red/right-sleeve.png",
       "proofPreviewChecksum": "6b6c2f5f20e46740fa5a258707a20bc3e64edf63e73e2264dbbe8d03235bbd46",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10457,7 +10457,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/red/neck-label.png",
       "proofPreviewChecksum": "3a403e9ae78b98573714f9be7baa7c0bbd9ffacbd323fb3d0331f0dc025bbc2c",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10710,7 +10710,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/sand/left-sleeve.png",
       "proofPreviewChecksum": "e21d6eea2cd9bcac4d06328107d89593a50d64cf2ac4abaf83fc71eed630bd39",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10777,7 +10777,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/sand/right-sleeve.png",
       "proofPreviewChecksum": "75ef3379ee46e0da532fb3e0a8949c4374a1281481a91566f02ef75bc1fcf5af",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -10844,7 +10844,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/hoodie/sand/neck-label.png",
       "proofPreviewChecksum": "97872aa0e577b8dcaeb92334d797bc8aea226b1f973eeef961d986e51e2ea8b6",
       "masterFormat": "psd",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11089,7 +11089,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/white/wrap.png",
       "proofPreviewChecksum": "32471222708862ba8e621f640476c9eeac324f7fc9dfea401b90f2b095dcbc6e",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11334,7 +11334,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/black/wrap.png",
       "proofPreviewChecksum": "25b554b7bf5e1de862bb8450a6832a6444a860820ddc1648c0b9fc8802124bf2",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11579,7 +11579,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/navy/wrap.png",
       "proofPreviewChecksum": "a01a069447a4eebb1e93c510a775b670e95f70cfdea565b35a4189dca462be21",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -11824,7 +11824,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/red/wrap.png",
       "proofPreviewChecksum": "e71bff2ef1ccac53a7601d2738375f0cf4bca4ba709bb57882434b941e5b5c9e",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12069,7 +12069,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/green/wrap.png",
       "proofPreviewChecksum": "91c1d6ba93852d19cec83b1e077d8b76230ce4964a6c88f72e59df2b33d6ffd7",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12314,7 +12314,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/purple/wrap.png",
       "proofPreviewChecksum": "7b73f4d114aa88aa5ff6e6c050680df6f097167c7a285f97c057f9800af35450",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12559,7 +12559,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/sky-blue/wrap.png",
       "proofPreviewChecksum": "3cb2c6dd4077ae9322d5aaf3ebe9bf7f970ae165efe3d95f8e04a5a7c087565e",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -12804,7 +12804,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/pink/wrap.png",
       "proofPreviewChecksum": "bff2ee1212c806a4ae4aa9dd2f8fc3210b40acdf7d9988788f9d9c160901b2df",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -13049,7 +13049,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/maroon/wrap.png",
       "proofPreviewChecksum": "fe840db7a5a6f93168130a65d8e0a38b27a14b69beea41b5b56c73f8c7efea18",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
@@ -13294,7 +13294,7 @@
       "proofPreviewPath": "dist-mockups/staging/smart-v10-v3/proof-previews/mug/orange/wrap.png",
       "proofPreviewChecksum": "80c927015a85e560a2f4951e13c216ce2090f1c1b200a55eeeffd0f7967d9471",
       "masterFormat": "psb",
-      "reviewStatus": "structurally-verified"
+      "reviewStatus": "verified"
     },
     {
       "schema": "trynext-smart-master/v3",
