@@ -3062,7 +3062,6 @@ workflows restarted cleanly; and the storefront screenshot rendered without
 browser-console errors. The structural 188/188 and Smart Object gates remain
 verified from the prior checkpoint. No authenticated visual-composite proof was
 claimed.
-
 ---
 
 ## 2026-09-29 Photopea baseline isolation fix

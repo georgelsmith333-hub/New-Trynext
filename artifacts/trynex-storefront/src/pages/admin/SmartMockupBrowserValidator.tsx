@@ -395,14 +395,14 @@ export default function SmartMockupBrowserValidator() {
       // deliver a late export from the previous document, making the
       // modified-vs-baseline comparison falsely pass or falsely fail.
       baselineFrame = createIsolatedPhotopeaFrame();
-       const baselineBytes = await renderPsdWithRetry(
-         baselineFrame,
-         payload.originalPsdBase64,
-         undefined,
-         (attempt, previousError) => {
-           setStatusMessage(`The baseline Photopea render did not finish (${previousError.message}). Resetting the baseline editor and retrying (${attempt}/${PHOTOPEA_MAX_ATTEMPTS})…`);
-         },
-       );
+      const baselineBytes = await renderPsdWithRetry(
+        baselineFrame,
+        payload.originalPsdBase64,
+        undefined,
+        (attempt, previousError) => {
+          setStatusMessage(`The baseline Photopea render did not finish (${previousError.message}). Resetting the baseline editor and retrying (${attempt}/${PHOTOPEA_MAX_ATTEMPTS})…`);
+        },
+      );
       const [renderedSha256, baselineSha256, dimensions] = await Promise.all([
         sha256(modifiedBytes),
         sha256(baselineBytes),
