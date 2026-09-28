@@ -3226,3 +3226,36 @@ promote all surfaces from structural checks alone.
 Remaining work: An authenticated browser operator must run the full documented
 188-surface Photopea review with visible artwork and changed-composite proof on
 every surface. Keep any failed or ambiguous surface inactive.
+
+---
+
+## 2026-09-29 Photopea timeout recovery
+
+Status: recovery fix verified locally; publish before resuming the browser
+review.
+
+Reported state: the external review reached `47/188`, with `46` passes and one
+failure at `longsleeve / black / back`. The failure was `Runner timeout or
+missing terminal state`; the next surface was not executed because the browser
+validator button remained unavailable. No results were carried forward and no
+templates were activated.
+
+Diagnosis: local preparation of the reported PSD pair completes in about one
+second, so the failure is in the browser/Photopea session rather than a slow
+server-side PSD payload.
+
+Fix: the browser validator now retries each modified or baseline Photopea
+render once after resetting the editor frame, reports the retry phase, and
+always returns to a terminal error state after the final failure. The action
+button exposes `Retry browser validation` after an error instead of remaining
+locked in a non-terminal state. The changed-composite and authentication gates
+remain fail-closed.
+
+Verification: focused Photopea tests passed `3/3`; full storefront tests passed
+`20 files / 74 tests`; storefront typecheck passed; production build passed; and
+the storefront workflow restarted cleanly.
+
+Next safe action: publish this recovery fix, then resume at
+`longsleeve / black / back`. Record the existing 46 passes as prior evidence,
+rerun the failed surface, and continue through the remaining 141 surfaces.
+Do not activate templates until all 188 surfaces have explicit visual proof.

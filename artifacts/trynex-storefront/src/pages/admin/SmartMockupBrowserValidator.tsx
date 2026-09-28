@@ -38,6 +38,8 @@ interface BrowserResult {
 const PHOTOPEA_URL = "https://www.photopea.com/";
 const PHOTOPEA_ORIGIN = new URL(PHOTOPEA_URL).origin;
 const PHOTOPEA_TIMEOUT_MS = 60_000;
+const PHOTOPEA_MAX_ATTEMPTS = 2;
+const PHOTOPEA_RETRY_DELAY_MS = 500;
 const ADMIN_REQUEST_TIMEOUT_MS = 45_000;
 
 async function adminFetch<T>(url: string, init: RequestInit = {}): Promise<T> {
@@ -269,6 +271,31 @@ export function renderPsdInPhotopea(
   });
 }
 
+async function renderPsdWithRetry(
+  iframe: HTMLIFrameElement,
+  base64: string,
+  smartObjectName: string | undefined,
+  onRetry: (attempt: number, error: Error) => void,
+): Promise<Uint8Array> {
+  let lastError = new Error("Photopea validation failed.");
+  for (let attempt = 1; attempt <= PHOTOPEA_MAX_ATTEMPTS; attempt += 1) {
+    if (attempt > 1) {
+      // A timed-out Photopea document may still emit late messages. Reset the
+      // visible session before retrying so the retry cannot inherit its state.
+      iframe.src = "about:blank";
+      await new Promise<void>((resolve) => window.setTimeout(resolve, PHOTOPEA_RETRY_DELAY_MS));
+      onRetry(attempt, lastError);
+    }
+    try {
+      return await renderPsdInPhotopea(iframe, base64, smartObjectName);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error("Photopea validation failed.");
+      if (attempt === PHOTOPEA_MAX_ATTEMPTS) throw lastError;
+    }
+  }
+  throw lastError;
+}
+
 function createIsolatedPhotopeaFrame(): HTMLIFrameElement {
   const frame = document.createElement("iframe");
   frame.title = "Photopea baseline validation session";
@@ -331,6 +358,10 @@ export default function SmartMockupBrowserValidator() {
       return;
     }
     setResult(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
     setStatus("loading");
     setRenderPhase(null);
     setStatusMessage("Preparing the private PSD pair…");
@@ -349,10 +380,13 @@ export default function SmartMockupBrowserValidator() {
       setStatus("rendering");
       setRenderPhase("modified");
       setStatusMessage("Rendering the modified Smart Object in your browser…");
-      const modifiedBytes = await renderPsdInPhotopea(
+      const modifiedBytes = await renderPsdWithRetry(
         iframeRef.current,
         payload.modifiedPsdBase64,
         payload.smartObjectName,
+        (attempt, previousError) => {
+          setStatusMessage(`The modified Photopea render did not finish (${previousError.message}). Resetting the editor and retrying (${attempt}/${PHOTOPEA_MAX_ATTEMPTS})…`);
+        },
       );
       setRenderPhase("baseline");
       setStatusMessage("Rendering the untouched baseline in your browser…");
@@ -361,7 +395,14 @@ export default function SmartMockupBrowserValidator() {
       // deliver a late export from the previous document, making the
       // modified-vs-baseline comparison falsely pass or falsely fail.
       baselineFrame = createIsolatedPhotopeaFrame();
-      const baselineBytes = await renderPsdInPhotopea(baselineFrame, payload.originalPsdBase64);
+       const baselineBytes = await renderPsdWithRetry(
+         baselineFrame,
+         payload.originalPsdBase64,
+         undefined,
+         (attempt, previousError) => {
+           setStatusMessage(`The baseline Photopea render did not finish (${previousError.message}). Resetting the baseline editor and retrying (${attempt}/${PHOTOPEA_MAX_ATTEMPTS})…`);
+         },
+       );
       const [renderedSha256, baselineSha256, dimensions] = await Promise.all([
         sha256(modifiedBytes),
         sha256(baselineBytes),
@@ -442,6 +483,8 @@ export default function SmartMockupBrowserValidator() {
             type="button"
             onClick={() => void runValidation()}
             disabled={!selectedSurface || !artwork || status === "loading" || status === "rendering"}
+            data-validation-action="run"
+            aria-label={status === "error" ? "Retry browser validation" : "Run browser validation"}
             className="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-black text-white transition hover:bg-orange-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {status === "loading" || status === "rendering" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
