@@ -1,10 +1,8 @@
 import jwt from "jsonwebtoken";
 import { logger } from "./logger";
+import { customerJwtSecret } from "./customerJwtSecret";
 
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required. Auth cannot start without a configured secret.");
-}
-const JWT_SECRET = process.env.JWT_SECRET as string;
+const JWT_SECRET = customerJwtSecret;
 
 export function verifyCustomerToken(token: string): { id: number; email: string; role: string } | null {
   try {

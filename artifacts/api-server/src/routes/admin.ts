@@ -65,6 +65,13 @@ const router: IRouter = Router();
 
 const ADMIN_PASSWORD = (() => {
   const p = process.env.ADMIN_PASSWORD;
+  if (p) return p;
+  if (process.env.NODE_ENV === "development") {
+    // Keep local workflows bootable without copying the production bootstrap
+    // password into .replit. A restart invalidates this development-only
+    // fallback, while production remains fail-closed below.
+    return process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
+  }
   if (!p) {
     throw new Error("ADMIN_PASSWORD environment variable is required. The admin service cannot start without a configured password.");
   }

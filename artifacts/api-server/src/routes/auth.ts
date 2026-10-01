@@ -10,6 +10,7 @@ import {
   verifyPasswordAny,
   isArgon2Hash,
 } from "../lib/passwordHash";
+import { customerJwtSecret } from "../lib/customerJwtSecret";
 
 // ---------------------------------------------------------------------------
 // Zod schemas
@@ -89,11 +90,7 @@ export async function getConfiguredGoogleClientId(): Promise<string> {
 }
 
 const router: IRouter = Router();
-
-if (!process.env.JWT_SECRET) {
-  throw new Error("JWT_SECRET environment variable is required. The auth service cannot start without a configured secret.");
-}
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = customerJwtSecret;
 const CUSTOMER_SALT = process.env.CUSTOMER_SALT;
 const IS_PROD = process.env.NODE_ENV === "production";
 
