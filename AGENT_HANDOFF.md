@@ -3748,7 +3748,9 @@ Stopped at: `claude-handoff-2026-10-04` was created directly from the verified
 been advanced by handoff-only commits. Re-read the branch ref to get its current
 tip before continuing. The branch contains only the reviewed 54-file candidate;
 all 27 `attached_assets/` paths, local commit history, and Replit-only
-`.agents/memory` notes were excluded. The pull request has not yet been opened.
+`.agents/memory` notes were excluded. PR #2 is open with the verified base and
+head and exactly 54 changed files; the GitHub PR file list contains no excluded
+paths. Required checks and the live merge are pending.
 
 Files/areas changed: Checkout/invoice/payment and mobile order-flow work from the
 local branch, product/catalog and edge-cache changes, Smart Mockup validation
@@ -3756,9 +3758,8 @@ test isolation, and the Claude Code handoff documents. The release tree contains
 81 changed paths relative to the last verified local tracking ref; 27 attachment
 paths are excluded.
 
-Remaining work:
-- Open a pull request from the clean candidate branch and wait for required
-  checks, including Active App Verification.
+- Wait for the pull-request checks, including Active App Verification, on the
+  final PR head.
 - Merge only if all required pull-request checks pass.
 - After the live update, verify the storefront, API health, catalog cache
   behavior, sitemap, and accepted Smart Mockup runtime on `trynext.shop`.
@@ -3769,8 +3770,8 @@ Remaining work:
 Blocker: No local blocker. Pull-request checks and production health are still
 pending.
 
-Next safe action: Open the pull request, verify the exact base/head and wait for
-its checks. Recheck the base branch immediately before merging.
+Next safe action: Monitor PR #2's checks. Recheck the base branch and verify all
+required checks are green immediately before merging.
 
 Verification: `pnpm run typecheck`, `pnpm run build`, `pnpm run validate:mockups`,
 the API and storefront tests, `git diff --check`, and 30/30 read-only live

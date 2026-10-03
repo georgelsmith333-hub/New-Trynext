@@ -124,8 +124,9 @@ These are dated observations. Recheck them at the start of the next session.
 - [x] Local release checks, full diff/path review, and the high-confidence
   credential scan passed; all local attachments and Replit-only memory were
   excluded.
-- [ ] Open a pull request and merge to the live-enabled branch only after all
-  required checks pass.
+- [x] Opened PR #2 from the clean branch to `main`; its base, head, and 54-file
+  change list were verified with no attachment or agent-memory paths.
+- [ ] Merge to `main` only after all required checks pass on the final PR head.
 - [ ] Verify the resulting commit, workflow results, and live site through
   GitHub and read-only production checks.
 - [ ] After the owner confirms the GitHub handoff works, stop using Replit as
