@@ -10,6 +10,18 @@ import { logActivity, getAdminId } from "../lib/activityLog";
 
 const router: IRouter = Router();
 
+// Columns every activity-log listing returns; the heavy before/after snapshots are optional.
+const headlineColumns = {
+  id: adminActivityLogsTable.id,
+  adminId: adminActivityLogsTable.adminId,
+  adminName: adminTable.username,
+  action: adminActivityLogsTable.action,
+  entity: adminActivityLogsTable.entity,
+  entityId: adminActivityLogsTable.entityId,
+  entityName: adminActivityLogsTable.entityName,
+  createdAt: adminActivityLogsTable.createdAt,
+};
+
 // ── GET /api/admin/activity-logs ──────────────────────────────────────────────
 router.get("/admin/activity-logs", requireAdmin, async (req, res) => {
   try {
@@ -21,7 +33,11 @@ router.get("/admin/activity-logs", requireAdmin, async (req, res) => {
       search,
       dateFrom,
       dateTo,
+      summary,
     } = req.query as Record<string, string | undefined>;
+    // `?summary=1` leaves out the before/after record snapshots, which can be
+    // large. The admin Live Health feed polls often and only needs the headline.
+    const summaryOnly = summary === "1";
 
     const pageNum = Math.max(1, parseInt(page ?? "1", 10));
     const limitNum = Math.min(100, Math.max(1, parseInt(limit ?? "20", 10)));
@@ -40,18 +56,7 @@ router.get("/admin/activity-logs", requireAdmin, async (req, res) => {
 
     const [rows, countResult] = await Promise.all([
       db
-        .select({
-          id: adminActivityLogsTable.id,
-          adminId: adminActivityLogsTable.adminId,
-          adminName: adminTable.username,
-          action: adminActivityLogsTable.action,
-          entity: adminActivityLogsTable.entity,
-          entityId: adminActivityLogsTable.entityId,
-          entityName: adminActivityLogsTable.entityName,
-          before: adminActivityLogsTable.before,
-          after: adminActivityLogsTable.after,
-          createdAt: adminActivityLogsTable.createdAt,
-        })
+        .select(summaryOnly ? headlineColumns : { ...headlineColumns, before: adminActivityLogsTable.before, after: adminActivityLogsTable.after })
         .from(adminActivityLogsTable)
         .leftJoin(adminTable, eq(adminActivityLogsTable.adminId, adminTable.id))
         .where(where)

@@ -24,6 +24,7 @@
 
 import pg from "pg";
 import { logger } from "./logger";
+import { guardPool } from "./poolGuard";
 import { getActiveDbUrl } from "@workspace/db";
 
 const { Pool } = pg;
@@ -232,7 +233,7 @@ export async function repairTargetSchemas(): Promise<SchemaRepairResult[]> {
       continue;
     }
 
-    const pool = new Pool({ connectionString: targetUrl, max: 1, connectionTimeoutMillis: 10_000 });
+    const pool = guardPool(new Pool({ connectionString: targetUrl, max: 1, connectionTimeoutMillis: 10_000 }), "backup-patch");
     try {
       const client = await pool.connect();
       try {
@@ -271,8 +272,8 @@ async function syncOneTarget(
     return { id: target.id, label: target.label, status: "skipped", message: "Target URL matches source URL" };
   }
 
-  const sourcePool = new Pool({ connectionString: sourceUrl, max: 2, connectionTimeoutMillis: 10_000 });
-  const targetPool = new Pool({ connectionString: targetUrl, max: 2, connectionTimeoutMillis: 10_000 });
+  const sourcePool = guardPool(new Pool({ connectionString: sourceUrl, max: 2, connectionTimeoutMillis: 10_000 }), "backup-source");
+  const targetPool = guardPool(new Pool({ connectionString: targetUrl, max: 2, connectionTimeoutMillis: 10_000 }), "backup-target");
 
   try {
     const sourceTables = await getTables(sourcePool);

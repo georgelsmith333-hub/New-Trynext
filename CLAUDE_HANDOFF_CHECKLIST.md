@@ -49,16 +49,20 @@ prompt as the current project plan.
 
 This block supersedes the dated observations below where they conflict.
 
-- PR #2 is **merged**. `origin/main` is `2549742`; CI and Active app
-  verification both succeeded on it. The remote is named `origin`.
+- PR #2 is **merged** (`2549742`) and so is PR #3 (`dd6f1e2`: truthful admin
+  health probes, AI fallback timeout, handoff docs); CI and Active app
+  verification both succeeded on each. The remote is named `origin`.
+- Newer work (admin Live Health page, API crash fix, clean 400/409 errors, mockup
+  readiness checks, tracker reconciliation) is in the pull request that carries
+  this update. Check GitHub for whether it is merged or deployed.
 - The local checkout is identical to `origin/main`, with no local commits and no
   untracked attachments. The "Checkout state observed" notes below describe an
   earlier Replit checkout and are historical.
 - Items A and B below were worked in this session; item C is blocked by the
   session's network policy. See the newest `AGENT_HANDOFF.md` section for
   evidence and limits.
-- Deployment of `2549742` to Cloudflare/Render has **not** been confirmed from
-  this session. Nothing here has been deployed or verified live.
+- Deployment of `2549742` and `dd6f1e2` to Cloudflare/Render has **not** been
+  confirmed from this session. Nothing here has been verified live.
 
 ### Known complete locally
 
@@ -268,20 +272,32 @@ confirmed gaps in an approved scope.
 
 ### Design Studio and Smart Mockups
 
-- [ ] Preserve the accepted Smart v10.3 runtime; do not reactivate legacy
-  Smart v4/v7 assets or mass-activate database templates.
-- [ ] Confirm the canonical six families: T-shirt, long sleeve, hoodie, mug,
-  cap, and white sublimation water bottle.
-- [ ] Validate the current canonical 188-surface contract from source code;
-  do not infer colors or surfaces from old documents.
-- [ ] Keep editable PSD/PSB masters outside `public/`. Runtime assets must have
-  verified provenance/checksums and pass their release gates.
-- [ ] No fake Smart Object, missing-face fallback, unreviewed asset, or
-  non-canonical/tinted water-bottle variant may be promoted.
+- [x] Preserve the accepted Smart v10.3 runtime; do not reactivate legacy
+  Smart v4/v7 assets or mass-activate database templates. (`validate:mockups`
+  accepted; no runtime code references the retired mockup folders.)
+- [x] Confirm the canonical six families: T-shirt, long sleeve, hoodie, mug,
+  cap, and white sublimation water bottle. (Masters: 40 / 50 / 50 / 30 / 16 / 2
+  = 188.)
+- [x] Validate the current canonical 188-surface contract from source code;
+  do not infer colors or surfaces from old documents. (188 surfaces, 1,128
+  runtime roles, all checksums match.)
+- [x] Keep editable PSD/PSB masters outside `public/`. Runtime assets must have
+  verified provenance/checksums and pass their release gates. (0 PSD/PSB files
+  under any `public/`; masters are in `dist-mockups/staging/smart-v10-v3/`.)
+- [x] No fake Smart Object, missing-face fallback, unreviewed asset, or
+  non-canonical/tinted water-bottle variant may be promoted. (188/188 masters
+  contain real Smart Objects. The water bottle is held: its proof shows the print
+  area off-centre, and it needs the owner's visual approval before release.)
 - [ ] Preserve in-browser immediate artwork preview, undo/redo, product-switch
   refit, original-upload metadata, print-area selection, and cart snapshots.
+  (Partly verified: an uploaded image appears immediately on all five released
+  families at desktop and phone size. Undo/redo, refit and cart snapshots were
+  not re-tested in a browser.)
 - [ ] Verify apparel faces, mug controls, cap front/back, bottle front/back,
   color resolution, print-zone alignment, current preview/export, and cart flow.
+  (Partly verified: all six families load only canonical v10.3 files with no
+  errors. Bottle faces are held; per-face and per-color alignment, export and
+  cart flow were not re-tested.)
 - [ ] Check the current Studio route before claiming curved products have a
   customer-facing 3D viewer. The old repository's viewer is not imported by the
   newer Studio and is outside this transfer unless separately approved.
@@ -356,18 +372,23 @@ confirmed gaps in an approved scope.
 Before using the July tracker as an active backlog:
 
 - [ ] Compare `PROJECT_REBUILD_TRACKER/All Tasks Left To Do/PHASES_CHECKLIST.md`
-  with current code, current tests, and this handoff.
-- [ ] Reconcile `CURRENT_AUDIT.md`, `PHASE_2_SECURITY_FIXES.md`,
+  with current code, current tests, and this handoff. (Bannered as superseded.
+  Its individual 14-phase boxes were not re-audited one by one; the critical
+  findings behind them were.)
+- [x] Reconcile `CURRENT_AUDIT.md`, `PHASE_2_SECURITY_FIXES.md`,
   `PHASE_8_DATABASE_SCHEMA.md`, and both Phase 14 notes. These files contain
-  older status values and may contradict later completion evidence.
-- [ ] Mark only evidence-supported work done. Convert old, broad items into
+  older status values and may contradict later completion evidence. (Superseded
+  banners added; the three open Phase 2 verification tasks were ticked with
+  evidence; the audit's findings were re-checked in `CRITICAL_FINDINGS.md`.)
+- [x] Mark only evidence-supported work done. Convert old, broad items into
   specific tests or findings; remove duplicates and obsolete instructions.
+  (Done for the critical findings, with a status and evidence per item.)
 - [ ] Do not claim “no TODOs/placeholders anywhere” by running only a text
   search; inspect matches and classify them before reporting.
-- [ ] Keep `CRITICAL_FINDINGS.md` current so confirmed fixed findings are not
-  reintroduced as new work.
-- [ ] Preserve the historical files or update them with a clear superseded
-  status; do not silently delete useful audit history.
+- [x] Keep `CRITICAL_FINDINGS.md` current so confirmed fixed findings are not
+  reintroduced as new work. (See "Reconciliation 2026-10-04".)
+- [x] Preserve the historical files or update them with a clear superseded
+  status; do not silently delete useful audit history. (Nothing deleted.)
 
 ## Project map and useful commands
 

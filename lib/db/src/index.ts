@@ -50,13 +50,27 @@ if (urls.length === 0) {
 
 const primaryUrl = urls[0];
 
+/* ─── Pool error guard ───────────────────────────────────────────────────── */
+// pg emits "error" on a Pool when the server drops an idle client (Postgres
+// restart, failover, Neon idle suspend). With no listener Node treats that as
+// an uncaught exception and kills the whole API process. pg discards the
+// broken client and opens a new one on demand, so log and carry on.
+function guardPool(p: pg.Pool, label: string): pg.Pool {
+  p.on("error", (err: Error & { code?: unknown }) => {
+    console.warn(
+      `[DB] ${label}: idle client error ignored (${typeof err.code === "string" ? err.code : "unknown"}); reconnecting on demand`,
+    );
+  });
+  return p;
+}
+
 /* ─── Internal mutable state (switched on failover) ─────────────────────── */
-let _activePool: pg.Pool = new Pool({
+let _activePool: pg.Pool = guardPool(new Pool({
   connectionString: primaryUrl,
   max: 10,
   idleTimeoutMillis: 30_000,
   connectionTimeoutMillis: 10_000,
-});
+}), "active");
 
 let _activeDb: NodePgDatabase<typeof schema> = drizzle(_activePool, { schema });
 let _activeUrl = primaryUrl;
@@ -106,7 +120,8 @@ async function hasSchema(testPool: pg.Pool): Promise<{ products: boolean; orders
 
 /* ─── Probe a single candidate URL (creates and ends its own test pool) ─── */
 async function probeCandidate(url: string): Promise<ProbeResult> {
-  const testPool = new Pool({ connectionString: url, max: 1, connectionTimeoutMillis: 10_000 });
+  // A probe pool that wins becomes the active pool, so it needs the guard too.
+  const testPool = guardPool(new Pool({ connectionString: url, max: 1, connectionTimeoutMillis: 10_000 }), "probe");
   try {
     const schema = await hasSchema(testPool);
     if (!schema.products || !schema.orders) {

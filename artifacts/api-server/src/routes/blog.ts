@@ -6,6 +6,7 @@ import { logActivity, getAdminId } from "../lib/activityLog";
 import { z } from "zod";
 import { redisCacheGet, redisCacheSet, redisCacheDel } from "../lib/redis";
 import { pingSitemaps } from "../lib/sitemapPing";
+import { isUniqueViolation } from "../lib/dbErrors";
 
 // ── Blog cache keys ───────────────────────────────────────────────────────────
 const BLOG_CATS_KEY = "trynext:blog:categories";
@@ -496,6 +497,10 @@ router.post("/blog", requireAdmin, async (req, res) => {
     const threshold = await getTrendingThreshold();
     res.status(201).json(mapPost(post, threshold));
   } catch (err) {
+    if (isUniqueViolation(err)) {
+      res.status(409).json({ error: "conflict", message: "A blog post with this slug already exists." });
+      return;
+    }
     req.log.error({ err }, "Failed to create blog post");
     res.status(500).json({ error: "internal_error", message: "Failed to create blog post" });
   }
@@ -536,6 +541,10 @@ router.put("/blog/:id", requireAdmin, async (req, res) => {
     const threshold = await getTrendingThreshold();
     res.json(mapPost(post, threshold));
   } catch (err) {
+    if (isUniqueViolation(err)) {
+      res.status(409).json({ error: "conflict", message: "A blog post with this slug already exists." });
+      return;
+    }
     req.log.error({ err }, "Failed to update blog post");
     res.status(500).json({ error: "internal_error", message: "Failed to update blog post" });
   }

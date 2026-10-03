@@ -3911,3 +3911,126 @@ Verification: API typecheck passes; API suite 15 files / 51 tests pass on two
   Redis-outage test fails against the old behaviour and passes with the fix.
   No production request, order, payment, or data change was made.
 ```
+
+## 2026-10-04 Live Health page, crash and error fixes, mockup readiness (Claude Code session)
+
+This continues the section above, whose pull request (#3) was merged to `main` as
+`dd6f1e2` after CI passed. This work is on branch `claude/nice-carson-nxjq7q`,
+restarted from that `main`, and is delivered by the pull request that carries
+this section. At the time of writing it is pushed for review and **not merged and
+not deployed**; GitHub, not this file, shows what happened afterwards.
+
+```text
+Status: ready for review — verified locally against a real API and database.
+Last completed:
+  1. Admin "Live Health" page (/admin/live-health, sidebar: System > Live Health).
+     API: GET /api/admin/system/live (admin only, no-store, about 6 KB) returns
+     real database and Redis probes (5 s deadline, measured latency, shared for
+     5 s across tabs), process memory, event-loop lag, a rolling 60-minute
+     traffic window (requests, 4xx, 5xx, p50/p95 from a fixed histogram),
+     slowest and failing routes, redacted recent server errors, and a count-only
+     backup summary. Counters live in memory (lib/requestMetrics.ts, bounded: 60
+     buckets, 200 routes, 50 errors) and reset when the API restarts or sleeps;
+     the page says so. Probes, uptime pings and the live endpoint itself are not
+     counted. Page: refreshes every 10 s only while the tab is visible, Pause /
+     Resume (Resume refreshes at once), overall verdict with plain-language
+     findings (thresholds in src/lib/liveHealth.ts), traffic and p95 charts,
+     routes tables, recent errors, and a live feed of admin changes from the
+     existing activity log. When the API cannot reach its database the admin
+     endpoint answers 500 (sessions are verified in the database), so the page
+     reads the public /healthz to say "API running, database down" and keeps the
+     last good numbers on screen marked Stale.
+  2. API process crash fixed. When Postgres dropped an idle connection (restart,
+     failover, Neon idle suspend) pg emitted an unhandled pool 'error' and Node
+     killed the whole API. Reproduced by stopping a local Postgres; every pool in
+     lib/db and the API now has an error listener (lib/db/src/index.ts, and
+     api-server src/lib/poolGuard.ts for the backup-sync and cluster-probe
+     pools). Re-run: the API stayed up, /healthz reported db "error", and it
+     recovered by itself.
+  3. Global error handler moved to src/lib/errorHandler.ts. Malformed JSON,
+     oversized and wrongly encoded bodies now return 400 / 413 / 415 (they were
+     HTTP 500 with a raw parser message and an error log); real server errors
+     return a generic message in production (no SQL or internal text) and are
+     recorded redacted for the Live Health page; a response that has already
+     started is handed to Express so the connection closes instead of hanging.
+  4. Duplicate category and blog slugs return 409 (they were 500); helper in
+     src/lib/dbErrors.ts. Hampers and customer signup already did.
+  5. Smart Mockups checked, nothing changed except one tooling default.
+     validate:mockups: accepted, 188 surfaces, 1,128 runtime roles.
+     mockups:validate-matrix now defaults to dist-mockups/staging/smart-v10-v3
+     (it pointed at a folder that does not exist): 188/188, all checksums match.
+     mockups:audit-psd: 188/188 masters open and contain real Smart Objects.
+     Browser check of the Design Studio for all six families at 1440 and 390 px
+     with a real artwork upload: only canonical /mockups/psd-master-v10/ files
+     were requested, all 200, zero page or console errors, artwork composited on
+     the real photographic mockups. The five released families (T-shirt, long
+     sleeve, hoodie, mug, cap) are ready.
+  6. Water bottle deliberately stays on hold. Server (routes/orders.ts, 409
+     "mockup_not_approved") and Studio (Add to Cart and Export disabled with a
+     notice) both block custom bottle orders; routes/mockups.ts keeps bottle
+     rows out of the customer set. The proof previews in
+     dist-mockups/staging/smart-v10-v3/proof-previews/waterbottle/white/ show the
+     print-area box left of centre and overhanging the bottle's left edge on
+     front and back, so the hold is correct, not stale.
+  7. Old July tracker reconciled with evidence (see PROJECT_REBUILD_TRACKER/
+     All Tasks Left To Do/CRITICAL_FINDINGS.md, "Reconciliation 2026-10-04"):
+     most items verified fixed, several stale, backup-sync TRUNCATE recorded as
+     "changed" (it is transactional with rollback, source-empty skip and schema
+     check; do not alter without owner approval), a few still open.
+  8. Whole-API sweep on the real local API: 144 requests over 72 parameter-free
+     GET routes, anonymous and admin, gave no 5xx, no hangs, nothing over 2 s.
+     AI endpoints: bad input is 400, an unreachable provider is a clean 502 in
+     under half a second, admin developer chat falls back to the local agent.
+     Customer and admin login verified. Routing audit unchanged (222 routes, 0
+     duplicates, 0 shadowed).
+Stopped at: Everything verified; pull request open for review.
+Files/areas changed:
+  - API: src/app.ts, src/lib/{requestMetrics,errorHandler,poolGuard,dbErrors}.ts
+    (+ tests), src/routes/{systemHealth,categories,blog,dbCluster}.ts,
+    src/lib/dbBackupSync.ts (pool guard only), lib/db/src/index.ts (pool guard).
+  - Storefront: src/lib/liveHealth.ts (+ tests), src/pages/admin/AdminLiveHealth.tsx,
+    App.tsx route, AdminLayout.tsx nav entry.
+  - tools/validate-smart-matrix.mjs (default staging root), PROJECT_REBUILD_TRACKER/*
+    (superseded banners, reconciliation), this file, CLAUDE_HANDOFF_CHECKLIST.md.
+Remaining work:
+  - Water bottle: correct the print-area geometry (PSB master and its runtime
+    print-mask role, then regenerate the checksum-bound roles), regenerate the
+    proof, get the owner's visual approval, and only then add "waterbottle" to
+    CUSTOMER_RELEASED_CATEGORIES (routes/mockups.ts), remove the 409 gate in
+    routes/orders.ts, and lift the Studio hold. Never promote it on a structural
+    pass alone.
+  - After deployment: open /admin/live-health on trynext.shop with an admin
+    session and confirm it shows database and Redis latency; run the cache check
+    from the earlier section. This session's network policy denies trynext.shop,
+    so nothing here has been verified on the live site.
+  - Storage, Telegram and auth entries in the admin health response are still
+    configuration checks, not live probes.
+  - Live Health figures are per process. If the API ever runs as more than one
+    instance, each instance reports only its own traffic.
+  - Not audited for 409 handling: other write routes with user-supplied unique
+    values (for example promo codes and product slugs).
+  - Real-device or Safari invoice download; an authenticated-customer session test.
+Blocker: None for the code. Live verification needs trynext.shop allowed in the
+  environment's network settings, or an owner with browser access.
+Next safe action: Review and merge the pull request when CI is green, then do the
+  post-deploy checks above. Rollback is a revert of the merge commit.
+Verification: workspace typecheck passes; production build passes (exit 0); API
+  suite 19 files / 109 tests and storefront suite 24 files / 125 tests pass with
+  DATABASE_URL* unset; mockup gates as in item 5. Regression tests were
+  mutation-checked (put the old behaviour back, the test fails). Real end-to-end:
+  headless Chromium drove /admin/live-health against the real API on a throwaway
+  local Postgres, 27/27 checks including a live change appearing without a
+  reload, polling every 10 s, Pause stopping it, a real database outage shown as
+  Critical with the reason and stale numbers, and automatic recovery. The
+  throwaway database and local servers were removed afterwards. No production
+  request, order, payment, provider setting or production data was touched.
+How to repeat the local end-to-end setup (scripts are not in the repo):
+  pg_ctlcluster 16 main start; create a throwaway role and database as the
+  postgres user; run `pnpm --filter @workspace/db run push` with DATABASE_URL set
+  to it (empty database only); build with `node ./build.mjs` in artifacts/api-server;
+  start with NODE_ENV=development, PORT=8082 and throwaway values for DATABASE_URL,
+  JWT_SECRET, ADMIN_JWT_SECRET (different), ADMIN_PASSWORD and ALLOWED_ORIGINS; start
+  the storefront with `pnpm --filter @workspace/trynext-storefront run dev`, which
+  proxies /api to port 8082; sign in via POST /api/admin/login. Never point any of
+  this at a real database.
+```
