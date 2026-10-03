@@ -20,3 +20,11 @@ Changed from 15% → 25% across the entire codebase.
 - `artifacts/trynex-storefront/src/pages/admin/AdminOrders.tsx` — advance badge label
 
 **How to apply:** If the rate ever changes again, search for `0.25` near advance/deposit contexts + all "25%" string literals in these files.
+
+## Invoice payment truth
+
+An advance or full-payment submission is not a received payment. Count money as paid only when the saved order payment status is `verified` or `paid`; display submitted evidence separately, and keep pending/submitted amounts in the amount still due. Generate receipts from the saved order record, not prices or totals copied from the cart.
+
+**Why:** Customers can submit wallet or bank evidence before staff review, and client-side cart values are not authoritative.
+
+**How to apply:** Keep this rule aligned across web and mobile invoice calculations and order-success summaries. Preserve the order's saved payment-plan note so full payment and 25% advance are distinguished correctly.

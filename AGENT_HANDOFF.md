@@ -3383,3 +3383,34 @@ both workflows restarted cleanly; local `/`, `/design-studio`,
 with 188 surfaces; the final Design Studio screenshot had no browser console
 errors; and GitHub `main` was verified at
 `58e81e39d7f90c7a34829ce1704f4ff83b5319c4`.
+
+---
+
+## 2026-10-03 Order success, invoices, and Rocket checkout
+
+Status: implementation and local verification complete; clean feature-branch
+publication complete. No production deployment was performed.
+
+Last completed: Aligned Rocket wallet support across web checkout, mobile
+checkout, and API order/payment-evidence validation. Order invoices now map
+Rocket, keep submitted money separate from verified payments, handle refunded
+orders without showing an outstanding balance, recognize Dhaka district
+variants, and include courier tracking details when available. Mobile success
+invoices now use the saved order response for customer, item, and amount data.
+The Design Studio control is visibly labeled “Change product”.
+
+Verification: Storefront, API, and mobile typechecks passed; all 84 storefront
+tests and 42 API tests passed; storefront production build and mobile web
+export completed; API production build completed; web/API/mobile workflows
+started; Design Studio preview showed the updated control. No real customer
+orders were created. The public settings response contains the `rocketNumber`
+field, but the current development database has no configured value, so Rocket
+is correctly hidden there until an admin number is saved.
+
+Publication: `fix/waterbottle-white-identity` contains the reviewed functional
+source changes based on the verified `main` tip. Pasted notes and screenshot
+evidence under `attached_assets` were excluded. `main` was not changed.
+
+Remaining work: None for this release. Continue future work from the published
+feature branch, preserve the water-bottle fail-closed approval gates, and do not
+deploy unless separately requested.

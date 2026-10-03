@@ -228,33 +228,19 @@ const MOCKUP_CONFIG: Record<string, {
   },
   waterbottle: {
     lightMockup: "normalized/waterbottle-white-front.png",
-    darkMockup: "normalized/waterbottle-black-front.png",
+    darkMockup: "normalized/waterbottle-white-front.png",
     backLightMockup: "normalized/waterbottle-white-back.png",
-    backDarkMockup: "normalized/waterbottle-black-back.png",
+    backDarkMockup: "normalized/waterbottle-white-back.png",
     colorPhotos: {
       "#f4f3f1": { front: "normalized/waterbottle-white-front.png", back: "normalized/waterbottle-white-back.png" },
-      "#1c1917": { front: "normalized/waterbottle-black-front.png", back: "normalized/waterbottle-black-back.png" },
-      "#1e3a5f": { front: "normalized/waterbottle-navy-front.png", back: "normalized/waterbottle-navy-back.png" },
-      "#166534": { front: "normalized/waterbottle-forest-front.png", back: "normalized/waterbottle-forest-back.png" },
-      "#0ea5e9": { front: "normalized/waterbottle-sky-blue-front.png", back: "normalized/waterbottle-sky-blue-back.png" },
-      "#dc2626": { front: "normalized/waterbottle-red-front.png", back: "normalized/waterbottle-red-back.png" },
-      "#f472b6": { front: "normalized/waterbottle-pink-front.png", back: "normalized/waterbottle-pink-back.png" },
-      "#0f766e": { front: "normalized/waterbottle-teal-front.png", back: "normalized/waterbottle-teal-back.png" },
     },
     // Only the straight bottle body is printable; exclude lid, shoulder,
     // carabiner and rounded base.
-    printZone: { left: 0.39, top: 0.34, w: 0.245, h: 0.555 },
-    backPrintZone: { left: 0.39, top: 0.34, w: 0.245, h: 0.555 },
+    printZone: { left: 0.395, top: 0.355, w: 0.21, h: 0.47 },
+    backPrintZone: { left: 0.395, top: 0.355, w: 0.21, h: 0.47 },
     zones: ["Front", "Back"],
     colors: [
       { name: "White", hex: "#F4F3F1" },
-      { name: "Black", hex: "#1C1917" },
-      { name: "Navy", hex: "#1e3a5f" },
-      { name: "Forest", hex: "#166534" },
-      { name: "Sky Blue", hex: "#0ea5e9" },
-      { name: "Red", hex: "#dc2626" },
-      { name: "Pink", hex: "#f472b6" },
-      { name: "Teal", hex: "#0f766e" },
     ],
   },
 };
@@ -271,7 +257,7 @@ const FALLBACK_PRODUCTS = [
   { id: 2, name: "Custom Hoodie",  slug: "hoodie", price: 1499, customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&q=80" },
   { id: 3, name: "Custom Mug",     slug: "mug",    price: 599,  customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400&q=80" },
   { id: 4, name: "Custom Cap",     slug: "cap",    price: 699,  customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&q=80" },
-  { id: 5, name: "Custom Water Bottle", slug: "waterbottle", price: 899, customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&q=80" },
+  { id: 5, name: "Custom Water Bottle", slug: "waterbottle", price: 899, customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: `${getBaseUrl()}/mockups/white-waterbottle-photo.png` },
 ];
 
 export default function DesignScreen() {
@@ -290,8 +276,11 @@ export default function DesignScreen() {
   });
 
   const products = useMemo(() => {
-    const list = productsData?.products ?? [];
-    return list.length > 0 ? list : FALLBACK_PRODUCTS;
+    const list = (productsData?.products ?? []).filter((product) =>
+      !/bottle/i.test(`${product.slug ?? ""} ${product.name ?? ""}`),
+    );
+    if (list.length > 0) return list;
+    return FALLBACK_PRODUCTS.filter((product) => !/bottle/i.test(`${product.slug} ${product.name}`));
   }, [productsData]);
 
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);

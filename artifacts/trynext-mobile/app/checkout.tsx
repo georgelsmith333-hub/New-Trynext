@@ -18,6 +18,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useCart } from "@/context/CartContext";
 import { api, apiFetch } from "@/lib/api";
+import { OrderSuccessCelebration } from "@/components/OrderSuccessCelebration";
+import {
+  downloadMobileOrderInvoicePdf,
+  type MobileInvoiceItem,
+} from "@/lib/order-invoice";
 
 // Major districts for quick-select chips (most common delivery destinations)
 const MAJOR_DISTRICTS = [
@@ -38,7 +43,23 @@ const BD_DISTRICTS = [
   "Patuakhali","Barguna","Jhalokathi","Madaripur","Gopalganj","Shariatpur",
 ];
 
-type MobilePaymentMethod = "cod" | "bkash" | "nagad" | "upay" | "bank" | "card";
+type MobilePaymentMethod = "cod" | "bkash" | "nagad" | "rocket" | "upay" | "bank" | "card";
+type MobileWalletMethod = Extract<MobilePaymentMethod, "bkash" | "nagad" | "rocket" | "upay">;
+
+const WALLET_DETAILS: Record<MobileWalletMethod, { label: string; color: string }> = {
+  bkash: { label: "bKash", color: "#e2136e" },
+  nagad: { label: "Nagad", color: "#f7941d" },
+  rocket: { label: "Rocket", color: "#8c3494" },
+  upay: { label: "uPay", color: "#0077cc" },
+};
+
+const isWallet = (method: string): method is MobileWalletMethod =>
+  Object.prototype.hasOwnProperty.call(WALLET_DETAILS, method);
+
+const getWalletNumber = (
+  method: MobileWalletMethod,
+  settings?: Record<string, string> | null,
+) => settings?.[`${method}Number`] || "";
 
 const PAYMENT_METHODS = (siteSettings?: Record<string, string> | null) => {
   const options: { value: MobilePaymentMethod; label: string; icon: any; color: string; desc: string }[] = [];
@@ -48,12 +69,16 @@ const PAYMENT_METHODS = (siteSettings?: Record<string, string> | null) => {
   }
   const bkash = siteSettings?.bkashNumber;
   const nagad = siteSettings?.nagadNumber;
+  const rocket = siteSettings?.rocketNumber;
   const upay = siteSettings?.upayNumber;
   if (bkash) {
     options.push({ value: "bkash", label: "bKash", icon: "smartphone", color: "#e2136e", desc: `${bkash} (Personal)` });
   }
   if (nagad) {
     options.push({ value: "nagad", label: "Nagad", icon: "smartphone", color: "#f7941d", desc: `${nagad} (Personal)` });
+  }
+  if (rocket) {
+    options.push({ value: "rocket", label: "Rocket", icon: "smartphone", color: "#8c3494", desc: `${rocket} (Personal)` });
   }
   if (upay) {
     options.push({ value: "upay", label: "uPay", icon: "smartphone", color: "#0077cc", desc: `${upay} (Personal)` });
@@ -65,8 +90,6 @@ const PAYMENT_METHODS = (siteSettings?: Record<string, string> | null) => {
   options.push({ value: "card", label: "Card on Delivery", icon: "credit-card", color: "#7c3aed", desc: "Pay with POS card machine" });
   return options;
 };
-
-const isWallet = (m: string) => m === "bkash" || m === "nagad" || m === "upay";
 
 function formatPrice(p: number) {
   return "৳" + p.toLocaleString("en-BD");
@@ -108,6 +131,8 @@ export default function CheckoutScreen() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentSubmissionError, setPaymentSubmissionError] = useState<string | null>(null);
   const [retryingPaymentSubmission, setRetryingPaymentSubmission] = useState(false);
+  const [invoiceBusy, setInvoiceBusy] = useState(false);
+  const [invoiceError, setInvoiceError] = useState<string | null>(null);
 
   const [createdOrder, setCreatedOrder] = useState<{
     orderNumber: string;
@@ -117,6 +142,22 @@ export default function CheckoutScreen() {
     paymentMethod: MobilePaymentMethod;
     paymentMode: "full" | "advance" | "cod";
     paymentSubmitted?: boolean;
+    paymentStatus: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail?: string;
+    shippingAddress: string;
+    shippingCity?: string;
+    shippingDistrict: string;
+    subtotal: number;
+    shippingCost: number;
+    promoDiscount: number;
+    notes: string;
+    items: MobileInvoiceItem[];
+    createdAt: string;
+    trackingNumber?: string;
+    trackingUrl?: string;
+    courierName?: string;
   } | null>(null);
 
   // Fetch dynamic site settings (shipping cost, payment numbers, etc.)
@@ -128,12 +169,9 @@ export default function CheckoutScreen() {
 
   const freeShippingThreshold = Number(siteSettings?.freeShippingThreshold ?? 1500);
   const shippingFee = Number(siteSettings?.shippingCost ?? 60);
-  // Real admin-configured numbers only. No hardcoded fallback.
-  const bkashNumber = siteSettings?.bkashNumber ?? "";
-  const nagadNumber = siteSettings?.nagadNumber ?? "";
   const paymentOptions = useMemo(() => PAYMENT_METHODS(siteSettings), [siteSettings]);
   const hasWalletOrBankMethod = paymentOptions.some((method) =>
-    method.value === "bkash" || method.value === "nagad" || method.value === "upay" || method.value === "bank",
+    method.value === "bkash" || method.value === "nagad" || method.value === "rocket" || method.value === "upay" || method.value === "bank",
   );
 
   useEffect(() => {
@@ -192,9 +230,9 @@ export default function CheckoutScreen() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         return false;
       }
-      const numberAvailable = paymentMethod === "bkash" ? bkashNumber : paymentMethod === "nagad" ? nagadNumber : siteSettings?.upayNumber;
+      const numberAvailable = getWalletNumber(paymentMethod, siteSettings);
       if (!numberAvailable) {
-        setPaymentError(`${paymentMethod === "bkash" ? "bKash" : paymentMethod === "nagad" ? "Nagad" : "uPay"} number is not configured. Choose another method or contact support.`);
+        setPaymentError(`${WALLET_DETAILS[paymentMethod].label} number is not configured. Choose another method or contact support.`);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
         return false;
       }
@@ -227,7 +265,11 @@ export default function CheckoutScreen() {
           promoCode: promoApplied || undefined,
         }),
       });
-      setCreatedOrder((previous) => previous ? { ...previous, paymentSubmitted: true } : previous);
+      setCreatedOrder((previous) => previous ? {
+        ...previous,
+        paymentSubmitted: true,
+        paymentStatus: "submitted",
+      } : previous);
       return true;
     } catch (error: any) {
       setPaymentSubmissionError(error?.message || "Payment details could not be submitted yet.");
@@ -251,6 +293,10 @@ export default function CheckoutScreen() {
         customImages: i.customImages,
       }));
 
+      const orderNotes = [
+        notes.trim(),
+        paymentMode === "full" ? "Payment plan: full payment" : "Payment plan: 25% advance + cash on delivery",
+      ].filter(Boolean).join(" | ");
       const order = await api.createOrder({
         customerName: name.trim(),
         customerPhone: phone.trim(),
@@ -259,10 +305,7 @@ export default function CheckoutScreen() {
         shippingCity: thana.trim() || undefined,
         shippingDistrict: district,
         paymentMethod,
-        notes: [
-          notes.trim(),
-          paymentMode === "full" ? "Payment plan: full payment" : "Payment plan: 25% advance + cash on delivery",
-        ].filter(Boolean).join(" | "),
+        notes: orderNotes,
         promoCode: promoApplied || undefined,
         items: orderItems,
         subtotal,
@@ -272,15 +315,38 @@ export default function CheckoutScreen() {
         source: "mobile",
       });
 
-      const serverTotal = Number(order.total) || total;
+      const serverTotal = Number(order.total);
       const serverAdvance = Math.ceil(serverTotal * 0.25);
       setCreatedOrder({
         orderNumber: order.orderNumber,
         id: order.id,
         total: serverTotal,
         advance: serverAdvance,
-        paymentMethod,
+        paymentMethod: String(order.paymentMethod ?? paymentMethod) as MobilePaymentMethod,
         paymentMode,
+        paymentStatus: String(order.paymentStatus ?? "pending"),
+        customerName: order.customerName,
+        customerPhone: order.customerPhone,
+        customerEmail: order.customerEmail || undefined,
+        shippingAddress: order.shippingAddress,
+        shippingCity: order.shippingCity || undefined,
+        shippingDistrict: order.shippingDistrict || district,
+        subtotal: Number(order.subtotal),
+        shippingCost: Number(order.shippingCost),
+        promoDiscount: Number(order.promoDiscount ?? 0),
+        notes: String(order.notes ?? orderNotes),
+        items: Array.isArray(order.items) ? order.items.map((item) => ({
+          productName: item.productName,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          size: item.size,
+          color: item.color,
+        })) : [],
+        createdAt: String(order.createdAt ?? new Date().toISOString()),
+        trackingNumber: order.trackingNumber,
+        trackingUrl: order.trackingUrl,
+        courierName: order.courierName,
       });
       clearCart();
 
@@ -300,97 +366,172 @@ export default function CheckoutScreen() {
     }
   };
 
+  const downloadInvoice = async () => {
+    if (!createdOrder || invoiceBusy) return;
+    setInvoiceError(null);
+    setInvoiceBusy(true);
+    try {
+      await downloadMobileOrderInvoicePdf(createdOrder, {
+        siteName: siteSettings?.siteName,
+        email: siteSettings?.email,
+        phone: siteSettings?.phone || siteSettings?.whatsappNumber,
+        address: siteSettings?.address,
+      });
+    } catch (error) {
+      setInvoiceError(error instanceof Error ? error.message : "The PDF could not be created. Please try again.");
+    } finally {
+      setInvoiceBusy(false);
+    }
+  };
+
   if (step === "success" && createdOrder) {
     return (
-      <View style={[styles.successContainer, { backgroundColor: colors.background, paddingTop: insets.top }]}>
-        <View style={[styles.successIcon, { backgroundColor: colors.primary + "20" }]}>
-          <Feather name="check-circle" size={64} color={colors.primary} />
-        </View>
-        <Text style={[styles.successTitle, { color: colors.foreground }]}>Order Placed! 🎉</Text>
-        <Text style={[styles.successSub, { color: colors.mutedForeground }]}>
-          Your order <Text style={{ color: colors.primary, fontFamily: "Inter_700Bold" }}>#{createdOrder.orderNumber}</Text> has been placed successfully.
-        </Text>
-        <View style={[styles.successCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Payment method</Text>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>
-              {paymentOptions.find((method) => method.value === createdOrder.paymentMethod)?.label ?? createdOrder.paymentMethod}
-            </Text>
+      <View style={[styles.successScreen, { backgroundColor: colors.background }]}>
+        <ScrollView
+          style={styles.successScroll}
+          contentContainerStyle={[
+            styles.successContainer,
+            {
+              paddingTop: isWeb ? 80 : insets.top + 24,
+              paddingBottom: isWeb ? 58 : insets.bottom + 24,
+            },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={[styles.successIcon, { backgroundColor: colors.primary + "20" }]}>
+            <Feather name="check-circle" size={64} color={colors.primary} />
           </View>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Order total</Text>
-            <Text style={[styles.summaryValue, { color: colors.foreground }]}>{formatPrice(createdOrder.total)}</Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
-              {createdOrder.paymentMode === "full" ? "Amount due now" : "25% advance"}
-            </Text>
-            <Text style={[styles.summaryValue, { color: colors.primary }]}>
-              {formatPrice(createdOrder.paymentMode === "full" ? createdOrder.total : createdOrder.advance)}
-            </Text>
-          </View>
-          {createdOrder.paymentMode !== "full" && (
+          <Text style={[styles.successTitle, { color: colors.foreground }]}>Order placed</Text>
+          <Text style={[styles.successSub, { color: colors.mutedForeground }]}>
+            Your order <Text style={{ color: colors.primary, fontFamily: "Inter_700Bold" }}>#{createdOrder.orderNumber}</Text> is recorded.
+            {createdOrder.paymentSubmitted
+              ? " Payment details are awaiting verification."
+              : createdOrder.paymentMethod === "cod"
+                ? " The 25% advance is due to confirm the order."
+                : " Payment is not marked as received until it is verified."}
+          </Text>
+          <View style={[styles.successCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Remaining on delivery</Text>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Payment method</Text>
               <Text style={[styles.summaryValue, { color: colors.foreground }]}>
-                {formatPrice(createdOrder.total - createdOrder.advance)}
+                {paymentOptions.find((method) => method.value === createdOrder.paymentMethod)?.label ?? createdOrder.paymentMethod}
               </Text>
             </View>
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Payment status</Text>
+              <Text style={[styles.summaryValue, { color: colors.foreground }]}>
+                {createdOrder.paymentSubmitted
+                  ? "Awaiting verification"
+                  : createdOrder.paymentStatus === "paid"
+                    ? "Paid in full"
+                    : createdOrder.paymentStatus === "verified"
+                      ? "Verified"
+                      : "Not verified"}
+              </Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Order total</Text>
+              <Text style={[styles.summaryValue, { color: colors.foreground }]}>{formatPrice(createdOrder.total)}</Text>
+            </View>
+            <View style={styles.summaryRow}>
+              <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
+                {createdOrder.paymentSubmitted
+                  ? "Submitted — awaiting verification"
+                  : createdOrder.paymentMode === "full"
+                    ? "Full amount due"
+                    : "25% advance due"}
+              </Text>
+              <Text style={[styles.summaryValue, { color: colors.primary }]}>
+                {formatPrice(createdOrder.paymentMode === "full" ? createdOrder.total : createdOrder.advance)}
+              </Text>
+            </View>
+            {createdOrder.paymentMode !== "full" && (
+              <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Remaining on delivery</Text>
+                <Text style={[styles.summaryValue, { color: colors.foreground }]}>
+                  {formatPrice(createdOrder.total - createdOrder.advance)}
+                </Text>
+              </View>
+            )}
+          </View>
+          <View style={[styles.successCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Text style={[styles.successCardTitle, { color: colors.foreground }]}>What happens next?</Text>
+            <View style={styles.successStep}>
+              <Feather name="phone" size={16} color={colors.primary} />
+              <Text style={[styles.successStepText, { color: colors.mutedForeground }]}>We'll contact you to confirm the order details.</Text>
+            </View>
+            <View style={styles.successStep}>
+              <Feather name="package" size={16} color={colors.primary} />
+              <Text style={[styles.successStepText, { color: colors.mutedForeground }]}>Production starts after confirmation.</Text>
+            </View>
+            <View style={styles.successStep}>
+              <Feather name="truck" size={16} color={colors.primary} />
+              <Text style={[styles.successStepText, { color: colors.mutedForeground }]}>
+                Estimated delivery: {/^dhaka(?:\b|$)/i.test(district.trim()) ? "2–3" : "3–5"} business days after confirmation.
+              </Text>
+            </View>
+          </View>
+          {paymentSubmissionError && (
+            <View style={[styles.successCard, { backgroundColor: colors.accent, borderColor: colors.border }]}>
+              <Text style={[styles.successCardTitle, { color: colors.accentForeground }]}>Payment details still need to be sent</Text>
+              <Text style={[styles.successStepText, { color: colors.accentForeground, marginTop: 4 }]}>
+                Your order is safe. Retry to submit the payment information for verification.
+              </Text>
+              <Pressable
+                testID="button-retry-payment-submission"
+                style={[styles.trackBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
+                disabled={retryingPaymentSubmission}
+                onPress={async () => {
+                  setRetryingPaymentSubmission(true);
+                  try {
+                    await submitPaymentInfo(createdOrder.id);
+                  } finally {
+                    setRetryingPaymentSubmission(false);
+                  }
+                }}
+              >
+                <Feather name="refresh-cw" size={18} color={colors.primaryForeground} />
+                <Text style={styles.trackBtnText}>{retryingPaymentSubmission ? "Retrying…" : "Retry payment submission"}</Text>
+              </Pressable>
+            </View>
           )}
-        </View>
-        <View style={[styles.successCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Text style={[styles.successCardTitle, { color: colors.foreground }]}>What happens next?</Text>
-          <View style={styles.successStep}>
-            <Feather name="phone" size={16} color={colors.primary} />
-            <Text style={[styles.successStepText, { color: colors.mutedForeground }]}>We'll call/SMS you within 2 hours to confirm</Text>
-          </View>
-          <View style={styles.successStep}>
-            <Feather name="package" size={16} color={colors.primary} />
-            <Text style={[styles.successStepText, { color: colors.mutedForeground }]}>Production starts after confirmation</Text>
-          </View>
-          <View style={styles.successStep}>
-            <Feather name="truck" size={16} color={colors.primary} />
-            <Text style={[styles.successStepText, { color: colors.mutedForeground }]}>Delivered within 24-48 hours</Text>
-          </View>
-        </View>
-        {paymentSubmissionError && (
-          <View style={[styles.successCard, { backgroundColor: "#FFF7ED", borderColor: "#FDBA74" }]}>
-            <Text style={[styles.successCardTitle, { color: "#9A3412" }]}>Payment details still need to be sent</Text>
-            <Text style={[styles.successStepText, { color: "#9A3412", marginTop: 4 }]}>
-              Your order is safe. Retry now to submit the payment information for verification.
+          <Pressable
+            testID="button-download-order-invoice"
+            style={({ pressed }) => [
+              styles.invoiceBtn,
+              { borderColor: colors.border, backgroundColor: colors.card, opacity: pressed || invoiceBusy ? 0.75 : 1 },
+            ]}
+            disabled={invoiceBusy}
+            onPress={downloadInvoice}
+          >
+            {invoiceBusy
+              ? <ActivityIndicator size="small" color={colors.primary} />
+              : <Feather name="file-text" size={18} color={colors.primary} />}
+            <Text style={[styles.invoiceBtnText, { color: colors.foreground }]}>
+              {invoiceBusy ? "Preparing PDF…" : isWeb ? "Save / print PDF invoice" : "Download PDF invoice"}
             </Text>
-            <Pressable
-              style={[styles.trackBtn, { backgroundColor: "#EA580C", marginTop: 12 }]}
-              disabled={retryingPaymentSubmission}
-              onPress={async () => {
-                setRetryingPaymentSubmission(true);
-                try {
-                  await submitPaymentInfo(createdOrder.id);
-                } finally {
-                  setRetryingPaymentSubmission(false);
-                }
-              }}
-            >
-              <Feather name="refresh-cw" size={18} color="#fff" />
-              <Text style={styles.trackBtnText}>{retryingPaymentSubmission ? "Retrying…" : "Retry Payment Submission"}</Text>
-            </Pressable>
-          </View>
-        )}
-        <Pressable
-          style={[styles.trackBtn, { backgroundColor: colors.primary }]}
-          onPress={() => {
-            router.replace("/(tabs)/orders");
-          }}
-        >
-          <Feather name="map-pin" size={18} color="#fff" />
-          <Text style={styles.trackBtnText}>Track My Order</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.homeBtn, { borderColor: colors.border }]}
-          onPress={() => router.replace("/")}
-        >
-          <Text style={[styles.homeBtnText, { color: colors.foreground }]}>Continue Shopping</Text>
-        </Pressable>
+          </Pressable>
+          {invoiceError && (
+            <Text accessibilityRole="alert" style={[styles.invoiceError, { color: colors.destructive }]}>
+              {invoiceError}
+            </Text>
+          )}
+          <Pressable
+            testID="button-track-my-order"
+            style={[styles.trackBtn, { backgroundColor: colors.primary }]}
+            onPress={() => router.replace("/(tabs)/orders")}
+          >
+            <Feather name="map-pin" size={18} color={colors.primaryForeground} />
+            <Text style={styles.trackBtnText}>Track my order</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.homeBtn, { borderColor: colors.border }]}
+            onPress={() => router.replace("/")}
+          >
+            <Text style={[styles.homeBtnText, { color: colors.foreground }]}>Continue shopping</Text>
+          </Pressable>
+        </ScrollView>
+        <OrderSuccessCelebration />
       </View>
     );
   }
@@ -642,10 +783,10 @@ export default function CheckoutScreen() {
               {isWallet(paymentMethod) && (
                 <View style={[styles.paymentDetailCard, { borderColor: colors.border, backgroundColor: colors.card }]}>
                   <Text style={[styles.paymentDetailTitle, { color: colors.foreground }]}>
-                    Send {formatPrice(paymentMode === "full" ? total : Math.ceil(total * 0.25))} to {paymentMethod === "bkash" ? "bKash" : paymentMethod === "nagad" ? "Nagad" : "uPay"}
+                    Send {formatPrice(paymentMode === "full" ? total : Math.ceil(total * 0.25))} to {WALLET_DETAILS[paymentMethod].label}
                   </Text>
-                  <Text style={[styles.paymentDetailNumber, { color: paymentMethod === "bkash" ? "#e2136e" : paymentMethod === "nagad" ? "#f7941d" : "#0077cc" }]}>
-                    {paymentMethod === "bkash" ? bkashNumber : paymentMethod === "nagad" ? nagadNumber : siteSettings?.upayNumber || ""}
+                  <Text style={[styles.paymentDetailNumber, { color: WALLET_DETAILS[paymentMethod].color }]}>
+                    {getWalletNumber(paymentMethod, siteSettings)}
                   </Text>
                   {!siteSettings?.[`${paymentMethod}Number`] && (
                     <Text style={{ color: "#EF4444", fontSize: 12, marginTop: 4 }}>Admin number not configured.</Text>
@@ -984,7 +1125,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   nextBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
-  successContainer: { flex: 1, alignItems: "center", justifyContent: "center", padding: 24, gap: 16 },
+  successScreen: { flex: 1, position: "relative", overflow: "hidden" },
+  successScroll: { flex: 1 },
+  successContainer: { flexGrow: 1, alignItems: "center", justifyContent: "flex-start", paddingHorizontal: 24, gap: 16 },
   successIcon: { width: 120, height: 120, borderRadius: 60, alignItems: "center", justifyContent: "center" },
   successTitle: { fontSize: 28, fontFamily: "Inter_700Bold", textAlign: "center" },
   successSub: { fontSize: 15, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 22 },
@@ -1004,6 +1147,20 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   trackBtnText: { color: "#fff", fontSize: 16, fontFamily: "Inter_700Bold" },
+  invoiceBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 9,
+    width: "100%",
+    minHeight: 50,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    marginTop: 4,
+  },
+  invoiceBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold" },
+  invoiceError: { width: "100%", fontSize: 12, lineHeight: 18, textAlign: "center" },
   homeBtn: {
     paddingVertical: 13,
     paddingHorizontal: 32,

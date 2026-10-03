@@ -168,15 +168,15 @@ family: "tshirt", productType: "tshirt", displayName: "Unisex T-Shirt",
   },
   waterbottle: {
     family: "waterbottle", productType: "waterbottle", displayName: "Water Bottle — White Sublimation Aluminium",
-    schema: "trynext-canonical-mockup/v1", masterFormat: "psb", masterStatus: "verified",
+    schema: "trynext-canonical-mockup/v1", masterFormat: "psb", masterStatus: "manifest-only",
     normalizedCanvas: { width: 1000, height: 1000 }, colors: CANONICAL_MOCKUP_COLORS.waterbottle,
     geometry: {
       silhouetteId: "waterbottle-aluminium-carabiner-v1", frontBackPairId: "waterbottle-front-back-v1", colorMaterialId: "waterbottle-aluminium-v1", aspectLock: true,
       protectedDetails: ["lid", "key-ring-loop", "side-carabiner", "shoulder", "rounded-base"],
     },
     views: [
-      { view: "front", label: "Front", assetKey: "waterbottle/{color}/front", printZone: { x: 335, y: 320, w: 276, h: 590, shape: "bottle-body" }, required: true, orientation: "front" },
-      { view: "back", label: "Back", assetKey: "waterbottle/{color}/back", printZone: { x: 335, y: 320, w: 276, h: 590, shape: "bottle-body" }, required: true, orientation: "back" },
+      { view: "front", label: "Front", assetKey: "waterbottle/{color}/front", printZone: { x: 395, y: 355, w: 210, h: 470, shape: "bottle-body" }, required: true, orientation: "front" },
+      { view: "back", label: "Back", assetKey: "waterbottle/{color}/back", printZone: { x: 395, y: 355, w: 210, h: 470, shape: "bottle-body" }, required: true, orientation: "back" },
     ],
     acceptance: { noViewFallback: true, noCrossFamilyAssetReuse: true, sameColorIdentityAcrossViews: true, samePrintZoneCoordinateSpace: true },
   },

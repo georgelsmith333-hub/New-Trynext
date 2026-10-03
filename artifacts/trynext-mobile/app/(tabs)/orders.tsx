@@ -13,8 +13,10 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { api, OrderTrackResponse } from "@/lib/api";
+import { downloadMobileOrderInvoicePdf } from "@/lib/order-invoice";
 
 const STATUS_INFO: Record<string, { label: string; icon: string; color: string }> = {
   pending:    { label: "Order Placed",    icon: "clock",       color: "#F59E0B" },
@@ -40,6 +42,13 @@ export default function OrdersScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<OrderTrackResponse | null>(null);
+  const [invoiceBusy, setInvoiceBusy] = useState(false);
+  const [invoiceError, setInvoiceError] = useState<string | null>(null);
+  const { data: siteSettings } = useQuery({
+    queryKey: ["siteSettings"],
+    queryFn: () => api.getSettings(),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const track = async () => {
     if (!orderNumber.trim()) { setError("Please enter your order number"); return; }
@@ -63,6 +72,23 @@ export default function OrdersScreen() {
       const order = result;
   const timeline = result?.timeline ?? [];
   const statusInfo = order ? getStatus(order.status) : null;
+  const downloadInvoice = async () => {
+    if (!order || invoiceBusy) return;
+    setInvoiceError(null);
+    setInvoiceBusy(true);
+    try {
+      await downloadMobileOrderInvoicePdf(order, {
+        siteName: siteSettings?.siteName,
+        email: siteSettings?.email,
+        phone: siteSettings?.phone || siteSettings?.whatsappNumber,
+        address: siteSettings?.address,
+      });
+    } catch (invoiceFailure) {
+      setInvoiceError(invoiceFailure instanceof Error ? invoiceFailure.message : "The PDF could not be created. Please try again.");
+    } finally {
+      setInvoiceBusy(false);
+    }
+  };
 
   return (
     <ScrollView
@@ -217,6 +243,28 @@ export default function OrdersScreen() {
                 ) : null}
               </View>
             ))}
+          </View>
+
+          <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Pressable
+              testID="button-download-order-invoice"
+              accessibilityRole="button"
+              disabled={invoiceBusy}
+              onPress={downloadInvoice}
+              style={({ pressed }) => [styles.invoiceBtn, { borderColor: colors.border, opacity: pressed || invoiceBusy ? 0.7 : 1 }]}
+            >
+              {invoiceBusy
+                ? <ActivityIndicator size="small" color={colors.primary} />
+                : <Feather name="file-text" size={18} color={colors.primary} />}
+              <Text style={[styles.invoiceBtnText, { color: colors.foreground }]}>
+                {invoiceBusy ? "Preparing PDF…" : isWeb ? "Save / print PDF invoice" : "Download PDF invoice"}
+              </Text>
+            </Pressable>
+            {invoiceError && (
+              <Text accessibilityRole="alert" style={[styles.invoiceError, { color: colors.destructive }]}>
+                {invoiceError}
+              </Text>
+            )}
           </View>
 
           {/* Timeline */}
@@ -438,6 +486,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
     fontFamily: "Inter_600SemiBold",
+  },
+  invoiceBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 9,
+    minHeight: 48,
+    borderWidth: 1,
+    borderRadius: 13,
+    paddingHorizontal: 14,
+  },
+  invoiceBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+    fontFamily: "Inter_600SemiBold",
+  },
+  invoiceError: {
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 8,
   },
   timelineItem: {
     flexDirection: "row",

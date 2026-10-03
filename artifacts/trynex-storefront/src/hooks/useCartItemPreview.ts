@@ -4,6 +4,7 @@
    from the persisted cart-item payload.
 ════════════════════════════════════════════════════════ */
 import { useState, useEffect, useMemo } from "react";
+import { getCustomerProductImage } from "@/lib/product-options";
 import { composeGarmentMockup } from "@/pages/design-studio/composer";
 import type { ComposerPrintZone } from "@/pages/design-studio/composer";
 import { PRODUCTS, resolveMockup } from "@/pages/design-studio/mockups";
@@ -99,7 +100,7 @@ export function useCartItemPreview(item: CartItemPreviewInput): CartItemPreviewP
   }, [item.imageUrl, meta, resolvedMockup]);
 
   return {
-    thumbnailSrc: item.imageUrl ?? fallbackSrc,
+    thumbnailSrc: getCustomerProductImage(item) ?? fallbackSrc,
     frontTexUrl: item.customImages?.[0],
     backTexUrl: item.customImages?.[1],
     category: toCategory(meta?.category),
