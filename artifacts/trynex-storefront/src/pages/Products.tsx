@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useSearch, useLocation } from "wouter";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { ProductOffersSection } from "@/components/home/ProductOffersSection";
 import { formatPrice } from "@/lib/utils";
+import { lockBodyScroll } from "@/lib/scrollLock";
 
 type SortOption = "default" | "price-asc" | "price-desc" | "name" | "rating";
 
@@ -67,6 +68,9 @@ export default function Products() {
   };
 
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const mobileFiltersTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileFiltersPanelRef = useRef<HTMLDivElement>(null);
+  const mobileFiltersCloseRef = useRef<HTMLButtonElement>(null);
   const [sort, setSort] = useState<SortOption>("default");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [priceMin, setPriceMin] = useState("");
@@ -147,6 +151,68 @@ export default function Products() {
     });
 
   const hasActiveFilters = !!priceMin || !!priceMax || inStockOnly;
+  const activeMobileFilterCount = [
+    Boolean(activeCategory),
+    Boolean(priceMin || priceMax),
+    inStockOnly,
+  ].filter(Boolean).length;
+
+  useEffect(() => {
+    if (!mobileFiltersOpen) return;
+
+    const unlockBodyScroll = lockBodyScroll();
+    const previouslyFocused = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    const panel = mobileFiltersPanelRef.current;
+    const focusableSelector = [
+      "a[href]",
+      "button:not([disabled])",
+      "input:not([disabled])",
+      "select:not([disabled])",
+      "textarea:not([disabled])",
+      "[tabindex]:not([tabindex='-1'])",
+    ].join(",");
+    const getFocusableElements = () => Array.from(
+      panel?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
+    ).filter((element) => element.getAttribute("aria-hidden") !== "true");
+
+    (mobileFiltersCloseRef.current ?? getFocusableElements()[0])?.focus({ preventScroll: true });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setMobileFiltersOpen(false);
+        return;
+      }
+      if (event.key !== "Tab") return;
+
+      const focusable = getFocusableElements();
+      if (focusable.length === 0) {
+        event.preventDefault();
+        panel?.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !panel?.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !panel?.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      unlockBodyScroll();
+      if (previouslyFocused?.isConnected) previouslyFocused.focus({ preventScroll: true });
+      else mobileFiltersTriggerRef.current?.focus({ preventScroll: true });
+    };
+  }, [mobileFiltersOpen]);
 
   const activeCategoryData = useMemo(() => {
     if (!activeCategory || categories.length === 0) return null;
@@ -332,13 +398,25 @@ export default function Products() {
 
                   <button
                     type="button"
-                    onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-                    aria-label={mobileFiltersOpen ? "Close filters" : "Open filters"}
+                    ref={mobileFiltersTriggerRef}
+                    onClick={() => setMobileFiltersOpen(true)}
+                    aria-label={`Open shop filters${activeMobileFilterCount ? `, ${activeMobileFilterCount} active` : ""}`}
+                    aria-haspopup="dialog"
+                    aria-controls="mobile-product-filters"
                     aria-expanded={mobileFiltersOpen}
                     data-testid="button-mobile-filters"
-                    className="md:hidden flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-white border border-gray-200 text-gray-600"
+                    className="md:hidden inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 text-sm font-bold text-gray-700 shadow-sm transition-colors hover:border-orange-300 hover:bg-orange-50"
                   >
-                    <SlidersHorizontal className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <SlidersHorizontal className="h-4 w-4 text-orange-600" aria-hidden="true" />
+                    <span>Filters</span>
+                    {activeMobileFilterCount > 0 && (
+                      <span
+                        aria-hidden="true"
+                        className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-100 px-1.5 text-[11px] font-black text-orange-700"
+                      >
+                        {activeMobileFilterCount}
+                      </span>
+                    )}
                   </button>
 
                   <span className="hidden sm:block ml-auto text-xs text-gray-400 font-medium">
@@ -351,22 +429,62 @@ export default function Products() {
                   {/* Mobile filter overlay backdrop */}
                   {mobileFiltersOpen && (
                     <div
-                      className="fixed inset-0 bg-black/40 z-30 md:hidden"
+                      className="fixed inset-0 z-[90] bg-black/45 backdrop-blur-[2px] md:hidden"
                       onClick={() => setMobileFiltersOpen(false)}
+                      aria-hidden="true"
                     />
                   )}
-                  <aside className={cn(
-                    "md:w-56 md:block shrink-0",
+                  <aside
+                    data-lenis-prevent
+                    className={cn(
+                    "md:sticky md:top-24 md:w-56 md:block md:self-start shrink-0",
                     mobileFiltersOpen
-                      ? "fixed inset-y-0 left-0 w-72 max-w-[80vw] z-40 overflow-y-auto bg-white shadow-2xl md:relative md:inset-auto md:shadow-none md:overflow-visible"
+                      ? "fixed inset-y-0 right-0 z-[100] w-[min(22rem,92vw)] max-w-full overflow-y-auto overscroll-contain bg-white shadow-2xl md:relative md:inset-auto md:shadow-none md:overflow-visible"
                       : "hidden md:block"
                   )}>
-                    <div className="sticky top-24 pt-4 md:pt-0">
+                    <div
+                      id="mobile-product-filters"
+                      ref={mobileFiltersPanelRef}
+                      data-testid="panel-mobile-product-filters"
+                      role={mobileFiltersOpen ? "dialog" : undefined}
+                      aria-modal={mobileFiltersOpen ? true : undefined}
+                      aria-labelledby={mobileFiltersOpen ? "mobile-shop-filters-title" : undefined}
+                      tabIndex={mobileFiltersOpen ? -1 : undefined}
+                      data-lenis-prevent
+                      style={mobileFiltersOpen ? {
+                        paddingTop: "max(1rem, env(safe-area-inset-top))",
+                        paddingBottom: "max(1rem, env(safe-area-inset-bottom))",
+                      } : undefined}
+                    >
+                    <div className="px-4 pt-0 md:px-0">
+                    <div className="sticky top-0 z-10 -mx-4 mb-4 flex items-center justify-between border-b border-gray-100 bg-white px-4 py-3 md:hidden">
+                      <div>
+                        <h2 id="mobile-shop-filters-title" className="font-display text-lg font-black text-gray-900">Shop filters</h2>
+                        <p className="text-xs text-gray-500">
+                          {activeMobileFilterCount ? `${activeMobileFilterCount} filter${activeMobileFilterCount === 1 ? "" : "s"} active` : "Choose a category or narrow the results"}
+                        </p>
+                      </div>
+                      <button
+                        ref={mobileFiltersCloseRef}
+                        type="button"
+                        onClick={() => setMobileFiltersOpen(false)}
+                        aria-label="Close shop filters"
+                        data-testid="button-close-mobile-filters"
+                        className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                      >
+                        <X className="h-4 w-4" aria-hidden="true" />
+                        Close
+                      </button>
+                    </div>
+                    <div>
                       <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
                         <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-4">Categories</p>
                         <div className="space-y-1">
                           <button
+                            type="button"
                             onClick={() => setActiveCategory(undefined)}
+                            aria-pressed={activeCategory === undefined}
+                            data-testid="button-category-all"
                             className={cn(
                               "w-full text-left px-4 py-2.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-between",
                               activeCategory === undefined
@@ -379,8 +497,11 @@ export default function Products() {
                           </button>
                           {categories.map((cat: any) => (
                             <button
+                              type="button"
                               key={cat.id}
                               onClick={() => setActiveCategory(cat.id)}
+                              aria-pressed={activeCategory === cat.id}
+                              data-testid={`button-category-${cat.id}`}
                               className={cn(
                                 "w-full text-left px-4 py-2.5 rounded-xl font-semibold text-sm transition-all",
                                 activeCategory === cat.id
@@ -400,6 +521,8 @@ export default function Products() {
                         <div className="flex gap-2 items-center mb-3">
                           <input
                             type="number"
+                            aria-label="Minimum price"
+                            data-testid="input-price-min"
                             placeholder="Min"
                             value={priceMin}
                             onChange={e => setPriceMin(e.target.value)}
@@ -408,6 +531,8 @@ export default function Products() {
                           <span className="text-gray-400 font-bold text-xs shrink-0">–</span>
                           <input
                             type="number"
+                            aria-label="Maximum price"
+                            data-testid="input-price-max"
                             placeholder="Max"
                             value={priceMax}
                             onChange={e => setPriceMax(e.target.value)}
@@ -416,12 +541,14 @@ export default function Products() {
                         </div>
                         <div className="flex gap-1.5 flex-wrap">
                           {[
-                            { label: "Under ৳500", min: "", max: "500" },
-                            { label: "৳500–1000", min: "500", max: "1000" },
-                            { label: "৳1000+", min: "1000", max: "" },
+                            { key: "under-500", label: "Under ৳500", min: "", max: "500" },
+                            { key: "500-1000", label: "৳500–1000", min: "500", max: "1000" },
+                            { key: "over-1000", label: "৳1000+", min: "1000", max: "" },
                           ].map(preset => (
                             <button
-                              key={preset.label}
+                              type="button"
+                              key={preset.key}
+                              data-testid={`button-price-preset-${preset.key}`}
                               onClick={() => { setPriceMin(preset.min); setPriceMax(preset.max); }}
                               className={cn(
                                 "px-2.5 py-1 rounded-lg text-xs font-bold transition-all",
@@ -440,6 +567,10 @@ export default function Products() {
                       <div className="mt-3 bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
                         <p className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-3">Availability</p>
                         <button
+                          type="button"
+                          role="checkbox"
+                          aria-checked={inStockOnly}
+                          data-testid="checkbox-stock-only"
                           onClick={() => setInStockOnly(!inStockOnly)}
                           className="flex items-center gap-3 w-full group"
                         >
@@ -458,6 +589,8 @@ export default function Products() {
                       {/* Clear all filters */}
                       {(hasActiveFilters || activeCategory) && (
                         <button
+                          type="button"
+                          data-testid="button-clear-filters"
                           onClick={() => { setPriceMin(""); setPriceMax(""); setInStockOnly(false); setActiveCategory(undefined); }}
                           className="mt-2 w-full py-2 rounded-xl text-xs font-bold text-red-500 border border-red-100 hover:bg-red-50 transition-colors flex items-center justify-center gap-1.5"
                         >
@@ -467,6 +600,8 @@ export default function Products() {
 
                       {/* Special offers upsell box */}
                       <button
+                        type="button"
+                        data-testid="button-filter-special-offers"
                         onClick={() => switchTab("offers")}
                         className="mt-4 w-full p-5 rounded-2xl text-white text-center group transition-all hover:scale-[1.02] active:scale-[0.98]"
                         style={{ background: 'linear-gradient(135deg, #E85D04, #FB8500)' }}
@@ -489,10 +624,23 @@ export default function Products() {
                         <p className="font-bold text-sm mb-1">Custom Order?</p>
                         <p className="text-xs text-gray-400 mb-3">Design your own from ৳750.</p>
                         <a href="/design-studio"
+                          data-testid="link-filter-design-studio"
                           className="inline-block px-4 py-1.5 rounded-xl bg-orange-500 text-white text-xs font-black hover:bg-orange-600 transition-colors">
                           Open Design Studio
                         </a>
                       </div>
+                    </div>
+                    <div className="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-gray-100 bg-white p-4 md:hidden">
+                      <button
+                        type="button"
+                        onClick={() => setMobileFiltersOpen(false)}
+                        data-testid="button-apply-mobile-filters"
+                        className="min-h-12 w-full rounded-xl bg-orange-600 px-4 text-sm font-black text-white shadow-sm transition hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                      >
+                        Show {totalProducts} product{totalProducts === 1 ? "" : "s"}
+                      </button>
+                    </div>
+                    </div>
                     </div>
                   </aside>
 

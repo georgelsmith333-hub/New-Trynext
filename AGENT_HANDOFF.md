@@ -4,6 +4,11 @@ This is the durable, shareable context for the Trynext Lifestyle project. Read i
 after `AGENTS.md` and before planning or editing. Keep it updated after meaningful
 work. Never put secret values in this file.
 
+For a consolidated Claude handoff, including the latest checkpoint, immediate
+open work, project-wide audit checklist, and stale-tracker warnings, also read
+`CLAUDE_HANDOFF_CHECKLIST.md`. The newest dated section in this file remains the
+primary checkpoint; the checklist does not authorize production changes.
+
 ## Project identity
 
 Trynext Lifestyle is a Bangladesh-focused print-on-demand commerce platform for
@@ -3383,3 +3388,389 @@ both workflows restarted cleanly; local `/`, `/design-studio`,
 with 188 surfaces; the final Design Studio screenshot had no browser console
 errors; and GitHub `main` was verified at
 `58e81e39d7f90c7a34829ce1704f4ff83b5319c4`.
+
+---
+
+## 2026-10-03 Order success, invoices, and Rocket checkout
+
+Status: implementation and local verification complete; clean feature-branch
+publication complete. No production deployment was performed.
+
+Last completed: Aligned Rocket wallet support across web checkout, mobile
+checkout, and API order/payment-evidence validation. Order invoices now map
+Rocket, keep submitted money separate from verified payments, handle refunded
+orders without showing an outstanding balance, recognize Dhaka district
+variants, and include courier tracking details when available. Mobile success
+invoices now use the saved order response for customer, item, and amount data.
+The Design Studio control is visibly labeled “Change product”.
+
+Verification: Storefront, API, and mobile typechecks passed; all 84 storefront
+tests and 42 API tests passed; storefront production build and mobile web
+export completed; API production build completed; web/API/mobile workflows
+started; Design Studio preview showed the updated control. No real customer
+orders were created. The public settings response contains the `rocketNumber`
+field, but the current development database has no configured value, so Rocket
+is correctly hidden there until an admin number is saved.
+
+Publication: `fix/waterbottle-white-identity` contains the reviewed functional
+source changes based on the verified `main` tip. Pasted notes and screenshot
+evidence under `attached_assets` were excluded. `main` was not changed.
+
+The local Replit branch was intentionally left unchanged and still has its
+earlier four-commit history. Do not push that local history over the clean
+GitHub branch. All 17 tracked pasted-note and screenshot paths were excluded
+from the published tree.
+
+Remaining work: None for this verified release. In another Replit remix, fetch
+and select `fix/waterbottle-white-identity` before continuing; `main` does not
+contain these release changes. If the changes should become the default for
+future remixes, ask before merging the feature branch into `main`. Preserve the
+water-bottle fail-closed approval gates. Production deployment remains separate
+and was not requested.
+
+## 2026-10-03 Cloudflare Pages Smart Mockup production audit
+
+Status: complete for read-only production serving verification. No production
+data, Cloudflare configuration, GitHub ref, or deployment was changed.
+
+Last completed: Checked the actual custom domain `https://trynext.shop`, not a
+local preview. The storefront and `/design-studio` returned 200 through
+Cloudflare; the non-mutating critical-flow smoke check passed 30/30. The live
+Smart v10.3 runtime manifest returned `accepted` with 188 surfaces and 188
+source masters. `/api/mockups` returned 188 ready/approved rows: 156 PSD and
+32 PSB records, all marked `staging-only` for editable-master storage. The
+public runtime contains six core roles for each surface plus displacement
+roles on 56 surfaces. All 1,134 unique runtime-role PNG files were fetched;
+every response was HTTP 200 `image/png` and every SHA-256 matched the manifest.
+
+Live Chromium interactions loaded the T-shirt front/back and black variant,
+then switched through long sleeve, hoodie, mug, cap, and water bottle; the
+matching live runtime images loaded for each family. No artwork upload, cart,
+checkout, order, payment, or application API mutation was performed (Cloudflare
+RUM telemetry was observed). This verifies the live derivative/runtime path,
+not a new artwork upload through to checkout or a fresh authenticated Photopea
+visual-validation run. The browser receives runtime PNGs; editable PSD/PSB
+masters remain outside public paths, as intended.
+
+Separate production issue found: a fresh browser could not register
+`/sw.js`. Workbox reports conflicting precache entries for `/offline.html`
+(one revisioned and one unrevisioned); the live service-worker file itself
+returns 200 JavaScript and parses, but fails during evaluation. The online
+storefront and Design Studio interactions still work. Local `vite.config.ts`
+includes `offline.html` in both the HTML precache glob and
+`additionalManifestEntries`. This issue was not changed or deployed.
+
+The current local checkout is `fix/waterbottle-white-identity`, six commits
+ahead of `github/main`; those commits include attached notes/screenshots and
+change the bottle path to a non-Smart-Object photo while removing it from the
+customer Smart Mockup release. Production currently serves the accepted bottle
+runtime. Do not push this local history or replace the live bottle runtime
+without reconciling the clean published branch and the bottle approval decision.
+
+Stopped at: Read-only production checks and assessment of the local
+unpublished diff are complete. No Manus-specific action was present in the
+attached note.
+
+Files/areas changed: This handoff only; no application source was edited.
+
+Remaining work: If requested, fix and locally verify the duplicate
+`offline.html` precache registration before a separate Pages release. An
+authenticated Photopea visual proof and artwork-upload-to-cart flow were not
+performed in production.
+
+Blocker: No authenticated admin/Photopea session was available. Production
+uploads and commerce writes were intentionally avoided.
+
+Next safe action: Keep the verified live runtime unchanged. Treat the PWA
+precache collision and any Manus-specific work as separate, explicitly scoped
+follow-ups; do not push the current local branch.
+
+Verification: `https://trynext.shop` route/API/auth-boundary smoke 30/30;
+manifest 188/188; 1,134/1,134 unique runtime files returned 200 and matched
+their SHA-256 values; public Design Studio family/color/face interactions
+passed. The separate service-worker registration failure is recorded above.
+
+## 2026-10-04 Read-only production and order-success audit
+
+Status: read-only audit complete; owner supplied current dashboard results.
+No application or provider changes made.
+
+Cloudflare Pages: `trynext-shop-new` serves `trynext.shop` and
+`www.trynext.shop`. Its latest successful production deploy is `main` at
+`80dbab30692b9e5f202cf9a01594b6abb7981c78`, from 2026-10-01 01:20 UTC.
+`API_PRIMARY_ORIGIN`, `API_READ_ORIGINS`, and legacy `API_ORIGINS` are unset.
+
+Render: the current workspace has active Free service
+`trynex-lifestyle-main-render`, deployed at `80dbab3…`, and a
+`trynex-lifestyle` service suspended by its user. The requested `trynex-api`,
+standby-2, and standby-3 names are not present in the current inventory.
+Thirty-day telemetry includes an hourly peak near 163.99 MB; the monthly total
+and workspace quota remain unknown because the billing page redirected to
+login. The live service's Free plan differs from the committed `render.yaml`
+Starter plan; trust the dashboard for current service state, not the manifest.
+
+Database and backups: the admin DB Cluster page reports Neon Main online and
+active, 1/1 healthy, approximately 467 ms probe latency. All fallback, analytics,
+secondary, products, and Replit candidates are unconfigured. Public readiness
+also passed, measuring 58 ms for its simpler query. The backup page reports a
+closed circuit, zero failures, and no last-run timestamp. Its generic 30-minute
+mirror description does not show that a mirror ran; API health says
+`backupSyncEnabled=false`. Neon provider-level usage/retention and any separate
+backup service are still unverified.
+
+Live routing/cache: public health reports database/catalog and Redis healthy,
+`runtimeRole=primary`, scheduler enabled, backup sync disabled, and `storage=r2`.
+Safe reads and writes route to the same primary. Two identical product requests
+both returned `X-Trynext-Edge-Cache: MISS` and `CF-Cache-Status: DYNAMIC`, and
+both reached Render. This is an unresolved code-level cache/egress issue; do not
+assume the configured safe-read cache is reducing origin traffic.
+
+Checkout diagnosis: the successful Pages and Render builds use `main` commit
+`80dbab306`, which lacks the customer invoice button and success celebration.
+The clean remote `fix/waterbottle-white-identity` branch (`a19dbdc5`) contains
+the previously verified work from `83868e91`. The feature branch has not been
+deployed. Its celebration respects reduced-motion settings and lasts only a
+few seconds. No production order was created.
+
+Release safety: the local checkout is not a safe push target. It is seven
+commits ahead of `github/main`, differs from the clean feature branch in
+handoff/evidence files, and has two untracked user attachments. Do not push it.
+Review/reconcile the clean feature branch against live `main` and preserve the
+water-bottle approval gates before any merge or deployment.
+
+Separate known issue: Workbox's duplicate `offline.html` precache entry breaks
+fresh service-worker registration. It was not fixed in this audit.
+
+Stopped at: current Render workspace quota/monthly total and Neon provider-level
+usage/backup retention remain unknown. No production order/payment/admin write,
+provider setting, application source, commit, push, or deployment was changed.
+
+Next safe action: wait for direction on whether to review the clean checkout
+release branch, fix the code-level cache/PWA issues first, or pause for provider
+usage details. Never request or share provider tokens, passwords, or database
+URLs.
+
+Verification: production storefront, products, sitemap, liveness, readiness,
+healthz, and repeat safe-read cache behavior were checked read-only. The owner
+provided Cloudflare, Render, and DB/backup status summaries. No app build/test
+was rerun because application source was not changed.
+
+## Approved follow-up work — 2026-10-04
+
+Status: owner asked to complete both the invoice-branch review and the cache/PWA
+work. This authorizes local review and code fixes, not a production release.
+
+Order of work:
+1. Compare clean remote `fix/waterbottle-white-identity` (`a19dbdc5`) with the
+   deployed `main` commit (`80dbab306`); identify the precise release scope and
+   preserve all water-bottle approval gates.
+2. Diagnose and fix safe-read API cache misses without caching cookie-bearing,
+   authenticated, searching, or otherwise user-specific responses. Verify an
+   identical public catalog request can produce a cache hit and still routes
+   correctly.
+3. Fix duplicate `offline.html` precaching; verify a fresh service-worker
+   install/evaluation with exactly one offline-shell entry.
+4. Run relevant storefront tests/build and inspect the final diff. Keep changes
+   local; do not merge, push, deploy, submit an order, or change provider
+   configuration without separate approval.
+
+Owner evidence still needed for infrastructure conclusions: current Render
+workspace monthly outbound total/quota and Neon provider usage/backup-retention
+status. Cloudflare's API-origin overrides are unset, so no override change is
+currently indicated. Ask the owner for the remaining non-secret readings if
+they become necessary; never request credentials.
+
+## 2026-10-04 Local verification of approved follow-up work
+
+Status: local implementation and verification complete; no production release.
+This section supersedes the earlier checkout-count snapshot: the current
+workspace is 10 commits ahead of `github/main`, and six untracked screenshot
+attachments remain untouched.
+
+Why the order-success and invoice work remained pending: the clean remote
+`github/fix/waterbottle-white-identity` branch at `a19dbdc5d` contains the
+reduced-motion-aware `OrderSuccessCelebration`, invoice PDF generator, and
+customer download buttons in Checkout and Track Order. Deployed
+`github/main` remains at `80dbab306` and does not contain that feature set.
+The handoff's pending status was therefore a release/integration boundary, not
+evidence that the feature code had not been written. The feature branch was not
+merged to `main` or deployed.
+
+Local checks and changes:
+- Celebration source uses `useReducedMotion()` and renders no confetti when
+  reduced motion is requested; its particles finish in about 2.8–3.7 seconds.
+  No order was submitted to verify this against production.
+- The invoice test calls the real PDF generator in a temporary working
+  directory, reads the generated file, verifies the `%PDF` signature and
+  non-trivial size, then removes it. This verifies Node-side PDF generation and
+  safe naming; a browser/device download event has not been verified.
+- Mobile shop filters now have a labelled 44px trigger, active-filter count,
+  right-side accessible drawer, focus/escape handling, safe-area spacing, and
+  scroll locking. Current and improved states are available in the isolated
+  design-system preview; both were visually checked at 402×874.
+- The Pages API cache only stores safe public catalog GETs. Cookies,
+  authorization, search/unknown query parameters, unknown `x-` headers, and
+  unsafe response headers/statuses bypass storage. Local cache and invoice
+  tests passed; this is not a live Cloudflare cache-hit measurement.
+- Workbox excludes `offline.html` from the glob and adds it explicitly once.
+  The generated service worker has one `/offline.html` precache manifest entry;
+  its second occurrence is the runtime offline fallback.
+
+Verification: storefront suite passed (23 files, 96 tests); targeted cache and
+invoice tests passed (19 tests); storefront typecheck and production build
+passed; mockup sandbox typecheck/build passed; `git diff --check` passed.
+
+Safety: COD/25% advance and payment/order safeguards remain in place; no order
+or payment was created, no mockup approval gate was bypassed, and Cloudflare,
+Render, and Neon settings were not changed. The API Server workflow was not
+started. Six untracked customer-provided screenshots remain unstaged.
+
+Next safe action: ask before reconciling or pushing this checkout to GitHub
+`main`; doing so may trigger production deployment. Until then, keep all changes
+local and do not merge, push, deploy, or change provider configuration.
+
+## 2026-10-04 Consolidated Claude handoff checklist
+
+Status: documentation complete; no application source or provider configuration
+changed.
+
+Last completed: Reviewed `AGENTS.md`, `AGENT_HANDOFF.md`, `replit.md`,
+`docs/trynext-agent-handoff-prompt.md`, and the project rebuild tracker. Added
+`CLAUDE_HANDOFF_CHECKLIST.md` as a self-contained transfer document covering the
+latest verified state, immediate remaining work, project-wide audit areas,
+release limits, and stale-document handling. Marked the older Smart Mockup
+prompt as historical in the new checklist; it must not be treated as the active
+release plan.
+
+Stopped at: The approved cache/PWA and invoice source work is locally verified.
+Production reconciliation, push, merge, deployment, and provider changes remain
+outside the approved scope. Invoice browser/device download behavior and live
+Cloudflare cache-hit behavior have not been verified.
+
+Files/areas changed:
+- `CLAUDE_HANDOFF_CHECKLIST.md`
+- `AGENT_HANDOFF.md`
+- `docs/trynext-agent-handoff-prompt.md`
+
+Remaining work: Use the checklist to verify invoice browser downloads and
+determine whether mobile shop-filter preview work is integrated into the app.
+Resolve the configured remote versus historical canonical repository mismatch
+before any GitHub write. Obtain separate approval before release actions.
+
+Blocker: No blocker for this documentation work. Release actions require
+separate owner approval; current production cache behavior requires an approved
+deployment to verify.
+
+Next safe action: Start the next coding session by reading
+`CLAUDE_HANDOFF_CHECKLIST.md` and the newest `AGENT_HANDOFF.md` section, then
+continue with local, non-mutating invoice and mobile integration verification.
+
+Verification: Cross-checked the latest 2026-10-04 handoff section against the
+current Git branch/status output. The configured remote discrepancy and the
+historical untracked-attachment note are explicitly flagged for rechecking.
+No application tests were rerun because application code was not changed.
+
+## 2026-10-04 Claude Code and GitHub development-home handoff
+
+Status: handoff files prepared; GitHub publication is pending repository
+selection. No application code, provider configuration, or production data was
+changed.
+
+Last completed: Added root `CLAUDE.md` as Claude Code's automatic project entry
+point. Updated `CLAUDE_HANDOFF_CHECKLIST.md` with the owner's GitHub/Claude Code
+transition request and the publication boundary. Updated this handoff and
+`replit.md` to distinguish future GitHub development from Replit-specific
+environment notes.
+
+Stopped at: The owner asked to push the project to GitHub and continue full-stack
+development there. The connected GitHub account can access both
+`georgelsmith333-hub/New-Trynext` (the configured remote, recently active) and
+`georgelsmith333-hub/trynext-lifestyle` (the repository named in the older
+prompt). The destination has not yet been selected.
+
+Files/areas changed:
+- `CLAUDE.md`
+- `CLAUDE_HANDOFF_CHECKLIST.md`
+- `AGENT_HANDOFF.md`
+- `replit.md`
+
+Remaining work:
+- Owner selects the destination repository.
+- Prepare a clean, reviewed non-default branch from that repository's current
+  default-branch tip and publish it; do not push the existing local history
+  wholesale.
+- Verify the handoff branch and files through GitHub.
+- Keep pasted chat records, customer screenshots, credentials, and unrelated
+  attachments out of the transfer.
+- Do not merge to `main`, deploy, or change provider settings without separate
+  approval.
+
+Blocker: Destination repository is ambiguous. The current local branch is 12
+commits ahead of its tracking ref and its 79-path delta includes 27
+`attached_assets/` files (pasted chat records and screenshots); publishing that
+history wholesale would expose unrelated user-provided material. A clean
+reviewed transfer branch is required.
+
+Next safe action: Ask the owner to choose `New-Trynext` or
+`trynext-lifestyle`; then compare against the selected repository's current
+default branch and prepare a filtered, non-default handoff branch.
+
+Verification: Confirmed the current branch, upstream, configured remote, ahead
+count, and changed-path inventory without changing refs. The connected GitHub
+account reports access to both candidate repositories. `CLAUDE.md` and the
+checklist are linked together. No push or deployment was performed.
+
+## 2026-10-04 — Destination confirmed and pre-release checks
+
+Status: Release candidate is ready for a clean GitHub branch and pull-request
+checks. Nothing has been pushed, merged, or deployed.
+
+Last completed: The owner selected `georgelsmith333-hub/New-Trynext` and
+explicitly authorized a live push if safety checks pass. GitHub's `main` was
+verified at `80dbab30692b9e5f202cf9a01594b6abb7981c78`. Tree comparison found no
+required source or public assets to copy from `trynext-lifestyle`; its only
+old-only code file is an unused Studio V2 3D viewer. Do not copy it.
+
+Verification completed locally:
+- API tests pass with database environment variables unset: 14 files, 42 tests.
+- Storefront tests pass: 23 files, 96 tests.
+- Workspace typecheck and the full workspace production build pass.
+- Mobile typecheck passes.
+- Smart mockup matrix accepts all 188 surfaces and 1,128 runtime roles.
+- `git diff --check` passes.
+- GitHub's current root CI passed. Its Active App Verification had failed on the
+  previous `main` because a pure validation test imported a database-dependent
+  API route. The validator is now isolated in a database-independent module;
+  verify the fix in pull-request CI before merging.
+
+Stopped at: Final candidate secret/path review and fresh verification of
+`New-Trynext/main` remain before branch creation. Then push only a clean branch
+based on the verified main tip, excluding all 27 local `attached_assets/` paths
+and local commit history. Wait for pull-request checks before updating `main`.
+
+Files/areas changed: Checkout/invoice/payment and mobile order-flow work from the
+local branch, product/catalog and edge-cache changes, Smart Mockup validation
+test isolation, and the Claude Code handoff documents. The release tree contains
+81 changed paths relative to the last verified local tracking ref; 27 attachment
+paths are excluded.
+
+Remaining work:
+- Complete the final secret/path review and recheck GitHub `main`.
+- Publish a clean candidate branch and open a pull request.
+- Merge only if all required pull-request checks pass.
+- After the live update, verify the storefront, API health, catalog cache
+  behavior, sitemap, and accepted Smart Mockup runtime on `trynext.shop`.
+- Do not create a test order, payment, or production-data mutation.
+- Browser/device invoice-download checks remain safe follow-up verification; do
+  not create a real order to perform them.
+
+Blocker: None identified locally. Pull-request checks and production health are
+still pending.
+
+Next safe action: Run the final content-only secret scan and inspect the full
+release diff, then re-read the live `main` ref through the attached GitHub
+integration before creating the clean branch.
+
+Verification: `pnpm run typecheck`, `pnpm run build`, `pnpm run validate:mockups`,
+the API and storefront tests, and `git diff --check` all passed. No provider
+settings, database data, orders, or payments were changed.

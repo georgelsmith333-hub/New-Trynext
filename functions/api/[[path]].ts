@@ -108,6 +108,100 @@ function publicReadCacheControl(path: string): string {
   return "public, max-age=10, s-maxage=30, stale-while-revalidate=60";
 }
 
+const PUBLIC_CACHE_QUERY_PARAMETERS = new Set([
+  "category",
+  "categoryid",
+  "color",
+  "customizable",
+  "family",
+  "featured",
+  "gender",
+  "includetotal",
+  "limit",
+  "order",
+  "page",
+  "side",
+  "slug",
+  "sort",
+  "status",
+  "surfacekey",
+  "tag",
+  "type",
+]);
+
+const SEARCH_QUERY_PARAMETERS = new Set(["q", "query", "search", "term", "keyword"]);
+const SAFE_PUBLIC_CACHE_X_HEADERS = new Set([
+  "x-client-ip",
+  "x-forwarded-for",
+  "x-forwarded-host",
+  "x-forwarded-port",
+  "x-forwarded-proto",
+  "x-real-ip",
+  "x-requested-with",
+]);
+
+function isPublicCacheInputSafe(request: Request, url: URL): boolean {
+  let hasUnknownExtensionHeader = false;
+  request.headers.forEach((_value, name) => {
+    const normalizedName = name.toLowerCase();
+    if (normalizedName.startsWith("x-") && !SAFE_PUBLIC_CACHE_X_HEADERS.has(normalizedName)) {
+      hasUnknownExtensionHeader = true;
+    }
+  });
+
+  if (
+    request.method.toUpperCase() !== "GET"
+    || request.headers.has("cookie")
+    || request.headers.has("authorization")
+    || hasUnknownExtensionHeader
+  ) {
+    return false;
+  }
+
+  for (const key of url.searchParams.keys()) {
+    const normalizedKey = key.toLowerCase();
+    if (SEARCH_QUERY_PARAMETERS.has(normalizedKey) || !PUBLIC_CACHE_QUERY_PARAMETERS.has(normalizedKey)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function isCacheableCatalogPath(path: string): boolean {
+  if (path === "categories" || path === "products") return true;
+  if (!path.startsWith("products/")) return false;
+  return !path.split("/").some((segment) => segment.toLowerCase() === "search");
+}
+
+function isPublicCacheResponseSafe(response: Response): boolean {
+  if (response.status !== 200 || response.headers.has("set-cookie")) return false;
+
+  const cacheControl = response.headers.get("cache-control") ?? "";
+  if (/\b(?:private|no-store|no-cache)\b/i.test(cacheControl)) return false;
+
+  const vary = (response.headers.get("vary") ?? "")
+    .split(",")
+    .map((header) => header.trim().toLowerCase())
+    .filter(Boolean);
+  return vary.every((header) => header === "origin");
+}
+
+function makeEdgeCacheResponse(response: Response): Response {
+  const headers = new Headers(response.headers);
+  // The cache key already includes the request host, and CORS headers are
+  // rebuilt on every hit. Keeping Vary: Origin on this synthetic request (which
+  // intentionally has no Origin header) makes Cache API writes/matches miss.
+  headers.delete("vary");
+  headers.delete("x-trynext-edge-cache");
+  headers.delete("x-trynext-edge-cache-store");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 async function canonicalizeSitemapResponse(
   response: Response,
   path: string,
@@ -152,10 +246,8 @@ export const onRequest: PagesFunction<GatewayEnv> = async (context) => {
   const origin = originalUrl.origin;
   const responseCors = corsHeaders(origin);
   const edgeCache = (globalThis as { caches?: { default?: Cache } }).caches?.default;
-  const cacheable = safeRead
-    && method === "GET"
-    && !request.headers.get("cookie")
-    && !originalUrl.searchParams.has("search");
+  const publicCacheInputSafe = safeRead && isPublicCacheInputSafe(request, originalUrl);
+  const cacheable = publicCacheInputSafe && isCacheableCatalogPath(path);
   const cacheKeyUrl = new URL(originalUrl.toString());
   cacheKeyUrl.searchParams.set("_trynext_origin", origin);
   const cacheKey = new Request(cacheKeyUrl.toString(), { method: "GET" });
@@ -166,6 +258,7 @@ export const onRequest: PagesFunction<GatewayEnv> = async (context) => {
       const cachedHeaders = new Headers(cached.headers);
       responseCors.forEach((value, key) => cachedHeaders.set(key, value));
       cachedHeaders.set("X-Trynext-Edge-Cache", "HIT");
+      cachedHeaders.set("X-Trynext-Edge-Cache-Store", "HIT");
       return new Response(cached.body, { status: cached.status, statusText: cached.statusText, headers: cachedHeaders });
     }
   }
@@ -251,26 +344,34 @@ export const onRequest: PagesFunction<GatewayEnv> = async (context) => {
         responseHeaders.delete("content-length");
         responseHeaders.set("X-Trynext-Sitemap-Canonical", CANONICAL_STOREFRONT_URL);
       }
-      if (safeRead && response.ok) {
+      const cacheSafeResponse = isPublicCacheResponseSafe(response);
+      if (safeRead && publicCacheInputSafe && cacheSafeResponse) {
         responseHeaders.set("Cache-Control", publicReadCacheControl(path));
-      } else if (!safeRead || primaryOnlyRead) {
+      } else {
         responseHeaders.set("Cache-Control", "private, no-store");
       }
 
-      if (cacheable && edgeCache && response.ok) {
-        responseHeaders.set("X-Trynext-Edge-Cache", "MISS");
-      }
       const output = new Response(canonicalizedSitemap.body, {
         status: response.status,
         statusText: response.statusText,
         headers: responseHeaders,
       });
-      if (cacheable && edgeCache && response.ok) {
-        const waitUntil = (context as unknown as { waitUntil?: (promise: Promise<unknown>) => void }).waitUntil;
-        const cacheCopy = output.clone();
-        const write = edgeCache.put(cacheKey, cacheCopy).catch(() => undefined);
-        if (waitUntil) waitUntil(write);
-        else await write;
+      if (cacheable && edgeCache && cacheSafeResponse) {
+        output.headers.set("X-Trynext-Edge-Cache", "MISS");
+        output.headers.set("X-Trynext-Edge-Cache-Store", "STORING");
+        try {
+          await edgeCache.put(cacheKey, makeEdgeCacheResponse(output.clone()));
+          output.headers.set("X-Trynext-Edge-Cache-Store", "STORED");
+        } catch (cacheError) {
+          output.headers.set("X-Trynext-Edge-Cache-Store", "FAILED");
+          console.warn("[edge-cache] catalog response was not stored", {
+            path,
+            errorName: cacheError instanceof Error ? cacheError.name : "unknown",
+          });
+        }
+      } else if (cacheable && edgeCache) {
+        output.headers.set("X-Trynext-Edge-Cache", "BYPASS");
+        output.headers.set("X-Trynext-Edge-Cache-Store", "UNSAFE_RESPONSE");
       }
       return output;
     } catch (error) {

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Link, useLocation } from "wouter";
 import { type Product } from "@workspace/api-client-react";
 import { formatPrice, cn, resolveImageUrl } from "@/lib/utils";
+import { getCustomerProductColors, getCustomerProductImage } from "@/lib/product-options";
 import { useCartActions } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +28,7 @@ interface QuickViewModalProps {
 }
 
 export function QuickViewModal({ product, open, onClose }: QuickViewModalProps) {
+  const productColors = getCustomerProductColors(product);
   const [, navigate] = useLocation();
   const { addToCart } = useCartActions();
   const { toggleWishlist, isWishlisted } = useWishlist();
@@ -74,7 +76,7 @@ export function QuickViewModal({ product, open, onClose }: QuickViewModalProps) 
         price: discountPrice || price,
         originalPrice: price,
         quantity,
-        imageUrl: resolveImageUrl(product.imageUrl),
+        imageUrl: resolveImageUrl(getCustomerProductImage(product)),
         size: selectedSize || undefined,
         color: selectedColor || undefined,
       } as any);
@@ -139,9 +141,9 @@ export function QuickViewModal({ product, open, onClose }: QuickViewModalProps) 
 
               <div className="flex flex-col sm:flex-row">
                 <div className="sm:w-5/12 aspect-square relative bg-gray-50 shrink-0">
-                  {resolveImageUrl(product.imageUrl) ? (
+                  {resolveImageUrl(getCustomerProductImage(product)) ? (
                     <img
-                      src={resolveImageUrl(product.imageUrl)}
+                      src={resolveImageUrl(getCustomerProductImage(product))}
                       alt={product.name}
                       className="w-full h-full object-cover"
                       loading="eager"
@@ -181,7 +183,7 @@ export function QuickViewModal({ product, open, onClose }: QuickViewModalProps) 
                       {product.customizable ? "✨ Customizable" : "Ready Made"}
                     </span>
                     <button
-                      onClick={() => toggleWishlist({ id: product.id, name: product.name, price, discountPrice: discountPrice ?? undefined, imageUrl: resolveImageUrl(product.imageUrl) })}
+                      onClick={() => toggleWishlist({ id: product.id, name: product.name, price, discountPrice: discountPrice ?? undefined, imageUrl: resolveImageUrl(getCustomerProductImage(product)) })}
                       className="p-2 rounded-xl shrink-0 transition-all"
                       style={{ background: wishlisted ? '#fff1f0' : '#f9fafb', border: `1px solid ${wishlisted ? '#fecaca' : '#e5e7eb'}` }}
                       aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
@@ -231,7 +233,7 @@ export function QuickViewModal({ product, open, onClose }: QuickViewModalProps) 
                     </div>
                   )}
 
-                  {product.colors && product.colors.length > 0 && (
+                  {productColors.length > 0 && (
                     <div className="mb-4">
                       <p className="text-sm font-bold text-gray-700 mb-2">
                         {selectedColor
@@ -239,7 +241,7 @@ export function QuickViewModal({ product, open, onClose }: QuickViewModalProps) 
                           : "Choose Color"}
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {product.colors.slice(0, 10).map((color: string, i: number) => (
+                        {productColors.slice(0, 10).map((color: string, i: number) => (
                           <button
                             key={i}
                             title={color}

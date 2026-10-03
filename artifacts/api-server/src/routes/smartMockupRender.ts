@@ -17,6 +17,9 @@ import { logger } from "../lib/logger";
 import { inspectTemplate, prepareSmartObjectArtworkImage, replaceSmartObjectContent } from "../lib/psdSmartObject";
 import { enqueueRenderJob, getJob, TemplateNotActiveError } from "../lib/mockupQueue";
 import { getMockupRenderer } from "../lib/mockupRenderer";
+import { validationPassed } from "../lib/smartMockupValidation";
+
+export { validationPassed };
 
 const router: IRouter = Router();
 
@@ -55,25 +58,6 @@ async function validateArtworkImage(bytes: Buffer): Promise<{ width: number; hei
 
 function sha256(buf: Buffer): string {
   return createHash("sha256").update(buf).digest("hex");
-}
-
-export function validationPassed(validation: Record<string, unknown>): boolean {
-  return Object.entries(validation).every(([key, value]) => {
-    if (key === "rendererAvailable") {
-      return Boolean(
-        value
-        && typeof value === "object"
-        && "available" in value
-        && (value as { available?: unknown }).available === true,
-      );
-    }
-    return Boolean(
-      value
-      && typeof value === "object"
-      && "pass" in value
-      && (value as { pass?: unknown }).pass === true,
-    );
-  });
 }
 
 // ── Section 4: template inspection ──────────────────────────────────────────

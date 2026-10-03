@@ -67,7 +67,7 @@ const OrderCreateSchema = z.object({
   utmCampaign:   z.string().max(100).optional().nullable(),
 });
 
-const SUPPORTED_PAYMENT_METHODS = ["bkash", "nagad", "upay", "bank", "card", "cod"] as const;
+const SUPPORTED_PAYMENT_METHODS = ["bkash", "nagad", "rocket", "upay", "bank", "card", "cod"] as const;
 
 const orderStorageService = new ObjectStorageService();
 
@@ -659,7 +659,7 @@ router.post("/orders", async (req, res) => {
     const paymentMethod: string = body.paymentMethod || "";
     const normalizedPaymentMethod = paymentMethod.trim().toLowerCase();
     if (!(SUPPORTED_PAYMENT_METHODS as readonly string[]).includes(normalizedPaymentMethod)) {
-      res.status(400).json({ error: 'validation_error', message: 'Select a supported payment method: bKash, Nagad, uPay, bank transfer, card on delivery, or cash on delivery.' });
+      res.status(400).json({ error: 'validation_error', message: 'Select a supported payment method: bKash, Nagad, Rocket, uPay, bank transfer, card on delivery, or cash on delivery.' });
       return;
     }
     const { items, notes, promoCode, utmSource, utmMedium, utmCampaign } = body;
@@ -682,6 +682,17 @@ router.post("/orders", async (req, res) => {
     const catalogItems = items.filter((i: any) => !isStudioItem(i) && !isHamperItem(i));
     const studioItems = items.filter((i: any) => isStudioItem(i));
     const hamperItems = items.filter((i: any) => isHamperItem(i));
+    const unapprovedBottleStudioItem = studioItems.find((item: any) => {
+      const note = parseNote(item);
+      return /bottle/i.test(`${String(note.product ?? "")} ${String(item.name ?? "")}`);
+    });
+    if (unapprovedBottleStudioItem) {
+      res.status(409).json({
+        error: "mockup_not_approved",
+        message: "Custom water bottle orders are temporarily unavailable while the white bottle mockup is awaiting visual approval. The regular white bottle product remains available.",
+      });
+      return;
+    }
 
     // Fetch studio prices from server-side settings (never trust client price)
     // Defaults must match buildSettings() in settings.ts
@@ -1527,7 +1538,7 @@ router.put("/orders/:id/payment-info", async (req, res) => {
     const rawBankReference = String(req.body?.bankReference ?? "").replace(/[^a-zA-Z0-9\-]/gi, "").slice(0, 100);
     const rawSenderNumber = normalizeBangladeshPhone(req.body?.senderNumber);
     const rawPromo = String(req.body?.promoCode ?? "").replace(/[^A-Z0-9_\-]/gi, "").toUpperCase().slice(0, 50);
-    const walletMethod = ["bkash", "nagad", "upay"].includes(rawPaymentMethod);
+    const walletMethod = ["bkash", "nagad", "rocket", "upay"].includes(rawPaymentMethod);
 
     if (walletMethod) {
       if (rawLastFour.length !== 4) {

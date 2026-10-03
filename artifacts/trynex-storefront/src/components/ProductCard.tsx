@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { ShoppingCart, Heart, Check, Eye, ArrowRight, MessageCircle, Flame, Loader2 } from "lucide-react";
 import { formatPrice, resolveImageUrl, cn, getApiUrl } from "@/lib/utils";
+import { getCustomerProductColors, getCustomerProductImage } from "@/lib/product-options";
 import type { Product } from "@workspace/api-client-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCartActions } from "@/context/CartContext";
@@ -32,7 +33,7 @@ function getProductFallback(product: Product): string {
   const text = `${product.name ?? ""} ${(product as any).category?.name ?? ""} ${(product as any).categoryName ?? ""}`.toLowerCase();
   if (text.includes("mug") || text.includes("cup")) return "/mockups/psd-master-v10/runtime-roles/mug/white/front-base.png";
   if (text.includes("hoodie") || text.includes("sweatshirt")) return "/mockups/psd-master-v10/runtime-roles/hoodie/white/front-base.png";
-  if (text.includes("bottle") || text.includes("flask") || text.includes("tumbler")) return "/mockups/psd-master-v10/runtime-roles/waterbottle/white/front-base.png";
+  if (text.includes("bottle") || text.includes("flask") || text.includes("tumbler")) return "/mockups/source-kit-v3/waterbottle/white/front.png";
   if (text.includes("cap") || text.includes("hat")) return "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png";
   if (text.includes("long sleeve") || text.includes("longsleeve") || text.includes("long-sleeve")) return "/mockups/psd-master-v10/runtime-roles/longsleeve/white/front-base.png";
   return "/mockups/psd-master-v10/runtime-roles/tshirt/white/front-base.png";
@@ -87,7 +88,8 @@ export function ProductCard({ product, index = 0, eagerImage = true }: ProductCa
 
     const price = parseFloat(String(product.price)) || 0;
     const fallbackImage = getProductFallback(product);
-    const imageSrc = resolveImageUrl(product.imageUrl) || fallbackImage;
+    const imageSrc = resolveImageUrl(getCustomerProductImage(product)) || fallbackImage;
+    const productColors = getCustomerProductColors(product);
     const discountPrice = product.discountPrice ? parseFloat(String(product.discountPrice)) : null;
     const discount = discountPrice
       ? Math.round(((price - discountPrice) / price) * 100)
@@ -143,7 +145,7 @@ export function ProductCard({ product, index = 0, eagerImage = true }: ProductCa
           price: discountPrice || price,
           originalPrice: price,
           quantity: 1,
-          imageUrl: resolveImageUrl(product.imageUrl),
+          imageUrl: resolveImageUrl(getCustomerProductImage(product)),
         });
         toast({
           title: "✓ Added to bag",
@@ -170,7 +172,7 @@ export function ProductCard({ product, index = 0, eagerImage = true }: ProductCa
         name: product.name,
         price: price,
         discountPrice: discountPrice ?? undefined,
-        imageUrl: resolveImageUrl(product.imageUrl),
+        imageUrl: resolveImageUrl(getCustomerProductImage(product)),
       });
     };
 
@@ -211,7 +213,8 @@ export function ProductCard({ product, index = 0, eagerImage = true }: ProductCa
 
       // Preload images so the gallery doesn't show a blank gray box.
       const urls: string[] = [];
-      if (product.imageUrl) urls.push(resolveImageUrl(product.imageUrl));
+      const customerImage = getCustomerProductImage(product);
+      if (customerImage) urls.push(resolveImageUrl(customerImage));
       const extra = (product as unknown as { images?: string[] | null }).images;
       if (Array.isArray(extra)) urls.push(...extra.slice(0, 2));
       urls.forEach(u => { try { const img = new Image(); img.src = u; } catch {} });
@@ -395,9 +398,9 @@ export function ProductCard({ product, index = 0, eagerImage = true }: ProductCa
             </h3>
 
             {/* Color dots */}
-            {product.colors && product.colors.length > 0 && (
+            {productColors.length > 0 && (
               <div className="flex items-center gap-1.5 mb-3 overflow-x-auto snap-x snap-mandatory pb-0.5" style={{ scrollbarWidth: "none", msOverflowStyle: "none" } as React.CSSProperties}>
-                {product.colors.slice(0, 6).map((color, i) => (
+                {productColors.slice(0, 6).map((color, i) => (
                   <div
                     key={i}
                     className="w-4 h-4 rounded-full shrink-0 transition-transform hover:scale-125 snap-start"
@@ -408,8 +411,8 @@ export function ProductCard({ product, index = 0, eagerImage = true }: ProductCa
                     title={color}
                   />
                 ))}
-                {product.colors.length > 6 && (
-                  <span className="text-[10px] text-gray-400 font-semibold shrink-0">+{product.colors.length - 6}</span>
+                {productColors.length > 6 && (
+                  <span className="text-[10px] text-gray-400 font-semibold shrink-0">+{productColors.length - 6}</span>
                 )}
               </div>
             )}

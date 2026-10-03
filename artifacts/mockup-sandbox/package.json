@@ -44,6 +44,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@workspace/trynext-lifestyle-design-system": "workspace:*",
     "@vitejs/plugin-react": "catalog:",
     "chokidar": "^4.0.3",
     "class-variance-authority": "catalog:",

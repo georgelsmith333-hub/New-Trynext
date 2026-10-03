@@ -4,7 +4,7 @@
 const PROD_DOMAIN = "trynext.shop";
 const STALE_RENDER_DOMAIN = "trynex-api.onrender.com";
 
-const getBaseUrl = () => {
+export const getBaseUrl = () => {
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
   // No domain set, or the .env.production still carries the old Render URL → use production
   if (!domain || domain === STALE_RENDER_DOMAIN) return `https://${PROD_DOMAIN}`;
@@ -90,13 +90,13 @@ export interface Order {
   status: string;
   paymentMethod?: string;
   paymentStatus?: string;
+  notes?: string;
   items: OrderItem[];
   subtotal: number;
   shippingCost: number;
+  promoDiscount?: number;
   total: number;
   promoCode?: string;
-  promoDiscount?: number;
-  notes?: string;
   trackingNumber?: string;
   trackingUrl?: string;
   courierName?: string;
@@ -126,9 +126,11 @@ export interface OrderTrackResponse {
   status: string;
   paymentMethod?: string;
   paymentStatus?: string;
+  notes?: string;
   items: OrderItem[];
   subtotal: number;
   shippingCost: number;
+  promoDiscount?: number;
   total: number;
   trackingNumber?: string;
   trackingUrl?: string;

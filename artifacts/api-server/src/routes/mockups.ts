@@ -42,9 +42,16 @@ const PRODUCT_NAMES: Record<CanonicalCategory, string> = {
   mug: "Coffee Mug", cap: "Structured Cap", waterbottle: "Water Bottle — White Sublimation Aluminium",
 };
 
-const CANONICAL_VARIANTS: CanonicalVariant[] = (Object.keys(CANONICAL_COLORS) as CanonicalCategory[]).flatMap((category) =>
-  CANONICAL_COLORS[category].map((color) => ({ category, productName: PRODUCT_NAMES[category], color }))
-);
+// Bottle runtime rows stay private until the white carabiner bottle receives
+// explicit visual approval. A structural "accepted" manifest is not that approval.
+const CUSTOMER_RELEASED_CATEGORIES = new Set<CanonicalCategory>([
+  "tshirt", "longsleeve", "hoodie", "mug", "cap",
+]);
+const CANONICAL_VARIANTS: CanonicalVariant[] = (Object.keys(CANONICAL_COLORS) as CanonicalCategory[])
+  .filter((category) => CUSTOMER_RELEASED_CATEGORIES.has(category))
+  .flatMap((category) =>
+    CANONICAL_COLORS[category].map((color) => ({ category, productName: PRODUCT_NAMES[category], color }))
+  );
 
 export function canonicalMockups() {
   let id = -1;
