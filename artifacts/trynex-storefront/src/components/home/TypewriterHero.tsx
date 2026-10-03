@@ -11,7 +11,7 @@ const mugSrc    = "/mockups/psd-master-v10/runtime-roles/mug/white/front-base.pn
 const capSrc    = "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png";
 const hoodieSrc = "/mockups/psd-master-v10/runtime-roles/hoodie/white/front-base.png";
 const longsleeveSrc = "/mockups/psd-master-v10/runtime-roles/longsleeve/white/front-base.png";
-const bottleSrc = "/mockups/psd-master-v10/runtime-roles/waterbottle/white/front-base.png";
+const bottleSrc = "/mockups/source-kit-v3/waterbottle/white/front.png";
 
 const DEFAULT_PHRASES: string[] = [
   "T-Shirts.",

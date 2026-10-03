@@ -67,7 +67,7 @@ const zones: Record<CompleteMockupFamily, Record<string, CompleteMockupGeometry[
     front: { x: 240, y: 260, w: 540, h: 320, shape: "cap-front" }, back: { x: 285, y: 270, w: 430, h: 230 },
   },
   waterbottle: {
-    front: { x: 335, y: 320, w: 276, h: 590, shape: "bottle-body" }, back: { x: 335, y: 320, w: 276, h: 590, shape: "bottle-body" },
+    front: { x: 405, y: 363, w: 215, h: 481, shape: "bottle-body" }, back: { x: 405, y: 363, w: 215, h: 481, shape: "bottle-body" },
   },
 };
 

@@ -8,6 +8,12 @@ import { ProductDetailSkeleton } from "@/components/ui/skeleton";
 import { useGetProduct, useListProducts, getListProductsQueryKey } from "@workspace/api-client-react";
 import { ProductCard } from "@/components/ProductCard";
 import { formatPrice, cn, getApiUrl, resolveImageUrl } from "@/lib/utils";
+import {
+  getCustomerProductColors,
+  getCustomerProductImage,
+  getCustomerProductVariants,
+  isWaterBottleProduct,
+} from "@/lib/product-options";
 import { useState, useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCartActions } from "@/context/CartContext";
@@ -325,11 +331,12 @@ export default function ProductDetail() {
   const error = isNumeric ? hookError : slugError;
   const productId = product?.id ?? numericId;
   const isValidId = isNumeric || isSlug;
+  const productColors = getCustomerProductColors(product);
+  const customerProductImage = getCustomerProductImage(product) || "";
   const hasApparelSizing = isSizedApparelProduct(product);
   const [selectedVariantId, setSelectedVariantId] = useState<string>("");
   const productVariants = useMemo(() =>
-    (Array.isArray((product as any)?.variants) ? (product as any).variants : [])
-      .filter((v: any) => v && v.active !== false),
+    getCustomerProductVariants(product),
     [product?.id, (product as any)?.variants]
   );
   const selectedVariant = productVariants.find((v: any) => v.id === selectedVariantId) ?? null;
@@ -459,7 +466,7 @@ export default function ProductDetail() {
         name: product.name,
         slug: product.slug || String(product.id),
         price: defaultVariantPrice,
-        imageUrl: product.imageUrl || '',
+        imageUrl: customerProductImage || product.imageUrl || '',
       });
     }
   }, [product?.id, productVariants.length, productVariants[0]?.price]);
@@ -600,9 +607,9 @@ export default function ProductDetail() {
       price: itemPrice,
       originalPrice: product.price,
       quantity,
-      imageUrl: displayImage || product.imageUrl,
+      imageUrl: displayImage || customerProductImage || product.imageUrl,
       size: selectedSize || undefined,
-      color: selectedColor || undefined,
+      color: selectedColor || (isWaterBottleProduct(product) ? "White" : undefined),
       variantId: selectedVariant?.id,
       variantName: selectedVariant?.name,
       variantPrice: selectedVariant?.price,
@@ -629,7 +636,7 @@ export default function ProductDetail() {
     ? Math.round(((product.price - product.discountPrice) / product.price) * 100)
     : 0;
 
-  const displayImage = activeImage || product.imageUrl || "";
+  const displayImage = activeImage || customerProductImage || "";
   const wishlisted = isWishlisted(product.id);
   const itemPrice = selectedProductPrice + (customNote || customImages.length > 0 ? variantCustomizationFee : 0);
   const advanceAmount = Math.round(itemPrice * 0.25);
@@ -679,7 +686,7 @@ export default function ProductDetail() {
         title={`${product.name} | Trynext Lifestyle`}
         description={product.description?.substring(0, 160) || `Buy ${product.name} from Trynext Lifestyle. Premium quality custom apparel in Bangladesh. Fast delivery to Dhaka and beyond.`}
         canonical={`/product/${product.slug || product.id}`}
-        ogImage={product.imageUrl || undefined}
+        ogImage={customerProductImage || product.imageUrl || undefined}
         ogType="product"
         keywords={`${product.name}, buy ${product.name} bangladesh, trynext ${product.name}, customized gift Bangladesh, কাস্টম গিফট বাংলাদেশ`}
         jsonLd={[
@@ -688,7 +695,7 @@ export default function ProductDetail() {
             "@type": "Product",
             "name": product.name,
             "description": product.description || `Buy ${product.name} from Trynext Lifestyle. Premium quality, fast delivery across Bangladesh.`,
-            "image": product.imageUrl || "",
+            "image": customerProductImage || product.imageUrl || "",
             "sku": `TN-${product.id}`,
             "brand": { "@type": "Brand", "name": "Trynext Lifestyle" },
             "offers": {
@@ -786,7 +793,9 @@ export default function ProductDetail() {
               </motion.div>
 
               {(() => {
-                const rawImages = [product.imageUrl, ...(product.images || [])].filter(Boolean) as string[];
+                const rawImages = isWaterBottleProduct(product)
+                  ? [customerProductImage].filter(Boolean) as string[]
+                  : [customerProductImage || product.imageUrl, ...(product.images || [])].filter(Boolean) as string[];
                 const allImages = [...new Set(rawImages)];
                 const hasMultiple = allImages.length > 1;
                 const activeIdx = Math.max(0, activeImage ? allImages.indexOf(activeImage) : 0);
@@ -895,7 +904,9 @@ export default function ProductDetail() {
 
               <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 sm:mx-0 sm:px-0">
                 {(() => {
-                  const rawImages = [product.imageUrl, ...(product.images || [])].filter(Boolean) as string[];
+                  const rawImages = isWaterBottleProduct(product)
+                    ? [customerProductImage]
+                    : [customerProductImage || product.imageUrl, ...(product.images || [])].filter(Boolean) as string[];
                   const allImages = [...new Set(rawImages)];
                   if (allImages.length <= 1) return null;
                   return allImages.map((img, i) => (
@@ -940,7 +951,7 @@ export default function ProductDetail() {
                      aria-label={wishlisted ? "Remove product from wishlist" : "Add product to wishlist"}
                      aria-pressed={wishlisted}
                      data-testid="button-product-wishlist"
-                    onClick={() => toggleWishlist({ id: product.id, name: product.name, price: product.price, discountPrice: product.discountPrice, imageUrl: product.imageUrl })}
+                    onClick={() => toggleWishlist({ id: product.id, name: product.name, price: product.price, discountPrice: product.discountPrice, imageUrl: customerProductImage || product.imageUrl })}
                     className="p-2.5 rounded-xl transition-all"
                     style={{
                       background: wishlisted ? '#fff1f0' : '#f9fafb',
@@ -1163,7 +1174,7 @@ export default function ProductDetail() {
               )}
 
               {/* Colors */}
-              {product.colors && product.colors.length > 0 && (
+              {productColors.length > 0 && (
                 <div className="mb-6" id="color-picker">
                   <p className="font-bold text-gray-900 text-sm mb-3">
                     {selectedColor
@@ -1176,7 +1187,7 @@ export default function ProductDetail() {
                     transition={{ duration: 0.45, ease: "easeInOut" }}
                     className="flex flex-wrap gap-3 sm:gap-4"
                   >
-                    {product.colors.map((color: string, colorIdx: number) => {
+                    {productColors.map((color: string, colorIdx: number) => {
                       const variantMeta = (product.colorVariants ?? []).find((v: any) => v.name === color);
                       const isOutOfStock = variantMeta ? variantMeta.inStock === false : false;
                       const colorImages = product.colorImages || {};
@@ -1200,7 +1211,9 @@ export default function ProductDetail() {
                             } else if (mappedImage) {
                               setActiveImage(mappedImage);
                             } else {
-                              const allImages = [product.imageUrl, ...(product.images || [])].filter(Boolean) as string[];
+                              const allImages = isWaterBottleProduct(product)
+                                ? [customerProductImage]
+                                : [customerProductImage || product.imageUrl, ...(product.images || [])].filter(Boolean) as string[];
                               if (allImages.length > 1 && colorIdx < allImages.length) {
                                 setActiveImage(allImages[colorIdx]);
                               }
@@ -1233,7 +1246,7 @@ export default function ProductDetail() {
                       );
                     })}
                   </motion.div>
-                  {product.colors.some((c: string) => (product.colorVariants ?? []).find((v: any) => v.name === c)?.inStock === false) && (
+                  {productColors.some((c: string) => (product.colorVariants ?? []).find((v: any) => v.name === c)?.inStock === false) && (
                     <p className="text-xs text-gray-400 mt-1.5">Crossed-out colors are currently out of stock.</p>
                   )}
                 </div>
@@ -1544,7 +1557,7 @@ export default function ProductDetail() {
                         ...(hasApparelSizing
                           ? [{ label: "Available Sizes", value: Array.isArray(product.sizes) && product.sizes.length > 0 ? product.sizes.join(", ") : SIZE_GUIDE.map(s => s.size).join(", ") }]
                           : [{ label: "Size", value: "One size" }]),
-                        { label: "Available Colors", value: product.colors?.join(", ") || "Multiple" },
+                        { label: "Available Colors", value: productColors.join(", ") || "Multiple" },
                         { label: "Production Time", value: "24 hours", highlight: true },
                         { label: "Delivery", value: "24 hours nationwide", highlight: true },
                       ].map(({ label, value, highlight }) => (
@@ -1586,8 +1599,8 @@ export default function ProductDetail() {
                 {/* Current product */}
                 <div className="relative flex flex-col items-center gap-2 w-28">
                   <div className="w-28 h-28 rounded-2xl overflow-hidden border-2 border-orange-400 shadow-md">
-                    {product.imageUrl ? (
-                      <img src={resolveImageUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover" loading="eager" decoding="async" width={900} height={900} onError={e => { e.currentTarget.src = "/images/product-placeholder.svg"; }} />
+                    {customerProductImage || product.imageUrl ? (
+                      <img src={resolveImageUrl(customerProductImage || product.imageUrl)} alt={product.name} className="w-full h-full object-cover" loading="eager" decoding="async" width={900} height={900} onError={e => { e.currentTarget.src = "/images/product-placeholder.svg"; }} />
                     ) : (
                       <div className="w-full h-full bg-orange-50 flex items-center justify-center">
                         <ShoppingCart className="w-8 h-8 text-orange-300" />
@@ -1639,7 +1652,7 @@ export default function ProductDetail() {
                       price: mainPrice,
                       originalPrice: product.price,
                       quantity: 1,
-                      imageUrl: product.imageUrl,
+                      imageUrl: customerProductImage || product.imageUrl,
                     } as any);
                     fbtProducts.forEach((fbtP: any) => {
                       const fbtPrice = parseFloat(String(fbtP.discountPrice || fbtP.price));
@@ -1708,7 +1721,7 @@ export default function ProductDetail() {
           name: product.name,
           price: selectedProductPrice,
           discountPrice: productVariants.length > 0 ? undefined : product.discountPrice,
-          imageUrl: product.imageUrl,
+          imageUrl: customerProductImage || product.imageUrl,
           stock: product.stock,
         }}
         quantity={quantity}
@@ -1719,7 +1732,9 @@ export default function ProductDetail() {
       />
 
       {lightboxOpen && (() => {
-        const rawImages = [product.imageUrl, ...(product.images || [])].filter(Boolean) as string[];
+        const rawImages = isWaterBottleProduct(product)
+          ? [customerProductImage]
+          : [customerProductImage || product.imageUrl, ...(product.images || [])].filter(Boolean) as string[];
         const allImages = [...new Set(rawImages)];
         if (allImages.length === 0) return null;
         return (

@@ -27,8 +27,8 @@ const mugFront          = "/mockups/psd-master-v10/runtime-roles/mug/white/front
 const mugBack           = "/mockups/psd-master-v10/runtime-roles/mug/white/back-base.png";
 const capFront          = "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png";
 const capBack           = "/mockups/psd-master-v10/runtime-roles/cap/white/back-base.png";
-const waterBottleFront  = "/mockups/psd-master-v10/runtime-roles/waterbottle/white/front-base.png";
-const waterBottleBack   = "/mockups/psd-master-v10/runtime-roles/waterbottle/white/back-base.png";
+const waterBottleFront  = "/mockups/source-kit-v3/waterbottle/white/front.png";
+const waterBottleBack   = "/mockups/source-kit-v3/waterbottle/white/back.png";
 
 // All active color and view assets resolve through the accepted v10.3 role
 // matrix.
@@ -136,7 +136,7 @@ export const MUG_SIDE_BACK_PZ: PrintZone    = { x: 384, y: 220, w: 451, h: 580, 
  * the lid, shoulder, carabiner and rounded base are intentionally excluded. */
 // Supplied key-ring bottle reference: body begins below the shoulder and ends above
 // the rounded foot. The loop/carabiner and shoulder are intentionally outside.
-export const WATERBOTTLE_PZ: PrintZone      = { x: 335, y: 320, w: 276, h: 590, shape: "bottle-body" };
+export const WATERBOTTLE_PZ: PrintZone      = { x: 395, y: 355, w: 210, h: 470, shape: "bottle-body" };
 /** Sleeve print area — roughly square (1228×1087px real-world ratio). */
 export const SLEEVE_PZ: PrintZone           = { x: 175, y: 175, w: 650, h: 650 };
 /** Neck label — wider than tall (1299×945px real-world ratio). */
@@ -670,20 +670,29 @@ export function resolveMockup(
 
   // The browser renders the validated v10.3 PNG roles. The corresponding
   // layered master remains outside public/ as editable source provenance.
-  const masterPath = sourceKitSlug ? canonicalMasterPath(category, sourceKitSlug, face) : undefined;
+  const whiteBottleCandidate = category === "waterbottle";
+  const masterPath = sourceKitSlug && !whiteBottleCandidate
+    ? canonicalMasterPath(category, sourceKitSlug, face)
+    : undefined;
   const sourceKitKey = `${category}:${sourceKitSlug ?? "unresolved"}:${face}`;
   const releaseColorSlug = sourceKitSlug
     ? getSmartV10ColorSlug(category, sourceKitSlug)
     : undefined;
-  const v10Roles = releaseColorSlug ? getSmartV10RuntimeRoles(category, releaseColorSlug, face) : undefined;
+  const v10Roles = releaseColorSlug && !whiteBottleCandidate
+    ? getSmartV10RuntimeRoles(category, releaseColorSlug, face)
+    : undefined;
   const resolvedPrintZone = completeView.geometry.printZone;
   const resolvedNormalizedFrame = normalizedFrame;
-  const photoSrc = v10Roles?.base ?? "";
+  const photoSrc = whiteBottleCandidate
+    ? (face === "back" ? waterBottleBack : waterBottleFront)
+    : v10Roles?.base ?? "";
   const cutoutSrc = photoSrc;
   const runtimeStatus = v10Roles ? "approved" as const : "disabled" as const;
-  const disabledReason = v10Roles
-    ? undefined
-    : `No approved ${category} ${sourceKitSlug} ${face} v10.3 source-kit surface is available.`;
+  const disabledReason = whiteBottleCandidate
+    ? "White carabiner-bottle source and print area are awaiting authenticated visual approval."
+    : v10Roles
+      ? undefined
+      : `No approved ${category} ${sourceKitSlug} ${face} v10.3 source-kit surface is available.`;
   const manifestRevision = SMART_V10_RELEASE_VERSION;
   const smartObject = createSmartMockupManifest({
     category,
@@ -692,7 +701,7 @@ export function resolveMockup(
     sourceKitKey,
     manifestRevision,
     editableMasterPath: masterPath,
-    masterStatus: "verified",
+    masterStatus: whiteBottleCandidate ? "manifest-only" : "verified",
     runtimeStatus,
     disabledReason,
     baseSrc: photoSrc,

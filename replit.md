@@ -2,6 +2,13 @@
 
 Trynext Lifestyle (trynext.shop) is a print-on-demand e-commerce storefront for Bangladesh — custom T-shirts, hoodies, mugs, and caps — with a browser-based Design Studio, an admin back office, and a companion mobile app.
 
+> **Development-home transition:** The owner intends to continue development in
+> the confirmed GitHub repository with Claude Code. This file's workflow and
+> environment notes are Replit-specific. Until the GitHub handoff branch is
+> verified, this checkout remains the available source; after verification,
+> use `CLAUDE.md` and the latest `AGENT_HANDOFF.md` for development instructions.
+> Do not treat this notice as approval to deploy or change hosting.
+
 ## Mandatory Agent handoff
 
 ### Mandatory startup command for every new or Remixed Agent

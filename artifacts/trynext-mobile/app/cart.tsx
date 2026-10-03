@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useCart } from "@/context/CartContext";
-import { api } from "@/lib/api";
+import { api, getBaseUrl } from "@/lib/api";
 
 export default function CartScreen() {
   const colors = useColors();
@@ -114,7 +114,12 @@ export default function CartScreen() {
             refreshControl={<RefreshControl refreshing={false} onRefresh={()=>{}} />}
           >
             {items.map((item) => {
-              const imgUri = item.product.imageUrl ?? (item.product.images?.[0]) ?? null;
+              const isWaterBottle = /\b(water[\s-]?bottle|bottle|tumbler|flask)\b/i.test(
+                `${item.product.name ?? ""} ${item.product.slug ?? ""}`,
+              );
+              const imgUri = isWaterBottle
+                ? `${getBaseUrl()}/mockups/white-waterbottle-photo.png`
+                : item.product.imageUrl ?? (item.product.images?.[0]) ?? null;
               const itemTotal = (item.product.discountPrice ?? item.product.price) * item.quantity;
               return (
                 <View
@@ -133,7 +138,7 @@ export default function CartScreen() {
                       {item.product.name}
                     </Text>
                     <Text style={[styles.itemMeta, { color: colors.mutedForeground }]}>
-                      {[item.color, item.size].filter(Boolean).join(" · ")}
+                      {[isWaterBottle ? "White" : item.color, item.size].filter(Boolean).join(" · ")}
                     </Text>
                     {!!item.customNote && (() => {
                       try {

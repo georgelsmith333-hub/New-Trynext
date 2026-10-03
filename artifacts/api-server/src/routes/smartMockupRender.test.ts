@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validationPassed } from "./smartMockupRender";
+import { validationPassed } from "../lib/smartMockupValidation";
 
 describe("Smart Mockup validation status gate", () => {
   it("requires every test and renderer availability to pass", () => {

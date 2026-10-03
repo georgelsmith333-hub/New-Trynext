@@ -21,7 +21,7 @@ import { Skeleton } from "@/components/Skeleton";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { useWishlist } from "@/context/WishlistContext";
-import { api } from "@/lib/api";
+import { api, getBaseUrl } from "@/lib/api";
 
 const { width } = Dimensions.get("window");
 
@@ -52,8 +52,17 @@ export default function ProductDetailScreen() {
 
   const wishlisted = product ? isWishlisted(product.id) : false;
 
+  const isWaterBottle = product
+    ? /\b(water[\s-]?bottle|bottle|tumbler|flask)\b/i.test(
+        `${product.name ?? ""} ${product.slug ?? ""} ${product.categoryName ?? ""}`,
+      )
+    : false;
+  const productImage = isWaterBottle
+    ? `${getBaseUrl()}/mockups/white-waterbottle-photo.png`
+    : product?.imageUrl;
+  const productColors = isWaterBottle ? ["White"] : product?.colors ?? [];
   const images = product
-    ? [product.imageUrl, ...(product.images ?? [])].filter(Boolean) as string[]
+    ? (isWaterBottle ? [productImage] : [product.imageUrl, ...(product.images ?? [])].filter(Boolean)) as string[]
     : [];
 
   const currentImg = images[imageIdx] || null;
@@ -71,7 +80,10 @@ export default function ProductDetailScreen() {
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     for (let i = 0; i < quantity; i++) {
-      addItem(product, { size: selectedSize ?? undefined, color: selectedColor ?? undefined });
+      addItem(
+        isWaterBottle ? { ...product, imageUrl: productImage, colors: ["White"] } : product,
+        { size: selectedSize ?? undefined, color: isWaterBottle ? "White" : selectedColor ?? undefined },
+      );
     }
     router.push("/cart");
   };
@@ -269,13 +281,13 @@ export default function ProductDetailScreen() {
           )}
 
           {/* Colors */}
-          {product.colors && product.colors.length > 0 && (
+          {productColors.length > 0 && (
             <View style={styles.optionSection}>
               <Text style={[styles.optionLabel, { color: colors.foreground }]}>
                 Color{selectedColor ? `: ${selectedColor}` : ""}
               </Text>
               <View style={styles.optionRow}>
-                {product.colors.map((color) => (
+                {productColors.map((color) => (
                   <Pressable
                     key={color}
                     onPress={() => setSelectedColor(color)}

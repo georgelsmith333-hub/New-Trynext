@@ -1,5 +1,11 @@
 # Trynext Lifestyle — Full Photorealistic Smart Mockup Rebuild Handoff Prompt
 
+> **Historical prompt — not the active project handoff.** This document contains
+> superseded Smart v4/v7 and Smart v8-target assumptions. For current status and
+> approved work, read `AGENTS.md`, `AGENT_HANDOFF.md`, `replit.md`, and
+> `CLAUDE_HANDOFF_CHECKLIST.md` first. Do not use this prompt to change or
+> promote the live mockup runtime.
+
 Copy and paste everything below to the agent who will work on the project.
 
 ---

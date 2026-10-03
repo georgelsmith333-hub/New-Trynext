@@ -15,7 +15,7 @@ import {
   CheckCircle2, CreditCard, Banknote,
   ShieldCheck, Copy, Check, ArrowRight,
   Smartphone, Info, Tag, MapPin, MessageCircle, Phone, AlertCircle, Search,
-  LocateFixed, Loader2, Upload
+  LocateFixed, Loader2, Upload, FileDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/tracking";
@@ -28,6 +28,8 @@ import { LogIn, UserPlus, X as XIcon } from "lucide-react";
 
 import { BD_UPAZILAS, getDivisionForDistrict, getAllDistricts, getPostCode } from "@/data/bd-addresses";
 import { DeliveryAreaPicker } from "@/components/DeliveryAreaPicker";
+import { OrderSuccessCelebration } from "@/components/orders/OrderSuccessCelebration";
+import { downloadOrderInvoicePdf, type InvoiceOrder } from "@/lib/order-invoice";
 
 const checkoutSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -50,7 +52,7 @@ const inputClass = "w-full scroll-mt-28 px-4 py-3.5 rounded-xl text-base sm:text
 const inputStyle = { background: 'white', border: '1px solid #e5e7eb', color: '#111827' };
 
 type CheckoutStep = 'form' | 'gateway' | 'success';
-type PaymentMethod = 'bkash' | 'nagad' | 'upay' | 'bank' | 'card' | 'cod';
+type PaymentMethod = 'bkash' | 'nagad' | 'rocket' | 'upay' | 'bank' | 'card' | 'cod';
 type PaymentMode = 'full' | 'advance';
 
 export default function Checkout() {
@@ -326,18 +328,19 @@ export default function Checkout() {
   const getPaymentNumber = (method: PaymentMethod) => {
     if (method === 'bkash') return settings.bkashNumber || "";
     if (method === 'nagad') return settings.nagadNumber || "";
+    if (method === 'rocket') return settings.rocketNumber || "";
     if (method === 'upay') return settings.upayNumber || "";
     return "";
   };
 
   const bankConfigured = !!(settings.bankName && settings.bankAccountNumber && settings.bankAccountName);
-  const anyWalletConfigured = !!(settings.bkashNumber || settings.nagadNumber || settings.upayNumber);
+  const anyWalletConfigured = !!(settings.bkashNumber || settings.nagadNumber || settings.rocketNumber || settings.upayNumber);
 
   // Keep the visible method list aligned with the API and mobile checkout.
   // Wallets and bank transfer are shown only when their destination is usable;
   // COD follows the admin toggle and card-on-delivery is always available.
   const configuredPaymentMethods: PaymentMethod[] = [
-    ...(['bkash', 'nagad', 'upay'] as PaymentMethod[]).filter((m) => !!getPaymentNumber(m)),
+    ...(['bkash', 'nagad', 'rocket', 'upay'] as PaymentMethod[]).filter((m) => !!getPaymentNumber(m)),
     ...(bankConfigured ? ['bank' as const] : []),
     ...(settings.codEnabled ? ['cod' as const] : []),
     'card',
@@ -581,7 +584,7 @@ export default function Checkout() {
       // Wallet orders must stop at the gateway so the customer can send the
       // exact 25% amount and submit transaction evidence. Payment is only
       // marked submitted after the customer presses “I've Sent the Payment”.
-      if (paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'upay' || paymentMethod === 'bank') {
+      if (paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'rocket' || paymentMethod === 'upay' || paymentMethod === 'bank') {
         setCheckoutStatus('gateway');
       } else {
         setCheckoutStatus('success');
@@ -819,6 +822,16 @@ export default function Checkout() {
       logo: <span className="text-4xl font-black" style={{ color: '#f7941d' }}>Nagad</span>,
       icon: <Smartphone className="w-5 h-5" />,
     },
+    rocket: {
+      name: 'Rocket',
+      primary: '#8c3494',
+      light: 'rgba(140,52,148,0.08)',
+      border: 'rgba(140,52,148,0.2)',
+      glow: '0 4px 30px rgba(140,52,148,0.1)',
+      badge: 'linear-gradient(135deg, #8c3494 0%, #6f2876 100%)',
+      logo: <span className="text-4xl font-black" style={{ color: '#8c3494' }}>Rocket</span>,
+      icon: <Smartphone className="w-5 h-5" />,
+    },
     upay: {
       name: 'uPay',
       primary: '#0077cc',
@@ -863,7 +876,7 @@ export default function Checkout() {
 
   const theme = gatewayTheme[effectiveGatewayMethod];
 
-  const isWalletMethod = paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'upay';
+  const isWalletMethod = paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'rocket' || paymentMethod === 'upay';
   const canProceed = (() => {
     if (configuredPaymentMethods.length === 0) return false;
     if (isWalletMethod) {
@@ -881,12 +894,13 @@ export default function Checkout() {
 
   if (checkoutStatus === 'success') {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
+      <div className="relative isolate min-h-screen overflow-hidden bg-white flex flex-col items-center justify-center p-4">
+        <OrderSuccessCelebration />
         <motion.div
           initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", damping: 20 }}
-          className="max-w-xl w-full rounded-3xl p-8 text-center bg-white"
+          className="relative z-10 max-w-xl w-full rounded-3xl p-8 text-center bg-white"
           style={{ border: '1px solid #e5e7eb', boxShadow: '0 8px 40px rgba(0,0,0,0.08)' }}
         >
           <motion.div
@@ -898,13 +912,13 @@ export default function Checkout() {
             <CheckCircle2 className="w-10 h-10 text-green-600" />
           </motion.div>
 
-          <h1 className="text-4xl font-black font-display mb-2 text-gray-900">Order Confirmed!</h1>
+          <h1 className="text-4xl font-black font-display mb-2 text-gray-900">Order Received</h1>
           <p className="text-gray-400 mb-6 leading-relaxed text-sm">
              {paymentMode === 'full'
-               ? "Full payment submitted! Our team will verify and confirm your order shortly."
+               ? "Full payment details were submitted. Our team will verify and confirm your order shortly."
                : paymentMethod === 'cod'
                  ? "Your order is reserved. We'll contact you to collect the 25% advance, then deliver the balance by cash on delivery."
-                 : "25% advance submitted. We'll collect the remaining balance on delivery."}
+                 : "Your 25% advance details were submitted for verification. The remaining balance is due on delivery."}
           </p>
 
           <div className="p-5 rounded-2xl mb-4 bg-gray-50 border border-gray-100">
@@ -990,7 +1004,7 @@ export default function Checkout() {
                 <Info className="w-3.5 h-3.5" /> Full Payment Under Verification
               </p>
               <div className="text-xs text-gray-500 space-y-1">
-                <p>Amount sent: <strong className="text-gray-900">{formatPrice(snapshotRef.current.total)}</strong></p>
+                <p>Submitted — awaiting verification: <strong className="text-gray-900">{formatPrice(snapshotRef.current.total)}</strong></p>
                 <p>We'll confirm your order once payment is verified.</p>
               </div>
             </div>
@@ -1000,11 +1014,29 @@ export default function Checkout() {
                 <Info className="w-3.5 h-3.5" /> Advance Payment Under Verification
               </p>
               <div className="text-xs text-gray-500 space-y-1">
-                <p>Advance paid: <strong className="text-gray-900">{formatPrice(snapshotRef.current.advance)}</strong></p>
+                <p>Submitted — awaiting verification: <strong className="text-gray-900">{formatPrice(snapshotRef.current.advance)}</strong></p>
                 <p>Remaining on delivery: <strong className="text-gray-900">{formatPrice(snapshotRef.current.total - snapshotRef.current.advance)}</strong></p>
               </div>
             </div>
           )}
+
+          <button
+            type="button"
+            data-testid="button-download-order-invoice"
+            onClick={() => downloadOrderInvoicePdf(
+              (createdOrder ?? {}) as InvoiceOrder,
+              {
+                siteName: settings.siteName,
+                email: settings.email,
+                phone: settings.phone || settings.whatsappNumber,
+                address: settings.address,
+              },
+            )}
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-bold text-sm mb-3 text-gray-800 bg-white border border-gray-200 hover:border-orange-300 hover:bg-orange-50 transition-colors"
+          >
+            <FileDown className="w-4 h-4 text-orange-600" />
+            Download Order Invoice PDF
+          </button>
 
           {WHATSAPP_NUMBER_INTL && (
             <a
@@ -1741,7 +1773,7 @@ export default function Checkout() {
                     </div>
                   )}
 
-                  {(paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'upay') && (
+                  {(paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'rocket' || paymentMethod === 'upay') && (
                     <div className="rounded-2xl p-5 mb-6" style={{ background: theme.light, border: `2px solid ${theme.border}` }}>
                       <div className="flex items-center justify-between mb-4">
                         <div>{theme.logo}</div>

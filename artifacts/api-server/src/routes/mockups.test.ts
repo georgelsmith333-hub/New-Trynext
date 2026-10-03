@@ -18,17 +18,18 @@ app.use((req, _res, next) => {
 app.use("/api", mockupsRouter);
 
 describe("Public mockups API", () => {
-  it("returns exactly the canonical v10.3 surface matrix", async () => {
+  it("returns only visually released canonical v10.3 surfaces", async () => {
     const response = await request(app).get("/api/mockups");
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveLength(188);
+    expect(response.body).toHaveLength(186);
     expect(response.body.every((row: { isCanonical: boolean }) => row.isCanonical)).toBe(true);
     expect(response.body.every((row: { imageUrl: string; manifestJson: { assetPath: string } }) =>
       row.imageUrl.includes("/mockups/psd-master-v10/runtime-roles/") &&
       row.imageUrl.includes("?v=smart-v10.3") &&
       row.manifestJson.assetPath.includes("/mockups/psd-master-v10/runtime-roles/"),
     )).toBe(true);
-    expect(new Set(response.body.map((row: { sourceKitKey: string }) => row.sourceKitKey)).size).toBe(188);
+    expect(new Set(response.body.map((row: { sourceKitKey: string }) => row.sourceKitKey)).size).toBe(186);
+    expect(response.body.every((row: { sourceKitKey: string }) => !row.sourceKitKey.startsWith("waterbottle/"))).toBe(true);
   });
 });

@@ -27,8 +27,8 @@ export function prefetchDesignStudio(): void {
       "/mockups/psd-master-v10/runtime-roles/mug/white/back-base.png",
       "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png",
       "/mockups/psd-master-v10/runtime-roles/cap/white/back-base.png",
-      "/mockups/psd-master-v10/runtime-roles/waterbottle/white/front-base.png",
-      "/mockups/psd-master-v10/runtime-roles/waterbottle/white/back-base.png",
+      "/mockups/source-kit-v3/waterbottle/white/front.png",
+      "/mockups/source-kit-v3/waterbottle/white/back.png",
     ].forEach((src) => {
       const img = new Image();
       img.src = src;

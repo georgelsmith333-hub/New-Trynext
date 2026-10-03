@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Check, ChevronRight, Package, Search, Sparkles, X } from "lucide-react";
+import { Check, ChevronDown, Package, Search, Sparkles, X } from "lucide-react";
 import {
   getProductPickerFallbackSrc, getProductPickerPreviewSrc, getZonePZ,
   MUG_PZ, MUG_WRAP_BACK_PZ, MUG_SIDE_PZ, MUG_SIDE_BACK_PZ,
@@ -14,7 +14,6 @@ const CATEGORY_LABELS: Array<{ id: "all" | DesignProduct["category"]; label: str
   { id: "hoodie", label: "Hoodies" },
   { id: "mug", label: "Mugs" },
   { id: "cap", label: "Caps" },
-  { id: "waterbottle", label: "Water Bottles" },
 ];
 
 const CARD_IMAGE_CLASS: Record<DesignProduct["category"], string> = {
@@ -88,15 +87,17 @@ export function ProductSwitcher() {
   const setShowProductPicker = useDesignStore((s) => s.setShowProductPicker);
   const setProductSearch = useDesignStore((s) => s.setProductSearch);
   const setProductPickerCategory = useDesignStore((s) => s.setProductPickerCategory);
+  const safeCategory = productPickerCategory === "waterbottle" ? "all" : productPickerCategory;
 
   const filteredProducts = useMemo(() => {
     const search = productSearch.trim().toLowerCase();
     return PRODUCTS.filter((product) => {
-      const inCategory = productPickerCategory === "all" || product.category === productPickerCategory;
+      if (product.category === "waterbottle") return false;
+      const inCategory = safeCategory === "all" || product.category === safeCategory;
       const inSearch = !search || `${product.name} ${product.description}`.toLowerCase().includes(search);
       return inCategory && inSearch;
     });
-  }, [productPickerCategory, productSearch]);
+  }, [safeCategory, productSearch]);
 
   const chooseProduct = (product: DesignProduct) => {
     if (product.id !== selectedProduct.id) {
@@ -142,12 +143,13 @@ export function ProductSwitcher() {
         onClick={() => setShowProductPicker(true)}
         aria-haspopup="dialog"
         aria-expanded={showProductPicker}
-        className="group flex min-w-0 items-center gap-2 rounded-2xl border border-stone-200/90 bg-white px-3.5 py-2.5 text-left text-xs font-black text-stone-800 shadow-[0_5px_18px_rgba(28,25,23,0.06)] transition hover:border-orange-400 hover:shadow-[0_8px_24px_rgba(28,25,23,0.10)] active:scale-[0.985]"
+        aria-label={`Change product. Current selection: ${selectedProduct.name}`}
+        className="group flex min-w-0 items-center gap-2 rounded-2xl border border-orange-200 bg-orange-50 px-3.5 py-2.5 text-left text-xs font-black text-stone-800 shadow-[0_5px_18px_rgba(28,25,23,0.06)] transition hover:border-orange-400 hover:bg-orange-100 hover:shadow-[0_8px_24px_rgba(28,25,23,0.10)] active:scale-[0.985]"
       >
-        <Package className="h-4 w-4 shrink-0 text-orange-500" />
-        <span className="min-w-0 truncate">{selectedProduct.name}</span>
-        <span className="hidden shrink-0 text-[10px] font-bold text-stone-400 sm:inline">{selectedProduct.description}</span>
-        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-stone-400 transition-transform group-hover:translate-x-0.5" />
+        <Package className="h-4 w-4 shrink-0 text-orange-600" />
+        <span className="min-w-0 truncate">Change product</span>
+        <span className="hidden min-w-0 truncate text-[10px] font-bold text-stone-500 sm:inline">{selectedProduct.name}</span>
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-orange-600 transition-transform group-hover:translate-y-0.5" />
       </button>
 
       {showProductPicker && (
@@ -179,7 +181,7 @@ export function ProductSwitcher() {
                 </button>
               </div>
 
-              <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
                 <label className="relative min-w-0 flex-1">
                   <span className="sr-only">Search products</span>
                   <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
@@ -190,18 +192,31 @@ export function ProductSwitcher() {
                     className="h-11 w-full rounded-xl border border-stone-200 bg-stone-50 pl-10 pr-3 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
                   />
                 </label>
-                <div className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1 sm:max-w-[68%]">
-                  {CATEGORY_LABELS.map((category) => (
-                    <button
-                      key={category.id}
-                      type="button"
-                      onClick={() => setProductPickerCategory(category.id)}
-                      aria-pressed={productPickerCategory === category.id}
-                      className={`shrink-0 rounded-full px-3 py-2 text-[11px] font-black transition active:scale-95 ${productPickerCategory === category.id ? "bg-stone-950 text-white shadow-sm" : "border border-stone-200 bg-white text-stone-600 hover:border-orange-300 hover:text-orange-600"}`}
-                    >
-                      {category.label}
-                    </button>
-                  ))}
+                <div className="min-w-0">
+                  <div className="mb-1.5 flex items-center justify-between gap-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-stone-500">Filter by product category</p>
+                    <p className="shrink-0 text-[10px] font-semibold text-orange-700">
+                      Showing {CATEGORY_LABELS.find((category) => category.id === safeCategory)?.label ?? "All products"}
+                    </p>
+                  </div>
+                  <div
+                    className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1"
+                    role="group"
+                    aria-label="Filter products by category"
+                  >
+                    {CATEGORY_LABELS.map((category) => (
+                      <button
+                        key={category.id}
+                        type="button"
+                        data-testid={`button-product-category-${category.id}`}
+                        onClick={() => setProductPickerCategory(category.id)}
+                        aria-pressed={safeCategory === category.id}
+                        className={`shrink-0 rounded-full px-3 py-2 text-[11px] font-black transition active:scale-95 ${productPickerCategory === category.id ? "bg-stone-950 text-white shadow-sm ring-2 ring-orange-200 ring-offset-1" : "border border-stone-200 bg-white text-stone-600 hover:border-orange-300 hover:text-orange-600"}`}
+                      >
+                        {category.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

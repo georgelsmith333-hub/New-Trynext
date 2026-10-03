@@ -7,11 +7,12 @@ import { OrderSkeleton } from "@/components/ui/skeleton";
 import {
   Search, Clock, CheckCircle2, Truck, MapPin,
   XCircle, AlertTriangle, RefreshCw, Box, Star, Loader2, Gift, Heart, Package,
-  MessageSquare, Send
+  MessageSquare, Send, FileDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatPrice, cn, getApiUrl } from "@/lib/utils";
 import { ItemPreviewThumb, PreviewLightbox, type PreviewItem } from "@/components/ZoomableImage";
+import { downloadOrderInvoicePdf, type InvoiceOrder } from "@/lib/order-invoice";
 
 const inputClass = "w-full px-4 py-3.5 rounded-xl text-base sm:text-sm font-medium focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-gray-400";
 const inputStyle = { background: 'white', border: '1px solid #e5e7eb', color: '#111827' };
@@ -635,6 +636,23 @@ export default function TrackOrder() {
 
                   {/* Order Items */}
                   <div className="px-6 sm:px-8 py-5 border-t border-gray-100">
+                    <button
+                      type="button"
+                      data-testid="button-download-tracked-order-invoice"
+                      onClick={() => downloadOrderInvoicePdf(
+                        displayOrder as InvoiceOrder,
+                        {
+                          siteName: settings.siteName,
+                          email: settings.email,
+                          phone: settings.phone || settings.whatsappNumber,
+                          address: settings.address,
+                        },
+                      )}
+                      className="mb-5 flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-bold text-gray-800 transition-colors hover:border-orange-300 hover:bg-orange-50"
+                    >
+                      <FileDown className="h-4 w-4 text-orange-600" />
+                      Download Order Invoice PDF
+                    </button>
                     <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-4">Items Ordered</p>
                     <div className="space-y-3">
                       {(displayOrder.items as Array<Record<string, unknown>>).map((item: any, idx: number) => {

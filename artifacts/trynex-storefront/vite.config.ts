@@ -133,6 +133,9 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
         globIgnores: [
           "**/mockups/**",
+          // offline.html is added explicitly below with revision: null.
+          // Excluding it here avoids a duplicate Workbox precache entry.
+          "**/offline.html",
           // Product imagery is large and already covered by the bounded
           // runtime image cache in src/sw.ts. Precaching it can exceed 300 MB,
           // delay first boot, and make free-tier deployments needlessly heavy.

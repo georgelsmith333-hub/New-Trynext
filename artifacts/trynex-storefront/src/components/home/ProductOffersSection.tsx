@@ -3,6 +3,7 @@ import { ShoppingCart, Zap, Star, Package, Shield, Paintbrush } from "lucide-rea
 import { Link } from "wouter";
 import { useListProducts } from "@workspace/api-client-react";
 import { formatPrice } from "@/lib/utils";
+import { getCustomerProductImage } from "@/lib/product-options";
 
 const TRUST_ITEMS = [
   { icon: Paintbrush, label: "Free Editing" },
@@ -56,7 +57,7 @@ const SHOWCASE_PRODUCTS: DisplayProduct[] = [
   {
     id: "s3",
     name: "Water Bottle",
-    imageUrl: "/images/cat-mug.png",
+    imageUrl: "/mockups/source-kit-v3/waterbottle/white/front.png",
     description: "Free Image Editing Included",
     price: 650,
     href: "/design-studio",
@@ -84,7 +85,7 @@ const SHOWCASE_PRODUCTS: DisplayProduct[] = [
   {
     id: "s6",
     name: "2 Water Bottles",
-    imageUrl: "/images/cat-mug.png",
+    imageUrl: "/mockups/source-kit-v3/waterbottle/white/front.png",
     description: "Auto discount applied",
     price: 1300,
     discountPrice: 1100,
@@ -295,10 +296,10 @@ export function ProductOffersSection({ fullPage = false }: { fullPage?: boolean 
                   )}
 
                   <div className="p-5 flex flex-col flex-1">
-                    {product.imageUrl ? (
+                    {getCustomerProductImage(product) ? (
                       <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden mb-4 bg-gray-50">
                         <img
-                          src={product.imageUrl}
+                          src={getCustomerProductImage(product) || undefined}
                           alt={product.name}
                           className="w-full h-full object-cover"
                           loading="lazy"
