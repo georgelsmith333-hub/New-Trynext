@@ -3778,3 +3778,136 @@ the API and storefront tests, `git diff --check`, and 30/30 read-only live
 critical-flow checks all passed. The candidate path scan found no
 high-confidence credential patterns. No provider settings, database data,
 orders, or payments were changed.
+
+## 2026-10-04 Claude Code session — post-merge reconciliation and invoice verification
+
+This section supersedes the "Destination confirmed and pre-release checks"
+section above, which still describes PR #2 as open. Times are UTC; the repo's
+"2026-10-04" dates are Dhaka local time (UTC+6).
+
+```text
+Status: in progress — verification pass complete for checklist items A and B;
+  item C blocked by the session's network policy. Docs-only change; no
+  application source was edited. Not merged to main, not deployed.
+Last completed:
+  - Fetched GitHub. origin/main is 2549742 ("Reviewed Trynext release and Claude
+    Code handoff (#2)"). PR #2 was MERGED by the owner on 2026-10-03 22:22 UTC.
+    CI and Active app verification both succeeded on that commit. The previous
+    main (80dbab3) had failed Active app verification; the database-independent
+    validator fix resolved it.
+  - Remote branch review: claude/ecom-customization-itpg9o and
+    manus/photopea-browser-validator are fully contained in main;
+    claude-handoff-2026-10-04 has a tree identical to main (pre-squash PR
+    branch); fix/waterbottle-white-identity (2 commits from 2026-10-03) is older
+    than main and differs by 24 files where main has the newer work. Nothing was
+    merged from any of them. The remote copy of claude/nice-carson-nxjq7q did
+    not exist at fetch time.
+  - Baseline on 2549742: pnpm install --frozen-lockfile OK; pnpm run typecheck
+    passes for all packages; storefront tests 23 files / 96 tests pass; API
+    tests with DATABASE_URL* unset 14 files / 42 tests pass.
+  - Item A (invoice downloads): verified in headless Chromium against the local
+    Vite dev server with every /api call served from fixtures (fake customer
+    data, non-localhost requests aborted, any unmocked write aborted and
+    recorded — none occurred). A real browser download event fired for Track
+    Order (desktop 1280x800 and phone 390x844) and for Checkout success (COD and
+    bKash wallet paths, both viewports). Filename is
+    Trynext-Invoice-<orderNumber>.pdf; each file is a valid 1-page A4 PDF
+    (%PDF- header, %%EOF trailer, about 10.4-10.7 KB). pdftotext confirmed order
+    number, customer name/phone/email/address, payment method, items, totals,
+    the 25% advance (1,100 total -> 275 advance, 825 on delivery), settings-
+    driven store name and contact block, and "Payment submitted — awaiting
+    verification" without crediting unverified payment. Dates render in
+    Asia/Dhaka by design. No page exceptions.
+  - Item B (mobile shop filters): NOT integrated in the Expo app.
+    artifacts/trynext-mobile/app/(tabs)/shop.tsx has only inline search,
+    category chips, and sort pills. The drawer exists in the isolated
+    artifacts/mockup-sandbox previews, and in the WEB storefront
+    (artifacts/trynex-storefront/src/pages/Products.tsx): 44px labelled trigger
+    with active count, aria-modal dialog, Escape handling, focus trap, body
+    scroll lock, and safe-area padding. The web drawer was inspected in code
+    only in this session, not exercised in a browser.
+Stopped at: Item C — the live cache check could not run. The session's egress
+  policy denied trynext.shop:443 (CONNECT 403, logged by the agent proxy).
+Files/areas changed: AGENT_HANDOFF.md and CLAUDE_HANDOFF_CHECKLIST.md only.
+Remaining work:
+  - Item C: after trynext.shop is allowed for this environment (or from a
+    machine with access), send the same anonymous public catalog request twice,
+    for example /api/products?limit=4&includeTotal=false (both parameters are on
+    the cache allowlist), and record X-Trynext-Edge-Cache,
+    CF-Cache-Status, and whether the second request is a HIT. Also confirm the
+    PR #2 deployment actually went live (Cloudflare was not visible from here).
+  - Real-device or Safari invoice download is not verified; Chromium only.
+  - Authenticated-customer Track Order and an unmocked backend were not tested.
+  - Expo shop filter drawer is follow-up work and needs owner approval as scope.
+  - Reconcile PROJECT_REBUILD_TRACKER against current code (not started).
+  - Optional: browser-check the web Products.tsx filter drawer at narrow/tall
+    viewports.
+Blocker: Network policy denies trynext.shop for this session (item C only).
+Next safe action: Allow trynext.shop under the environment's network settings and
+  run the two-request cache check, or ask the owner for the headers.
+Verification: Commands and results are as listed above. Test fixtures and
+  scripts were kept outside the repository. The dev server was stopped. No
+  production request was made, and no order, payment, provider setting, or
+  database was touched.
+Observations (not changed):
+  - src/lib/psdSmartObject.test.ts in the API package takes about 3.3 s alone but
+    up to about 5.6 s when other test files run in parallel, against Vitest's 5 s
+    default; it timed out twice in this session. FIXED in the next section by a
+    30 s per-test timeout (not a skip).
+  - Mobile checkout summary reads "Order Summary (1 items)" (pluralization).
+```
+
+## 2026-10-04 Backend audit and first fixes (Claude Code session)
+
+```text
+Status: in progress — audit complete; first fixes verified locally and on PR #3
+  (claude/nice-carson-nxjq7q). Not merged to main, not deployed.
+Last completed:
+  - Static routing audit of artifacts/api-server/src/routes: 222 literal
+    router.<method>("path") registrations across 40 routers, mounted order
+    checked: 0 duplicate method+path pairs and 0 static routes shadowed by an
+    earlier parameterised route. Limit: routes registered with a variable path,
+    a regex, or router.use(path, ...) were not scanned.
+  - AI endpoints: every outbound provider fetch in routes/ai.ts and
+    routes/aiExecute.ts had an abort timeout except one. FIXED: the Pollinations
+    fallback in POST /api/ai/developer/chat (admin only) now has a 60 s connect
+    timeout; before, a hung fallback held the request open until the gateway cut
+    it. Public AI routes are rate limited by aiLimiter in app.ts.
+  - Admin health (GET /api/admin/system/health) reported config, not health:
+    * Redis showed "ok" whenever the env vars were set, even during a real
+      Upstash outage (the check wrote to the in-process fallback cache, which
+      never throws). FIXED: it now uses getRedisStatus(), as the public
+      /healthz already did.
+    * The DB ping had no timeout and its latency was never returned. FIXED:
+      database and Redis probes now have a 5 s deadline and return latencyMs and
+      a fixed, secret-safe detail ("timed out" / "unreachable") on failure.
+      Response additions are additive; services.<name>.status is unchanged.
+  - New test file src/routes/systemHealth.test.ts (9 tests). Mutation-checked:
+    reintroducing the old Redis behaviour makes the outage test fail.
+  - psdSmartObject.test.ts got a 30 s per-test timeout (see the note above).
+Stopped at: Fixes verified locally; PR #3 CI pending on the new commit.
+Files/areas changed: artifacts/api-server/src/routes/ai.ts,
+  artifacts/api-server/src/routes/systemHealth.ts,
+  artifacts/api-server/src/routes/systemHealth.test.ts (new),
+  artifacts/api-server/src/lib/psdSmartObject.test.ts, and this file.
+Remaining work:
+  - storage, Telegram, and auth entries in the admin health response are still
+    "ok" from configuration alone (storage is hard-coded "ok"); they are not
+    live probes. Decide which are worth probing without cost or side effects.
+  - Admin "live health" page (realtime health, request/error rate, latency,
+    recent errors, live change feed) is designed but not built; it needs the
+    owner's go-ahead on polling cadence and scope. Render Free plan limits
+    mean small payloads and tab-visible polling only, no always-on streaming.
+  - Real production errors cannot be seen from this session (network policy
+    denies trynext.shop). Ask the owner for non-secret error text from the admin
+    Activity Log, Render logs, or the browser console.
+  - Live deployment and live cache behaviour remain unverified (see above).
+Blocker: None for local work; production visibility is blocked by network policy.
+Next safe action: Wait for PR #3 CI, owner review of the preview, and the
+  owner's decision on release gating; then build the admin live-health page on a
+  fresh branch from main after PR #3 merges.
+Verification: API typecheck passes; API suite 15 files / 51 tests pass on two
+  consecutive runs with DATABASE_URL* unset; node ./build.mjs succeeds; the new
+  Redis-outage test fails against the old behaviour and passes with the fix.
+  No production request, order, payment, or data change was made.
+```
