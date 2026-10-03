@@ -97,6 +97,11 @@ GitHub blob. A non-force ref update must be the final guarded operation.
 **How to apply:** Keep each chunk below the callback output ceiling, upload
 blobs independently, and stop immediately on any SHA mismatch.
 
+When the workspace is mounted inside a `"use impure"` execution, read large
+local Git blobs with `node:child_process` and `git cat-file` rather than routing
+their contents through a shell callback. Still verify the resulting Git tree SHA
+before creating or moving a branch ref.
+
 If the checkout contains a very large unrelated local asset backlog, publish the
 focused reviewed source tree from the current remote parent instead of trying to
 replay hundreds of megabytes through the Git Data API. Keep the local backlog

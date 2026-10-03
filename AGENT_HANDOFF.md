@@ -3411,6 +3411,14 @@ Publication: `fix/waterbottle-white-identity` contains the reviewed functional
 source changes based on the verified `main` tip. Pasted notes and screenshot
 evidence under `attached_assets` were excluded. `main` was not changed.
 
-Remaining work: None for this release. Continue future work from the published
-feature branch, preserve the water-bottle fail-closed approval gates, and do not
-deploy unless separately requested.
+The local Replit branch was intentionally left unchanged and still has its
+earlier four-commit history. Do not push that local history over the clean
+GitHub branch. All 17 tracked pasted-note and screenshot paths were excluded
+from the published tree.
+
+Remaining work: None for this verified release. In another Replit remix, fetch
+and select `fix/waterbottle-white-identity` before continuing; `main` does not
+contain these release changes. If the changes should become the default for
+future remixes, ask before merging the feature branch into `main`. Preserve the
+water-bottle fail-closed approval gates. Production deployment remains separate
+and was not requested.

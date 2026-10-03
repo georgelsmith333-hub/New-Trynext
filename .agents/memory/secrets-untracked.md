@@ -17,3 +17,14 @@ description: .replit and attached_assets/Pasted-*.txt were removed from the git 
 **Why:** Replit injects env vars via `.replit` userenv, so the file is a secret store in the workspace. Pasted notes are user-provided scratchpads that often contain credentials. Git history on the remote still contains older versions; to fully scrub them use `git-filter-repo` or similar, but untracking prevents future exposure.
 
 **How to apply:** Before any commit, run `git status` and confirm `.replit` and `attached_assets/Pasted-*.txt` are not staged. If a new pasted file is added, update `.gitignore` or `git rm --cached` it immediately.
+
+**Git Data API caution:** Exclude these files before creating any remote blob,
+tree, or commit. Creating a commit object before moving a branch ref still stores
+that object in the repository.
+
+**Why:** An unreferenced object is not a reliable cleanup mechanism; the API has
+no operation to delete an individual uploaded Git object.
+
+**How to apply:** Build and inspect an explicit release file list first. Do not
+send pasted notes or evidence files in any GitHub API write, even when the final
+branch tree is intended to omit them.
