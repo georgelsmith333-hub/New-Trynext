@@ -1,5 +1,10 @@
 # In Progress — Phase 2 Security Fixes
 
+> **Superseded status — reconciled 2026-10-04.** This file is a July 2026 snapshot and its status
+> values are stale. Evidence-checked results are in `All Tasks Left To Do/CRITICAL_FINDINGS.md`
+> (section "Reconciliation 2026-10-04") and the newest section of `AGENT_HANDOFF.md`. Do not treat an
+> unchecked box here as an open defect without re-verifying it against the current code.
+
 **Status:** In Progress  
 **Started:** 2026-07-22  
 **Owner:** Main agent
@@ -27,9 +32,9 @@ Remove all hardcoded security fallbacks and close the most dangerous attack surf
 
 ## Tasks still in progress
 
-- [ ] Restart the API server workflow and verify it starts cleanly.
-- [ ] Verify the admin login still works with the configured `ADMIN_PASSWORD` env var.
-- [ ] Verify the customer auth still works with the configured `JWT_SECRET` env var.
+- [x] Restart the API server workflow and verify it starts cleanly. *(Verified 2026-10-04: built bundle booted against a fresh local Postgres with 0 error-level log lines.)*
+- [x] Verify the admin login still works with the configured `ADMIN_PASSWORD` env var. *(Verified 2026-10-04: admin login returned a session token on the local API; admin routes returned 401 without it.)*
+- [x] Verify the customer auth still works with the configured `JWT_SECRET` env var. *(Verified 2026-10-04: register and login returned tokens; a wrong password returned 401.)*
 
 ---
 

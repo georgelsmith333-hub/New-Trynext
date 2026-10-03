@@ -4,6 +4,8 @@ import { logger } from "../lib/logger";
 import { getRedisStatus, redisCacheGet, redisCacheDel } from "../lib/redis";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { tgIsConfigured, tgSend } from "../lib/telegram";
+import { getBackupSyncStatus } from "../lib/scheduler";
+import { readEventLoopLag, requestMetrics } from "../lib/requestMetrics";
 import { db } from "@workspace/db";
 import { sql } from "drizzle-orm";
 import os from "os";
@@ -48,18 +50,39 @@ export async function probe<T>(name: string, work: () => Promise<T>, ms = HEALTH
 
 type RedisHealthStatus = "ok" | "error" | "degraded" | "not_configured";
 
-// ── GET /api/admin/system/health ─────────────────────────────────────────────
-// Returns live status of DB, Redis, R2/storage, Telegram, and env config.
-// Safe to call from the admin dashboard on every load.
-router.get("/admin/system/health", requireAdmin, async (_req, res) => {
+const probeDetail = (result: Probe<unknown>): string | undefined =>
+  result.ok ? undefined : result.timedOut ? "timed out" : "unreachable";
+
+// One real probe of the database and of Upstash. The Redis probe deliberately
+// bypasses the in-process fallback cache: a cache write that lands in memory
+// proves nothing about Redis.
+async function runCoreProbes() {
   const [dbProbe, redisProbe] = await Promise.all([
-    // DB ping
     probe("database", () => db.execute(sql`SELECT 1 AS ok`)),
-    // Real Upstash status. This deliberately bypasses the in-process fallback
-    // cache: a cache write that lands in memory proves nothing about Redis.
     probe("redis", () => getRedisStatus()),
   ]);
+  return { dbProbe, redisProbe };
+}
+type CoreProbes = Awaited<ReturnType<typeof runCoreProbes>>;
 
+// The live page refreshes every few seconds in every open admin tab. Share one
+// probe between them so polling cannot multiply load on the database.
+const CORE_PROBE_TTL_MS = 5_000;
+let coreProbeCache: { at: number; pending: Promise<CoreProbes> } | null = null;
+
+function getCoreProbesCached(nowMs: number = Date.now()): Promise<CoreProbes> {
+  if (coreProbeCache && nowMs - coreProbeCache.at < CORE_PROBE_TTL_MS) return coreProbeCache.pending;
+  const pending = runCoreProbes();
+  coreProbeCache = { at: nowMs, pending };
+  return pending;
+}
+
+/** Test helper: forget the shared probe so the next live request probes again. */
+export function resetLiveProbeCache(): void {
+  coreProbeCache = null;
+}
+
+function describeCoreServices({ dbProbe, redisProbe }: CoreProbes) {
   const dbStatus = dbProbe.ok ? "ok" : "error";
   const redisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
   let redisStatus: RedisHealthStatus;
@@ -74,16 +97,43 @@ router.get("/admin/system/health", requireAdmin, async (_req, res) => {
   } else {
     redisStatus = "error";
   }
-  const probeDetail = (result: Probe<unknown>): string | undefined =>
-    result.ok ? undefined : result.timedOut ? "timed out" : "unreachable";
+  return {
+    dbStatus,
+    database: {
+      status: dbStatus,
+      backend: "postgresql",
+      configured: !!process.env.DATABASE_URL,
+      latencyMs: dbProbe.latencyMs,
+      ...(probeDetail(dbProbe) ? { detail: probeDetail(dbProbe) } : {}),
+    },
+    redis: {
+      status: redisStatus,
+      backend: "upstash",
+      configured: redisConfigured,
+      latencyMs: redisProbe.latencyMs,
+      ...(probeDetail(redisProbe) ? { detail: probeDetail(redisProbe) } : {}),
+    },
+  };
+}
 
-  const storageBackend = storageService.getBackendName();
-  const r2Configured = !!(
+function isR2Configured(): boolean {
+  return !!(
     process.env.R2_ACCOUNT_ID &&
     process.env.R2_ACCESS_KEY_ID &&
     process.env.R2_SECRET_ACCESS_KEY &&
     process.env.R2_BUCKET
   );
+}
+
+// ── GET /api/admin/system/health ─────────────────────────────────────────────
+// Returns live status of DB, Redis, R2/storage, Telegram, and env config.
+// Safe to call from the admin dashboard on every load.
+router.get("/admin/system/health", requireAdmin, async (_req, res) => {
+  const core = describeCoreServices(await runCoreProbes());
+  const dbStatus = core.dbStatus;
+
+  const storageBackend = storageService.getBackendName();
+  const r2Configured = isR2Configured();
 
   const telegramConfigured = tgIsConfigured();
 
@@ -96,20 +146,8 @@ router.get("/admin/system/health", requireAdmin, async (_req, res) => {
     ok: dbStatus === "ok",
     timestamp: new Date().toISOString(),
     services: {
-      database: {
-        status: dbStatus,
-        backend: "postgresql",
-        configured: !!process.env.DATABASE_URL,
-        latencyMs: dbProbe.latencyMs,
-        ...(probeDetail(dbProbe) ? { detail: probeDetail(dbProbe) } : {}),
-      },
-      redis: {
-        status: redisStatus,
-        backend: "upstash",
-        configured: redisConfigured,
-        latencyMs: redisProbe.latencyMs,
-        ...(probeDetail(redisProbe) ? { detail: probeDetail(redisProbe) } : {}),
-      },
+      database: core.database,
+      redis: core.redis,
       storage: {
         status: "ok",
         backend: storageBackend,
@@ -138,6 +176,69 @@ router.get("/admin/system/health", requireAdmin, async (_req, res) => {
       cpuLoad: osLoadAvg(),
       nodeVersion: process.version,
     },
+  });
+});
+
+const CPU_CORES = (() => {
+  try { return os.cpus().length; } catch { return 0; }
+})();
+
+const toMB = (bytes: number) => Math.round(bytes / 1024 / 1024);
+
+// ── GET /api/admin/system/live ───────────────────────────────────────────────
+// Snapshot for the admin "Live Health" page, polled every few seconds while the
+// page is open. Small, cheap and secret-free: database and Redis probes are
+// shared for 5 s, traffic figures come from in-memory counters.
+router.get("/admin/system/live", requireAdmin, async (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  const core = describeCoreServices(await getCoreProbesCached());
+  const memory = process.memoryUsage();
+  const backup = getBackupSyncStatus();
+  const storageBackend = storageService.getBackendName();
+  const constrainedBytes = (process as unknown as { constrainedMemory?: () => number }).constrainedMemory?.() ?? 0;
+  const backupTargets = { ok: 0, failed: 0, skipped: 0 };
+  for (const target of backup.lastResults) {
+    if (target.status === "ok") backupTargets.ok += 1;
+    else if (target.status === "error") backupTargets.failed += 1;
+    else backupTargets.skipped += 1;
+  }
+
+  res.json({
+    timestamp: new Date().toISOString(),
+    startedAt: new Date(Date.now() - process.uptime() * 1000).toISOString(),
+    uptimeSeconds: Math.floor(process.uptime()),
+    services: {
+      database: core.database,
+      redis: core.redis,
+      storage: {
+        backend: storageBackend,
+        configured: storageBackend === "r2" ? isR2Configured() : true,
+      },
+      telegram: { configured: tgIsConfigured() },
+    },
+    runtime: {
+      role: process.env.TRYNEXT_RUNTIME_ROLE ?? "primary",
+      nodeEnv: process.env.NODE_ENV || "development",
+      nodeVersion: process.version,
+      cpuCores: CPU_CORES,
+      loadAverage: osLoadAvg().map((value) => Math.round(value * 100) / 100),
+    },
+    process: {
+      rssMB: toMB(memory.rss),
+      heapUsedMB: toMB(memory.heapUsed),
+      heapTotalMB: toMB(memory.heapTotal),
+      memoryLimitMB: constrainedBytes > 0 ? toMB(constrainedBytes) : null,
+      eventLoopLag: readEventLoopLag(),
+    },
+    traffic: requestMetrics.snapshot(),
+    backup: {
+      enabled: process.env.BACKUP_SYNC_ENABLED === "true",
+      lastRunAt: backup.lastRunMs > 0 ? new Date(backup.lastRunMs).toISOString() : null,
+      consecutiveFailures: backup.consecutiveFailures,
+      circuitOpen: backup.circuitOpen,
+      lastTargets: backupTargets,
+    },
+    note: "Traffic figures are kept in memory and reset whenever the API restarts or sleeps.",
   });
 });
 

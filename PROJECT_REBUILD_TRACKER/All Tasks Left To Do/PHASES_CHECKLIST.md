@@ -1,5 +1,10 @@
 # Trynext Lifestyle — Complete Product Rebuild Checklist
 
+> **Superseded status — reconciled 2026-10-04.** This file is a July 2026 snapshot and its status
+> values are stale. Evidence-checked results are in `All Tasks Left To Do/CRITICAL_FINDINGS.md`
+> (section "Reconciliation 2026-10-04") and the newest section of `AGENT_HANDOFF.md`. Do not treat an
+> unchecked box here as an open defect without re-verifying it against the current code.
+
 **Status Key:** `[ ]` = Not Started | `[~]` = In Progress | `[x]` = Done | `[!]` = Blocked
 
 ---

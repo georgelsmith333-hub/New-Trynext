@@ -13,6 +13,7 @@ import { Router, type IRouter } from "express";
 import pg from "pg";
 import { requireAdmin } from "../middlewares/adminAuth";
 import { getActiveDbUrl } from "@workspace/db";
+import { guardPool } from "../lib/poolGuard";
 
 const { Pool } = pg;
 const router: IRouter = Router();
@@ -134,12 +135,12 @@ async function probeNode(
   const host = maskUrl(url);
   const isActive = connectionKey(activeUrl) === connectionKey(url);
 
-  const testPool = new Pool({
+  const testPool = guardPool(new Pool({
     connectionString: url,
     max: 1,
     connectionTimeoutMillis: 4_000,
     idleTimeoutMillis: 1_000,
-  });
+  }), "cluster-probe");
 
   const start = Date.now();
   try {

@@ -13,7 +13,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const REPO = path.resolve(import.meta.dirname, "..");
-const ROOT = path.resolve(process.argv[2] ?? path.join(REPO, "dist-mockups", "staging", "smart-v10"));
+const ROOT = path.resolve(process.argv[2] ?? path.join(REPO, "dist-mockups", "staging", "smart-v10-v3"));
 const MANIFEST_PATH = path.join(ROOT, "manifest.json");
 
 const EXPECTED = {

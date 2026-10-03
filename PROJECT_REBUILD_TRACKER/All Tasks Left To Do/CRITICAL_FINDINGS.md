@@ -173,4 +173,43 @@ This file collects the most important issues found during the complete rebuild a
 
 ---
 
-**Last Updated:** 2026-07-22
+**Last Updated:** 2026-07-22 (original findings above are kept as history; see the reconciliation below)
+
+---
+
+## Reconciliation 2026-10-04
+
+The findings above are from July 2026. Each one below was re-checked against the code at `main` (`dd6f1e2`
+plus the changes in the same pull request) and, where marked **live**, against the real API running on a
+throwaway local Postgres. Nothing was ticked on trust. Status words: **Verified fixed**, **Changed**
+(solved differently from what this file says), **Stale** (the finding no longer describes the code),
+**Open** (still true), **Unverified** (needs provider access or a manual look).
+
+| Finding (July) | Status | Evidence |
+|---|---|---|
+| Runtime secrets update route | Verified fixed (**live**) | `POST /api/admin/secrets/update` and `/bulk-update` both return 403 with an admin token. |
+| Development JWT secret fallback | Verified fixed | 0 occurrences of the fallback string in `artifacts/*/src`; startup requires `JWT_SECRET`. |
+| Hardcoded password salts | Verified fixed | 0 occurrences of either salt string; a legacy salt only applies when `ADMIN_SALT` is set. |
+| Hardcoded admin password fallback | Verified fixed | `ADMIN_PASSWORD` is required at startup. The only other credential is development-only and is empty unless `NODE_ENV` is explicitly `development`. |
+| Backup sync uses `TRUNCATE ... CASCADE` | **Changed** | `TRUNCATE` is back, but inside a transaction with `ROLLBACK` on any failure, preceded by a source-empty skip and a schema-match check, so a failed or empty mirror does not destroy the target. The "replaced with DELETE" text above is stale. Do not change this without owner approval. |
+| Backup sync auto-heals target schemas | Verified fixed | `healMissingColumns` no longer exists; a schema mismatch fails the sync. |
+| No foreign keys / CHECK constraints / indexes | Verified fixed (**live**) | Schema pushed from `lib/db` gave 13 foreign keys, 33 CHECK constraints and 52 non-primary-key indexes, including every column the audit listed. |
+| Cloudflare proxy hardcoded Render URL | Verified fixed | No non-comment `onrender.com` reference in `functions/api/[[path]].ts`. |
+| Hardcoded bKash/Nagad/uPay numbers | Verified fixed | The remaining matches for the old example numbers are input placeholders in forms, not payment destinations. Payment numbers come from settings. |
+| Hardcoded WhatsApp number | Verified fixed | 0 occurrences in web, mobile or API source. |
+| Mobile design file may not reach the backend | Verified fixed | `design.tsx` builds `studioDesign: true` and `originalAssets` into the cart item's `customNote`; `checkout.tsx` forwards `customNote` unchanged. |
+| Cloudflare proxy strips `origin`/`referer` (CSRF) | Stale | The API enforces its own CSRF check: a cookie-authenticated write without the `X-Requested-With: XMLHttpRequest` header gets 403 `csrf_blocked` (read in `app.ts`; not exercised live). |
+| No CI/CD pipeline | Stale | `.github/workflows/ci.yml` and `active-app-verification.yml` run on every push and pull request. |
+| `/sitemap.xml` redirect line missing | Verified fixed | `public/_redirects` has the sitemap rule before `/*`. |
+| No admin role/permission page | Stale | `pages/admin/AdminRoles.tsx` exists and is routed. |
+| AI rate limiter shared by admin and public | Partly fixed | `/api/ai/developer/*` is skipped by the public limiter; it still shares `/api/admin/ai`. |
+| Fragmented health checks / limited monitoring | Improved | Admin health now runs real database and Redis probes with deadlines and latency, and the new admin Live Health page shows traffic, errors, latency, memory and event-loop lag. Public `/healthz`, `/readyz` and the others are unchanged. |
+| Dashboard hardcoded fallback data | Unverified | Pattern searches found no hardcoded fallback arrays; needs a visual check with the API unavailable. |
+| 3D preview not integrated | Open | Treated as a separate reviewed feature (see `CLAUDE.md`); not changed. |
+| JSON order blobs, redundant customer fields, flat address, referrals not linked to customers, `guestSequence` | Open | Design trade-offs; unchanged. |
+| External uptime monitoring | Unverified | The UptimeRobot webhook route exists; whether a monitor is configured needs provider access. |
+
+New defects found and fixed during this reconciliation (all with tests): the API process crashed whenever
+Postgres dropped an idle connection (no `pool.on("error")`); malformed JSON and oversized bodies returned
+HTTP 500; duplicate category and blog slugs returned 500 instead of 409; the admin health check reported
+Redis as healthy during an outage; an admin AI fallback request had no timeout. See `AGENT_HANDOFF.md`.

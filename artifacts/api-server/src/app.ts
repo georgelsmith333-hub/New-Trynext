@@ -9,6 +9,8 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 import { validateAdminSession } from "./lib/adminSessions";
 import { shouldRejectMutation, mutationsAllowedForRole } from "./lib/runtimePolicy";
+import { requestMetricsMiddleware } from "./lib/requestMetrics";
+import { globalErrorHandler } from "./lib/errorHandler";
 
 const app: Express = express();
 
@@ -51,6 +53,11 @@ app.use(
     },
   }),
 );
+
+// Live Health metrics: counts requests, errors and latency for the admin
+// "Live Health" page. Mounted early so CORS rejections and rate-limited
+// requests are measured too. Best-effort; it can never fail a request.
+app.use("/api", requestMetricsMiddleware);
 
 // CORS allowlist resolution.
 //
@@ -396,20 +403,8 @@ app.use("/api/{*path}", (_req, res) => {
   res.status(404).json({ error: "not_found", message: "Route not found" });
 });
 
-// Global Express error handler — catches any error thrown/passed via next(err)
-// in route handlers. Without this, unhandled errors produce a 500 with an
-// Express HTML page instead of a clean JSON body.
-app.use((err: unknown, req: any, res: any, _next: any) => {
-  const message = err instanceof Error ? err.message : "An unexpected error occurred";
-  const isCors = message.startsWith("CORS:");
-  if (!isCors) {
-    logger.error({ err, url: req.url, method: req.method }, "Unhandled error");
-  }
-  if (res.headersSent) return;
-  res.status(isCors ? 403 : 500).json({
-    error: isCors ? "cors_error" : "internal_error",
-    message,
-  });
-});
+// Global Express error handler (see lib/errorHandler.ts): clean JSON for CORS
+// rejections, malformed requests (4xx) and genuine server errors (5xx).
+app.use(globalErrorHandler);
 
 export default app;

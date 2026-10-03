@@ -105,6 +105,7 @@ const AdminPromoCodes      = lazyWithRetry(() => import("./pages/admin/AdminProm
 const AdminReferrals       = lazyWithRetry(() => import("./pages/admin/AdminReferrals"));
 const AdminNewsletter         = lazyWithRetry(() => import("./pages/admin/AdminNewsletter"));
 const AdminDatabaseCluster    = lazyWithRetry(() => import("./pages/admin/AdminDatabaseCluster"));
+const AdminLiveHealth         = lazyWithRetry(() => import("./pages/admin/AdminLiveHealth"));
 const AdminPageBuilder      = lazyWithRetry(() => import("./pages/admin/AdminPageBuilder"));
 const AdminMockups          = lazyWithRetry(() => import("./pages/admin/AdminMockups"));
 const AdminAIDeveloper      = lazyWithRetry(() => import("./pages/admin/AdminAIDeveloper"));
@@ -231,6 +232,7 @@ function Router() {
             <Route path="/admin/referrals"     component={AdminReferrals} />
             <Route path="/admin/newsletter"    component={AdminNewsletter} />
             <Route path="/admin/db-cluster"    component={AdminDatabaseCluster} />
+            <Route path="/admin/live-health"   component={AdminLiveHealth} />
             <Route path="/admin/page-builder"  component={AdminPageBuilder} />
             <Route path="/admin/mockups"       component={AdminMockups} />
             <Route path="/admin/ai-developer" component={AdminAIDeveloper} />

@@ -5,6 +5,7 @@ import { eq, sql } from "drizzle-orm";
 import { requireAdmin } from "../middlewares/adminAuth";
 import { logActivity, getAdminId } from "../lib/activityLog";
 import { redisCacheGet, redisCacheSet, redisCacheDel } from "../lib/redis";
+import { isUniqueViolation } from "../lib/dbErrors";
 
 // ── Zod validation schemas ────────────────────────────────────────────────
 const CategoryCreateSchema = z.object({
@@ -88,6 +89,10 @@ router.post("/categories", requireAdmin, async (req, res) => {
     await redisCacheDel(CATS_CACHE_KEY);
     res.status(201).json(mapCategory(category));
   } catch (err) {
+    if (isUniqueViolation(err)) {
+      res.status(409).json({ error: "conflict", message: "A category with this slug already exists." });
+      return;
+    }
     req.log.error({ err }, "Failed to create category");
     res.status(500).json({ error: "internal_error", message: "Failed to create category" });
   }
@@ -129,6 +134,10 @@ router.put("/categories/:id", requireAdmin, async (req, res) => {
     await redisCacheDel(CATS_CACHE_KEY);
     res.json(mapCategory(category));
   } catch (err) {
+    if (isUniqueViolation(err)) {
+      res.status(409).json({ error: "conflict", message: "A category with this slug already exists." });
+      return;
+    }
     req.log.error({ err }, "Failed to update category");
     res.status(500).json({ error: "internal_error", message: "Failed to update category" });
   }

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import express from "express";
 import categoriesRouter from "./categories";
 import request from "supertest";
+import { db } from "@workspace/db";
 
 const mockRedisDel = vi.fn();
 const mockLogActivity = vi.fn();
@@ -86,6 +87,10 @@ vi.mock("@workspace/db", () => ({
 
 const app = express();
 app.use(express.json());
+app.use((req: any, _res, next) => {
+  req.log = { error: vi.fn(), warn: vi.fn(), info: vi.fn() };
+  next();
+});
 app.use("/api", categoriesRouter);
 
 describe("Categories API", () => {
@@ -120,5 +125,42 @@ describe("Categories API", () => {
     const res = await request(app).put("/api/categories/1").send({});
     expect(res.status).toBe(400);
     expect(res.body.message).toMatch(/No fields to update/i);
+  });
+
+  const duplicateSlugError = () =>
+    Object.assign(new Error("Failed query: write to categories"), {
+      cause: Object.assign(new Error("duplicate key value violates unique constraint"), { code: "23505" }),
+    });
+
+  it("POST /api/categories answers a duplicate slug with 409, not 500", async () => {
+    vi.mocked(db.insert).mockImplementationOnce((() => ({
+      values: () => ({ returning: () => Promise.reject(duplicateSlugError()) }),
+    })) as any);
+    const res = await request(app).post("/api/categories").send({ name: "Mugs", slug: "mugs" });
+    expect(res.status).toBe(409);
+    expect(res.body).toEqual({ error: "conflict", message: "A category with this slug already exists." });
+    expect(mockRedisDel).not.toHaveBeenCalled();
+  });
+
+  it("POST /api/categories still answers other database failures with 500", async () => {
+    vi.mocked(db.insert).mockImplementationOnce((() => ({
+      values: () => ({ returning: () => Promise.reject(new Error("connection terminated")) }),
+    })) as any);
+    const res = await request(app).post("/api/categories").send({ name: "Mugs", slug: "mugs" });
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe("internal_error");
+  });
+
+  it("PUT /api/categories/:id answers a duplicate slug with 409", async () => {
+    // The handler reads the current row first, then updates it.
+    vi.mocked(db.select).mockImplementationOnce((() => ({
+      from: () => ({ where: () => Promise.resolve([{ id: 1, name: "Old", slug: "old" }]) }),
+    })) as any);
+    vi.mocked(db.update).mockImplementationOnce((() => ({
+      set: () => ({ where: () => ({ returning: () => Promise.reject(duplicateSlugError()) }) }),
+    })) as any);
+    const res = await request(app).put("/api/categories/1").send({ slug: "taken" });
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe("conflict");
   });
 });
