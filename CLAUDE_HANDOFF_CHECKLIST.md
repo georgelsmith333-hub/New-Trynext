@@ -119,10 +119,13 @@ These are dated observations. Recheck them at the start of the next session.
   from the newer repo is an older Studio V2 3D viewer; the newer Studio does not
   import it. All other old-only paths are screenshots, so no old code/assets
   need to be copied.
-- [ ] Create a clean branch from that repository's verified default-branch tip;
-  transfer only reviewed source, required public assets, and handoff docs.
-- [ ] Run release checks, review the final diff, then publish to the live-enabled
-  branch. Do not publish if a required check fails.
+- [x] Created clean branch `claude-handoff-2026-10-04` from the verified
+  `main`, containing only the 54-file reviewed candidate.
+- [x] Local release checks, full diff/path review, and the high-confidence
+  credential scan passed; all local attachments and Replit-only memory were
+  excluded.
+- [ ] Open a pull request and merge to the live-enabled branch only after all
+  required checks pass.
 - [ ] Verify the resulting commit, workflow results, and live site through
   GitHub and read-only production checks.
 - [ ] After the owner confirms the GitHub handoff works, stop using Replit as
@@ -171,14 +174,14 @@ These are dated observations. Recheck them at the start of the next session.
   high-confidence credential patterns detected.
 - [x] Use `georgelsmith333-hub/New-Trynext` as selected by the owner. Its
   verified `main` tip was `80dbab30692b9e5f202cf9a01594b6abb7981c78`.
-- [ ] Preserve the Smart v10.3 accepted runtime and all existing mockup
+- [x] Preserve the Smart v10.3 accepted runtime and all existing mockup
   approval/provenance gates.
-- [ ] The owner explicitly requested a live push to `New-Trynext`; this
+- The owner explicitly requested a live push to `New-Trynext`; this
   authorizes a reviewed production push only after all required release checks
   pass. It does not authorize pushing local history wholesale.
 - [x] Exclude pasted conversation files and customer screenshots from the
   transfer branch. Never include secrets or credentials.
-- [ ] Do not change provider settings, production data, or database schema under
+- Do not change provider settings, production data, or database schema under
   this push authorization.
 
 ### E. Reconcile the older repository
@@ -187,7 +190,7 @@ These are dated observations. Recheck them at the start of the next session.
 - [x] Confirmed the older repo's only code-only path missing from the newer repo
   is its Studio V2 3D viewer. The current newer Studio does not import it, so do
   not copy the stale viewer or old screenshots.
-- [ ] Keep the newer repo's current Studio and Smart v10.3 runtime. Copy nothing
+- [x] Keep the newer repo's current Studio and Smart v10.3 runtime. Copy nothing
   from the older repository unless a current dependency or regression proves it
   necessary.
 

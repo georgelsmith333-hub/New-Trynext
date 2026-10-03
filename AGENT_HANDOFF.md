@@ -3722,8 +3722,8 @@ checklist are linked together. No push or deployment was performed.
 
 ## 2026-10-04 — Destination confirmed and pre-release checks
 
-Status: Release candidate is ready for a clean GitHub branch and pull-request
-checks. Nothing has been pushed, merged, or deployed.
+Status: A clean candidate branch is on GitHub. The production `main` branch is
+unchanged; pull-request checks and the live merge are still pending.
 
 Last completed: The owner selected `georgelsmith333-hub/New-Trynext` and
 explicitly authorized a live push if safety checks pass. GitHub's `main` was
@@ -3743,10 +3743,12 @@ Verification completed locally:
   API route. The validator is now isolated in a database-independent module;
   verify the fix in pull-request CI before merging.
 
-Stopped at: Final candidate secret/path review and fresh verification of
-`New-Trynext/main` remain before branch creation. Then push only a clean branch
-based on the verified main tip, excluding all 27 local `attached_assets/` paths
-and local commit history. Wait for pull-request checks before updating `main`.
+Stopped at: `claude-handoff-2026-10-04` is at
+`6f7838c06ea506329c19de6cdc0570f77aad2731`, parented on the verified
+`New-Trynext/main` tip `80dbab30692b9e5f202cf9a01594b6abb7981c78`. The branch
+contains only the reviewed 54-file candidate; all 27 `attached_assets/` paths,
+local commit history, and Replit-only `.agents/memory` notes were excluded.
+The pull request has not yet been opened.
 
 Files/areas changed: Checkout/invoice/payment and mobile order-flow work from the
 local branch, product/catalog and edge-cache changes, Smart Mockup validation
@@ -3755,8 +3757,8 @@ test isolation, and the Claude Code handoff documents. The release tree contains
 paths are excluded.
 
 Remaining work:
-- Complete the final secret/path review and recheck GitHub `main`.
-- Publish a clean candidate branch and open a pull request.
+- Open a pull request from the clean candidate branch and wait for required
+  checks, including Active App Verification.
 - Merge only if all required pull-request checks pass.
 - After the live update, verify the storefront, API health, catalog cache
   behavior, sitemap, and accepted Smart Mockup runtime on `trynext.shop`.
@@ -3764,13 +3766,14 @@ Remaining work:
 - Browser/device invoice-download checks remain safe follow-up verification; do
   not create a real order to perform them.
 
-Blocker: None identified locally. Pull-request checks and production health are
-still pending.
+Blocker: No local blocker. Pull-request checks and production health are still
+pending.
 
-Next safe action: Run the final content-only secret scan and inspect the full
-release diff, then re-read the live `main` ref through the attached GitHub
-integration before creating the clean branch.
+Next safe action: Open the pull request, verify the exact base/head and wait for
+its checks. Recheck the base branch immediately before merging.
 
 Verification: `pnpm run typecheck`, `pnpm run build`, `pnpm run validate:mockups`,
-the API and storefront tests, and `git diff --check` all passed. No provider
-settings, database data, orders, or payments were changed.
+the API and storefront tests, `git diff --check`, and 30/30 read-only live
+critical-flow checks all passed. The candidate path scan found no
+high-confidence credential patterns. No provider settings, database data,
+orders, or payments were changed.
