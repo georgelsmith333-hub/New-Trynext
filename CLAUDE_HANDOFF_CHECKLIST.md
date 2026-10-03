@@ -1,6 +1,6 @@
 # Trynext Lifestyle — Claude Handoff and Full-Project Checklist
 
-**Prepared:** 2026-10-04  
+**Prepared:** 2026-10-04
 **Purpose:** A self-contained starting point for Claude or another agent taking
 over this project. This document records the latest known checkpoint, safe next
 steps, project-wide acceptance areas, and how to distinguish real open work from
