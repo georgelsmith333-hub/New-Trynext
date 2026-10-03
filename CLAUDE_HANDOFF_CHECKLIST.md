@@ -45,6 +45,21 @@ prompt as the current project plan.
 
 ## Current checkpoint — 2026-10-04
 
+### Post-merge update (Claude Code session, 2026-10-03 22:45 UTC)
+
+This block supersedes the dated observations below where they conflict.
+
+- PR #2 is **merged**. `origin/main` is `2549742`; CI and Active app
+  verification both succeeded on it. The remote is named `origin`.
+- The local checkout is identical to `origin/main`, with no local commits and no
+  untracked attachments. The "Checkout state observed" notes below describe an
+  earlier Replit checkout and are historical.
+- Items A and B below were worked in this session; item C is blocked by the
+  session's network policy. See the newest `AGENT_HANDOFF.md` section for
+  evidence and limits.
+- Deployment of `2549742` to Cloudflare/Render has **not** been confirmed from
+  this session. Nothing here has been deployed or verified live.
+
 ### Known complete locally
 
 - [x] The approved safe public catalog API-cache changes are implemented and
@@ -126,9 +141,13 @@ These are dated observations. Recheck them at the start of the next session.
   excluded.
 - [x] Opened PR #2 from the clean branch to `main`; its base, head, and 54-file
   change list were verified with no attachment or agent-memory paths.
-- [ ] Merge to `main` only after all required checks pass on the final PR head.
-- [ ] Verify the resulting commit, workflow results, and live site through
-  GitHub and read-only production checks.
+- [x] Merge to `main` only after all required checks pass on the final PR head.
+  PR #2 was merged by the owner on 2026-10-03 22:22 UTC.
+- [x] Verify the resulting commit and workflow results through GitHub: `main` is
+  `2549742`; CI and Active app verification succeeded.
+- [ ] Verify the live site and deployment through read-only production checks.
+  Blocked in the Claude Code session: its network policy denies
+  `trynext.shop:443`.
 - [ ] After the owner confirms the GitHub handoff works, stop using Replit as
   the development home. Keep deployment or provider changes separate.
 
@@ -136,30 +155,50 @@ These are dated observations. Recheck them at the start of the next session.
 
 ### A. Browser/device verification for invoices
 
-- [ ] Verify that the customer-facing invoice download actually triggers a
-  browser download from the Checkout success flow.
-- [ ] Verify the invoice download from Track Order.
-- [ ] Check a desktop browser and a mobile browser/device-size flow; verify the
+- [x] Verify that the customer-facing invoice download actually triggers a
+  browser download from the Checkout success flow. (Chromium download event;
+  COD and bKash wallet paths; desktop 1280x800 and phone 390x844.)
+- [x] Verify the invoice download from Track Order. (Same two viewports.)
+- [x] Check a desktop browser and a mobile browser/device-size flow; verify the
   filename, valid PDF contents, and that customer/order values are correct.
-- [ ] Use a safe test fixture or mocked order response. Do not create a real
-  customer order or submit a payment without explicit owner approval.
-- [ ] Record limitations if an authenticated customer session is unavailable.
+  (`Trynext-Invoice-<orderNumber>.pdf`; valid 1-page PDF; contents checked with
+  `pdftotext`, including the 25% advance and settings-driven contact block.)
+- [x] Use a safe test fixture or mocked order response. Do not create a real
+  customer order or submit a payment without explicit owner approval. (All
+  `/api` calls were fixtures; non-localhost and unmocked writes were blocked.)
+- [x] Record limitations if an authenticated customer session is unavailable.
+  Limitations: Chromium only (no real device or Safari); mocked backend; no
+  authenticated-customer session; scripts were not added to the repo.
+- [ ] Optional follow-up: add a repeatable browser test for the invoice flow if
+  the owner wants one in CI.
 
 ### B. Verify the mobile shop-filter integration
 
-- [ ] Inspect the current Expo app route and determine whether the filter drawer
+- [x] Inspect the current Expo app route and determine whether the filter drawer
   shown in the design-system preview is integrated into the actual mobile app.
-- [ ] If integrated, verify open/close, selected-filter count, keyboard/screen
+  Result: **not integrated.** `artifacts/trynext-mobile/app/(tabs)/shop.tsx` has
+  only inline search, category chips, and sort pills.
+- [x] If integrated, verify open/close, selected-filter count, keyboard/screen
   reader labels, Escape/back handling, safe-area spacing, scroll locking, and
-  touch target at narrow and tall viewports.
-- [ ] If not integrated, report it as follow-up work; do not treat the preview
+  touch target at narrow and tall viewports. Not applicable to the Expo app. The
+  drawer does exist in the web storefront (`Products.tsx`) with these behaviors
+  present in code; it has not been exercised in a browser in this session.
+- [x] If not integrated, report it as follow-up work; do not treat the preview
   as a shipped app feature or integrate it without including it in the approved
-  scope.
+  scope. Reported: building the Expo drawer is follow-up work that needs owner
+  approval.
+- [ ] Optional: browser-test the web `Products.tsx` filter drawer at narrow and
+  tall viewports.
 
 ### C. Verify live cache behavior after an approved release only
 
-- [ ] Keep the local cache safety tests passing: cookie/auth bypass, search and
+- [x] Keep the local cache safety tests passing: cookie/auth bypass, search and
   unknown query bypass, unsafe header/status bypass, and cache-key isolation.
+  (Storefront suite: 23 files / 96 tests passed on `2549742`.)
+- **Blocked (2026-10-03):** the live two-request check could not run because the
+  Claude Code session's network policy denies `trynext.shop:443`. Allow the host
+  in the environment's network settings, or run it elsewhere. A request such as
+  `/api/products?limit=4&includeTotal=false` uses only allowlisted parameters.
 - [ ] After the explicitly requested live push, send the same safe public
   catalog request twice to the actual production domain and record response status,
   cache headers, origin routing, and whether the second request is a hit.

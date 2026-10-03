@@ -3778,3 +3778,81 @@ the API and storefront tests, `git diff --check`, and 30/30 read-only live
 critical-flow checks all passed. The candidate path scan found no
 high-confidence credential patterns. No provider settings, database data,
 orders, or payments were changed.
+
+## 2026-10-04 Claude Code session — post-merge reconciliation and invoice verification
+
+This section supersedes the "Destination confirmed and pre-release checks"
+section above, which still describes PR #2 as open. Times are UTC; the repo's
+"2026-10-04" dates are Dhaka local time (UTC+6).
+
+```text
+Status: in progress — verification pass complete for checklist items A and B;
+  item C blocked by the session's network policy. Docs-only change; no
+  application source was edited. Not merged to main, not deployed.
+Last completed:
+  - Fetched GitHub. origin/main is 2549742 ("Reviewed Trynext release and Claude
+    Code handoff (#2)"). PR #2 was MERGED by the owner on 2026-10-03 22:22 UTC.
+    CI and Active app verification both succeeded on that commit. The previous
+    main (80dbab3) had failed Active app verification; the database-independent
+    validator fix resolved it.
+  - Remote branch review: claude/ecom-customization-itpg9o and
+    manus/photopea-browser-validator are fully contained in main;
+    claude-handoff-2026-10-04 has a tree identical to main (pre-squash PR
+    branch); fix/waterbottle-white-identity (2 commits from 2026-10-03) is older
+    than main and differs by 24 files where main has the newer work. Nothing was
+    merged from any of them. The remote copy of claude/nice-carson-nxjq7q did
+    not exist at fetch time.
+  - Baseline on 2549742: pnpm install --frozen-lockfile OK; pnpm run typecheck
+    passes for all packages; storefront tests 23 files / 96 tests pass; API
+    tests with DATABASE_URL* unset 14 files / 42 tests pass.
+  - Item A (invoice downloads): verified in headless Chromium against the local
+    Vite dev server with every /api call served from fixtures (fake customer
+    data, non-localhost requests aborted, any unmocked write aborted and
+    recorded — none occurred). A real browser download event fired for Track
+    Order (desktop 1280x800 and phone 390x844) and for Checkout success (COD and
+    bKash wallet paths, both viewports). Filename is
+    Trynext-Invoice-<orderNumber>.pdf; each file is a valid 1-page A4 PDF
+    (%PDF- header, %%EOF trailer, about 10.4-10.7 KB). pdftotext confirmed order
+    number, customer name/phone/email/address, payment method, items, totals,
+    the 25% advance (1,100 total -> 275 advance, 825 on delivery), settings-
+    driven store name and contact block, and "Payment submitted — awaiting
+    verification" without crediting unverified payment. Dates render in
+    Asia/Dhaka by design. No page exceptions.
+  - Item B (mobile shop filters): NOT integrated in the Expo app.
+    artifacts/trynext-mobile/app/(tabs)/shop.tsx has only inline search,
+    category chips, and sort pills. The drawer exists in the isolated
+    artifacts/mockup-sandbox previews, and in the WEB storefront
+    (artifacts/trynex-storefront/src/pages/Products.tsx): 44px labelled trigger
+    with active count, aria-modal dialog, Escape handling, focus trap, body
+    scroll lock, and safe-area padding. The web drawer was inspected in code
+    only in this session, not exercised in a browser.
+Stopped at: Item C — the live cache check could not run. The session's egress
+  policy denied trynext.shop:443 (CONNECT 403, logged by the agent proxy).
+Files/areas changed: AGENT_HANDOFF.md and CLAUDE_HANDOFF_CHECKLIST.md only.
+Remaining work:
+  - Item C: after trynext.shop is allowed for this environment (or from a
+    machine with access), send the same anonymous public catalog request twice,
+    for example /api/products?limit=4&includeTotal=false (both parameters are on
+    the cache allowlist), and record X-Trynext-Edge-Cache,
+    CF-Cache-Status, and whether the second request is a HIT. Also confirm the
+    PR #2 deployment actually went live (Cloudflare was not visible from here).
+  - Real-device or Safari invoice download is not verified; Chromium only.
+  - Authenticated-customer Track Order and an unmocked backend were not tested.
+  - Expo shop filter drawer is follow-up work and needs owner approval as scope.
+  - Reconcile PROJECT_REBUILD_TRACKER against current code (not started).
+  - Optional: browser-check the web Products.tsx filter drawer at narrow/tall
+    viewports.
+Blocker: Network policy denies trynext.shop for this session (item C only).
+Next safe action: Allow trynext.shop under the environment's network settings and
+  run the two-request cache check, or ask the owner for the headers.
+Verification: Commands and results are as listed above. Test fixtures and
+  scripts were kept outside the repository. The dev server was stopped. No
+  production request was made, and no order, payment, provider setting, or
+  database was touched.
+Observations (not changed):
+  - src/lib/psdSmartObject.test.ts in the API package takes about 3.3 s alone but
+    about 5.3 s when typecheck and the storefront tests run at the same time,
+    against Vitest's 5 s default, so it timed out once under that load. It passes
+    when run alone. Consider a test-level timeout if CI shows it.
+  - Mobile checkout summary reads "Order Summary (1 items)" (pluralization).
+```
