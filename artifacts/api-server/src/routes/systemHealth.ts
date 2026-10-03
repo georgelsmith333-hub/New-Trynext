@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { requireAdmin } from "../middlewares/adminAuth";
 import { logger } from "../lib/logger";
-import { redisCacheGet, redisCacheSet, redisCacheDel } from "../lib/redis";
+import { getRedisStatus, redisCacheGet, redisCacheDel } from "../lib/redis";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { tgIsConfigured, tgSend } from "../lib/telegram";
 import { db } from "@workspace/db";
@@ -14,30 +14,68 @@ function osLoadAvg(): number[] {
 const router = Router();
 const storageService = new ObjectStorageService();
 
+// A dependency that hangs must not hang the admin dashboard with it.
+const HEALTH_CHECK_TIMEOUT_MS = 5_000;
+
+class HealthCheckTimeout extends Error {}
+
+function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new HealthCheckTimeout("timed out")), ms);
+  });
+  return Promise.race([work, timeout]).finally(() => clearTimeout(timer));
+}
+
+type Probe<T> =
+  | { ok: true; value: T; latencyMs: number }
+  | { ok: false; timedOut: boolean; latencyMs: number };
+
+// Runs one dependency check with a deadline and measures how long it took.
+// Exported so the deadline behaviour can be unit-tested without a 5 s wait.
+export async function probe<T>(name: string, work: () => Promise<T>, ms = HEALTH_CHECK_TIMEOUT_MS): Promise<Probe<T>> {
+  const started = Date.now();
+  try {
+    const value = await withTimeout(work(), ms);
+    return { ok: true, value, latencyMs: Date.now() - started };
+  } catch (err) {
+    const timedOut = err instanceof HealthCheckTimeout;
+    // Log the failure server-side; the response only carries a fixed, safe detail.
+    logger.warn({ check: name, timedOut }, "[system-health] dependency check failed");
+    return { ok: false, timedOut, latencyMs: Date.now() - started };
+  }
+}
+
+type RedisHealthStatus = "ok" | "error" | "degraded" | "not_configured";
+
 // ── GET /api/admin/system/health ─────────────────────────────────────────────
 // Returns live status of DB, Redis, R2/storage, Telegram, and env config.
 // Safe to call from the admin dashboard on every load.
 router.get("/admin/system/health", requireAdmin, async (_req, res) => {
-  const checks = await Promise.allSettled([
+  const [dbProbe, redisProbe] = await Promise.all([
     // DB ping
-    db.execute(sql`SELECT 1 AS ok`).then(() => ({ status: "ok" as const, latencyMs: 0 })),
-    // Redis ping
-    redisCacheSet("_health_check", "1", 10)
-      .then(() => redisCacheDel("_health_check"))
-      .then(() => ({ status: "ok" as const }))
-      .catch(() => ({ status: "error" as const })),
+    probe("database", () => db.execute(sql`SELECT 1 AS ok`)),
+    // Real Upstash status. This deliberately bypasses the in-process fallback
+    // cache: a cache write that lands in memory proves nothing about Redis.
+    probe("redis", () => getRedisStatus()),
   ]);
 
-  const dbResult = checks[0];
-  const redisResult = checks[1];
-
-  const dbStatus = dbResult.status === "fulfilled" ? "ok" : "error";
+  const dbStatus = dbProbe.ok ? "ok" : "error";
   const redisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
-  const redisStatus = !redisConfigured
-    ? "not_configured"
-    : redisResult.status === "fulfilled"
-    ? "ok"
-    : "error";
+  let redisStatus: RedisHealthStatus;
+  if (!redisProbe.ok) {
+    redisStatus = "error";
+  } else if (redisProbe.value.mode === "not_configured") {
+    redisStatus = "not_configured";
+  } else if (redisProbe.value.mode === "ok") {
+    redisStatus = "ok";
+  } else if (redisProbe.value.mode === "connecting") {
+    redisStatus = "degraded";
+  } else {
+    redisStatus = "error";
+  }
+  const probeDetail = (result: Probe<unknown>): string | undefined =>
+    result.ok ? undefined : result.timedOut ? "timed out" : "unreachable";
 
   const storageBackend = storageService.getBackendName();
   const r2Configured = !!(
@@ -62,11 +100,15 @@ router.get("/admin/system/health", requireAdmin, async (_req, res) => {
         status: dbStatus,
         backend: "postgresql",
         configured: !!process.env.DATABASE_URL,
+        latencyMs: dbProbe.latencyMs,
+        ...(probeDetail(dbProbe) ? { detail: probeDetail(dbProbe) } : {}),
       },
       redis: {
         status: redisStatus,
         backend: "upstash",
         configured: redisConfigured,
+        latencyMs: redisProbe.latencyMs,
+        ...(probeDetail(redisProbe) ? { detail: probeDetail(redisProbe) } : {}),
       },
       storage: {
         status: "ok",

@@ -27,5 +27,7 @@ describe("Smart Object browser payload replacement", () => {
     expect(reopened.imageData).toBeTruthy();
     expect(Array.from(reopened.imageData.data)).not.toEqual(Array.from(originalPsd.imageData.data));
     expect(rebuilt.equals(original)).toBe(false);
-  });
+    // Decodes a multi-megabyte PSD twice: ~3 s alone but over Vitest's 5 s
+    // default when the other test files run in parallel on a small CI runner.
+  }, 30_000);
 });

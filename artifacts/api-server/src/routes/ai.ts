@@ -957,11 +957,23 @@ router.post("/ai/developer/chat", requireAdmin, async (req: Request, res: Respon
       /* fall back to Pollinations if primary provider failed */
       if (provider.id !== "pollinations") {
         send({ type: "provider", provider: "pollinations", model: "openai" });
-        const fbRes = await fetch(POLLIN_TEXT_URL, {
-          method: "POST",
-          headers: pollinationsHeaders(),
-          body: JSON.stringify({ model: "openai", messages: allMessages, stream: true }),
-        });
+        // The primary request's timer is already cleared above, so bound the
+        // fallback connection too; otherwise a hung fallback holds the admin
+        // request open until the gateway cuts it.
+        const fbCtrl = new AbortController();
+        const fbTmo  = setTimeout(() => fbCtrl.abort(), 60_000);
+        // `Response` in this file is Express's type, so name the fetch result's type.
+        let fbRes: Awaited<ReturnType<typeof fetch>>;
+        try {
+          fbRes = await fetch(POLLIN_TEXT_URL, {
+            method: "POST",
+            signal: fbCtrl.signal,
+            headers: pollinationsHeaders(),
+            body: JSON.stringify({ model: "openai", messages: allMessages, stream: true }),
+          });
+        } finally {
+          clearTimeout(fbTmo);
+        }
         if (fbRes.ok && fbRes.body) { await pipeSSEStream(fbRes, send); res.end(); return; }
       }
       const errTxt = await chatRes.text().catch(() => "");

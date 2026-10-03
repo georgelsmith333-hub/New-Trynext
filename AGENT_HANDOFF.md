@@ -3851,8 +3851,63 @@ Verification: Commands and results are as listed above. Test fixtures and
   database was touched.
 Observations (not changed):
   - src/lib/psdSmartObject.test.ts in the API package takes about 3.3 s alone but
-    about 5.3 s when typecheck and the storefront tests run at the same time,
-    against Vitest's 5 s default, so it timed out once under that load. It passes
-    when run alone. Consider a test-level timeout if CI shows it.
+    up to about 5.6 s when other test files run in parallel, against Vitest's 5 s
+    default; it timed out twice in this session. FIXED in the next section by a
+    30 s per-test timeout (not a skip).
   - Mobile checkout summary reads "Order Summary (1 items)" (pluralization).
+```
+
+## 2026-10-04 Backend audit and first fixes (Claude Code session)
+
+```text
+Status: in progress — audit complete; first fixes verified locally and on PR #3
+  (claude/nice-carson-nxjq7q). Not merged to main, not deployed.
+Last completed:
+  - Static routing audit of artifacts/api-server/src/routes: 222 literal
+    router.<method>("path") registrations across 40 routers, mounted order
+    checked: 0 duplicate method+path pairs and 0 static routes shadowed by an
+    earlier parameterised route. Limit: routes registered with a variable path,
+    a regex, or router.use(path, ...) were not scanned.
+  - AI endpoints: every outbound provider fetch in routes/ai.ts and
+    routes/aiExecute.ts had an abort timeout except one. FIXED: the Pollinations
+    fallback in POST /api/ai/developer/chat (admin only) now has a 60 s connect
+    timeout; before, a hung fallback held the request open until the gateway cut
+    it. Public AI routes are rate limited by aiLimiter in app.ts.
+  - Admin health (GET /api/admin/system/health) reported config, not health:
+    * Redis showed "ok" whenever the env vars were set, even during a real
+      Upstash outage (the check wrote to the in-process fallback cache, which
+      never throws). FIXED: it now uses getRedisStatus(), as the public
+      /healthz already did.
+    * The DB ping had no timeout and its latency was never returned. FIXED:
+      database and Redis probes now have a 5 s deadline and return latencyMs and
+      a fixed, secret-safe detail ("timed out" / "unreachable") on failure.
+      Response additions are additive; services.<name>.status is unchanged.
+  - New test file src/routes/systemHealth.test.ts (9 tests). Mutation-checked:
+    reintroducing the old Redis behaviour makes the outage test fail.
+  - psdSmartObject.test.ts got a 30 s per-test timeout (see the note above).
+Stopped at: Fixes verified locally; PR #3 CI pending on the new commit.
+Files/areas changed: artifacts/api-server/src/routes/ai.ts,
+  artifacts/api-server/src/routes/systemHealth.ts,
+  artifacts/api-server/src/routes/systemHealth.test.ts (new),
+  artifacts/api-server/src/lib/psdSmartObject.test.ts, and this file.
+Remaining work:
+  - storage, Telegram, and auth entries in the admin health response are still
+    "ok" from configuration alone (storage is hard-coded "ok"); they are not
+    live probes. Decide which are worth probing without cost or side effects.
+  - Admin "live health" page (realtime health, request/error rate, latency,
+    recent errors, live change feed) is designed but not built; it needs the
+    owner's go-ahead on polling cadence and scope. Render Free plan limits
+    mean small payloads and tab-visible polling only, no always-on streaming.
+  - Real production errors cannot be seen from this session (network policy
+    denies trynext.shop). Ask the owner for non-secret error text from the admin
+    Activity Log, Render logs, or the browser console.
+  - Live deployment and live cache behaviour remain unverified (see above).
+Blocker: None for local work; production visibility is blocked by network policy.
+Next safe action: Wait for PR #3 CI, owner review of the preview, and the
+  owner's decision on release gating; then build the admin live-health page on a
+  fresh branch from main after PR #3 merges.
+Verification: API typecheck passes; API suite 15 files / 51 tests pass on two
+  consecutive runs with DATABASE_URL* unset; node ./build.mjs succeeds; the new
+  Redis-outage test fails against the old behaviour and passes with the fix.
+  No production request, order, payment, or data change was made.
 ```
