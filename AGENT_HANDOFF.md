@@ -3994,7 +3994,16 @@ Files/areas changed:
     (superseded banners, reconciliation), this file, CLAUDE_HANDOFF_CHECKLIST.md.
 Remaining work:
   - Water bottle: correct the print-area geometry (PSB master and its runtime
-    print-mask role, then regenerate the checksum-bound roles), regenerate the
+    print-mask role, then regenerate the checksum-bound roles). Measured from
+    the runtime base images (1024x1024, rows y=320..910): the manifest uses one
+    zone x=335..611 (w 276) for both faces. Front body spans x=368..652
+    (centre 510), so the zone is 37 px left of centre and overhangs the left
+    edge by 33 px; back body spans x=379..644 (centre 511.5), 38.5 px off and
+    44 px overhang. Proposed, centred and 84% of the body width, per face:
+    front x=391..630 (w 239), back x=400..623 (w 223), both y=320, h=590.
+    Proposal images were sent to the owner (red = current, green = proposed).
+    This is a proposal only: nothing in the accepted runtime was changed.
+    Regenerate the proof, get the owner's visual approval, and then continue:
     proof, get the owner's visual approval, and only then add "waterbottle" to
     CUSTOMER_RELEASED_CATEGORIES (routes/mockups.ts), remove the 409 gate in
     routes/orders.ts, and lift the Studio hold. Never promote it on a structural
