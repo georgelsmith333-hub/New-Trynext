@@ -3743,12 +3743,12 @@ Verification completed locally:
   API route. The validator is now isolated in a database-independent module;
   verify the fix in pull-request CI before merging.
 
-Stopped at: `claude-handoff-2026-10-04` is at
-`6f7838c06ea506329c19de6cdc0570f77aad2731`, parented on the verified
-`New-Trynext/main` tip `80dbab30692b9e5f202cf9a01594b6abb7981c78`. The branch
-contains only the reviewed 54-file candidate; all 27 `attached_assets/` paths,
-local commit history, and Replit-only `.agents/memory` notes were excluded.
-The pull request has not yet been opened.
+Stopped at: `claude-handoff-2026-10-04` was created directly from the verified
+`New-Trynext/main` tip `80dbab30692b9e5f202cf9a01594b6abb7981c78` and has since
+been advanced by handoff-only commits. Re-read the branch ref to get its current
+tip before continuing. The branch contains only the reviewed 54-file candidate;
+all 27 `attached_assets/` paths, local commit history, and Replit-only
+`.agents/memory` notes were excluded. The pull request has not yet been opened.
 
 Files/areas changed: Checkout/invoice/payment and mobile order-flow work from the
 local branch, product/catalog and edge-cache changes, Smart Mockup validation
