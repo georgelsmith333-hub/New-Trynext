@@ -4093,3 +4093,17 @@ Remaining safety boundary:
 - The bottle customer hold remains active (`409 mockup_not_approved`). The PSB masters and checksum-bound runtime print-mask roles were not regenerated or promoted by this code-only correction; they require proof generation and owner visual approval before customer release.
 - No production order, payment, upload, admin mutation, provider setting, DNS change, or secret operation was performed.
 - Admin Activity Log and Render log root-cause review still requires redacted log content or authenticated provider access.
+
+## 2026-10-05 Owner answers consumed; Design Studio draft-restore fix (Claude Code session)
+
+- **Status:** local → committed → pushed (PR open, **not merged**; owner answered "ask me each time" for merges).
+- **Owner answers read:** `claude/reports.md` (blob `726ceb6bc83c8f849f7b672d41c59523dafb420c`). Binding rules from it: bottle hold stays and bottle masters are not regenerated until a visual proof is reviewed; the 94 side-view surfaces (sleeves, neck label, mug wrap) stay `candidate` (no saved validator report); merge only after checks are green and scope is reported, asking each time; data repairs only with a dry run and per-change approval; real-error review stays blocked until sanitized logs exist; COD advance 25% and settings-driven payment/contact values unchanged; keep `claude/nice-carson-nxjq7q` (historical); use fresh branches from `main`. Priority order: 1) Design Studio reliability, 2) checkout and orders, 3) catalog and first-party images.
+- **Last completed (item 1, first slice):** a saved Studio draft no longer overwrites the variant the customer opened from a link.
+  - Defect: restoring a draft unconditionally replaced product colour, size, face, mug mode and the *linked store product* (id, name, price). With `?product=` or `?storeProductId=` in the URL, a stale draft could put another product's colour on the new product (surface unavailable) or attach an old linked product to the cart item. Cloud and local drafts were also both applied in sequence, so the local copy always won even when older.
+  - Fix: new `src/pages/studio/draftRestore.ts` (`planDraftRestore`, `pickNewestDraft`). When the URL names a product, only the artwork layers restore. Otherwise colour is matched to the product's own colours (first colour if the saved one does not exist), and size, face, mug mode and linked store product are validated. Only the newest of cloud/local draft is applied (one toast). Wired into `DesignStudioV2.tsx`.
+- **Files changed:** `artifacts/trynex-storefront/src/pages/studio/draftRestore.ts` (new), `draftRestore.test.ts` (new, 10 tests), `DesignStudioV2.tsx` (restore + `applyDraftPayload`). No API, database, provider, manifest or bottle change.
+- **Verification (local):** storefront 28 files / 165 tests pass; workspace typecheck passes; storefront build passes; `git diff --check` clean. Mutation checks: removing the "link owns the variant" rule and changing the newest-draft tie-break each make a test fail. Not browser-tested in this session.
+- **Not changed on purpose:** bottle hold, candidate surface status, payment/COD logic, any live data.
+- **Remaining work (item 1):** verify export parity and cart payload against the Studio canvas for each product family in a browser; touch/mobile editing checks; upload/processing failure states. Then items 2 and 3.
+- **Blocker:** none for the next slice. Owner approval is needed before any merge.
+- **Next safe action:** wait for the owner's OK to merge this PR, then take the next Studio slice.

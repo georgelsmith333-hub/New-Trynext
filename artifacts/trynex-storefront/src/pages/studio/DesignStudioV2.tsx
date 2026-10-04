@@ -40,6 +40,7 @@ import { AIPanel } from "./AIPanel";
 import { fitImageTransform } from "./autoFit";
 import { ClipArtBrowser } from "./ClipArtBrowser";
 import { QRCodePanel } from "./QRCodePanel";
+import { planDraftRestore, pickNewestDraft } from "./draftRestore";
 import { FONT_FAMILIES, type Layer, type ImageLayer, type TextLayer, type ShapeLayer, DRAFT_VERSION } from "./types";
 import { getRenderedImageSize, preserveRenderedImageSize } from "./transformGeometry";
 import { StudioFirstUseGuide, StudioQualityBanner } from "./v1-components/V1StudioSupport";
@@ -426,19 +427,24 @@ export default function DesignStudioV2() {
     const explicitUrlProduct = sp.get("product");
     const token = localStorage.getItem("trynext_customer_token");
     const restore = async () => {
+      let cloudDraft: any = null;
+      let localDraft: any = null;
       if (token) {
         try {
           const res = await fetch(getApiUrl("/api/drafts"), { headers: { Authorization: `Bearer ${token}` } });
           if (res.ok) {
             const json = await res.json();
-            if (json.draft?.payload) applyDraftPayload(json.draft.payload, "cloud");
+            if (json.draft?.payload) cloudDraft = json.draft.payload;
           }
         } catch {}
       }
       try {
         const raw = localStorage.getItem(DRAFT_STORAGE_KEY);
-        if (raw) applyDraftPayload(JSON.parse(raw), "local");
+        if (raw) localDraft = JSON.parse(raw);
       } catch {}
+      // Apply one draft, the newest, so an older copy never overwrites a newer one.
+      const newest = pickNewestDraft(cloudDraft, localDraft);
+      if (newest) applyDraftPayload(newest, newest === cloudDraft ? "cloud" : "local");
     };
     restore();
     const urlProduct = explicitUrlProduct;
@@ -478,26 +484,30 @@ export default function DesignStudioV2() {
 
   function applyDraftPayload(data: any, source: "cloud" | "local") {
     if (!data || data.version !== DRAFT_VERSION) return;
-    const explicitUrlProduct = typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("product")
-      : null;
-    if (typeof data.productId === "string" && !explicitUrlProduct) {
-      const resolved = normalizeStudioProductId(data.productId);
-      const p = PRODUCTS.find(x => x.id === resolved || x.category === resolved);
-      if (p) setProduct(p);
-    }
-    if (data.color?.hex && data.color?.name) setColor(data.color);
-    if (typeof data.size === "string") setSize(data.size);
-    if (data.activeFace) setFace(data.activeFace);
-    if (data.mugMode) setMugMode(data.mugMode);
-    if (data.linkedStoreProductId) setLinkedStoreProduct({ id: data.linkedStoreProductId, name: data.linkedStoreProductName, price: data.linkedStoreProductPrice });
-    if (Array.isArray(data.layers) && data.layers.length > 0) {
-      setLayers(data.layers);
+    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+    const plan = planDraftRestore(data, {
+      currentProduct: selectedProduct,
+      resolveProduct: (savedId) => {
+        const resolved = normalizeStudioProductId(savedId);
+        return PRODUCTS.find((x) => x.id === resolved || x.category === resolved);
+      },
+      // A link that names a product (or a store product) owns the variant.
+      linkOwnsVariant: Boolean(params.get("product") || params.get("storeProductId")),
+    });
+    if (plan.product) setProduct(plan.product);
+    if (plan.color) setColor(plan.color);
+    if (plan.size) setSize(plan.size);
+    if (plan.face) setFace(plan.face);
+    if (plan.mugMode) setMugMode(plan.mugMode);
+    if (plan.linkedStoreProduct) setLinkedStoreProduct(plan.linkedStoreProduct);
+    if (plan.layers) {
+      setLayers(plan.layers as Layer[]);
       setHasDraft(true);
       setSaveStatus("saved");
       toast({ title: "Draft restored", description: source === "cloud" ? "Loaded from cloud." : "Welcome back — your design is here." });
     }
   }
+
 
   // Auto-save draft
   useEffect(() => {
