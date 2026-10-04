@@ -13,7 +13,7 @@ Older list `claude/NEEDS_FROM_OWNER.md` (A1 to C12) was answered in
 `claude/reports.md` on 2026-10-05. Items from it that are still open are carried
 here as N1 to N4.
 
-Last updated: 2026-10-05
+Last updated: 2026-10-05 (added N5, moved finished self-tests to Done)
 
 ---
 
@@ -62,13 +62,21 @@ Last updated: 2026-10-05
   "no errors seen".
 - ANSWER:
 
+### N5. Artwork on a side the opened product does not have (low priority, a decision)
+- **Why:** if a saved design has artwork on the back, sleeves or neck (for example
+  from a T-shirt) and the customer then opens a product that lacks that side (a
+  mug has Left/Right/Wrap, not a back), that artwork is kept in the design but
+  never shown or sent with the cart item. This only happens through restored
+  drafts, never by normal editing.
+- **Pick one:** (a) keep it and show a clear warning, (b) move it onto the
+  front, (c) drop it with a notice. Claude recommends (a).
+- **Blocks:** nothing.
+- ANSWER:
+
 ---
 
 ## What Claude is doing itself meanwhile (no action from you)
 
-- Back, left sleeve, right sleeve and neck-label faces: browser test of add to
-  cart per product family.
-- Export as PNG: browser test of the downloaded image against the canvas.
 - Uploaded images: browser test with stand-in storage.
 - Touch editing: simulated touch test (not a replacement for N1).
 - Then checkout and orders, then catalog and first-party images, as ordered in
@@ -76,4 +84,7 @@ Last updated: 2026-10-05
 
 ## Done
 
+- 2026-10-05: back, left sleeve, right sleeve and neck-label artwork: browser test with
+  text added through the real Studio UI. All five textures contain real artwork.
+- 2026-10-05: PNG export on a T-shirt front: a PNG downloads and the user sees a message.
 - 2026-10-05: first list answered in `claude/reports.md`.

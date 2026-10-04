@@ -4125,3 +4125,13 @@ Remaining safety boundary:
 - **Not covered:** image-upload artwork (needs storage stubbing), back/sleeve/neck faces, mobile touch editing, export-PNG parity against the canvas, and the live site.
 - **Remaining work (item 1):** the uncovered items above, then item 2 (checkout and orders) and item 3 (catalog and first-party images).
 - **Blocker:** none.
+
+## 2026-10-05 Studio multi-face and export verification (Claude Code session)
+
+- **Status:** verification only; no code change. Docs PR #12 merged as `deec879`.
+- **Multi-face add to cart (local API + throwaway Postgres + real Chromium):** artwork added through the real Studio UI ("Add Text Layer" on Front, Back, L.Sleeve, R.Sleeve, Neck) for a T-shirt. One cart item; layer counts 5 total / 1 front / 1 back; 5 face textures saved, each with 8,618 opaque artwork pixels (not blank). Back print zones recorded for T-shirt, long sleeve, hoodie, mug, cap.
+- **Correction to an earlier probe:** a first run seeded hand-written text layers into the saved draft; those never drew on the canvas, so their textures were fully transparent. That was a malformed test layer, not a site defect (verified by the UI-created run above). Do not seed synthetic layers for rendering checks; build them through the UI.
+- **PNG export (T-shirt front):** the PNG downloaded (`trynext-tshirt-front-design.png`) and a success message showed. Pixel comparison against the canvas was not done.
+- **Edge case recorded (decision N5 in `claude/CLAUDE_NEEDS.md`):** restoring a draft with back/sleeve/neck artwork onto a product without that side keeps the layers in the design but they are not shown or saved with the cart item. Only reachable through restored drafts.
+- **Not covered:** uploaded-image artwork with real or stand-in storage, mobile touch editing, PNG pixel parity, live site.
+- **Next:** uploaded images with stand-in storage and simulated touch; then item 2 (checkout and orders) and item 3 (catalog and first-party images).
