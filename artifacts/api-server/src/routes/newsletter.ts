@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
-import { db, newsletterSubscribersTable } from "@workspace/db";
+import { randomUUID } from "node:crypto";
+import { db, newsletterSubscribersTable, adminActivityLogsTable } from "@workspace/db";
 import { eq, sql } from "drizzle-orm";
 import { requireAdmin } from "../middlewares/adminAuth";
 import { logger } from "../lib/logger";
@@ -104,21 +105,60 @@ router.post("/contact", async (req, res) => {
         .onConflictDoNothing().catch(() => {});
     }
 
-    // Send Telegram notification to admin
+    // Telegram text is HTML; escape what the visitor typed so a stray "<" cannot
+    // make Telegram reject the whole message.
+    const esc = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const lines = [
       `📬 <b>New Contact Form Submission</b>`,
       ``,
-      `👤 <b>Name:</b> ${(name || "").trim()}`,
-      email ? `📧 <b>Email:</b> ${email.trim()}` : null,
-      phone ? `📞 <b>Phone:</b> ${phone.trim()}` : null,
-      subject ? `📌 <b>Subject:</b> ${subject.trim()}` : null,
+      `👤 <b>Name:</b> ${esc((name || "").trim())}`,
+      email ? `📧 <b>Email:</b> ${esc(email.trim())}` : null,
+      phone ? `📞 <b>Phone:</b> ${esc(phone.trim())}` : null,
+      subject ? `📌 <b>Subject:</b> ${esc(subject.trim())}` : null,
       ``,
       `💬 <b>Message:</b>`,
-      (message || "").trim().slice(0, 800),
+      esc((message || "").trim().slice(0, 800)),
     ].filter(l => l !== null).join("\n");
-    tgSend(lines).catch(() => {});
 
-    res.json({ ok: true, message: "Your message has been sent! We'll get back to you within 24 hours." });
+    // Tell the visitor "received" only if the message really went somewhere:
+    // Telegram accepted it, and/or it was saved where the admin can read it
+    // (Admin > Activity Log, entity "contact_message").
+    const saveRecord = async (telegramDelivered: boolean): Promise<boolean> => {
+      try {
+        await db.insert(adminActivityLogsTable).values({
+          adminId: null,
+          action: "create",
+          entity: "contact_message",
+          entityId: randomUUID().slice(0, 8),
+          entityName: `${(name || "").trim()}${subject ? ` - ${subject.trim()}` : ""}`.slice(0, 150),
+          before: null,
+          after: {
+            name: (name || "").trim().slice(0, 150),
+            email: email?.trim().slice(0, 254) ?? null,
+            phone: phone?.trim().slice(0, 40) ?? null,
+            subject: subject?.trim().slice(0, 200) ?? null,
+            message: (message || "").trim().slice(0, 2000),
+            receivedAt: new Date().toISOString(),
+            telegramDelivered,
+          },
+        });
+        return true;
+      } catch (err) {
+        logger.error({ err }, "[contact] could not save the message");
+        return false;
+      }
+    };
+    const delivered = await tgSend(lines).catch(() => false);
+    const stored = await saveRecord(delivered);
+    if (!delivered && !stored) {
+      res.status(503).json({
+        error: "contact_unavailable",
+        message: "We could not take your message right now. Please message us on WhatsApp or try again in a few minutes.",
+      });
+      return;
+    }
+
+    res.json({ ok: true, delivered, stored, message: "Your message has been received! We'll get back to you within 24 hours." });
   } catch (err) {
     req.log.error({ err }, "[contact] submit error");
     res.status(500).json({ error: "internal", message: "Failed to send message. Please try WhatsApp instead." });

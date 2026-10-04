@@ -43,7 +43,7 @@ export default function Contact() {
         return;
       }
       setSubmitted(true);
-      toast({ title: "✓ Message sent!", description: "We'll get back to you within 24 hours." });
+      toast({ title: "✓ Message received!", description: "We'll get back to you within 24 hours." });
     } catch {
       toast({ title: "Network error", description: "Please try WhatsApp or call us directly.", variant: "destructive" });
     } finally {
@@ -170,7 +170,7 @@ export default function Contact() {
                       style={{ background: "linear-gradient(135deg,#dcfce7,#bbf7d0)" }}>
                       <CheckCircle2 className="w-8 h-8 text-green-600" />
                     </div>
-                    <h3 className="text-xl font-black text-gray-900 mb-2">Message Sent!</h3>
+                    <h3 className="text-xl font-black text-gray-900 mb-2">Message Received!</h3>
                     <p className="text-gray-500 mb-6">We've received your message and will get back to you within 24 hours.</p>
                     <button onClick={() => { setSubmitted(false); setForm({ name: "", email: "", phone: "", subject: "", message: "" }); }}
                       className="px-6 py-2.5 rounded-xl font-bold text-sm text-white"

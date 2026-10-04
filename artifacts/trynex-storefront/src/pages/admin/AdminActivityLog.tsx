@@ -49,6 +49,7 @@ const ENTITY_OPTIONS = [
   { value: "promo", label: "Promo Codes" },
   { value: "review", label: "Reviews" },
   { value: "customer", label: "Customers" },
+  { value: "contact_message", label: "Contact Messages" },
   { value: "setting", label: "Settings" },
 ];
 
