@@ -4107,3 +4107,12 @@ Remaining safety boundary:
 - **Remaining work (item 1):** verify export parity and cart payload against the Studio canvas for each product family in a browser; touch/mobile editing checks; upload/processing failure states. Then items 2 and 3.
 - **Blocker:** none for the next slice. Owner approval is needed before any merge.
 - **Next safe action:** wait for the owner's OK to merge this PR, then take the next Studio slice.
+
+## 2026-10-05 Studio draft-restore fix: merged and browser-verified (Claude Code session)
+
+- **Status:** the draft-restore fix is merged to `main` (PR #10, `b6d5fc7`, CI green: typecheck/test/build, build-and-check, security-scan, Cloudflare preview). Not verified on the live domain from this sandbox.
+- **Autonomy:** the owner then asked Claude to work automatically on every new `claude/reports.md` or `reports.md` push and to keep merging small, tested, green PRs. The hourly checker now watches both files (handled blobs: `claude/reports.md` `726ceb6`, root `reports.md` `dfcef5c`). Guardrails unchanged: no live data/settings/schema/order/payment changes without a dry run and written approval for that change; bottle hold and the 94 candidate surfaces stay as they are; COD advance 25%; no force-push.
+- **Browser verification (local API, throwaway Postgres, real Chromium):** 7/7 checks passed. With `?product=mug` and a saved hoodie/navy draft: product stays mug, mug-valid colour, stale linked store product not attached, artwork layer restored. With no link: full restore (hoodie, navy, size L, layer, linked product). Unknown saved colour: falls back to a real hoodie colour.
+- **Reviewed, no change needed:** the Studio add-to-cart path already blocks with explicit messages when an original upload fails or counts mismatch, and blocks unavailable surfaces (including the bottle).
+- **Remaining work (item 1):** export vs canvas parity per product family and the cart payload, in a browser with stubbed storage; mobile touch editing. Then item 2 (checkout and orders) and item 3 (catalog and first-party images).
+- **Blocker:** none. Real-error review still needs sanitized logs; live-site checks still need network access.
