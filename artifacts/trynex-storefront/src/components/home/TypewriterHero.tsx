@@ -1,3 +1,4 @@
+import { WATER_BOTTLE_PHOTO_FRONT } from "@/lib/legacy-mockup-url";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
@@ -11,7 +12,7 @@ const mugSrc    = "/mockups/psd-master-v10/runtime-roles/mug/white/front-base.pn
 const capSrc    = "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png";
 const hoodieSrc = "/mockups/psd-master-v10/runtime-roles/hoodie/white/front-base.png";
 const longsleeveSrc = "/mockups/psd-master-v10/runtime-roles/longsleeve/white/front-base.png";
-const bottleSrc = "/mockups/source-kit-v3/waterbottle/white/front.png";
+const bottleSrc = WATER_BOTTLE_PHOTO_FRONT;
 
 const DEFAULT_PHRASES: string[] = [
   "T-Shirts.",

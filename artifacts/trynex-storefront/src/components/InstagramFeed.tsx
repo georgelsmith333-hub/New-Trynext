@@ -9,7 +9,7 @@ const FEED_IMAGES = [
   "/mockups/psd-master-v10/runtime-roles/mug/white/front-base.png",
   "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png",
   "/mockups/psd-master-v10/runtime-roles/tshirt/black/front-base.png",
-  "/mockups/psd-master-v10/runtime-roles/hoodie/grey/front-base.png",
+  "/mockups/psd-master-v10/runtime-roles/hoodie/heather-grey/front-base.png",
 ];
 
 const FALLBACK_IMAGES = [

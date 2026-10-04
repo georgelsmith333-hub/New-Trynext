@@ -1,3 +1,4 @@
+import { resolveImageUrl } from "@/lib/utils";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { X as XIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { createPortal } from "react-dom";
@@ -257,7 +258,7 @@ export function MobileImageLightbox({ images, startIndex, alt, onClose }: Props)
         onTouchEnd={onTouchEnd}
       >
         <img
-          src={images[index]}
+          src={resolveImageUrl(images[index])}
           alt={alt || `Image ${index + 1}`}
           draggable={false}
           className="max-w-full max-h-full object-contain pointer-events-none"

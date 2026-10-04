@@ -1,3 +1,4 @@
+import { WATER_BOTTLE_PHOTO_FRONT } from "@/lib/legacy-mockup-url";
 import { Link, useLocation } from "wouter";
 import { prefetchDesignStudio } from "@/lib/prefetch";
 import { Navbar } from "@/components/layout/Navbar";
@@ -978,8 +979,8 @@ export default function Home() {
                 hoodie:      "/mockups/psd-master-v10/runtime-roles/hoodie/white/front-base.png",
                 cap:         "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png",
                 mug:         "/mockups/psd-master-v10/runtime-roles/mug/white/front-base.png",
-                waterbottle: "/mockups/source-kit-v3/waterbottle/white/front.png",
-                watertumbler:"/mockups/source-kit-v3/waterbottle/white/front.png",
+                waterbottle: WATER_BOTTLE_PHOTO_FRONT,
+                watertumbler:WATER_BOTTLE_PHOTO_FRONT,
               };
 
               return (

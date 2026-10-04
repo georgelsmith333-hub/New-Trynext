@@ -3,6 +3,7 @@ import App from "./App";
 import "./index.css";
 import { setBaseUrl, setAuthTokenGetter } from "@workspace/api-client-react";
 import { getApiBaseUrl } from "./lib/utils";
+import { installImageFallback } from "./lib/image-fallback";
 import { checkBuildVersion, installChunkErrorRecovery } from "./lib/cache-recovery";
 
 // MUST run before anything else: returning visitors carrying an old service
@@ -12,6 +13,8 @@ import { checkBuildVersion, installChunkErrorRecovery } from "./lib/cache-recove
 if (typeof window !== "undefined") {
   checkBuildVersion();
   installChunkErrorRecovery();
+  // A missing or retired image shows a fallback instead of a broken icon.
+  installImageFallback();
 }
 
 const apiBase = getApiBaseUrl();

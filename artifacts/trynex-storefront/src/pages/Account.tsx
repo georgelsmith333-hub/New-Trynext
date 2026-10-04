@@ -1,3 +1,4 @@
+import { resolveImageUrl } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { Navbar } from "@/components/layout/Navbar";
@@ -1030,7 +1031,7 @@ export default function Account() {
                           >
                             <div className="aspect-square bg-gray-100 overflow-hidden">
                               {product.imageUrl ? (
-                                <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={e => { e.currentTarget.style.display = "none"; }} />
+                                <img src={resolveImageUrl(product.imageUrl)} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onError={e => { e.currentTarget.style.display = "none"; }} />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-300">
                                   <Package className="w-8 h-8" />

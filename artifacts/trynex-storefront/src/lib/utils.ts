@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { modernizeLegacyMockupUrl } from "./legacy-mockup-url";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -54,6 +55,9 @@ export function resolveImageUrl(url: string | null | undefined): string {
   const PLACEHOLDER = "/images/product-placeholder.svg";
   if (!url || url.trim() === "") return PLACEHOLDER;
   const value = url.trim();
+  // Retired /mockups/ URLs answer 410 in production; use the approved v10.3 photo instead.
+  const modernMockup = modernizeLegacyMockupUrl(value);
+  if (modernMockup) return modernMockup;
   // The restored catalog records use exact `/assets/products/*` paths that
   // are served by Cloudflare Pages. Keep those paths intact so each product
   // retains its design-specific asset. Only remap external URLs verified to

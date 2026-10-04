@@ -1,3 +1,4 @@
+import { WATER_BOTTLE_PHOTO_FRONT } from "./legacy-mockup-url";
 import { describe, expect, it } from "vitest";
 import {
   getCustomerProductColors,
@@ -24,7 +25,7 @@ describe("customer product options", () => {
   it("enforces the white bottle identity, image, and sold color", () => {
     expect(isWaterBottleProduct(bottle)).toBe(true);
     expect(getCustomerProductColors(bottle)).toEqual(["White"]);
-    expect(getCustomerProductImage(bottle)).toBe("/mockups/white-waterbottle-photo.png");
+    expect(getCustomerProductImage(bottle)).toBe(WATER_BOTTLE_PHOTO_FRONT);
   });
 
   it("filters variants from unrelated product families", () => {

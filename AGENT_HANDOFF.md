@@ -4043,3 +4043,18 @@ How to repeat the local end-to-end setup (scripts are not in the repo):
   proxies /api to port 8082; sign in via POST /api/admin/login. Never point any of
   this at a real database.
 ```
+
+## 2026-10-04 Broken product images fix (Claude Code session)
+
+- **Status:** local → committed → pushed on branch `claude/nice-carson-nxjq7q`; merge/deploy state is recorded by the PR, not here.
+- **Root cause:** `functions/mockups/[[path]].ts` answers 410 for every `/mockups/` URL outside `psd-master-v10/runtime-roles/`. Old product rows, cached bundles, saved carts and several hard-coded paths (water bottle, Instagram hoodie, mobile Design tab) still pointed at retired files, so production showed broken images.
+- **Last completed:**
+  - `src/lib/legacy-mockup-url.ts`: maps any retired `/mockups/` URL to the approved Smart v10.3 photo of the same product, colour and face (placeholder if unknown). The bottle only ever maps to the one approved white photo.
+  - `resolveImageUrl` and `getCustomerProductImage` repair retired URLs; raw `src` in Hampers, Account, Navbar, Cart, popups, lightbox, 404 now go through `resolveImageUrl`.
+  - `src/lib/image-fallback.ts` (installed in `main.tsx`): a failed image retries once with the repaired URL, then the placeholder.
+  - Mobile: `lib/mockup-url.ts` (copy of the mapping, kept equal by a storefront test) used by Design tab, cart, product screen.
+- **Files/areas changed:** storefront `src/lib`, `components`, `pages`, `main.tsx`; mobile `lib/mockup-url.ts`, `app/(tabs)/design.tsx`, `app/cart.tsx`, `app/product/[id].tsx`. No API, database, provider or bottle-hold change.
+- **Verification (local):** storefront 150 tests, API 114 tests, workspace typecheck, mobile typecheck, `git diff --check`; browser crawl on a local API + throwaway Postgres: 80 page loads (40 pages × 2 viewports), 0 broken images, homepage 31/31 approved photos load. `verify:critical-flows` could not run here (it targets the live domain; the sandbox proxy returns 403).
+- **Remaining work:** live check of `trynext.shop` after deploy (network blocked here); work through the owner's `reports.md` backlog (not started; P0 first).
+- **Blocker:** live domain not reachable from this sandbox.
+- **Next safe action:** merge after green CI, then start `reports.md` P0 items in small PRs. Water-bottle hold stays until the owner visually approves.

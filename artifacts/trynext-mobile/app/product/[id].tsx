@@ -1,3 +1,4 @@
+import { WATER_BOTTLE_PHOTO_PATH } from "@/lib/mockup-url";
 import { Feather } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
@@ -58,7 +59,7 @@ export default function ProductDetailScreen() {
       )
     : false;
   const productImage = isWaterBottle
-    ? `${getBaseUrl()}/mockups/white-waterbottle-photo.png`
+    ? `${getBaseUrl()}${WATER_BOTTLE_PHOTO_PATH}`
     : product?.imageUrl;
   const productColors = isWaterBottle ? ["White"] : product?.colors ?? [];
   const images = product

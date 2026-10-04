@@ -1,3 +1,4 @@
+import { resolveImageUrl } from "@/lib/utils";
 import { useEffect, useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Navbar } from "@/components/layout/Navbar";
@@ -144,7 +145,7 @@ export default function HamperBuilder() {
                       >
                         <div className="aspect-square bg-gray-50 overflow-hidden relative">
                           {p.imageUrl ? (
-                            <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" />
+                            <img src={resolveImageUrl(p.imageUrl)} alt={p.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center"><Gift className="w-10 h-10 text-gray-300" /></div>
                           )}
@@ -204,7 +205,7 @@ export default function HamperBuilder() {
                           className="flex items-center gap-3 p-2 rounded-xl bg-gray-50"
                         >
                           <div className="w-10 h-10 rounded-lg bg-white overflow-hidden shrink-0">
-                            {p.imageUrl && <img src={p.imageUrl} alt="" className="w-full h-full object-cover" />}
+                            {p.imageUrl && <img src={resolveImageUrl(p.imageUrl)} alt="" className="w-full h-full object-cover" />}
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-bold text-gray-900 truncate">{p.name}</p>

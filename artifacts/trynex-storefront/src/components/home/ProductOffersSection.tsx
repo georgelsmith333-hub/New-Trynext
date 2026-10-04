@@ -1,3 +1,4 @@
+import { WATER_BOTTLE_PHOTO_FRONT } from "@/lib/legacy-mockup-url";
 import { motion } from "framer-motion";
 import { ShoppingCart, Zap, Star, Package, Shield, Paintbrush } from "lucide-react";
 import { Link } from "wouter";
@@ -57,7 +58,7 @@ const SHOWCASE_PRODUCTS: DisplayProduct[] = [
   {
     id: "s3",
     name: "Water Bottle",
-    imageUrl: "/mockups/source-kit-v3/waterbottle/white/front.png",
+    imageUrl: WATER_BOTTLE_PHOTO_FRONT,
     description: "Free Image Editing Included",
     price: 650,
     href: "/design-studio",
@@ -85,7 +86,7 @@ const SHOWCASE_PRODUCTS: DisplayProduct[] = [
   {
     id: "s6",
     name: "2 Water Bottles",
-    imageUrl: "/mockups/source-kit-v3/waterbottle/white/front.png",
+    imageUrl: WATER_BOTTLE_PHOTO_FRONT,
     description: "Auto discount applied",
     price: 1300,
     discountPrice: 1100,

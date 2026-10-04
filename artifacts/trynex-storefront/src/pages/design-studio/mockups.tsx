@@ -4,6 +4,7 @@
    The mockup PNGs live in /public/mockups/<id>-?face?.png
 ════════════════════════════════════════════════════════ */
 
+import { WATER_BOTTLE_PHOTO_BACK, WATER_BOTTLE_PHOTO_FRONT } from "@/lib/legacy-mockup-url";
 import { createSmartMockupManifest, validateSmartMockupManifest, type SmartMockupManifest } from "./smart-mockup-manifest";
 import { getCanonicalMockupSpec, type MockupFamily } from "./canonical-mockup-spec";
 import { COMPLETE_MOCKUP_MATRIX, getCompleteMockupEntry, type CompleteMockupFamily, type CompleteMockupView } from "./complete-mockup-matrix";
@@ -27,8 +28,8 @@ const mugFront          = "/mockups/psd-master-v10/runtime-roles/mug/white/front
 const mugBack           = "/mockups/psd-master-v10/runtime-roles/mug/white/back-base.png";
 const capFront          = "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png";
 const capBack           = "/mockups/psd-master-v10/runtime-roles/cap/white/back-base.png";
-const waterBottleFront  = "/mockups/source-kit-v3/waterbottle/white/front.png";
-const waterBottleBack   = "/mockups/source-kit-v3/waterbottle/white/back.png";
+const waterBottleFront  = WATER_BOTTLE_PHOTO_FRONT;
+const waterBottleBack   = WATER_BOTTLE_PHOTO_BACK;
 
 // All active color and view assets resolve through the accepted v10.3 role
 // matrix.

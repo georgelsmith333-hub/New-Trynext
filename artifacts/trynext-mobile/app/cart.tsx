@@ -1,3 +1,4 @@
+import { WATER_BOTTLE_PHOTO_PATH } from "@/lib/mockup-url";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
@@ -118,7 +119,7 @@ export default function CartScreen() {
                 `${item.product.name ?? ""} ${item.product.slug ?? ""}`,
               );
               const imgUri = isWaterBottle
-                ? `${getBaseUrl()}/mockups/white-waterbottle-photo.png`
+                ? `${getBaseUrl()}${WATER_BOTTLE_PHOTO_PATH}`
                 : item.product.imageUrl ?? (item.product.images?.[0]) ?? null;
               const itemTotal = (item.product.discountPrice ?? item.product.price) * item.quantity;
               return (
