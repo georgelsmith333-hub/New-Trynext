@@ -4069,3 +4069,27 @@ How to repeat the local end-to-end setup (scripts are not in the repo):
   - **P0-C real errors:** needs the Admin Activity Log / Render log content from the owner (redacted). Not available here.
 - **Remaining work:** catalog, Studio geometry, checkout, admin, performance and security sections of `reports.md` (sections 4 onward), each as a small reviewed PR. Next safe action: start section 5's transform double-scale invariant test (no data or provider impact).
 - **Blocker:** items above that need owner approval, network access or real logs.
+
+## 2026-10-04 P0 implementation and live verification checkpoint
+
+Status: frontend implementation published and auto-deployed; read-only live verification passed.
+
+Implemented in commit `bbe58d2`:
+- Replaced the shared water-bottle front zone with the measured normalized proposal (`x=382, y=313, w=233, h=576`) and added an independently narrower back zone (`x=391, y=313, w=218, h=576`).
+- Kept the canonical mockup contract aligned with those front/back zones.
+- Added one shared image-transform convention: rendered dimensions use `natural dimensions × scale × relative axis`; composer, selection sizing, and processed-image replacement now use the same rule.
+- Added regression coverage for bottle-zone dimensions/centering and same-size/different-size processed-image replacement invariants.
+
+Verification:
+- Storefront: 27 test files / 155 tests passed; typecheck passed; production build passed.
+- Workspace typecheck passed, including API, storefront, mobile, scripts, and supporting artifacts.
+- API: 20 test files / 114 tests passed.
+- Smart mockup matrix: 188 expected surfaces / 1,128 runtime roles accepted.
+- Live `https://trynext.shop`: non-mutating critical-flow smoke checks passed 30/30.
+- Live `/api/healthz`, liveness, readiness, `readyz`, products, categories, and mockups returned HTTP 200; health reported DB/Redis/R2 healthy, runtimeRole primary, scheduler enabled, and backup sync disabled.
+- `trynext.shop`, `www.trynext.shop`, and `trynext-shop-new.pages.dev` served identical HTML and the post-build bundle after auto-deploy.
+
+Remaining safety boundary:
+- The bottle customer hold remains active (`409 mockup_not_approved`). The PSB masters and checksum-bound runtime print-mask roles were not regenerated or promoted by this code-only correction; they require proof generation and owner visual approval before customer release.
+- No production order, payment, upload, admin mutation, provider setting, DNS change, or secret operation was performed.
+- Admin Activity Log and Render log root-cause review still requires redacted log content or authenticated provider access.
