@@ -41,6 +41,7 @@ import { fitImageTransform } from "./autoFit";
 import { ClipArtBrowser } from "./ClipArtBrowser";
 import { QRCodePanel } from "./QRCodePanel";
 import { FONT_FAMILIES, type Layer, type ImageLayer, type TextLayer, type ShapeLayer, DRAFT_VERSION } from "./types";
+import { getRenderedImageSize, preserveRenderedImageSize } from "./transformGeometry";
 import { StudioFirstUseGuide, StudioQualityBanner } from "./v1-components/V1StudioSupport";
 import { StudioStickyPurchaseBar } from "./StudioStickyPurchaseBar";
 
@@ -667,21 +668,28 @@ export default function DesignStudioV2() {
       img.onerror = () => reject(new Error("The processed image could not be decoded."));
       img.src = dataUrl;
     });
-    const previousWidth = selectedLayer.naturalW * Math.abs(selectedLayer.transform.scaleX ?? selectedLayer.transform.scale);
-    const previousHeight = selectedLayer.naturalH * Math.abs(selectedLayer.transform.scaleY ?? selectedLayer.transform.scale);
-    const nextScaleX = previousWidth / Math.max(1, img.naturalWidth);
-    const nextScaleY = previousHeight / Math.max(1, img.naturalHeight);
+    const previousSize = getRenderedImageSize(selectedLayer.naturalW, selectedLayer.naturalH, selectedLayer.transform);
+    const nextAxes = preserveRenderedImageSize(
+      selectedLayer.naturalW,
+      selectedLayer.naturalH,
+      img.naturalWidth,
+      img.naturalHeight,
+      selectedLayer.transform,
+    );
+    const baseScale = Math.abs(selectedLayer.transform.scale) || 1;
+    const effectiveAxisX = previousSize.effectiveScaleX;
+    const effectiveAxisY = previousSize.effectiveScaleY;
     updateLayer(selectedLayer.id, {
       src: dataUrl,
       naturalW: img.naturalWidth,
       naturalH: img.naturalHeight,
       transform: {
         ...selectedLayer.transform,
-        scale: Math.min(nextScaleX, nextScaleY),
-        scaleX: nextScaleX,
-        scaleY: nextScaleY,
-        x: selectedLayer.transform.x - (geometry?.centerOffsetX ?? 0) * (selectedLayer.transform.scaleX ?? selectedLayer.transform.scale),
-        y: selectedLayer.transform.y - (geometry?.centerOffsetY ?? 0) * (selectedLayer.transform.scaleY ?? selectedLayer.transform.scale),
+        scale: baseScale,
+        scaleX: nextAxes.scaleX,
+        scaleY: nextAxes.scaleY,
+        x: selectedLayer.transform.x - (geometry?.centerOffsetX ?? 0) * effectiveAxisX,
+        y: selectedLayer.transform.y - (geometry?.centerOffsetY ?? 0) * effectiveAxisY,
       },
     });
     commit();

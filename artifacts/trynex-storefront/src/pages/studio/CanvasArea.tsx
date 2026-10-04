@@ -7,6 +7,7 @@ import { Layer as LayerType, PrintZone } from "./types";
 import { LiveCompositorPreview } from "./LiveCompositorPreview";
 import type { ComposerLayer, UnifiedMockupSurface } from "../design-studio/composer";
 import { RotateCw, X } from "lucide-react";
+import { getRenderedImageSize } from "./transformGeometry";
 
 interface CanvasPoint {
   x: number;
@@ -99,9 +100,10 @@ function rgbaToHex(r: number, g: number, b: number, a: number) {
 
 function getArtworkDimensions(layer: LayerType, scale: number) {
   if (layer.type === "image") {
+    const rendered = getRenderedImageSize(layer.naturalW, layer.naturalH, layer.transform);
     return {
-      width: Math.max(28, layer.naturalW * Math.abs(layer.transform.scaleX ?? layer.transform.scale) * scale),
-      height: Math.max(28, layer.naturalH * Math.abs(layer.transform.scaleY ?? layer.transform.scale) * scale),
+      width: Math.max(28, rendered.width * scale),
+      height: Math.max(28, rendered.height * scale),
     };
   }
   if (layer.type === "text") {

@@ -6,6 +6,7 @@
 ════════════════════════════════════════════════════════ */
 
 import type { SmartMockupRuntimeRoles } from "./smart-mockup-manifest";
+import { getRenderedImageSize } from "../studio/transformGeometry";
 
 export interface ComposerTransform {
   x: number; y: number; scale: number; rotation: number; opacity: number;
@@ -250,8 +251,7 @@ function layerGeom(l: ComposerLayer, pz: ComposerPrintZone) {
     // naturalW/naturalH multiplied by transform.scale. Do not reinterpret the
     // scale as a percentage of printZone.w, otherwise uploads resize again when
     // they reach the compositor and preview/export no longer match.
-    const w = Math.max(1, l.naturalW) * l.transform.scale * (l.transform.scaleX ?? 1);
-    const h = Math.max(1, l.naturalH) * l.transform.scale * (l.transform.scaleY ?? 1);
+    const { width: w, height: h } = getRenderedImageSize(l.naturalW, l.naturalH, l.transform);
     return { cx, cy, w, h };
   }
   if (l.type === "text") {

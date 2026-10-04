@@ -134,10 +134,18 @@ export const MUG_WRAP_BACK_PZ: PrintZone    = MUG_PZ;
 export const MUG_SIDE_PZ: PrintZone         = { x: 165, y: 220, w: 475, h: 580, shape: "mug-front-body" };
 export const MUG_SIDE_BACK_PZ: PrintZone    = { x: 384, y: 220, w: 451, h: 580, shape: "mug-back-body" };
 /** Water bottle label panel: only the straight aluminium body is printable;
- * the lid, shoulder, carabiner and rounded base are intentionally excluded. */
+ * the lid, shoulder, carabiner and rounded base are intentionally excluded.
+ *
+ * The accepted runtime measurements are in a 1024×1024 source space. These
+ * normalized 1000×1000 coordinates are the owner-approved correction proposal:
+ * front 391..630 / 320..910 and back 400..623 / 320..910, scaled from the
+ * measured source bounds. Keep the customer release hold until regenerated
+ * runtime proof and visual approval are recorded.
+ */
 // Supplied key-ring bottle reference: body begins below the shoulder and ends above
 // the rounded foot. The loop/carabiner and shoulder are intentionally outside.
-export const WATERBOTTLE_PZ: PrintZone      = { x: 395, y: 355, w: 210, h: 470, shape: "bottle-body" };
+export const WATERBOTTLE_PZ: PrintZone      = { x: 382, y: 313, w: 233, h: 576, shape: "bottle-body" };
+export const WATERBOTTLE_BACK_PZ: PrintZone = { x: 391, y: 313, w: 218, h: 576, shape: "bottle-body" };
 /** Sleeve print area — roughly square (1228×1087px real-world ratio). */
 export const SLEEVE_PZ: PrintZone           = { x: 175, y: 175, w: 650, h: 650 };
 /** Neck label — wider than tall (1299×945px real-world ratio). */
@@ -294,7 +302,7 @@ export const PRODUCTS: DesignProduct[] = [
     ],
     description: "600ml White Sublimation Aluminium",
     viewBox: VIEWBOX, aspect: ASPECT, baseHeight: BASE,
-    printZone: WATERBOTTLE_PZ,
+    printZone: WATERBOTTLE_PZ, printZoneBack: WATERBOTTLE_BACK_PZ,
     frontSrc: WATERBOTTLE_MOCKUP_URL,
     gallerySrc: waterBottleFront,
     backSrc: waterBottleBack,
