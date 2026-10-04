@@ -32,3 +32,15 @@ These answers are provided by the Manus operator on the owner's behalf using the
 ## Execution boundary
 
 Start with the first approved backlog item as a small, reviewable code change with focused tests. Preserve the bottle hold and candidate surface status. Stop at owner approval, provider access, live mutation, payment, order creation, or any destructive operation. Update `reports.md` and `AGENT_HANDOFF.md` with exact evidence after each completed item.
+
+
+## Owner decisions for Claude N5–N7 — 2026-10-05
+
+### N5 — Artwork on a side the opened product does not have
+**Decision: (a) keep the artwork and show a clear warning.** Preserve the artwork in the draft, do not silently move or delete it, and make the warning customer-readable when artwork exists on an unavailable/non-rendered side. Add focused tests for restoration and cart/export behavior. Do not change bottle behavior under this decision.
+
+### N6 — Merge permission
+**Decision: (a) Claude may merge code PRs automatically once all required checks are green and the release scope is clearly reported.** This authorization is limited to small, reviewable, tested changes within the approved backlog. It does not authorize production data/settings/provider/schema/order/payment changes, force-pushes, or bypassing any fail-closed gate. Keep the existing bottle, candidate-surface, live-site, storage, and evidence boundaries.
+
+### N7 — Production upload PUT rejected
+**Decision: (c) Claude is authorized to build the through-the-API upload path.** Do not change Cloudflare/R2 settings or credentials as part of this work. Keep the existing direct-upload path available only if it remains safe, but make the fallback explicit and truthful. Enforce file type/size limits, authentication/authorization, origin/CSRF protection, bounded request size, safe storage keys, content validation, timeout/error handling, and no secret or presigned-URL leakage. Add focused tests and a local/stand-in storage verification; stop before any real customer order or payment. Record bandwidth/size trade-offs and preserve the existing upload metadata and cart contract.

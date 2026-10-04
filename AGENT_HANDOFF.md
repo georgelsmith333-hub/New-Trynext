@@ -4125,3 +4125,10 @@ Remaining safety boundary:
 - **Not covered:** image-upload artwork (needs storage stubbing), back/sleeve/neck faces, mobile touch editing, export-PNG parity against the canvas, and the live site.
 - **Remaining work (item 1):** the uncovered items above, then item 2 (checkout and orders) and item 3 (catalog and first-party images).
 - **Blocker:** none.
+
+
+## 2026-10-05 Owner decisions for Claude N5–N7
+
+- **N5:** choose (a): preserve artwork on a side the opened product does not have and show a clear customer warning; do not silently move or delete it.
+- **N6:** choose (a): Claude may merge small, reviewable code PRs automatically after all required checks are green and the scope is reported. This does not authorize production data/settings/provider/schema/order/payment changes, force-pushes, or bypassing fail-closed gates.
+- **N7:** choose (c): Claude is authorized to implement a through-the-API upload path for the rejected production PUT. Do not change R2 settings or credentials. Require bounded upload validation, auth/origin/CSRF protection, safe keys, timeouts, truthful errors, focused tests, stand-in storage verification, and preservation of existing metadata/cart behavior. No real order or payment.
