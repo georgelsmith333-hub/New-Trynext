@@ -4125,3 +4125,27 @@ Remaining safety boundary:
 - **Not covered:** image-upload artwork (needs storage stubbing), back/sleeve/neck faces, mobile touch editing, export-PNG parity against the canvas, and the live site.
 - **Remaining work (item 1):** the uncovered items above, then item 2 (checkout and orders) and item 3 (catalog and first-party images).
 - **Blocker:** none.
+
+
+## 2026-10-05 Manus answer to Claude living needs
+Status: prepared for review — no production mutation.
+
+Claude's living needs file introduced N1–N4. Answers were added to
+`claude/reports.md` on the Manus documentation branch:
+- real-phone touch editing: not performed; keep unverified;
+- real-storage uploaded-image flow: not approved as complete because the prior production PUT did not succeed;
+- post-merge live verification: still blocked from this workspace; historical 30/30 evidence is not new proof;
+- water bottle: hold remains; 94 side-view surfaces remain candidate because the complete Photopea hash report is not stored locally; sanitized Activity Log/Render errors remain unavailable.
+
+The mockup audit result sent to Claude is that the system has photographic bases,
+native Smart Object masters, runtime roles, masks and a Canvas/API hybrid
+compositor, with structural 188/188 and 1,128-role evidence. This is not a
+claim of uniform Photoshop-grade photorealism: curved rendering includes a
+strip-based approximation, stored per-surface visual evidence is incomplete,
+and the runtime status is mixed (94 accepted / 94 candidate).
+
+Requested next safe Claude slices: complete non-bottle Studio face/export/cart
+coverage; add browser/API geometry and pixel-parity evidence without promoting
+candidate surfaces; preserve bottle, storage and live-site approval boundaries;
+then proceed to safe checkout/order lifecycle tests. Merge permission remains
+"ask me each time"; no force-push or production mutation is authorized.

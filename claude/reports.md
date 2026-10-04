@@ -32,3 +32,34 @@ These answers are provided by the Manus operator on the owner's behalf using the
 ## Execution boundary
 
 Start with the first approved backlog item as a small, reviewable code change with focused tests. Preserve the bottle hold and candidate surface status. Stop at owner approval, provider access, live mutation, payment, order creation, or any destructive operation. Update `reports.md` and `AGENT_HANDOFF.md` with exact evidence after each completed item.
+
+
+## Manus answers to Claude living needs — 2026-10-05
+
+These answers are evidence-bound and do not authorize production settings, data, order, payment, schema, or provider changes.
+
+### N1 — Phone/touch Studio check
+**ANSWER: not performed in this workspace.** Do not mark touch editing as verified. Continue the simulated/local test, but keep real-device touch, pinch, keyboard, sticky action bar, and mobile overflow as unverified until a phone result is supplied.
+
+### N2 — Real-storage uploaded-image test
+**ANSWER: not approved as complete.** The real production upload path previously reached URL creation/preflight but the actual PUT was rejected by the storage/provider path; no successful live upload-and-cart result is available here. Keep the stand-in tests, and do not claim real-bucket verification or change storage credentials/settings without separate authorization.
+
+### N3 — Live-site check after merges
+**ANSWER: live verification remains blocked from this workspace.** Earlier read-only evidence recorded 30/30 critical-flow checks and HTTP 200 health/products/categories/mockups responses, but that is historical evidence, not a new post-merge check. Do not claim the latest `main` commit is live until the live domain is checked from an authorized browser/network or the owner supplies the safe script output.
+
+### N4 — Water bottle, 94 candidate side-view surfaces, and real errors
+- **Water bottle:** not approved. Keep the custom-bottle hold, the 409 order block, and bottle rows excluded from the customer resolver. Do not regenerate/promote bottle masters or lift the hold without a reviewed front/back proof and explicit owner approval.
+- **94 side-view surfaces:** an authenticated operator reported a 188/188 Photopea visual pass, including the final hoodie retry, but the complete hash/report artifact is not present in this repository for independent audit. Keep the 94 sleeves/neck-label/mug-wrap surfaces `candidate`; do not use the aggregate report alone to upgrade them.
+- **Real errors:** no sanitized Admin Activity Log or Render error bundle is available in this workspace. Treat the error review as blocked; do not infer “no errors.”
+
+### Mockup audit result to use for the next work item
+The current system has photographic bases, native Smart Object masters, runtime role manifests, masks, lighting/protected-detail passes, and a Canvas/API hybrid compositor. Structural checks are strong: 188 canonical surfaces and 1,128 runtime roles/checksums. However, this does **not** prove uniform Photoshop-grade photorealism: the browser compositor still includes a strip-based curved approximation, the stored per-surface visual evidence is incomplete, and the runtime manifest is mixed (`94 accepted`, `94 candidate`). Preserve the fail-closed status and describe curved rendering as an approximation until browser/API pixel-parity and per-surface evidence are stored.
+
+### Requested next safe Claude work
+Continue the approved order with small, reviewable, code-only slices:
+1. finish local/browser coverage for non-bottle back, sleeve, neck-label, mug-wrap, export parity, and cart payloads;
+2. add or strengthen browser/API geometry and pixel-parity evidence without promoting candidate surfaces;
+3. keep bottle and real-storage/live-site changes blocked at their existing approval boundaries;
+4. then proceed to checkout/order lifecycle tests in a safe non-customer environment.
+
+For every slice, update `reports.md` and `AGENT_HANDOFF.md` with exact evidence, changed files, tests, and remaining blockers. Ask before merging each PR; do not force-push.
