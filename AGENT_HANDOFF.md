@@ -4116,3 +4116,12 @@ Remaining safety boundary:
 - **Reviewed, no change needed:** the Studio add-to-cart path already blocks with explicit messages when an original upload fails or counts mismatch, and blocks unavailable surfaces (including the bottle).
 - **Remaining work (item 1):** export vs canvas parity per product family and the cart payload, in a browser with stubbed storage; mobile touch editing. Then item 2 (checkout and orders) and item 3 (catalog and first-party images).
 - **Blocker:** none. Real-error review still needs sanitized logs; live-site checks still need network access.
+
+## 2026-10-05 Studio add-to-cart browser verification (Claude Code session)
+
+- **Status:** verification only; no code change. Draft-restore doc PR #11 merged as `55f452f`.
+- **What was run (local API + throwaway Postgres + real Chromium, text-only artwork so no storage upload is involved):** for each product family, open `/design-studio?product=<family>` with a saved draft, click Add to cart, and inspect the saved cart item.
+- **Result: all 46 checks passed.** T-shirt, long sleeve, hoodie, mug and cap each produced exactly one cart item with: a studio payload whose `category` matches the product; colour name and hex recorded; a front artwork texture (`data:image/...`); a recorded print zone with finite positive size (T-shirt 240,185,520x580; long sleeve 312,222,376x404; hoodie 240,270,520x400; mug 165,220,475x580 `mug-front-body`; cap 240,260,540x320 `cap-front`); a positive price and quantity 1; size present for garments and absent for mug and cap; layer counts 1/1. The water bottle's Add to cart button is disabled with the reason "source and print area are awaiting authentic..." and nothing is added to the cart (hold intact).
+- **Not covered:** image-upload artwork (needs storage stubbing), back/sleeve/neck faces, mobile touch editing, export-PNG parity against the canvas, and the live site.
+- **Remaining work (item 1):** the uncovered items above, then item 2 (checkout and orders) and item 3 (catalog and first-party images).
+- **Blocker:** none.
