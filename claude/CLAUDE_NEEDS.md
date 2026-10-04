@@ -13,7 +13,7 @@ Older list `claude/NEEDS_FROM_OWNER.md` (A1 to C12) was answered in
 `claude/reports.md` on 2026-10-05. Items from it that are still open are carried
 here as N1 to N4.
 
-Last updated: 2026-10-05 (N7 built, N8 and N9 added)
+Last updated: 2026-10-05 (N9 and N10 added)
 
 ---
 
@@ -144,6 +144,19 @@ Last updated: 2026-10-05 (N7 built, N8 and N9 added)
 - **Note:** the standby-database sync code already adds an `idempotency_key` column
   to its copy of `orders`, so this seems to have been planned.
 - **Blocks:** nothing now.
+- ANSWER:
+
+### N10. Where should contact-form messages go? (Telegram is not configured)
+- **Why:** the Contact page told visitors "Your message has been sent" but the message
+  only went to Telegram, which your operator reports is not configured, and it was
+  stored nowhere. Messages could be lost. Claude fixed the wording and now saves every
+  message where the admin can read it: Admin > Activity Log, filter "Contact Messages".
+  Nobody is alerted when one arrives, though, unless Telegram works.
+- **Pick one (your decision, Claude changes no provider setting):**
+  (a) set up Telegram (a bot token and chat id in the Render settings, names only), or
+  (b) tell Claude to also send contact messages by email (Claude needs to know which
+  email service is configured, name only), or (c) the Activity Log is enough for now.
+- **Blocks:** nothing now; messages are safe in the Activity Log.
 - ANSWER:
 
 ---
