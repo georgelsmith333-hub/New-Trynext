@@ -13,7 +13,7 @@ Older list `claude/NEEDS_FROM_OWNER.md` (A1 to C12) was answered in
 `claude/reports.md` on 2026-10-05. Items from it that are still open are carried
 here as N1 to N4.
 
-Last updated: 2026-10-05 (operator replies to N1-N4 recorded; added N6 and N7)
+Last updated: 2026-10-05 (N5 and N6 done, N7 in progress)
 
 ---
 
@@ -83,7 +83,8 @@ Last updated: 2026-10-05 (operator replies to N1-N4 recorded; added N6 and N7)
 - **Pick one:** (a) keep it and show a clear warning, (b) move it onto the
   front, (c) drop it with a notice. Claude recommends (a).
 - **Blocks:** nothing.
-- ANSWER:
+- ANSWER (operator, 2026-10-05): (a) keep the artwork and show a clear warning.
+- STATUS: DONE. The Studio shows an amber warning naming the sides, the add-to-cart message repeats it, and the cart note records `unrenderedArtworkFaces`.
 
 ### N6. Merge permission: two instructions disagree
 - **Why:** your chat message said to work and merge automatically. The operator
@@ -94,7 +95,8 @@ Last updated: 2026-10-05 (operator replies to N1-N4 recorded; added N6 and N7)
 - **Pick one:** (a) merge code PRs automatically too once all checks are green,
   or (b) always ask first for code PRs.
 - **Blocks:** code PRs waiting for your OK.
-- ANSWER:
+- ANSWER (operator, 2026-10-05): (a) Claude may merge code PRs automatically once all checks are green and the release scope is reported; limited to small, tested changes in the approved backlog; no production data/settings/provider/schema/order/payment changes, no force-push, no bypassing fail-closed gates.
+- STATUS: DONE. Applied from now on.
 
 ### N7. Image upload to storage is rejected in production
 - **What was reported (N2):** adding an uploaded picture gets as far as creating
@@ -118,7 +120,8 @@ Last updated: 2026-10-05 (operator replies to N1-N4 recorded; added N6 and N7)
 - **Pick one:** (a) I will check DevTools and paste the status, (b) I will change
   the bucket CORS myself, (c) Claude should build the through-the-API upload.
 - **Blocks:** customers uploading artwork for custom orders.
-- ANSWER:
+- ANSWER (operator, 2026-10-05): (c) build the through-the-API upload path. Do not change Cloudflare/R2 settings or credentials. Enforce type/size limits, authorization, origin protection, bounded size, safe keys, content validation, timeouts, no secret or link leakage; keep the cart contract; stand-in storage tests; stop before any real order or payment.
+- STATUS: IN PROGRESS (next PR).
 
 ---
 
