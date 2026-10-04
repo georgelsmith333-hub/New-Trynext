@@ -1,5 +1,4 @@
 import crypto from "node:crypto";
-import { customerJwtSecret } from "./customerJwtSecret";
 
 /**
  * A short-lived, signed permission to upload ONE file to ONE object id through
@@ -10,6 +9,18 @@ import { customerJwtSecret } from "./customerJwtSecret";
  * be reused for another object, a bigger file or a different file type.
  * Nothing is stored server side; the signature is an HMAC with the server secret.
  */
+// Looked up when a grant is signed or checked (not when this file loads). Production
+// always has JWT_SECRET (the customer login code refuses to start without it);
+// outside production an ephemeral per-process secret is used if none is set.
+let ephemeralSecret: string | undefined;
+function signingSecret(): string {
+  const configured = process.env.JWT_SECRET;
+  if (configured) return configured;
+  if (process.env.NODE_ENV === "production") throw new Error("JWT_SECRET is required to sign upload grants");
+  ephemeralSecret ??= process.env.SESSION_SECRET || crypto.randomBytes(32).toString("hex");
+  return ephemeralSecret;
+}
+
 export const UPLOAD_GRANT_TTL_SEC = 15 * 60;
 
 const OBJECT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -31,7 +42,7 @@ export function isUploadObjectId(value: unknown): value is string {
 
 function mac(grant: UploadGrant): Buffer {
   return crypto
-    .createHmac("sha256", customerJwtSecret)
+    .createHmac("sha256", signingSecret())
     .update(`upload-grant|${grant.objectId}|${grant.exp}|${grant.size}|${grant.contentType}`)
     .digest();
 }

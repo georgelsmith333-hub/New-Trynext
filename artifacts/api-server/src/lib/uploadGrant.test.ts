@@ -58,4 +58,18 @@ describe("upload grants", () => {
     expect(parseUploadGrant(ID, { exp: "1", size: "-1", type: "image/png", sig: "s" })).toBeNull();
     expect(parseUploadGrant("nope", { exp: "1", size: "1", type: "image/png", sig: "s" })).toBeNull();
   });
+
+  it("does not need JWT_SECRET to load, signs with a per-process secret outside production, and refuses in production", () => {
+    const saved = process.env.JWT_SECRET;
+    delete process.env.JWT_SECRET;
+    try {
+      const g = base();
+      expect(verifyUploadGrant(g, signUploadGrant(g))).toBe("ok");
+      vi.stubEnv("NODE_ENV", "production");
+      expect(() => signUploadGrant(base())).toThrow(/JWT_SECRET/);
+    } finally {
+      vi.unstubAllEnvs();
+      process.env.JWT_SECRET = saved;
+    }
+  });
 });
