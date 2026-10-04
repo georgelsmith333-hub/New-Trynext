@@ -221,17 +221,37 @@ export class ObjectStorageService {
 
   /* ── Generate an upload URL for the client to PUT a file to ── */
   async getObjectEntityUploadURL(): Promise<string> {
+    return (await this.getObjectEntityUploadTarget()).uploadURL;
+  }
+
+  /* ── Same as above, but also returns the object id so the API can offer a
+   *    through-the-API upload for the same object when a direct upload fails ── */
+  async getObjectEntityUploadTarget(): Promise<{ uploadURL: string; objectId: string }> {
     const objectId = randomUUID();
 
     if (BACKEND === "r2" || BACKEND === "s3") {
       const { client, bucket } = ensureS3Client();
       const key = `uploads/${objectId}`;
       const cmd = new PutObjectCommand({ Bucket: bucket, Key: key });
-      return getSignedUrl(client, cmd, { expiresIn: 900 });
+      return { uploadURL: await getSignedUrl(client, cmd, { expiresIn: 900 }), objectId };
     }
 
     // Local backend — return a direct-upload URL pointing at this API server
-    return `${getApiBaseUrl()}/api/storage/upload-direct/${objectId}`;
+    return { uploadURL: `${getApiBaseUrl()}/api/storage/upload-direct/${objectId}`, objectId };
+  }
+
+  /* ── Store an already validated upload (used by the through-the-API path) ── */
+  async storeUploadedObject(objectId: string, body: Buffer, contentType: string): Promise<void> {
+    const safeId = validatePrivateObjectKey(objectId);
+    if (BACKEND === "r2" || BACKEND === "s3") {
+      const { client, bucket } = ensureS3Client();
+      await client.send(
+        new PutObjectCommand({ Bucket: bucket, Key: `uploads/${safeId}`, Body: body, ContentType: contentType }),
+      );
+      return;
+    }
+    const { Readable } = await import("stream");
+    await this.saveLocalUpload(safeId, Readable.from(body));
   }
 
   /* ── Convert any storage URL / path into the canonical /objects/<id> path ── */

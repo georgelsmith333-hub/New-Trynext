@@ -13,7 +13,7 @@ Older list `claude/NEEDS_FROM_OWNER.md` (A1 to C12) was answered in
 `claude/reports.md` on 2026-10-05. Items from it that are still open are carried
 here as N1 to N4.
 
-Last updated: 2026-10-05 (N5 and N6 done, N7 in progress)
+Last updated: 2026-10-05 (N7 built, added N8)
 
 ---
 
@@ -121,19 +121,28 @@ Last updated: 2026-10-05 (N5 and N6 done, N7 in progress)
   the bucket CORS myself, (c) Claude should build the through-the-API upload.
 - **Blocks:** customers uploading artwork for custom orders.
 - ANSWER (operator, 2026-10-05): (c) build the through-the-API upload path. Do not change Cloudflare/R2 settings or credentials. Enforce type/size limits, authorization, origin protection, bounded size, safe keys, content validation, timeouts, no secret or link leakage; keep the cart contract; stand-in storage tests; stop before any real order or payment.
-- STATUS: IN PROGRESS (next PR).
+- STATUS: BUILT (PR for N7). Real-bucket verification is still UNVERIFIED until someone uploads against the real storage after deploy (see N8). Trade-offs: the through-the-API route is used only when the direct upload fails; the file passes through the Render API (up to 25 MB per file, held in memory during the upload, limited by the existing 30-uploads-per-10-minutes-per-IP limit), so heavy use costs API bandwidth and memory.
+
+### N8. After the upload change is live: one real upload test
+- **Why:** Claude proved the new path with a stand-in bucket that blocks the browser
+  the same way production does, but cannot reach the real storage or live site.
+- **What to do (3 minutes, no checkout):** once the change is deployed, open the live
+  Studio, upload one small harmless picture, press Add to cart. Write: worked, or the
+  exact message shown. Then remove the item from the cart.
+- **Blocks:** confirming the fix on the real storage (N3 and N2 stay open until then).
+- ANSWER:
 
 ---
 
 ## What Claude is doing itself meanwhile (no action from you)
 
-- Uploaded images: browser test with stand-in storage.
 - Touch editing: simulated touch test (not a replacement for N1).
 - Then checkout and orders, then catalog and first-party images, as ordered in
   `claude/reports.md`.
 
 ## Done
 
+- 2026-10-05: uploaded images with a stand-in bucket that blocks the browser (like production): the file goes through the API, the bucket holds the exact PNG, the cart points at it.
 - 2026-10-05: back, left sleeve, right sleeve and neck-label artwork: browser test with
   text added through the real Studio UI. All five textures contain real artwork.
 - 2026-10-05: PNG export on a T-shirt front: a PNG downloads and the user sees a message.

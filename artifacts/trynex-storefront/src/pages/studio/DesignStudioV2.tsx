@@ -41,6 +41,7 @@ import { fitImageTransform } from "./autoFit";
 import { ClipArtBrowser } from "./ClipArtBrowser";
 import { QRCodePanel } from "./QRCodePanel";
 import { planDraftRestore, pickNewestDraft } from "./draftRestore";
+import { uploadToStorage } from "@/lib/storageUpload";
 import { unsupportedArtworkFaces, unsupportedArtworkMessage } from "./artworkFaces";
 import { FONT_FAMILIES, type Layer, type ImageLayer, type TextLayer, type ShapeLayer, DRAFT_VERSION } from "./types";
 import { getRenderedImageSize, preserveRenderedImageSize } from "./transformGeometry";
@@ -1091,10 +1092,13 @@ export default function DesignStudioV2() {
           const detail = typeof body?.message === "string" ? body.message : "The server could not prepare the original artwork upload.";
           throw new Error(`Original artwork upload could not be prepared (${reqRes.status}, ${code}). ${detail} Your design was not added to cart.`);
         }
-        const { uploadURL, objectPath } = await reqRes.json();
+        const { uploadURL, objectPath, fallbackUploadURL } = await reqRes.json();
         if (!uploadURL || !objectPath) throw new Error("Original artwork storage returned an incomplete upload response. Please retry.");
-        const putRes = await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": mime }, body: blob });
-        if (!putRes.ok) throw new Error("Original artwork could not be uploaded. Your design was not added to cart; please retry.");
+        try {
+          await uploadToStorage({ uploadURL, fallbackUploadURL }, blob, mime, { resolveApiUrl: getApiUrl });
+        } catch (uploadError) {
+          throw new Error(`Original artwork could not be uploaded. ${uploadError instanceof Error ? uploadError.message : ""} Your design was not added to cart; please retry.`);
+        }
         originalAssets.push({ objectPath, filename, mime, bytes: blob.size, width: (layer as ImageLayer).naturalW, height: (layer as ImageLayer).naturalH });
         originalAssetUrls.push(objectPath);
       } catch (error) {

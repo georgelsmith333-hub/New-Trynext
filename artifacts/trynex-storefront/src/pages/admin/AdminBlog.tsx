@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Edit2, Trash2, Eye, EyeOff, X, Save, FileText, Calendar, ImageIcon, Star, Upload, Tag, Settings2, BarChart2, GripVertical, AlertTriangle, Flame } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getAuthHeaders, getApiUrl } from "@/lib/utils";
+import { uploadToStorage } from "@/lib/storageUpload";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import {
@@ -265,14 +266,9 @@ export default function AdminBlog() {
         const errData = await reqRes.json().catch(() => ({}));
         throw new Error(errData.message ?? "Failed to get upload URL");
       }
-      const { uploadURL, objectPath } = await reqRes.json();
+      const { uploadURL, objectPath, fallbackUploadURL } = await reqRes.json();
 
-      const putRes = await fetch(uploadURL, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      if (!putRes.ok) throw new Error("Upload failed");
+      await uploadToStorage({ uploadURL, fallbackUploadURL }, file, file.type, { resolveApiUrl: getApiUrl });
 
       const imageUrl = getApiUrl(`/api/storage/objects${objectPath.replace(/^\/objects/, "")}`);
       setEditing(prev => ({ ...prev!, imageUrl }));

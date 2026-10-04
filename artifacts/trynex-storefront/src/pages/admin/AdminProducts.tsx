@@ -6,6 +6,7 @@ import {
 } from "@workspace/api-client-react";
 import { Loader } from "@/components/ui/Loader";
 import { getAuthHeaders, formatPrice, getApiUrl } from "@/lib/utils";
+import { uploadToStorage } from "@/lib/storageUpload";
 import {
   AlertTriangle, ArrowUpDown, Check, CheckCircle, CloudUpload,
   Edit3, FileText, ImageIcon, Link as LinkIcon, Loader2, Package, Plus, Search, SlidersHorizontal,
@@ -185,9 +186,8 @@ export default function AdminProducts() {
         body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
       });
       if (!request.ok) throw new Error((await request.json().catch(() => ({})) as { message?: string }).message || "Could not prepare upload");
-      const { uploadURL, objectPath } = await request.json() as { uploadURL: string; objectPath: string };
-      const upload = await fetch(uploadURL, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-      if (!upload.ok) throw new Error("Storage upload failed");
+      const { uploadURL, objectPath, fallbackUploadURL } = await request.json() as { uploadURL: string; objectPath: string; fallbackUploadURL?: string };
+      await uploadToStorage({ uploadURL, fallbackUploadURL }, file, file.type, { resolveApiUrl: getApiUrl });
       const url = getApiUrl(`/api/storage/public-objects${objectPath}`);
       setValue("imageUrl", url, { shouldDirty: true });
       setImagePreviewUrl(url);
