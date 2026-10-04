@@ -1,3 +1,4 @@
+import { WATER_BOTTLE_PHOTO_PATH, approvedMockupPath } from "@/lib/mockup-url";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Image } from "expo-image";
@@ -33,7 +34,8 @@ const getBaseUrl = () => {
 };
 
 function mockupUrl(file: string) {
-  return `${getBaseUrl()}/mockups/${file}`;
+  // Older file names return 410 in production; use the approved v10.3 photo.
+  return `${getBaseUrl()}${approvedMockupPath(file)}`;
 }
 
 const isLightHex = (hex: string) => {
@@ -257,7 +259,7 @@ const FALLBACK_PRODUCTS = [
   { id: 2, name: "Custom Hoodie",  slug: "hoodie", price: 1499, customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&q=80" },
   { id: 3, name: "Custom Mug",     slug: "mug",    price: 599,  customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400&q=80" },
   { id: 4, name: "Custom Cap",     slug: "cap",    price: 699,  customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&q=80" },
-  { id: 5, name: "Custom Water Bottle", slug: "waterbottle", price: 899, customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: `${getBaseUrl()}/mockups/white-waterbottle-photo.png` },
+  { id: 5, name: "Custom Water Bottle", slug: "waterbottle", price: 899, customizable: true, stock: 99, featured: false, rating: 0, reviewCount: 0, imageUrl: `${getBaseUrl()}${WATER_BOTTLE_PHOTO_PATH}` },
 ];
 
 export default function DesignScreen() {

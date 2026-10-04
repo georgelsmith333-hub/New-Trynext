@@ -157,6 +157,9 @@ These are dated observations. Recheck them at the start of the next session.
 
 ## Immediate remaining work
 
+- [x] Broken product/home/mobile images from retired `/mockups/` URLs repaired in code (see latest `AGENT_HANDOFF.md` section). [ ] Confirm on the live site after deploy.
+- [ ] `reports.md` backlog: not started; begin with P0.
+
 ### A. Browser/device verification for invoices
 
 - [x] Verify that the customer-facing invoice download actually triggers a

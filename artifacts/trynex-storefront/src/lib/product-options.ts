@@ -1,4 +1,6 @@
-const WATER_BOTTLE_IMAGE = "/mockups/white-waterbottle-photo.png";
+import { WATER_BOTTLE_PHOTO_FRONT, modernizeLegacyMockupUrl } from "@/lib/legacy-mockup-url";
+
+const WATER_BOTTLE_IMAGE = WATER_BOTTLE_PHOTO_FRONT;
 
 export function isWaterBottleProduct(product: any): boolean {
   const identity = [
@@ -29,5 +31,8 @@ export function getCustomerProductColors(product: any): string[] {
 }
 
 export function getCustomerProductImage(product: any): string | undefined {
-  return isWaterBottleProduct(product) ? WATER_BOTTLE_IMAGE : product?.imageUrl;
+  if (isWaterBottleProduct(product)) return WATER_BOTTLE_IMAGE;
+  const url = product?.imageUrl;
+  // An old record may still hold a retired /mockups/ URL (410 in production).
+  return typeof url === "string" ? modernizeLegacyMockupUrl(url) ?? url : url;
 }

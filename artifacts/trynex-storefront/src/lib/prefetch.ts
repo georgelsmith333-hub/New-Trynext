@@ -1,3 +1,5 @@
+import { WATER_BOTTLE_PHOTO_BACK, WATER_BOTTLE_PHOTO_FRONT } from "@/lib/legacy-mockup-url";
+
 // Lightweight route/asset prefetch helpers.
 // Called on hover/touchstart of navigation links so the heavy Design Studio
 // chunk (and its default garment mockup images) starts downloading before
@@ -27,8 +29,8 @@ export function prefetchDesignStudio(): void {
       "/mockups/psd-master-v10/runtime-roles/mug/white/back-base.png",
       "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png",
       "/mockups/psd-master-v10/runtime-roles/cap/white/back-base.png",
-      "/mockups/source-kit-v3/waterbottle/white/front.png",
-      "/mockups/source-kit-v3/waterbottle/white/back.png",
+      WATER_BOTTLE_PHOTO_FRONT,
+      WATER_BOTTLE_PHOTO_BACK,
     ].forEach((src) => {
       const img = new Image();
       img.src = src;

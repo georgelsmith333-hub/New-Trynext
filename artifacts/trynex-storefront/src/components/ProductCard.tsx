@@ -1,3 +1,4 @@
+import { WATER_BOTTLE_PHOTO_FRONT } from "@/lib/legacy-mockup-url";
 import { Link, useLocation } from "wouter";
 import { ShoppingCart, Heart, Check, Eye, ArrowRight, MessageCircle, Flame, Loader2 } from "lucide-react";
 import { formatPrice, resolveImageUrl, cn, getApiUrl } from "@/lib/utils";
@@ -33,7 +34,7 @@ function getProductFallback(product: Product): string {
   const text = `${product.name ?? ""} ${(product as any).category?.name ?? ""} ${(product as any).categoryName ?? ""}`.toLowerCase();
   if (text.includes("mug") || text.includes("cup")) return "/mockups/psd-master-v10/runtime-roles/mug/white/front-base.png";
   if (text.includes("hoodie") || text.includes("sweatshirt")) return "/mockups/psd-master-v10/runtime-roles/hoodie/white/front-base.png";
-  if (text.includes("bottle") || text.includes("flask") || text.includes("tumbler")) return "/mockups/source-kit-v3/waterbottle/white/front.png";
+  if (text.includes("bottle") || text.includes("flask") || text.includes("tumbler")) return WATER_BOTTLE_PHOTO_FRONT;
   if (text.includes("cap") || text.includes("hat")) return "/mockups/psd-master-v10/runtime-roles/cap/white/front-base.png";
   if (text.includes("long sleeve") || text.includes("longsleeve") || text.includes("long-sleeve")) return "/mockups/psd-master-v10/runtime-roles/longsleeve/white/front-base.png";
   return "/mockups/psd-master-v10/runtime-roles/tshirt/white/front-base.png";

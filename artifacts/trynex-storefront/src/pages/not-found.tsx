@@ -1,3 +1,4 @@
+import { resolveImageUrl } from "@/lib/utils";
 import { Link } from "wouter";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -101,7 +102,7 @@ export default function NotFound() {
                       <div className="aspect-[4/5] overflow-hidden bg-gray-50">
                         {product.images?.[0] ? (
                           <img
-                            src={product.images[0]}
+                            src={resolveImageUrl(product.images[0])}
                             alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             loading="lazy"

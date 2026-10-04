@@ -1,3 +1,4 @@
+import { resolveImageUrl } from "@/lib/utils";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useCart } from "@/context/CartContext";
@@ -188,7 +189,7 @@ export function AbandonedCartPopup() {
               <div className="flex items-center gap-2.5 p-3 rounded-xl bg-gray-50 border border-gray-100">
                 {items.slice(0, 4).map((item, i) => (
                   <div key={i} className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-gray-200 shadow-sm">
-                    <img src={item.imageUrl} alt="" className="w-full h-full object-cover"
+                    <img src={resolveImageUrl(item.imageUrl)} alt="" className="w-full h-full object-cover"
                       onError={e => { (e.target as HTMLImageElement).src = "/images/product-placeholder.svg"; }} />
                   </div>
                 ))}

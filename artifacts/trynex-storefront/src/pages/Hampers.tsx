@@ -1,3 +1,4 @@
+import { resolveImageUrl } from "@/lib/utils";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Navbar } from "@/components/layout/Navbar";
@@ -174,7 +175,7 @@ export default function Hampers() {
                       >
                         <div className="relative aspect-[4/3] overflow-hidden bg-gray-50" style={{ aspectRatio: '4/3' }}>
                           {h.imageUrl ? (
-                            <img src={h.imageUrl} alt={`${h.name} gift hamper`}
+                            <img src={resolveImageUrl(h.imageUrl)} alt={`${h.name} gift hamper`}
                               width={600} height={450}
                               loading="lazy"
                               decoding="async"
