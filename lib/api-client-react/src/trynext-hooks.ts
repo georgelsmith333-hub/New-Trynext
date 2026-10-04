@@ -621,10 +621,16 @@ export const useDeleteTestimonial = (opts?: ReqOpts) => {
 
 export const useCreateOrder = () => {
   return useMutation({
-    mutationFn: (data: CreateOrderRequest) =>
+    // `idempotencyKey` is optional. When given it is sent as the Idempotency-Key
+    // header (not in the body) so a retry of the same checkout attempt cannot
+    // create a second order.
+    mutationFn: ({ idempotencyKey, ...data }: CreateOrderRequest & { idempotencyKey?: string }) =>
       customFetch<Order>("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
+        },
         body: JSON.stringify(data),
       }),
   });

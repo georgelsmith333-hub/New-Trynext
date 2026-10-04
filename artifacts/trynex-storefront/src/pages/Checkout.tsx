@@ -6,6 +6,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { useCart } from "@/context/CartContext";
 import { useCreateOrder, type CreateOrderRequest } from "@workspace/api-client-react";
 import { formatPrice, getApiUrl } from "@/lib/utils";
+import { clearCheckoutIdempotencyKey, getCheckoutIdempotencyKey } from "@/lib/checkoutIdempotency";
 import { uploadToStorage } from "@/lib/storageUpload";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -513,6 +514,9 @@ export default function Checkout() {
 
     const MAX_ATTEMPTS = 3;
     const BACKOFF_MS = [0, 1500, 3500]; // 0s → 1.5s → 3.5s
+    // One key per checkout attempt, reused by every retry below (and by a later
+    // tap if all replies were lost), so a retry can never create a second order.
+    const idempotencyKey = getCheckoutIdempotencyKey(JSON.stringify(orderPayload));
 
     try {
       let order: unknown;
@@ -525,7 +529,7 @@ export default function Checkout() {
           setServerWaking(true);
         }
         try {
-          order = await createOrder(orderPayload as CreateOrderRequest);
+          order = await createOrder({ ...(orderPayload as CreateOrderRequest), idempotencyKey });
           lastErr = undefined;
           break;
         } catch (e) {
@@ -536,6 +540,7 @@ export default function Checkout() {
       }
       if (lastErr) throw lastErr;
 
+      clearCheckoutIdempotencyKey();
       const orderData = order as unknown as Record<string, unknown>;
       setCreatedOrder(orderData);
 

@@ -6,6 +6,8 @@ import { requireAdmin } from "../middlewares/adminAuth";
 import { logActivity, getAdminId } from "../lib/activityLog";
 import { verifyCustomerToken, extractCustomerToken } from "../lib/customerAuth";
 import { logger } from "../lib/logger";
+import { isOrderStatus, ORDER_STATUS_MESSAGE } from "../lib/orderStatus";
+import { orderIdempotency } from "../lib/idempotency";
 import { getVirtualPromo, calcVirtualDiscount } from "../lib/spinPromos";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { z } from "zod";
@@ -631,7 +633,7 @@ async function sendAutoConfirmationMessage(order: {
   }
 }
 
-router.post("/orders", async (req, res) => {
+router.post("/orders", orderIdempotency.middleware, async (req, res) => {
   try {
     // Zod validation — structured 400 with field-level error messages.
     const zodResult = OrderCreateSchema.safeParse(req.body ?? {});
@@ -1403,9 +1405,15 @@ const updateOrderStatusHandler = async (req: Request, res: Response) => {
       res.status(400).json({ error: "validation_error", message: "Invalid order id" });
       return;
     }
-    const { status } = req.body;
-    if (!status) {
+    const { status } = req.body ?? {};
+    if (status === undefined || status === null || status === "") {
       res.status(400).json({ error: "validation_error", message: "status is required" });
+      return;
+    }
+    // The database only accepts the known statuses; refuse anything else here
+    // with a clear 400 instead of letting the constraint turn it into a 500.
+    if (!isOrderStatus(status)) {
+      res.status(400).json({ error: "validation_error", message: ORDER_STATUS_MESSAGE });
       return;
     }
     const [beforeSnap] = await db.select().from(ordersTable).where(eq(ordersTable.id, id));

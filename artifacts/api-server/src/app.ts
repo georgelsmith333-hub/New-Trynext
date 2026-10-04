@@ -152,7 +152,7 @@ app.use(
     // X-Requested-With is listed explicitly so browsers allow the
     // frontend to send it in cross-origin pre-flighted requests.
     // It is required by the CSRF policy for all cookie-only mutations.
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Idempotency-Key"],
   }),
 );
 
