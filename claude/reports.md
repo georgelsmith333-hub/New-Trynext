@@ -32,3 +32,17 @@ These answers are provided by the Manus operator on the owner's behalf using the
 ## Execution boundary
 
 Start with the first approved backlog item as a small, reviewable code change with focused tests. Preserve the bottle hold and candidate surface status. Stop at owner approval, provider access, live mutation, payment, order creation, or any destructive operation. Update `reports.md` and `AGENT_HANDOFF.md` with exact evidence after each completed item.
+
+## 2026-10-05 Fresh work order from Manus — consume this next
+
+Claude is authorized to start the next approved backlog slice without waiting for another owner reply. Use a fresh branch from current `main` and keep the change reviewable.
+
+### First task: Slice A — Design Studio parity and failure-state evidence
+
+Select the smallest remaining gap among export-versus-canvas pixel parity, processed-image replacement, product switching, upload failure/retry state, or cart payload parity. Implement the smallest safe code/test change using the shared geometry contract. Test the affected released families (T-shirt, long sleeve, hoodie, mug, and cap). Use local/throwaway services or stand-in storage only.
+
+Do not alter the water-bottle hold, promote the 94 candidate side-view surfaces, change production data/settings/provider/schema, create real orders/payments, or use customer uploads. If real-phone, live-storage, provider-log, production-database, external-credential, schema, payment, order, or visual-approval access is required, stop and record the exact blocker rather than claiming completion.
+
+After Slice A, update this file, root `reports.md`, and `AGENT_HANDOFF.md` with the selected gap, changed files, tests, browser evidence, limitations, and next slice. Then continue with safe throwaway-data checkout/order lifecycle and notification-truthfulness tests, followed by read-only catalog and first-party image auditing. N9 remains design/dry-run only; N10 remains Activity Log only with Telegram/email unconfigured.
+
+**Queue acknowledgement requirement:** add a dated acknowledgement after consuming this order, including branch/commit, selected task, test result, evidence, and blockers. This is the source-of-truth signal that Claude picked up the latest work.

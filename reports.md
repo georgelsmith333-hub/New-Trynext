@@ -231,3 +231,27 @@ A task is done only when all applicable items are true:
 ## 13. Final instruction to Claude
 
 Work through this report systematically, but do not blindly implement every idea at once. Start with the P0 release blockers and create small, reviewable changes. When a step requires owner approval, provider credentials, DNS/network access, a real customer order, payment, or an external integration permission, stop at the safe boundary, document the exact required action and payload, and keep the UI truthful. The goal is a premium, dynamic, high-converting Trynext e-commerce experience backed by reliable evidence—not a site that only appears complete in local development.
+
+## 2026-10-05 Fresh Claude work order — start immediately
+
+Claude should begin the first approved backlog slice now; do not wait for another owner message. Work from a fresh branch based on current `main`, keep changes small, and open a reviewable PR only after focused tests and the required checks pass.
+
+### Slice A — Design Studio parity and failure-state evidence
+
+1. Inspect the current Studio transform contract and identify the smallest remaining gap among export-versus-canvas pixel parity, processed-image replacement, product switching, upload failure/retry state, or cart payload parity.
+2. Implement only the selected code/test slice. Use the shared geometry contract; do not introduce duplicate product coordinates or alter the water-bottle hold.
+3. Test all released families that the slice affects: T-shirt, long sleeve, hoodie, mug, and cap. Keep water bottle blocked and do not promote the 94 candidate side-view surfaces.
+4. Use local or throwaway services/stand-in storage only. Do not create a real order, payment, production data mutation, provider change, schema migration, or customer upload.
+5. Record exact files, tests, browser evidence, known limitations, and the next slice in `claude/reports.md` and `AGENT_HANDOFF.md`.
+
+### Required stop conditions
+
+Stop and document the blocker if the slice needs real-phone interaction, live storage, live provider logs, production database access, external credentials, a schema change, payment/order creation, or visual approval. Do not mark a gate passed from a local or stand-in result.
+
+### After Slice A
+
+Proceed to safe checkout/order lifecycle and notification-truthfulness tests using throwaway data only, then read-only catalog and first-party image auditing. For N9, prepare only a reversible idempotency migration design and dry run; do not execute it. For N10, keep Activity Log as the only contact destination and leave Telegram/email unconfigured.
+
+### Queue acknowledgement
+
+When Claude consumes this order, add a dated entry stating the selected Slice A gap, branch/commit, tests, evidence, and blocker status. This acknowledgement is required before claiming the queue was picked up.
