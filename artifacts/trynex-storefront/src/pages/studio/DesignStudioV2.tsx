@@ -41,6 +41,7 @@ import { fitImageTransform } from "./autoFit";
 import { ClipArtBrowser } from "./ClipArtBrowser";
 import { QRCodePanel } from "./QRCodePanel";
 import { planDraftRestore, pickNewestDraft } from "./draftRestore";
+import { unsupportedArtworkFaces, unsupportedArtworkMessage } from "./artworkFaces";
 import { FONT_FAMILIES, type Layer, type ImageLayer, type TextLayer, type ShapeLayer, DRAFT_VERSION } from "./types";
 import { getRenderedImageSize, preserveRenderedImageSize } from "./transformGeometry";
 import { StudioFirstUseGuide, StudioQualityBanner } from "./v1-components/V1StudioSupport";
@@ -1007,6 +1008,9 @@ export default function DesignStudioV2() {
 
   const frontLayers = useMemo(() => layers.filter(l => (l.face ?? "front") === "front") as unknown as ComposerLayer[], [layers]);
   const backLayers = useMemo(() => layers.filter(l => (l.face ?? "front") === "back") as unknown as ComposerLayer[], [layers]);
+  // Artwork on a side this product does not have is kept but never rendered, so say so.
+  const unsupportedFaces = useMemo(() => unsupportedArtworkFaces(layers, selectedProduct.category), [layers, selectedProduct.category]);
+  const unsupportedFacesMessage = useMemo(() => unsupportedArtworkMessage(unsupportedFaces, selectedProduct.name), [unsupportedFaces, selectedProduct.name]);
   // Informational only — a soft-looking image is the customer's own choice to
   // make, not something the store should refuse their order over. Printify
   // and Printful both let low-resolution uploads through with a gentle nudge
@@ -1208,9 +1212,9 @@ export default function DesignStudioV2() {
       customImages: [frontTexUrl, ...(backTexUrl ? [backTexUrl] : []), ...(leftSleeveTexUrl ? [leftSleeveTexUrl] : []), ...(rightSleeveTexUrl ? [rightSleeveTexUrl] : []), ...(neckLabelTexUrl ? [neckLabelTexUrl] : [])],
       originalAssetUrls,
       originalAssets,
-      customNote: JSON.stringify({ studioDesign: true, sessionId, mockupRelease, product: selectedProduct.name, category: selectedProduct.category, color: selectedColor.name, colorHex: selectedColor.hex, size: selectedSize, layerCount: layers.length, frontLayerCount: frontLayers.length, backLayerCount: backLayers.length, mockupSrc: garmentSrc, mockupSource: frontMockup.source, mockupPhotoSrc: frontMockup.photoSrc, mockupIsColorPhoto: frontMockup.isColorPhoto, mockupManifestRevision: frontMockup.manifestRevision, mockupSourceKitKey: frontMockup.sourceKitKey, mockupRuntimeStatus: frontMockup.runtimeStatus, printZone: frontPZ, printZoneBack: backPZ, originalAssets }),
+      customNote: JSON.stringify({ studioDesign: true, sessionId, mockupRelease, product: selectedProduct.name, category: selectedProduct.category, color: selectedColor.name, colorHex: selectedColor.hex, size: selectedSize, layerCount: layers.length, frontLayerCount: frontLayers.length, backLayerCount: backLayers.length, unrenderedArtworkFaces: unsupportedFaces, mockupSrc: garmentSrc, mockupSource: frontMockup.source, mockupPhotoSrc: frontMockup.photoSrc, mockupIsColorPhoto: frontMockup.isColorPhoto, mockupManifestRevision: frontMockup.manifestRevision, mockupSourceKitKey: frontMockup.sourceKitKey, mockupRuntimeStatus: frontMockup.runtimeStatus, printZone: frontPZ, printZoneBack: backPZ, originalAssets }),
     });
-    toast({ title: "✓ Added to cart!", description: `Custom ${selectedProduct.name} (${selectedColor.name}) is ready.` });
+    toast({ title: "✓ Added to cart!", description: unsupportedFacesMessage ? `Custom ${selectedProduct.name} (${selectedColor.name}) is ready. Note: ${unsupportedFacesMessage}` : `Custom ${selectedProduct.name} (${selectedColor.name}) is ready.` });
     try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch {}
     setHasDraft(false);
     setSaveStatus("idle");
@@ -1344,6 +1348,11 @@ export default function DesignStudioV2() {
               containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
           />
+          {unsupportedFacesMessage && (
+            <div role="alert" data-testid="unsupported-artwork-warning" className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-900">
+              {unsupportedFacesMessage}
+            </div>
+          )}
         </div>
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
            <div className="flex flex-1 min-w-0 flex-col" ref={containerRef}>
