@@ -158,7 +158,9 @@ These are dated observations. Recheck them at the start of the next session.
 ## Immediate remaining work
 
 - [x] Broken product/home/mobile images from retired `/mockups/` URLs repaired in code (see latest `AGENT_HANDOFF.md` section). [ ] Confirm on the live site after deploy.
-- [ ] `reports.md` backlog: not started; begin with P0.
+- [x] Owner answers in `claude/reports.md` read (2026-10-05). Work order: Design Studio reliability, checkout/orders, catalog/images. Merges: ask each time. Data repairs: dry run + approval each time.
+- [x] Studio draft restore keeps the link's product/variant and validates saved variant fields (PR open, not merged).
+- [ ] Studio: browser-verify export/cart parity per product family; mobile touch editing; upload failure states.
 
 ### A. Browser/device verification for invoices
 
