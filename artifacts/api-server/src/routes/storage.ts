@@ -5,6 +5,8 @@ import { validateAdminSession } from "../lib/adminSessions";
 import { extractCustomerToken, verifyCustomerToken } from "../lib/customerAuth";
 import { z } from "zod";
 import sharp from "sharp";
+import { buildApiUploadPath, isUploadObjectId, parseUploadGrant, UPLOAD_GRANT_TTL_SEC, verifyUploadGrant } from "../lib/uploadGrant";
+import { BodyTimeoutError, BodyTooLargeError, readBoundedBody } from "../lib/readBoundedBody";
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
@@ -121,13 +123,21 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
 
   try {
     const { name, size, contentType } = parsed.data;
-    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+    const { uploadURL, objectId } = await objectStorageService.getObjectEntityUploadTarget();
     const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+    const backend = objectStorageService.getBackendName();
+    // With a cloud bucket the browser uploads straight to it. If the bucket
+    // refuses the browser (for example its cross-origin rules), the client can
+    // send the same file through this API instead, using a signed grant that
+    // covers only this object, this size and this file type for 15 minutes.
+    const exp = Math.floor(Date.now() / 1000) + UPLOAD_GRANT_TTL_SEC;
+    const fallbackUploadURL = backend === "local" ? undefined : buildApiUploadPath({ objectId, exp, size, contentType });
     res.json({
       uploadURL,
       objectPath,
-      backend: objectStorageService.getBackendName(),
+      backend,
       metadata: { name, size, contentType },
+      ...(fallbackUploadURL ? { fallbackUploadURL, fallbackExpiresAt: exp * 1000 } : {}),
     });
   } catch (error) {
     req.log.error({ err: error }, "Error generating upload URL");
@@ -219,6 +229,97 @@ router.put("/storage/upload-direct/:objectId", async (req: Request, res: Respons
   } catch (err) {
     req.log.error({ err }, "Local upload failed");
     res.status(500).json({ error: "Upload failed" });
+  }
+});
+
+/** Longest time the API waits for the whole body of a through-the-API upload. */
+const API_UPLOAD_TIMEOUT_MS = 90_000;
+
+/**
+ * PUT /storage/upload-via-api/:objectId?exp&size&type&sig
+ * Through-the-API upload, used when the browser cannot reach the storage
+ * bucket directly. The signed grant from request-url is the authorization: it
+ * covers one object id, a maximum size, a file type and an expiry. The body is
+ * size-capped and time-limited, its real type is checked from the file bytes
+ * (not just the header) and must match the grant, and the object key is the
+ * validated UUID from the grant. Cross-origin callers are already refused by
+ * the API's CORS allow-list, and the global CSRF check still applies.
+ */
+router.put("/storage/upload-via-api/:objectId", async (req: Request, res: Response) => {
+  const objectId = String(req.params.objectId ?? "");
+  const parsed = isUploadObjectId(objectId) ? parseUploadGrant(objectId, req.query as Record<string, unknown>) : null;
+  if (!parsed) {
+    res.status(400).json({ error: "invalid_upload_grant", message: "This upload link is not valid. Please try again." });
+    return;
+  }
+  const check = verifyUploadGrant(parsed.grant, parsed.signature);
+  if (check !== "ok") {
+    res.status(check === "expired" ? 410 : 401).json({
+      error: check === "expired" ? "upload_grant_expired" : "invalid_upload_grant",
+      message: check === "expired" ? "This upload link has expired. Please try again." : "This upload link is not valid. Please try again.",
+    });
+    return;
+  }
+  const { grant } = parsed;
+  if (!ALLOWED_TYPES.has(grant.contentType)) {
+    res.status(415).json({ error: "unsupported_type", message: "Unsupported file type." });
+    return;
+  }
+
+  const declared = (req.headers["content-type"] ?? "").split(";")[0].trim().toLowerCase();
+  if (declared && ALLOWED_TYPES.has(declared) && declared !== grant.contentType) {
+    res.status(415).json({ error: "content_type_mismatch", message: `This upload link is for "${grant.contentType}" but the file was sent as "${declared}".` });
+    return;
+  }
+
+  const limit = Math.min(grant.size, MAX_UPLOAD_BYTES);
+  const advertised = Number(req.headers["content-length"]);
+  const tooLarge = (res2: Response) => {
+    res2.setHeader("Connection", "close");
+    res2.status(413).json({ error: "upload_too_large", message: "The file is larger than the size it was declared with." });
+    res2.on("finish", () => req.destroy());
+  };
+  if (Number.isFinite(advertised) && advertised > limit) {
+    tooLarge(res);
+    return;
+  }
+
+  let body: Buffer;
+  try {
+    body = await readBoundedBody(req, limit, API_UPLOAD_TIMEOUT_MS);
+  } catch (err) {
+    if (err instanceof BodyTooLargeError) { tooLarge(res); return; }
+    if (err instanceof BodyTimeoutError) {
+      res.setHeader("Connection", "close");
+      res.status(408).json({ error: "upload_timeout", message: "The upload took too long. Please try again." });
+      res.on("finish", () => req.destroy());
+      return;
+    }
+    req.log.warn({ err }, "Upload through the API was interrupted");
+    if (!res.headersSent) res.status(400).json({ error: "upload_interrupted", message: "The upload was interrupted. Please try again." });
+    return;
+  }
+  if (body.length === 0) {
+    res.status(400).json({ error: "empty_upload", message: "The file is empty." });
+    return;
+  }
+
+  const detectedType = detectImageType(body);
+  if (!detectedType) {
+    res.status(415).json({ error: "unsupported_file", message: "Unsupported file. JPEG, PNG, GIF, WebP, PSD, and PSB files are accepted." });
+    return;
+  }
+  if (detectedType !== grant.contentType) {
+    res.status(415).json({ error: "content_type_mismatch", message: `The file is "${detectedType}" but "${grant.contentType}" was declared. Upload was rejected.` });
+    return;
+  }
+
+  try {
+    await objectStorageService.storeUploadedObject(grant.objectId, body, detectedType);
+    res.status(200).json({ success: true, objectPath: `/objects/${grant.objectId}`, detectedType, via: "api" });
+  } catch (err) {
+    req.log.error({ err }, "Upload through the API could not be stored");
+    res.status(502).json({ error: "storage_write_failed", message: "The file could not be saved to storage. Please try again later." });
   }
 });
 

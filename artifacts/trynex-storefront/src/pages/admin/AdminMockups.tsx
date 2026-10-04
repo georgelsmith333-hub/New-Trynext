@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { useListProducts } from "@workspace/api-client-react";
 import { getAuthHeaders, getApiUrl } from "@/lib/utils";
+import { uploadToStorage } from "@/lib/storageUpload";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ImageIcon, Upload, Trash2, Pencil, X, Check, Plus, Search,
@@ -72,7 +73,7 @@ function contentTypeFor(file: File): string {
 
 async function uploadFile(file: File, visibility: "public" | "private" = "public"): Promise<string> {
   const contentType = contentTypeFor(file);
-  const { uploadURL, objectPath } = await apiFetch("/api/storage/uploads/request-url", {
+  const { uploadURL, objectPath, fallbackUploadURL } = await apiFetch("/api/storage/uploads/request-url", {
     method: "POST",
     body: JSON.stringify({
       name: `mockup-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(-80)}`,
@@ -80,8 +81,7 @@ async function uploadFile(file: File, visibility: "public" | "private" = "public
       size: file.size,
     }),
   });
-  const put = await fetch(uploadURL, { method: "PUT", body: file, headers: { "Content-Type": contentType } });
-  if (!put.ok) throw new Error(`Storage upload failed (${put.status})`);
+  await uploadToStorage({ uploadURL, fallbackUploadURL }, file, contentType, { resolveApiUrl: getApiUrl });
   if (visibility === "private") return objectPath;
   return getApiUrl(`/api/storage/public-objects/${objectPath}`);
 }

@@ -6,6 +6,7 @@ import { SEOHead } from "@/components/SEOHead";
 import { useCart } from "@/context/CartContext";
 import { useCreateOrder, type CreateOrderRequest } from "@workspace/api-client-react";
 import { formatPrice, getApiUrl } from "@/lib/utils";
+import { uploadToStorage } from "@/lib/storageUpload";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -758,11 +759,11 @@ export default function Checkout() {
       if (!req.ok || !requestBody?.uploadURL || !requestBody?.objectPath) {
         throw new Error(requestBody?.message || `Could not prepare the upload (server ${req.status})`);
       }
-      const { uploadURL, objectPath } = requestBody as { uploadURL: string; objectPath: string };
-      const put = await fetch(uploadURL, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
-      if (!put.ok) {
-        const detail = await put.text().catch(() => '');
-        throw new Error(`Could not upload the screenshot (storage ${put.status}${detail ? `: ${detail.slice(0, 120)}` : ''})`);
+      const { uploadURL, objectPath, fallbackUploadURL } = requestBody as { uploadURL: string; objectPath: string; fallbackUploadURL?: string };
+      try {
+        await uploadToStorage({ uploadURL, fallbackUploadURL }, file, file.type, { resolveApiUrl: getApiUrl });
+      } catch (uploadError) {
+        throw new Error(`Could not upload the screenshot. ${uploadError instanceof Error ? uploadError.message : ''}`.trim());
       }
       // Uploaded entities live in the private storage namespace. The prior
       // public-objects URL was invalid for R2/S3-backed uploads and made the
