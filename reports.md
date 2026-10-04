@@ -231,3 +231,25 @@ A task is done only when all applicable items are true:
 ## 13. Final instruction to Claude
 
 Work through this report systematically, but do not blindly implement every idea at once. Start with the P0 release blockers and create small, reviewable changes. When a step requires owner approval, provider credentials, DNS/network access, a real customer order, payment, or an external integration permission, stop at the safe boundary, document the exact required action and payload, and keep the UI truthful. The goal is a premium, dynamic, high-converting Trynext e-commerce experience backed by reliable evidence—not a site that only appears complete in local development.
+
+## 14. Claude owner-input reconciliation — 2026-10-05
+
+Claude's latest branch added `claude/NEEDS_FROM_OWNER.md`, a consolidated request for decisions and evidence that cannot be safely inferred from repository code. No owner answers are present in the repository yet, so the following boundaries remain active:
+
+- **Bottle release:** the measured front/back zones are implemented in code, but the customer-order hold remains until the owner visually approves the proof and the checksum-bound masters are regenerated through the documented process.
+- **94 candidate side-view surfaces:** do not silently mark them independently verified. Accept them only after a validator hash report is supplied or the owner explicitly accepts the operator-reported 188/188 result as non-independent evidence.
+- **Live errors:** Activity Log and Render error review remains blocked without redacted logs or authenticated provider access.
+- **Production merge permission:** this branch does not assume standing permission for future production merges; each release still requires green checks and an explicit release boundary.
+- **Live data/settings:** no product data, settings, provider configuration, database schema, orders, payments, or credentials may be changed without a separate approved plan.
+- **Service/quota evidence:** Render workspace billing and Neon provider usage remain unverified from this environment; application-level health evidence must not be presented as provider quota evidence.
+
+### Work completed in this reconciliation
+
+- Audited `origin/main` and the current Claude branch tip; Claude's latest commit is documentation-only and its code work is already represented by the owner commits on `main`.
+- Confirmed current `origin/main` is `28d6bd8` and includes the bottle-zone/transform fix, image repair, Live Health/API reliability work, and P0 verification checkpoint.
+- Created a clean documentation branch from current `origin/main` rather than replaying the older Photopea branch history.
+- No production mutation or customer-impacting asset promotion was performed.
+
+### Next safe action
+
+Collect the owner's answers/evidence from `claude/NEEDS_FROM_OWNER.md`, then handle one approved backlog item at a time with focused tests, live evidence, and an updated handoff. Until then, preserve the bottle hold and all fail-closed release gates.

@@ -4093,3 +4093,14 @@ Remaining safety boundary:
 - The bottle customer hold remains active (`409 mockup_not_approved`). The PSB masters and checksum-bound runtime print-mask roles were not regenerated or promoted by this code-only correction; they require proof generation and owner visual approval before customer release.
 - No production order, payment, upload, admin mutation, provider setting, DNS change, or secret operation was performed.
 - Admin Activity Log and Render log root-cause review still requires redacted log content or authenticated provider access.
+
+## 2026-10-05 Claude owner-input reconciliation
+
+- **Status:** Current `origin/main` was audited against the latest Claude branch. Claude's newest request is the owner-input checklist in `claude/NEEDS_FROM_OWNER.md`; no owner answers are present yet.
+- **Last completed:** Created a clean documentation branch from `origin/main` at `28d6bd8` and recorded the unresolved approval/evidence boundaries in `reports.md`.
+- **Stopped at:** Owner-only decisions and provider/log evidence: bottle visual approval, treatment of the 94 candidate side-view surfaces, redacted Activity Log/Render errors, and any standing merge/data-repair permissions.
+- **Files/areas changed:** Documentation only: `reports.md` and this handoff section. No application code, runtime assets, database, provider settings, or production data changed.
+- **Remaining work:** Answer `claude/NEEDS_FROM_OWNER.md`; then execute only the approved P0/backlog item with focused tests and evidence. Keep the bottle customer hold active.
+- **Blocker:** Missing owner answers and authenticated provider/log evidence; Render billing and Neon provider usage remain unverified from this environment.
+- **Next safe action:** Collect the owner answers, review the exact requested scope, and create a small reviewable PR for the first approved item.
+- **Verification:** `origin/main` is clean at `28d6bd827c5bc6b642b88d7e2e39b1a8b3b7c166`; no secrets or customer attachments were added.
