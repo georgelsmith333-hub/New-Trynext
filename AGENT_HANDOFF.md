@@ -4058,3 +4058,14 @@ How to repeat the local end-to-end setup (scripts are not in the repo):
 - **Remaining work:** live check of `trynext.shop` after deploy (network blocked here); work through the owner's `reports.md` backlog (not started; P0 first).
 - **Blocker:** live domain not reachable from this sandbox.
 - **Next safe action:** merge after green CI, then start `reports.md` P0 items in small PRs. Water-bottle hold stays until the owner visually approves.
+
+## 2026-10-04 `reports.md` first pass (Claude Code session)
+
+- **Status:** PR #6 (image fix) is merged to `main` as `075d139` (CI green: typecheck/test/build, build-and-check, security-scan, Cloudflare Pages preview). Deployment of that commit is not verified from this sandbox.
+- **`reports.md` read in full.** P0 triage:
+  - **P0-A bottle print zones:** needs a versioned proposal plus the owner's visual approval before any checksum-bound asset is regenerated. Measurements and proposed zones are already in the earlier bottle section. The customer hold (`409 mockup_not_approved`) stays. Not started.
+  - **P0-B live verification:** blocked. The sandbox proxy returns 403 for `trynext.shop` and `*.pages.dev`, so `scripts/verify-critical-flows.mjs` (which targets the live host) cannot pass from here. Operator action: allow those hosts in the environment network settings, or run the script from a machine that can reach them.
+  - Health alias reconciliation (checked in code): `render.yaml` `healthCheckPath` is `/api/health/readiness`; the API serves `/healthz`, `/health/liveness`, `/health/readiness` and `/readyz` (same handler), and `functions/gateway-config.ts` proxies `/healthz` and `/readyz`. No mismatch found.
+  - **P0-C real errors:** needs the Admin Activity Log / Render log content from the owner (redacted). Not available here.
+- **Remaining work:** catalog, Studio geometry, checkout, admin, performance and security sections of `reports.md` (sections 4 onward), each as a small reviewed PR. Next safe action: start section 5's transform double-scale invariant test (no data or provider impact).
+- **Blocker:** items above that need owner approval, network access or real logs.
