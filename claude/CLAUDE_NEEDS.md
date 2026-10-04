@@ -13,7 +13,7 @@ Older list `claude/NEEDS_FROM_OWNER.md` (A1 to C12) was answered in
 `claude/reports.md` on 2026-10-05. Items from it that are still open are carried
 here as N1 to N4.
 
-Last updated: 2026-10-05 (N7 built, added N8)
+Last updated: 2026-10-05 (N7 built, N8 and N9 added)
 
 ---
 
@@ -130,6 +130,20 @@ Last updated: 2026-10-05 (N7 built, added N8)
   Studio, upload one small harmless picture, press Add to cart. Write: worked, or the
   exact message shown. Then remove the item from the cart.
 - **Blocks:** confirming the fix on the real storage (N3 and N2 stay open until then).
+- ANSWER:
+
+### N9. Make the duplicate-order protection survive restarts (optional, a database change)
+- **Why:** checkout used to retry order creation after a gateway error with nothing to
+  stop a second order if the first one had actually gone through. Claude added an
+  in-memory guard (PR for N9). It covers retries and double taps within minutes on one
+  API process, but it is forgotten when the API restarts and would not work across two
+  API instances. A permanent version needs a new column and unique index on the orders
+  table (`idempotency_key`), which is a database schema change.
+- **Pick one:** (a) the in-memory guard is enough, (b) approve the schema change: Claude
+  will prepare a reversible migration and a dry run and ask again before running it.
+- **Note:** the standby-database sync code already adds an `idempotency_key` column
+  to its copy of `orders`, so this seems to have been planned.
+- **Blocks:** nothing now.
 - ANSWER:
 
 ---
