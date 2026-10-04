@@ -116,10 +116,10 @@ describe("PUT /storage/upload-via-api/:objectId", () => {
   });
 
   it("reports a storage failure plainly and leaks nothing", async () => {
-    storeUploadedObject.mockRejectedValue(new Error("AccessDenied: key AKIA123 secret"));
+    storeUploadedObject.mockRejectedValue(new Error("AccessDenied: key FAKE-KEY-123 confidential"));
     const res = await put(buildApiUploadPath(grant()), PNG);
     expect(res.status).toBe(502);
-    expect(JSON.stringify(res.body)).not.toMatch(/AKIA|secret|X-Amz/i);
+    expect(JSON.stringify(res.body)).not.toMatch(/FAKE-KEY|confidential|X-Amz/i);
   });
 
   it("signature helper and route agree (a hand-built signature works, a wrong key does not)", async () => {
