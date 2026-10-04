@@ -1,3 +1,236 @@
+# Trynext Lifestyle — Claude Development Report
+
+**Prepared:** 2026-10-04  
+**Repository:** `georgelsmith333-hub/New-Trynext`  
+**Purpose:** This is the working handoff and master backlog for Claude. Read this file together with the current `docs/` audit documents before changing production code. Do not treat an implementation, a passing local test, or a merged commit as proof that the live Cloudflare Pages site and Render API are healthy.
+
+## 1. Non-negotiable working rules
+
+1. **Inspect before editing.** Confirm the active production source of truth in `docs/SOURCE_OF_TRUTH.md`. Production storefront code is under `artifacts/trynex-storefront/`; production API code is under `artifacts/api-server/`. Do not fix an experimental or archived artifact by mistake.
+2. **Keep claims honest.** Never fabricate products, orders, revenue, inventory, AI success, payment success, notifications, marketplace imports, or infrastructure health. Every unavailable dependency must produce a clear, truthful UI state with retry/help guidance.
+3. **Use the release path.** For backend changes, build shared libraries first, build the API, run focused tests, deploy to preview, run browser/API smoke tests, then deploy Cloudflare Pages and Render together when the contract changed. Record the frontend and backend deployment identifiers.
+4. **Protect secrets.** Never write tokens, passwords, private keys, payment data, or environment values into this report, source code, screenshots, Git history, or logs. Refer only to secret names. If an old secret was exposed, rotate it through the provider.
+5. **No destructive production mutation without a controlled plan.** Database repair, catalog imports, order creation, provider configuration, and customer-impacting asset changes need a reversible migration, audit trail, dry run, and rollback path.
+6. **Do not claim “complete” until evidence exists.** A task is complete only when code, tests, preview/live verification, and documentation agree. Attach URLs, timestamps, commit SHA, response status, screenshots, and logs with sensitive values redacted.
+7. **Preserve rollback.** Keep `/design-studio-v1` available until V2 parity is evidenced. For releases, preserve the previous known-good GitHub commit and both provider rollback references.
+
+## 2. Current state from the latest Claude handoff
+
+The latest handoff reports that:
+
+- PR #4 was merged as commit `595ab6f`, adding **Admin → System → Live Health**, fixing API crashes after dropped database connections, and returning 400/409 instead of 500 for client/duplicate errors.
+- PR #5 was merged as commit `689ac7d`, documenting the measured water-bottle print-area mismatch and proposed corrected zones.
+- The latest repository `main` is clean and contains those merged changes.
+- The pre-merge checks reportedly passed: CI, active-app verification, security scan, and Cloudflare preview build. Confirm the checks for the actual current `main` commit in GitHub before relying on this statement.
+- The live domain was not independently verified by Claude from its previous environment.
+- The water-bottle custom-order hold remains in place because the print area is approximately **37–38 px left of center on both faces**, overhangs the left edge by approximately **33–44 px**, and the back needs a narrower zone for its slimmer body.
+- The previous handoff asked for three follow-ups: correct the bottle print area, verify the live Live Health page, and inspect real Admin Activity Log/Render errors.
+
+## 3. Immediate release blockers — do these first
+
+### P0-A — Correct and validate water-bottle print zones
+
+**Problem:** Custom bottle artwork can be visibly off-center and can cross the product edge. The current print area is not safe to release for customer orders.
+
+**Claude must:**
+
+- Read the latest bottle measurements, source geometry, checksums, and any checksum-bound release rules in the relevant `docs/` and `attached_assets/` files.
+- Do not silently edit checksum-bound production assets. Create a versioned correction proposal first, with front and back measurements, normalized coordinates, product/color/view identity, and a before/after proof.
+- Correct the front and back print-zone geometry using the shared source of truth in `src/pages/design-studio/mockups.tsx` (or the authoritative geometry file discovered during inspection), not duplicated one-off coordinates.
+- Ensure the zone is clipped to the printable body and remains centered across supported bottle variants/colors.
+- Verify uploaded artwork, text, export PNG, browser preview, API render, cart thumbnail, and production payload all use the same zone.
+- Add regression tests for front/back placement, boundary clipping, product switching, and the processed-image replacement path.
+- Keep the hold active until a human owner approves the corrected proof; after approval, regenerate checksum-bound files through the documented release process.
+
+**Acceptance evidence:** corrected proof images; exact normalized geometry; test output; asset/checksum manifest; owner approval recorded; preview and live browser verification.
+
+### P0-B — Verify the real live deployment and custom domain
+
+**Problem:** The previous audit could not inspect `trynext.shop`, and earlier repository audits found custom-domain/Pages parity risk. A successful GitHub merge is not proof that the customer domain serves the current release.
+
+**Claude must:**
+
+- Verify the actual configured production domain(s), including `trynext.shop`, `www`, and the verified Pages hostname. Do not assume `trynext.pages.dev` and the custom domain are equivalent.
+- Open the live homepage and `/admin/live-health` (authenticated where required) after deployment.
+- Check `/api/healthz`, `/api/health/liveness`, `/api/health/readiness`, `/api/readyz` if supported, `/api/products`, `/api/categories`, `/api/mockups`, and a representative product detail route through the public proxy.
+- Record status codes, commit/deployment IDs, API runtime role, database, Redis, storage, scheduler, and backup status. Reconcile stale health aliases and the Render blueprint health path if they disagree.
+- Verify that Pages and Render are serving the same compatible release. If DNS, Cloudflare, Render, or network settings prevent verification, record the exact blocked step and the operator action required; do not call it passed.
+- Check redirects, TLS, canonical host, cache headers, service-worker assets, and stale bundle references.
+
+**Acceptance evidence:** redacted health snapshot, live URL results, deployment IDs, screenshots of the customer domain and Live Health page, and a documented discrepancy/repair if any.
+
+### P0-C — Inspect real errors and make them actionable
+
+**Problem:** The prior handoff requested Activity Log and Render errors, but the actual errors were not available to Claude.
+
+**Claude must:**
+
+- Review Admin → Activity Log and Render logs for the current deployment window.
+- Group errors by route, status code, release, timestamp, correlation/request ID, and customer impact. Redact secrets, personal data, access tokens, addresses, phone numbers, and full payment/order details.
+- Fix reproducible application errors, add tests, and improve error messages without exposing internals to customers.
+- Add or confirm correlation IDs across Pages proxy, API, database, storage, AI, checkout, and notification operations.
+- Ensure retries are bounded, idempotent, and do not duplicate orders or notifications.
+- Add a clear admin action to copy/download a redacted diagnostic bundle.
+
+**Acceptance evidence:** redacted error report, root-cause fixes, regression tests, and a before/after error-rate or reproduction result.
+
+## 4. Product and catalog correctness
+
+The repository audits contain contradictory historical snapshots: some older reports describe five/ten products or a 202-surface matrix, while newer live audits describe 70 products, seven categories, and a 188-surface smart-v10.3 runtime matrix. Reconcile before changing data.
+
+Claude must:
+
+- Declare one canonical catalog and one canonical mockup matrix. If the active contract is 188 surfaces, mark obsolete 202-surface documents as superseded and update validators, manifests, resolvers, catalog, and release docs. If 202 is required, create and validate the missing 14 bottle surfaces before release.
+- Ensure the six advertised families are represented consistently in database, API, category navigation, search, filters, product detail, Design Studio picker, cart, and admin. Do not fabricate inventory to make counts look complete.
+- Add catalog data validation for missing images, invalid prices, negative stock, duplicate slugs/names, unsupported variants, missing size/color options, and mismatched product families.
+- Migrate approved production product assets away from fragile external URLs to Cloudflare R2 or versioned first-party assets. Preserve licensing/provenance records and provide a fallback image/error state.
+- Reconcile historical stale data reports against the current database before importing or deleting anything. Use a dry-run import with duplicate detection, idempotency keys, audit logs, and rollback.
+- Make product availability truthful: distinguish draft, active, out-of-stock, unavailable, and temporarily blocked custom products.
+- Verify product detail gallery, thumbnail loading, color/size/variant selection, wishlist, quick view, related products, reviews, discount math, and WhatsApp/support links.
+
+## 5. Design Studio and mockup system
+
+The current audit says the system has a substantial candidate mockup pipeline but does **not** prove a full photorealistic Photoshop Smart Object system. Do not market or document it as fully photorealistic until the following gates pass.
+
+### Required engineering fixes
+
+- Define one transform convention. If using `scale`, `scaleX`, and `scaleY`, always calculate rendered dimensions as `naturalWidth × scale × scaleX` and `naturalHeight × scale × scaleY`, or replace the model with absolute product-coordinate dimensions.
+- Fix the processed-image replacement path so background removal, upscale, or auto-fix cannot double-scale a design or jump it back to natural size. Add an invariant test with identical intrinsic dimensions.
+- Keep browser compositor and API renderer on one shared geometry contract. The API must consume the same normalized frame, print mask, warp metadata, and relevant material settings as the browser.
+- Do not call strip-based curvature a true perspective or displacement transform. Implement a tested projective transform/homography or clearly label the current method as an approximation. For products that need it, add documented displacement/depth maps and a renderer operation that consumes them.
+- Reconcile rotation bounds after rendering so the rotated artwork cannot be clipped or shifted relative to the print mask.
+- Explicitly link every runtime role to a checksummed surface manifest: base, alpha/silhouette, print mask, protected details, shadow, highlight, background, material/depth/displacement where applicable, PSD/PSB layer record, and provenance.
+- Separate customer-ready release masters from proof previews. Reject placeholder payloads such as `TRY NEX`, `ARTWORK HERE`, checkerboards, magenta/chroma-key pixels, and proof labels from release assets.
+- Mark generated derivatives as derived approximations. Do not inherit “authentic” provenance from source photographs.
+- Verify any claimed Photoshop/Smart Object editability with an actual open, replace/relink, save, reopen, and visible-render-change test. File signatures and metadata alone are insufficient.
+- Preserve variant identity when handing off from product detail to studio, from studio to cart, and from cart to production.
+- Add browser/API pixel-parity tests for representative T-shirt, long sleeve, hoodie, mug, cap, and water-bottle surfaces, plus front/back/sleeve/neck views.
+
+### Required UX fixes
+
+- Provide a short first-use flow explaining print zone, safe area, layers, text editing, upload requirements, export, and how custom orders are reviewed.
+- Make mobile editing usable: touch dragging, pinch zoom, accessible controls, fixed/sticky action bar, safe keyboard behavior, and no horizontal overflow.
+- Preserve artwork, variant, face/view, and draft state across refresh and route changes with versioned local persistence and clear recovery.
+- Show user-visible states for upload, image processing, AI generation, export, save, add-to-cart, and failure/retry. Never lose artwork silently.
+- Validate maximum file size/type/dimensions, sanitize SVG/text, strip unsafe metadata where appropriate, and provide a customer-readable reason for rejection.
+- Make “no design” and “custom order blocked” states explicit, including why the order is blocked and what the customer can do next.
+- Ensure export dimensions, transparent background options, crop/bleed guidance, and production notes match what the fulfillment team actually receives.
+
+## 6. Checkout, orders, payments, and customer trust
+
+- Establish a safe non-customer test-order environment or an explicit test-order policy. Do not create a real customer order merely to prove a test.
+- Test guest checkout, customer account checkout, validation, district/shipping calculation, promo codes, advance payment/COD remainder messaging, inventory reservation, idempotent submission, duplicate-click protection, confirmation page, email/WhatsApp/Telegram notifications, customer tracking, and admin visibility.
+- Make order state transitions explicit and auditable: draft, pending payment, advance received, confirmed, production, ready, shipped, delivered, cancelled, returned, refunded, and failed.
+- Never show payment success before a trusted provider result/webhook is verified. Store provider event IDs and make webhook processing idempotent.
+- Ensure the 25% advance / 75% balance-on-delivery language is consistent across product detail, cart, checkout, order confirmation, policies, and admin.
+- Test cancellation, return, refund, partial fulfillment, out-of-stock after checkout, and failed notification scenarios.
+- Add customer-safe order lookup with rate limiting, privacy-preserving errors, and no enumeration of other orders.
+- Keep customer PII out of ordinary logs and diagnostic exports.
+
+## 7. Admin, operations, and integrations
+
+- Finish authenticated verification of Live Health, database cluster, backup status, Activity Log, catalog management, order management, user/session expiry, and logout.
+- Make health checks truthful: distinguish liveness, readiness, dependency outage, degraded cache/storage, and stale telemetry. Reconcile Render’s configured health path with the active API route family.
+- Complete controlled additive database schema repair only after backup, target inventory, dry run, explicit time-limited flag, per-target verification, and disabling the flag. Record results; never silently repair destructive changes.
+- Configure and test Telegram order notifications with a non-customer test event, settings-backed destination, retries, idempotency, disabled/misconfigured state, and an admin test button. Until then, show `not_configured` rather than success.
+- Verify local AI fallback and external AI/provider failure states with harmless authenticated prompts. Provider availability must not imply successful inference, free quota, or production quality.
+- Treat Facebook/Instagram import as unverified until permissions, source identity, progress/stopped states, idempotency, rate limits, error recovery, and redirect safety are proven with a permitted test source.
+- Add role-based access control, audit logs for sensitive admin mutations, CSRF/origin protection, session expiration, secure cookies, rate limits, and re-authentication for high-impact actions.
+- Ensure admin tables support pagination, filtering, empty states, loading states, export/redaction controls, and mobile access without exposing secrets.
+
+## 8. Performance, accessibility, SEO, and conversion
+
+### Performance
+
+- Measure real Core Web Vitals and route timings on desktop and mobile before optimizing. The audit identified a large 3D vendor chunk, main bundle, V2 studio chunk, and ONNX WASM asset.
+- Lazy-load 3D, ONNX, AI/editor tools, and non-critical admin modules. Preload only above-the-fold assets.
+- Optimize approved product/mockup images with responsive sizes, modern formats, correct dimensions, caching, and first-party storage.
+- Avoid blocking the storefront on optional AI, analytics, notifications, or 3D initialization.
+- Add bundle budgets and CI failure thresholds for route-specific JS, CSS, image weight, and long tasks.
+
+### Accessibility
+
+- Complete keyboard-only navigation, visible focus, semantic headings, labels, error association, dialog focus trapping, escape behavior, contrast, reduced motion, screen-reader announcements, and touch target checks.
+- Ensure canvas/editor actions have accessible equivalents and do not rely only on color or drag interaction.
+- Test checkout, filters, product variants, cart, FAQ, policies, and admin with automated and manual audits.
+
+### SEO and conversion
+
+- Provide unique title, description, canonical, Open Graph/Twitter metadata, JSON-LD, breadcrumbs, product availability/price markup, sitemap, robots, and 404 behavior for every indexable route.
+- Prevent duplicate URLs from query/filter state or add appropriate canonical/noindex rules.
+- Add trustworthy reviews, delivery/return/size guidance, social proof, support contact, and clear custom-order expectations without inventing claims.
+- Track funnel events without leaking PII: product view, variant selection, design start, upload success/failure, add-to-cart, checkout start, validation failure, order success/failure, and support click.
+- Verify analytics and Facebook Pixel claims in the privacy policy against the actual implementation and consent behavior.
+
+## 9. Security and resilience
+
+- Run secret scanning against the working tree and Git history; rotate any previously exposed credentials through providers, not in code.
+- Audit authentication, authorization, CSRF, origin validation, CORS, SSRF/open redirects, file uploads, SVG/HTML injection, SQL queries, path traversal, webhook signatures, and rate limits.
+- Add dependency and license scanning, lockfile integrity, security headers, CSP review, and safe error serialization.
+- Test dropped DB connections, Redis outage, R2 outage, slow AI provider, provider timeout, malformed payload, duplicate request, stale session, and partial deploy scenarios.
+- Use bounded exponential backoff and circuit breakers where appropriate, with truthful degraded states and operator alerts.
+- Keep backups, restore drills, migration checks, retention rules, and recovery objectives documented and tested.
+
+## 10. CI/CD and release checklist
+
+Before every release, Claude must:
+
+1. Confirm branch, commit SHA, working tree, and changed production source paths.
+2. Build shared declarations/libraries before API typecheck/build.
+3. Run lint, typecheck, unit, integration, focused browser, security, asset/manifest, and route-contract checks.
+4. Run the product/mockup validation and ensure no stale matrix or checksum contradiction is introduced.
+5. Build storefront and API from a clean checkout.
+6. Deploy preview and verify homepage, catalog, product detail, studio, bottle front/back, cart, checkout validation, admin boundary, health endpoints, and error states.
+7. Verify Pages and Render deployment identifiers and compatible API/frontend contracts.
+8. Run live smoke tests without creating a real order unless the controlled test policy explicitly allows it.
+9. Capture redacted evidence in `docs/` with timestamp and commit SHA.
+10. Monitor logs and Live Health after deploy, then document rollback instructions.
+
+Recommended additions: a single reproducible release orchestrator that runs source audit, asset validation, build, tests, preview checks, release manifest generation, and evidence packaging. Do not add autonomous self-modifying or unsupervised production deployment behavior.
+
+## 11. Priority order for Claude execution
+
+### Now — release safety
+
+- [ ] Correct and prove water-bottle front/back print areas; keep hold until owner approval.
+- [ ] Verify the real production/custom domain and Pages/Render parity.
+- [ ] Inspect redacted Activity Log and Render errors; fix reproducible failures.
+- [ ] Confirm current `main` CI and active-app checks are green.
+- [ ] Reconcile health endpoints and Render readiness configuration.
+
+### Next — customer conversion
+
+- [ ] Reconcile canonical product/category data and six-family availability.
+- [ ] Fix first-party image storage and product-detail fallbacks.
+- [ ] Complete studio transform/variant/persistence/export/cart tests.
+- [ ] Complete safe order lifecycle and notification tests.
+- [ ] Configure Telegram or keep its state explicitly disabled.
+- [ ] Finish authenticated admin, backup, AI, and session verification.
+
+### Then — premium quality
+
+- [ ] Complete mockup provenance, Smart Object, semantic role, displacement/perspective, and browser/API parity gates.
+- [ ] Complete mobile, accessibility, SEO, performance, analytics, and conversion audits.
+- [ ] Add resilience, security, observability, backup/restore, and release automation improvements.
+
+## 12. Definition of done for every task
+
+A task is done only when all applicable items are true:
+
+- [ ] Root cause and affected customer/admin flow are documented.
+- [ ] The smallest safe code/data/config change is implemented in the production source of truth.
+- [ ] Regression tests cover the failure and the normal path.
+- [ ] Loading, empty, blocked, unavailable, retry, and success states are truthful and usable.
+- [ ] Security/privacy implications are reviewed.
+- [ ] Preview/live behavior is verified with the exact release identifiers.
+- [ ] Logs and metrics are checked after deployment.
+- [ ] Evidence is saved in `docs/` and stale claims are updated or marked superseded.
+- [ ] Rollback or reversal steps are documented.
+- [ ] No secrets or fabricated business data were added.
+
+## 13. Final instruction to Claude
+
+Work through this report systematically, but do not blindly implement every idea at once. Start with the P0 release blockers and create small, reviewable changes. When a step requires owner approval, provider credentials, DNS/network access, a real customer order, payment, or an external integration permission, stop at the safe boundary, document the exact required action and payload, and keep the UI truthful. The goal is a premium, dynamic, high-converting Trynext e-commerce experience backed by reliable evidence—not a site that only appears complete in local development.
 
 
 ## 2026-10-05 Consolidated unresolved-work queue for Claude
