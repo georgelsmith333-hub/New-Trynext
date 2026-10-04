@@ -4180,3 +4180,9 @@ Remaining safety boundary:
 - **Verification (local):** 8 new route tests plus 3 mutation checks (always-success, no escaping, no save) all caught; full API suite 26 files / 167 tests; storefront suite and typechecks pass; real API with no Telegram: reply `delivered:false, stored:true`, wording "received", and the message is readable via the admin activity-log endpoint with `entity=contact_message`.
 - **Decision N10 (owner):** where contact messages should alert the admin (Telegram setup, email, or the Activity Log only). Nobody is notified of a new message unless Telegram is configured.
 - **Next:** catalog data and first-party image correctness.
+
+## 2026-10-04 — Catalog image file check (read-only)
+- Status: verified locally; docs only. Nothing deployed or changed in data.
+- Checked every colour/face base photo that `SMART_V10_COLORS` x `SMART_V10_VIEWS` expects under `public/mockups/psd-master-v10/runtime-roles/`: all 188 files exist and are non-trivial in size. Extra `_shared` folders exist for tshirt/longsleeve/hoodie (not referenced as colours).
+- Not checked: which image URLs the live product database rows hold (needs read access to production data; sandbox cannot reach it). Any data repair needs a dry run and per-change approval.
+- Next safe action: owner supplies a sanitized export of product image URLs so Claude can list the rows that still point at retired `/mockups/` paths (the storefront already maps them to v10.3 photos at display time).
