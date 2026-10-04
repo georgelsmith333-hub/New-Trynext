@@ -13,13 +13,15 @@ Older list `claude/NEEDS_FROM_OWNER.md` (A1 to C12) was answered in
 `claude/reports.md` on 2026-10-05. Items from it that are still open are carried
 here as N1 to N4.
 
-Last updated: 2026-10-05 (added N5, moved finished self-tests to Done)
+Last updated: 2026-10-05 (operator replies to N1-N4 recorded; added N6 and N7)
 
 ---
 
 ## Open needs
 
 ### N1. Phone check of the Design Studio (touch editing)
+- **Reply received 2026-10-05 (operator):** not performed. Real-device touch stays
+  UNVERIFIED. Still open.
 - **Why:** Claude can simulate touch in a desktop browser, but only a real phone
   proves dragging, pinch-zoom, the keyboard and the sticky Add to cart bar work.
 - **What to do (5 minutes, any phone):** open the live Studio, pick a T-shirt, add
@@ -30,6 +32,10 @@ Last updated: 2026-10-05 (added N5, moved finished self-tests to Done)
 - ANSWER:
 
 ### N2. Uploaded-image test with real storage (optional)
+- **Reply received 2026-10-05 (operator):** real storage is NOT verified. In
+  production the upload reached the step where the storage link is created, but the
+  final upload (PUT) to storage was rejected. See N7 for what Claude found and
+  needs.
 - **Why:** adding an uploaded picture to the cart saves the original file to
   storage first. Claude tests that path with a stand-in storage service, which
   proves the Studio logic but not your real bucket.
@@ -42,6 +48,9 @@ Last updated: 2026-10-05 (added N5, moved finished self-tests to Done)
 - ANSWER:
 
 ### N3. Live site check after merges
+- **Reply received 2026-10-05 (operator):** still blocked from this workspace.
+  Claude will not claim the newest `main` is live until a live check is supplied.
+  Still open.
 - **Why:** this workspace cannot open `trynext.shop` or `*.pages.dev`.
 - **Pick one:**
   - (a) Allow those two hosts in the environment network settings, then start a
@@ -52,6 +61,9 @@ Last updated: 2026-10-05 (added N5, moved finished self-tests to Done)
 - ANSWER:
 
 ### N4. Still waiting from the first list
+- **Reply received 2026-10-05 (operator):** bottle not approved; the 94 side-view
+  surfaces stay candidate (no saved hash report); no sanitized error logs. All
+  three stay as they are. Still open.
 - **Water bottle print area:** approve / change / not yet. The zones are in the
   code, the order block is on. Claude can produce front and back proof images in
   this repo for you to look at if you say "send proof".
@@ -71,6 +83,41 @@ Last updated: 2026-10-05 (added N5, moved finished self-tests to Done)
 - **Pick one:** (a) keep it and show a clear warning, (b) move it onto the
   front, (c) drop it with a notice. Claude recommends (a).
 - **Blocks:** nothing.
+- ANSWER:
+
+### N6. Merge permission: two instructions disagree
+- **Why:** your chat message said to work and merge automatically. The operator
+  reply in `claude/reports.md` says "ask before merging each PR".
+- **What Claude is doing until you answer:** docs-only PRs merge automatically
+  once green. PRs that change site code are opened and kept green, then Claude
+  asks before merging (code merges deploy the live site).
+- **Pick one:** (a) merge code PRs automatically too once all checks are green,
+  or (b) always ask first for code PRs.
+- **Blocks:** code PRs waiting for your OK.
+- ANSWER:
+
+### N7. Image upload to storage is rejected in production
+- **What was reported (N2):** adding an uploaded picture gets as far as creating
+  the storage link, but the final browser upload (PUT) to storage is rejected.
+- **What Claude checked in the code:** the API creates a normal presigned upload
+  link for the bucket and does not tie it to a content type, so the link itself
+  looks correct. A browser upload to a bucket that is rejected is most often the
+  bucket's CORS rule (a provider setting). Claude has not changed any provider
+  setting and will not without your approval.
+- **How to confirm the cause (2 minutes, no secrets):** in the live Studio open
+  browser DevTools, Network tab, upload a small picture, click the failed request
+  to the storage address and write down: its status (for example 403) and any red
+  console message that mentions CORS. Paste only those words.
+- **Likely fix if it is CORS (your decision, in the Cloudflare R2 bucket
+  settings):** allow origin `https://trynext.shop` and `https://www.trynext.shop`,
+  method `PUT`, and header `Content-Type`. Claude will not do this itself.
+- **Alternative if you would rather not change the bucket:** Claude can send
+  uploads through the API instead of straight to the bucket. This avoids CORS but
+  uses API bandwidth and has size limits, so it is a bigger change and needs your
+  go-ahead.
+- **Pick one:** (a) I will check DevTools and paste the status, (b) I will change
+  the bucket CORS myself, (c) Claude should build the through-the-API upload.
+- **Blocks:** customers uploading artwork for custom orders.
 - ANSWER:
 
 ---

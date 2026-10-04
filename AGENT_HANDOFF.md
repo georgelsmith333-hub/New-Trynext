@@ -4135,3 +4135,11 @@ Remaining safety boundary:
 - **Edge case recorded (decision N5 in `claude/CLAUDE_NEEDS.md`):** restoring a draft with back/sleeve/neck artwork onto a product without that side keeps the layers in the design but they are not shown or saved with the cart item. Only reachable through restored drafts.
 - **Not covered:** uploaded-image artwork with real or stand-in storage, mobile touch editing, PNG pixel parity, live site.
 - **Next:** uploaded images with stand-in storage and simulated touch; then item 2 (checkout and orders) and item 3 (catalog and first-party images).
+
+## 2026-10-05 Operator replies to the living needs list consumed (Claude Code session)
+
+- **Replies read:** branch `manus/answer-claude-needs-2026-10-05` (`claude/reports.md` blob `f44c7a48d4aeb16ceb7c1a06621ce95bbd080a8e`, answers N1-N4 and a mockup audit) and `manus/reconcile-claude-owner-needs-2026-10-05` (`claude/reports.md` blob `3b70129b0b00ad190e408510d62d24134d225658`, older, superseded; it is based on an old `main` and would delete current files, so it must not be merged as-is). Neither branch was merged by Claude.
+- **Binding points:** real-device touch, real-bucket upload and the live post-merge check are all UNVERIFIED; bottle hold, the 94 candidate surfaces and error review stay as they are; curved rendering is described as an approximation; the runtime manifest is mixed (94 accepted, 94 candidate) and stays fail-closed; ask before merging each PR; do not force-push.
+- **Conflict raised (N6):** the owner's chat said to merge automatically; the operator reply says ask each PR. Interim rule: docs-only PRs merge when green; code PRs stay open and green, and Claude asks first.
+- **New finding (N7):** in production the Studio's storage upload gets as far as the presigned link and then the browser PUT is rejected. The API presign (`lib/objectStorage.ts getObjectEntityUploadURL`) does not bind a content type, so the link looks correct; the likely cause is the bucket's CORS rule (a provider setting, not changed). Needs the failed request's status/console text, or the owner's decision on bucket CORS vs through-the-API upload.
+- **Next:** pixel-parity/geometry evidence work and the simulated touch and stand-in-storage upload tests; then checkout and orders. Code PRs wait for N6.
