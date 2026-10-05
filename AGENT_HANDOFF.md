@@ -4201,3 +4201,10 @@ Remaining safety boundary:
 - Result: mean per-pixel difference 4.6–6.7 of 255 with artwork; about 3.6–4.4 with no artwork (the baseline comes from the browser preview and the API renderer being different pipelines at different sizes, 454px vs 1024px). Artwork appeared in both at the expected place.
 - Meaning: no gross preview/export mismatch on these five families. This is NOT proof of pixel-identical output, and it does not cover back, sleeve or neck-label faces, curved products at detail level, or real devices.
 - Next: product switching and processed-image replacement checks, then checkout lifecycle tests.
+
+## 2026-10-05 — Command 1: processed-image replacement parity (evidence only)
+- Status: local evidence, no code change, not deployed. Throwaway Postgres + local API + Vite; harmless test image; real browser.
+- Setup: uploaded the image on T-shirt, hoodie, mug, cap and long sleeve, set position (+40,-25), scale 0.37, rotation 17° on the front face, reloaded so the Studio restored it, then ran the real "Auto-fix image" and "HD upscale" buttons.
+- Result (all five families identical): Auto-fix keeps the transform unchanged (same 600x600 size). HD upscale makes the image 1200x1200 and sets the relative axes to 0.5, so the drawn size is unchanged (600 x 0.37 x 1 = 1200 x 0.37 x 0.5); position, scale, rotation, face and layer count are preserved; the size is fitted once, not twice.
+- Not covered: "Remove background" (needs the background-removal service/model, not run here), back/sleeve faces, real phones, cart payload after replacement (cart payload parity was verified earlier for the same families).
+- Next: command 2, product switching and variant identity.
