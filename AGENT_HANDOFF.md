@@ -4195,3 +4195,9 @@ Remaining safety boundary:
 - Tests: 3 new cache tests, 40 Studio tests, storefront typecheck pass.
 - Limits: real-bucket behavior unverified (N8). Cached object paths are assumed to stay valid for the visit.
 - Next: export-vs-canvas pixel parity, processed-image replacement, product switching, then checkout lifecycle tests. N9: design/dry-run doc only, no schema change. N10: Activity Log decided as sufficient.
+
+## 2026-10-05 — Studio: export vs live preview comparison (evidence only)
+- Status: local evidence, no code change, not deployed. Throwaway Postgres + local API + Vite, uploaded the same harmless test image on T-shirt, hoodie, mug, cap and long sleeve, then compared the live preview canvas with the exported PNG (both scaled to 256x256).
+- Result: mean per-pixel difference 4.6–6.7 of 255 with artwork; about 3.6–4.4 with no artwork (the baseline comes from the browser preview and the API renderer being different pipelines at different sizes, 454px vs 1024px). Artwork appeared in both at the expected place.
+- Meaning: no gross preview/export mismatch on these five families. This is NOT proof of pixel-identical output, and it does not cover back, sleeve or neck-label faces, curved products at detail level, or real devices.
+- Next: product switching and processed-image replacement checks, then checkout lifecycle tests.
