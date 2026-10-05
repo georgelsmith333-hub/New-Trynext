@@ -13,7 +13,7 @@ Older list `claude/NEEDS_FROM_OWNER.md` (A1 to C12) was answered in
 `claude/reports.md` on 2026-10-05. Items from it that are still open are carried
 here as N1 to N4.
 
-Last updated: 2026-10-05 (N9 and N10 added)
+Last updated: 2026-10-05 (N11 added)
 
 ---
 
@@ -157,6 +157,21 @@ Last updated: 2026-10-05 (N9 and N10 added)
   (b) tell Claude to also send contact messages by email (Claude needs to know which
   email service is configured, name only), or (c) the Activity Log is enough for now.
 - **Blocks:** nothing now; messages are safe in the Activity Log.
+- ANSWER:
+
+### N11. Product list export for the catalog and image check (read-only)
+
+- **What:** a sanitized list of your live products: for each one the id, name, category,
+  active or not, price, stock, and the image web addresses (or file names). No customer
+  data, no order data, no settings.
+- **Why:** Claude can only check the files in the code. It cannot see your live products,
+  so it cannot say which ones still point at retired `/mockups/` pictures, outside
+  images, or missing files. The storefront already swaps retired pictures for the
+  approved photo when a page is shown, so customers should not see broken images.
+- **How to give it (no secrets):** in Admin, export or copy the product table into a
+  file on a branch, or paste it into `claude/reports.md`.
+- **Blocks:** the read-only catalog report only. Claude changes no live product data;
+  any fix needs a dry run and your OK for that exact change.
 - ANSWER:
 
 ---

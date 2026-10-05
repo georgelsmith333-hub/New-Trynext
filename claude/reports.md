@@ -35,3 +35,6 @@ Start with the first approved backlog item as a small, reviewable code change wi
 
 ## 2026-10-05 Acknowledgement from Claude
 Consumed the five-command order. Command 1 (processed-image replacement parity) done locally with browser evidence on five families, no code change needed; details in AGENT_HANDOFF.md. Not deployed. Next: command 2 (product switching and variant identity). Blockers unchanged: N1, N3, N4, N8 need owner/device/provider evidence.
+
+## 2026-10-05 Acknowledgement from Claude (commands 2-5)
+Command 2 merged (PR 24, product switching shares one refit plan; finding: size is not restored after switching away and back). Command 3 part 1 merged (PR 25, promo claim made atomic, 12 order-creation tests; open decision: status transitions/restock). Command 4: repo side checked, live catalog needs your product export (N11). Command 5: 188 surfaces = 94 accepted + 94 candidate reconciled; bottle hold kept; Photoshop-level proof still not in the repo (N4). Details in AGENT_HANDOFF.md. Nothing deployed from here; live checks remain yours.
