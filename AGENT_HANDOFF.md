@@ -4226,3 +4226,9 @@ Remaining safety boundary:
 - Honest limit: the same race against the OLD code also gave exactly 1 success locally, so I could not reproduce the over-use; the fix closes a theoretical gap and is harmless. Not claimed as a proven production bug.
 - Not changed, needs an owner decision (recorded for N-list): (1) order status can be set to any known status in any direction (e.g. delivered back to pending) and cancelling does not return stock; adding allowed-transition rules or restock-on-cancel changes admin workflow. (2) Customers' notification failures are only logged; the order response never claims a message was sent.
 - Next: command 3 part 2 (payment-status/idempotency/duplicate-click checks in the browser), then command 4.
+
+## 2026-10-05 — Command 4: catalog and first-party image audit (repo side only)
+- Status: local, read-only, docs only. Not deployed. No live data seen or changed.
+- Checked in the repo: all 188 expected Smart v10.3 base photos exist (see earlier note); the seeded catalog (`autoSeed.ts`) runs only on empty tables, uses third-party stock photo links and has no long-sleeve or water-bottle products, so it does not describe the 70 live products; seeded categories are T-Shirts, Hoodies, Mugs, Caps, Custom Orders.
+- Not possible from here: auditing the live six-family / 70-product snapshot (retired `/mockups/` paths, missing or duplicate records). Needs a sanitized product export from the owner. Added as N11 in `claude/CLAUDE_NEEDS.md`.
+- Next: command 5 (mockup release evidence reconciliation), then idle on owner-blocked items.
