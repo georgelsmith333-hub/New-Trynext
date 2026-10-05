@@ -174,3 +174,5 @@ Last updated: 2026-10-05 (N9 and N10 added)
   text added through the real Studio UI. All five textures contain real artwork.
 - 2026-10-05: PNG export on a T-shirt front: a PNG downloads and the user sees a message.
 - 2026-10-05: first list answered in `claude/reports.md`.
+
+- 2026-10-05: N10 decided by operator: Activity Log is enough for contact messages; Telegram/email stay unconfigured and truthful. N9: design and dry-run only, no schema change.

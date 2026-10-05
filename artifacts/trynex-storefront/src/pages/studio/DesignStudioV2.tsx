@@ -42,6 +42,7 @@ import { ClipArtBrowser } from "./ClipArtBrowser";
 import { QRCodePanel } from "./QRCodePanel";
 import { planDraftRestore, pickNewestDraft } from "./draftRestore";
 import { uploadToStorage } from "@/lib/storageUpload";
+import { OriginalAssetCache } from "./originalAssetCache";
 import { unsupportedArtworkFaces, unsupportedArtworkMessage } from "./artworkFaces";
 import { FONT_FAMILIES, type Layer, type ImageLayer, type TextLayer, type ShapeLayer, DRAFT_VERSION } from "./types";
 import { getRenderedImageSize, preserveRenderedImageSize } from "./transformGeometry";
@@ -247,6 +248,7 @@ export default function DesignStudioV2() {
   const [canvasSize, setCanvasSize] = useState(600);
   const [imageAction, setImageAction] = useState<"remove-bg" | "upscale" | "auto-fix" | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const uploadedOriginals = useRef(new OriginalAssetCache());
   const [isExporting, setIsExporting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveRetryNonce, setSaveRetryNonce] = useState(0);
@@ -1076,6 +1078,12 @@ export default function DesignStudioV2() {
       if (layer.type !== "image" || !layer.visible) continue;
       const src = (layer as ImageLayer).src;
       if (!src.startsWith("data:")) continue;
+      const alreadyUploaded = uploadedOriginals.current.get(src);
+      if (alreadyUploaded) {
+        originalAssets.push({ ...alreadyUploaded, width: (layer as ImageLayer).naturalW, height: (layer as ImageLayer).naturalH });
+        originalAssetUrls.push(alreadyUploaded.objectPath);
+        continue;
+      }
       try {
         const blob = await (await fetch(src)).blob();
         const mime = blob.type || "image/png";
@@ -1099,6 +1107,7 @@ export default function DesignStudioV2() {
         } catch (uploadError) {
           throw new Error(`Original artwork could not be uploaded. ${uploadError instanceof Error ? uploadError.message : ""} Your design was not added to cart; please retry.`);
         }
+        uploadedOriginals.current.set(src, { objectPath, filename, mime, bytes: blob.size });
         originalAssets.push({ objectPath, filename, mime, bytes: blob.size, width: (layer as ImageLayer).naturalW, height: (layer as ImageLayer).naturalH });
         originalAssetUrls.push(objectPath);
       } catch (error) {

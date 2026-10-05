@@ -4186,3 +4186,12 @@ Remaining safety boundary:
 - Checked every colour/face base photo that `SMART_V10_COLORS` x `SMART_V10_VIEWS` expects under `public/mockups/psd-master-v10/runtime-roles/`: all 188 files exist and are non-trivial in size. Extra `_shared` folders exist for tshirt/longsleeve/hoodie (not referenced as colours).
 - Not checked: which image URLs the live product database rows hold (needs read access to production data; sandbox cannot reach it). Any data repair needs a dry run and per-change approval.
 - Next safe action: owner supplies a sanitized export of product image URLs so Claude can list the rows that still point at retired `/mockups/` paths (the storefront already maps them to v10.3 photos at display time).
+
+## 2026-10-05 — Studio: retry no longer re-uploads originals (Slice A)
+- Status: local, committed on `claude/nice-carson-nxjq7q`; PR and merge follow. Not deployed.
+- Picked up: `manus/claude-next-work-2026-10-05` work order (Slice A) and `manus/claude-unresolved-work-queue-2026-10-05` queue. Merge rule matches N6.
+- Gap chosen: upload failure/retry state. Failure already leaves the cart untouched and re-enables the button; but a retry re-uploaded every original, orphaning copies when a later image failed.
+- Change: `pages/studio/originalAssetCache.ts` (+test) remembers originals uploaded this visit, keyed by exact image data; `DesignStudioV2.tsx` reuses them on retry.
+- Tests: 3 new cache tests, 40 Studio tests, storefront typecheck pass.
+- Limits: real-bucket behavior unverified (N8). Cached object paths are assumed to stay valid for the visit.
+- Next: export-vs-canvas pixel parity, processed-image replacement, product switching, then checkout lifecycle tests. N9: design/dry-run doc only, no schema change. N10: Activity Log decided as sufficient.
