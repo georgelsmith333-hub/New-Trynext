@@ -4195,3 +4195,25 @@ Remaining safety boundary:
 - Tests: 3 new cache tests, 40 Studio tests, storefront typecheck pass.
 - Limits: real-bucket behavior unverified (N8). Cached object paths are assumed to stay valid for the visit.
 - Next: export-vs-canvas pixel parity, processed-image replacement, product switching, then checkout lifecycle tests. N9: design/dry-run doc only, no schema change. N10: Activity Log decided as sufficient.
+
+## 2026-10-05 — Studio: export vs live preview comparison (evidence only)
+- Status: local evidence, no code change, not deployed. Throwaway Postgres + local API + Vite, uploaded the same harmless test image on T-shirt, hoodie, mug, cap and long sleeve, then compared the live preview canvas with the exported PNG (both scaled to 256x256).
+- Result: mean per-pixel difference 4.6–6.7 of 255 with artwork; about 3.6–4.4 with no artwork (the baseline comes from the browser preview and the API renderer being different pipelines at different sizes, 454px vs 1024px). Artwork appeared in both at the expected place.
+- Meaning: no gross preview/export mismatch on these five families. This is NOT proof of pixel-identical output, and it does not cover back, sleeve or neck-label faces, curved products at detail level, or real devices.
+- Next: product switching and processed-image replacement checks, then checkout lifecycle tests.
+
+## 2026-10-05 — Command 1: processed-image replacement parity (evidence only)
+- Status: local evidence, no code change, not deployed. Throwaway Postgres + local API + Vite; harmless test image; real browser.
+- Setup: uploaded the image on T-shirt, hoodie, mug, cap and long sleeve, set position (+40,-25), scale 0.37, rotation 17° on the front face, reloaded so the Studio restored it, then ran the real "Auto-fix image" and "HD upscale" buttons.
+- Result (all five families identical): Auto-fix keeps the transform unchanged (same 600x600 size). HD upscale makes the image 1200x1200 and sets the relative axes to 0.5, so the drawn size is unchanged (600 x 0.37 x 1 = 1200 x 0.37 x 0.5); position, scale, rotation, face and layer count are preserved; the size is fitted once, not twice.
+- Not covered: "Remove background" (needs the background-removal service/model, not run here), back/sleeve faces, real phones, cart payload after replacement (cart payload parity was verified earlier for the same families).
+- Next: command 2, product switching and variant identity.
+
+## 2026-10-05 — Command 2: product switching shares one refit plan
+- Status: local, committed on `claude/nice-carson-nxjq7q`; browser check, PR and merge follow. Not deployed.
+- Finding: the quick product switcher (`DesignStudioV2.tsx`) and the product picker (`toolbar/ProductSwitcher.tsx`) each carried a copy of the same artwork-refit code, so they could drift apart.
+- Change: new `pages/studio/productSwitch.ts` (`planProductSwitch`, `getSwitchPrintZone`) used by both; behavior is unchanged. 6 new tests (colour kept/fallback, mug mode only mug-to-mug, per-face zone refit with the smaller ratio, unset axes stay unset, rotation/opacity kept, same-product identity). Mutation checks (max instead of min ratio; mug mode kept on any switch) were caught by the tests. Source-text regression test updated to the new function. Storefront: 33 files, 194 tests pass; typecheck clean.
+- Already covered earlier: draft restore never leaks a stale colour/linked product when the link names a product (draftRestore tests); unsupported-face warning (artworkFaces).
+- Limits: face is still reset to front on a switch (unchanged behavior, not changed here); real phones not tested.
+- Browser check (throwaway DB, local API/Vite, harmless image): switching T-shirt → hoodie → mug → cap → long sleeve → T-shirt through the real product picker changed the product each time, kept the white colour variant, refitted the artwork scale per zone (0.797, 0.55, 0.502, 0.277, 0.193, 0.267), no page errors.
+- Finding (pre-existing, NOT changed here): a round trip does not restore the artwork size (0.797 → 0.267 after the loop). The refit scales by the smaller of the width/height zone ratios, which is not reversible when zone shapes differ. Fits-inside is intentional (artwork never spills over the zone), so any fix (for example remembering the pre-switch size per product) is a behavior decision; proposed as a separate small PR with tests.

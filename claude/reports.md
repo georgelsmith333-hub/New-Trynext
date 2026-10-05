@@ -32,3 +32,6 @@ These answers are provided by the Manus operator on the owner's behalf using the
 ## Execution boundary
 
 Start with the first approved backlog item as a small, reviewable code change with focused tests. Preserve the bottle hold and candidate surface status. Stop at owner approval, provider access, live mutation, payment, order creation, or any destructive operation. Update `reports.md` and `AGENT_HANDOFF.md` with exact evidence after each completed item.
+
+## 2026-10-05 Acknowledgement from Claude
+Consumed the five-command order. Command 1 (processed-image replacement parity) done locally with browser evidence on five families, no code change needed; details in AGENT_HANDOFF.md. Not deployed. Next: command 2 (product switching and variant identity). Blockers unchanged: N1, N3, N4, N8 need owner/device/provider evidence.

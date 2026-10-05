@@ -43,24 +43,12 @@ import { QRCodePanel } from "./QRCodePanel";
 import { planDraftRestore, pickNewestDraft } from "./draftRestore";
 import { uploadToStorage } from "@/lib/storageUpload";
 import { OriginalAssetCache } from "./originalAssetCache";
+import { planProductSwitch } from "./productSwitch";
 import { unsupportedArtworkFaces, unsupportedArtworkMessage } from "./artworkFaces";
 import { FONT_FAMILIES, type Layer, type ImageLayer, type TextLayer, type ShapeLayer, DRAFT_VERSION } from "./types";
 import { getRenderedImageSize, preserveRenderedImageSize } from "./transformGeometry";
 import { StudioFirstUseGuide, StudioQualityBanner } from "./v1-components/V1StudioSupport";
 import { StudioStickyPurchaseBar } from "./StudioStickyPurchaseBar";
-
-function getSwitchPrintZone(
-  face: Face,
-  product: DesignProduct,
-  colorHex: string,
-  mugMode: "side1" | "side2" | "wrap",
-): PrintZone {
-  if (product.category === "mug") {
-    if (mugMode === "wrap") return face === "back" ? MUG_WRAP_BACK_PZ : MUG_PZ;
-    return face === "back" ? MUG_SIDE_BACK_PZ : MUG_SIDE_PZ;
-  }
-  return getZonePZ(face, product, colorHex);
-}
 
 const DRAFT_STORAGE_KEY = "trynext-design-draft-v2";
 const LOCAL_PSD_TSHIRT_STAGE_ROOT = "/@fs/home/ubuntu/webdev-static-assets/trynext-tshirt-psd-staging";
@@ -582,29 +570,8 @@ export default function DesignStudioV2() {
 
   const handleQuickProductSwitch = (prod: DesignProduct) => {
     if (prod.id === selectedProduct.id) return;
-    const matchingColor = prod.colors.find(c => c.hex.toLowerCase() === selectedColor.hex.toLowerCase()) ?? prod.colors[0];
-    const oldMugMode = selectedProduct.category === "mug" ? mugMode : "side1";
-    const nextMugMode = selectedProduct.category === "mug" && prod.category === "mug" ? mugMode : "side1";
-    const layerTransforms = layers.map((layer) => {
-      const face = layer.face ?? "front";
-      const oldZone = getSwitchPrintZone(face, selectedProduct, selectedColor.hex, oldMugMode);
-      const nextZone = getSwitchPrintZone(face, prod, matchingColor.hex, nextMugMode);
-      const widthRatio = nextZone.w / Math.max(1, oldZone.w);
-      const heightRatio = nextZone.h / Math.max(1, oldZone.h);
-      const fitRatio = Math.min(widthRatio, heightRatio);
-      return {
-        id: layer.id,
-        transform: {
-          ...layer.transform,
-          x: layer.transform.x * widthRatio,
-          y: layer.transform.y * heightRatio,
-          scale: layer.transform.scale * fitRatio,
-          scaleX: layer.transform.scaleX ? layer.transform.scaleX * fitRatio : undefined,
-          scaleY: layer.transform.scaleY ? layer.transform.scaleY * fitRatio : undefined,
-        },
-      };
-    });
-    switchProduct(prod, matchingColor, layerTransforms, nextMugMode);
+    const plan = planProductSwitch({ from: selectedProduct, fromColor: selectedColor, fromMugMode: mugMode, to: prod, layers });
+    switchProduct(prod, plan.color, plan.layerTransforms, plan.mugMode);
     setLinkedStoreProduct(null);
     setQuantity(1);
   };

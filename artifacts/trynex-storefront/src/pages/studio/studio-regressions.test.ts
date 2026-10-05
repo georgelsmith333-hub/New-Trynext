@@ -24,8 +24,9 @@ describe("Design Studio reliability contracts", () => {
   });
 
   it("uses active product geometry when switching products and adding generated artwork", () => {
-    expect(productSwitcher).toContain("getSwitchPrintZone(face, product, nextColor.hex, nextMugMode)");
-    expect(productSwitcher).toContain("MUG_WRAP_BACK_PZ");
+    expect(productSwitcher).toContain("planProductSwitch(");
+    expect(studio).toContain("planProductSwitch(");
+    expect(readFileSync(new URL("./productSwitch.ts", import.meta.url), "utf8")).toContain("MUG_WRAP_BACK_PZ");
     expect(clipArt).toContain("getZonePZ(activeFace, selectedProduct, selectedColor.hex)");
     expect(qrPanel).toContain("getZonePZ(activeFace, selectedProduct, selectedColor.hex)");
   });
