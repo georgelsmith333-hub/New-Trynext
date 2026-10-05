@@ -1138,10 +1138,19 @@ router.post("/orders", orderIdempotency.middleware, async (req, res) => {
             throw new Error("PROMO_INVALID");
           }
 
-          await tx
+          // Claim one redemption in a single conditional UPDATE. The check above
+          // reads a snapshot; this re-checks the limit against the row's current
+          // value under Postgres's row lock, so two simultaneous orders can never
+          // both take the last allowed use.
+          const [claimed] = await tx
             .update(promoCodesTable)
             .set({ usedCount: sql`COALESCE(${promoCodesTable.usedCount}, 0) + 1` })
-            .where(eq(promoCodesTable.id, promo.id));
+            .where(and(
+              eq(promoCodesTable.id, promo.id),
+              sql`(${promoCodesTable.maxUses} IS NULL OR ${promoCodesTable.maxUses} <= 0 OR COALESCE(${promoCodesTable.usedCount}, 0) < ${promoCodesTable.maxUses})`,
+            ))
+            .returning({ id: promoCodesTable.id });
+          if (!claimed) throw new Error("PROMO_INVALID");
 
           validatedPromoCode = promo.code;
           if (promo.discountType === "percentage") {
