@@ -4208,3 +4208,10 @@ Remaining safety boundary:
 - Result (all five families identical): Auto-fix keeps the transform unchanged (same 600x600 size). HD upscale makes the image 1200x1200 and sets the relative axes to 0.5, so the drawn size is unchanged (600 x 0.37 x 1 = 1200 x 0.37 x 0.5); position, scale, rotation, face and layer count are preserved; the size is fitted once, not twice.
 - Not covered: "Remove background" (needs the background-removal service/model, not run here), back/sleeve faces, real phones, cart payload after replacement (cart payload parity was verified earlier for the same families).
 - Next: command 2, product switching and variant identity.
+
+## 2026-10-05 — Command 2: product switching shares one refit plan
+- Status: local, committed on `claude/nice-carson-nxjq7q`; browser check, PR and merge follow. Not deployed.
+- Finding: the quick product switcher (`DesignStudioV2.tsx`) and the product picker (`toolbar/ProductSwitcher.tsx`) each carried a copy of the same artwork-refit code, so they could drift apart.
+- Change: new `pages/studio/productSwitch.ts` (`planProductSwitch`, `getSwitchPrintZone`) used by both; behavior is unchanged. 6 new tests (colour kept/fallback, mug mode only mug-to-mug, per-face zone refit with the smaller ratio, unset axes stay unset, rotation/opacity kept, same-product identity). Mutation checks (max instead of min ratio; mug mode kept on any switch) were caught by the tests. Source-text regression test updated to the new function. Storefront: 33 files, 194 tests pass; typecheck clean.
+- Already covered earlier: draft restore never leaks a stale colour/linked product when the link names a product (draftRestore tests); unsupported-face warning (artworkFaces).
+- Limits: face is still reset to front on a switch (unchanged behavior, not changed here); real phones not tested.

@@ -6,6 +6,7 @@ import {
   PRODUCTS, type DesignProduct,
 } from "@/pages/design-studio/mockups";
 import { useDesignStore } from "@/hooks/useDesignStore";
+import { planProductSwitch } from "../productSwitch";
 
 const CATEGORY_LABELS: Array<{ id: "all" | DesignProduct["category"]; label: string }> = [
   { id: "all", label: "All products" },
@@ -33,19 +34,6 @@ const CARD_TONE: Record<DesignProduct["category"], string> = {
   cap: "from-[#f3eee7] via-[#fbfaf8] to-[#e7dfd5]",
   waterbottle: "from-[#f0eee9] via-[#fbfaf8] to-[#e4e1da]",
 };
-
-function getSwitchPrintZone(
-  face: "front" | "back" | "left-sleeve" | "right-sleeve" | "neck-label",
-  product: DesignProduct,
-  colorHex: string,
-  mugMode: "side1" | "side2" | "wrap",
-) {
-  if (product.category === "mug") {
-    if (mugMode === "wrap") return face === "back" ? MUG_WRAP_BACK_PZ : MUG_PZ;
-    return face === "back" ? MUG_SIDE_BACK_PZ : MUG_SIDE_PZ;
-  }
-  return getZonePZ(face, product, colorHex);
-}
 
 function ProductCardImage({ product }: { product: DesignProduct }) {
   const previewSrc = getProductPickerPreviewSrc(product);
@@ -101,31 +89,10 @@ export function ProductSwitcher() {
 
   const chooseProduct = (product: DesignProduct) => {
     if (product.id !== selectedProduct.id) {
-      const nextColor = product.colors.find((color) => color.hex.toLowerCase() === selectedColor.hex.toLowerCase()) ?? product.colors[0];
-      const oldMugMode = selectedProduct.category === "mug" ? mugMode : "side1";
-      const nextMugMode = selectedProduct.category === "mug" && product.category === "mug" ? mugMode : "side1";
-      const layerTransforms = layers.map((layer) => {
-        const face = layer.face ?? "front";
-        const oldZone = getSwitchPrintZone(face, selectedProduct, selectedColor.hex, oldMugMode);
-        const nextZone = getSwitchPrintZone(face, product, nextColor.hex, nextMugMode);
-        const widthRatio = nextZone.w / Math.max(1, oldZone.w);
-        const heightRatio = nextZone.h / Math.max(1, oldZone.h);
-        const fitRatio = Math.min(widthRatio, heightRatio);
-        return {
-          id: layer.id,
-          transform: {
-            ...layer.transform,
-            x: layer.transform.x * widthRatio,
-            y: layer.transform.y * heightRatio,
-            scale: layer.transform.scale * fitRatio,
-            scaleX: layer.transform.scaleX ? layer.transform.scaleX * fitRatio : undefined,
-            scaleY: layer.transform.scaleY ? layer.transform.scaleY * fitRatio : undefined,
-          },
-        };
-      });
+      const plan = planProductSwitch({ from: selectedProduct, fromColor: selectedColor, fromMugMode: mugMode, to: product, layers });
       // Product, colour, face, mug mode, and refitted artwork are one history
       // transaction so one undo restores the complete previous design state.
-      switchProduct(product, nextColor, layerTransforms, nextMugMode);
+      switchProduct(product, plan.color, plan.layerTransforms, plan.mugMode);
       // Preserve artwork for the apply-to-product workflow, but reset product-specific
       // commerce identity, quantity, and incompatible face/mug state.
       setLinkedStoreProduct(null);
