@@ -231,3 +231,24 @@ A task is done only when all applicable items are true:
 ## 13. Final instruction to Claude
 
 Work through this report systematically, but do not blindly implement every idea at once. Start with the P0 release blockers and create small, reviewable changes. When a step requires owner approval, provider credentials, DNS/network access, a real customer order, payment, or an external integration permission, stop at the safe boundary, document the exact required action and payload, and keep the UI truthful. The goal is a premium, dynamic, high-converting Trynext e-commerce experience backed by reliable evidence—not a site that only appears complete in local development.
+
+## 2026-10-05 Five-command continuation order after Slice A
+
+Claude completed Slice A and merged PR #22. The following five commands are the next approved work order. Execute them sequentially, with one small PR or evidence-only report per command.
+
+### Command 1 — processed-image replacement parity
+Inspect the Studio background-removal/upscale/auto-fix replacement path. Add or strengthen invariant tests proving that replacing an image with identical intrinsic dimensions preserves the normalized frame, scale, rotation, print-face, and cart payload; a changed intrinsic size must be fitted once, not double-scaled. Verify T-shirt, long sleeve, hoodie, mug, and cap locally. No bottle release.
+
+### Command 2 — product switching and variant identity
+Test product/family/color/size/face switching from product detail → Studio → cart, including restored drafts. Ensure the selected product and variant remain authoritative, artwork is re-fitted to the target print zone, unsupported faces are warned about, and no stale linked product is attached. Use throwaway data and add regression/browser tests. Do not repair live catalog rows.
+
+### Command 3 — checkout lifecycle safety
+Using a throwaway database and no payment provider, test guest/account checkout validation, shipping/district and deposit messaging, inventory/promo behavior, retry/idempotency, duplicate clicks, allowed order transitions, confirmation state, and truthful notification failures. Add only code/test fixes that are provider-independent. Do not create a real order or payment. N9 remains migration design/dry-run only.
+
+### Command 4 — canonical catalog and image audit
+Perform a read-only audit of the six-family catalog, 70-product snapshot, supported variants, 188-surface contract, product image URLs, retired paths, missing/duplicate/invalid records, and first-party fallback behavior. Produce a dry-run report with row identifiers and proposed changes; do not import, delete, or update production data without a separate approval.
+
+### Command 5 — mockup/release evidence and blocked-gate report
+Reconcile the current mockup manifest, 188-surface status, 94 accepted/94 candidate split, Smart Object provenance, geometry/pixel-parity evidence, bottle hold, and live/provider verification. Generate or update redacted evidence only from permitted local/stand-in sources. Keep bottle and candidate surfaces fail-closed; do not claim photorealistic Smart Object release or live health without the required evidence.
+
+For every command, update `claude/reports.md` and `AGENT_HANDOFF.md` with the command number, files changed, exact tests/evidence, limitations, and next command. Stop at real-device, live-storage, provider-log, production-database, schema, payment, order, customer-data, or visual-approval boundaries.

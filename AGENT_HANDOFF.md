@@ -4195,3 +4195,11 @@ Remaining safety boundary:
 - Tests: 3 new cache tests, 40 Studio tests, storefront typecheck pass.
 - Limits: real-bucket behavior unverified (N8). Cached object paths are assumed to stay valid for the visit.
 - Next: export-vs-canvas pixel parity, processed-image replacement, product switching, then checkout lifecycle tests. N9: design/dry-run doc only, no schema change. N10: Activity Log decided as sufficient.
+
+## 2026-10-05 Five-command continuation order after Slice A
+
+Claude's Slice A is complete and merged as PR #22: the Studio reuses already-uploaded originals on Add to Cart retry. Export-versus-preview evidence is recorded locally but is not pixel-identity proof and is not live/device evidence.
+
+The next commands are sequential: (1) processed-image replacement parity and no-double-scale invariants; (2) product switching and variant identity from product detail through Studio and cart, including restored drafts; (3) throwaway-database checkout lifecycle and truthful notification tests without payment or real orders; (4) read-only six-family/70-product catalog and first-party-image audit with dry-run report only; and (5) mockup/release evidence reconciliation for the 188-surface matrix, 94 candidate split, Smart Object provenance, geometry/pixel parity, bottle hold, and live/provider gates.
+
+Each command must update `claude/reports.md`, root `reports.md`, and this handoff with exact evidence, limitations, and next command. Preserve bottle and candidate fail-closed status. Stop at real-device, live-storage, provider-log, production-database, schema, payment, order, customer-data, or visual-approval boundaries.

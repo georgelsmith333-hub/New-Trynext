@@ -32,3 +32,15 @@ These answers are provided by the Manus operator on the owner's behalf using the
 ## Execution boundary
 
 Start with the first approved backlog item as a small, reviewable code change with focused tests. Preserve the bottle hold and candidate surface status. Stop at owner approval, provider access, live mutation, payment, order creation, or any destructive operation. Update `reports.md` and `AGENT_HANDOFF.md` with exact evidence after each completed item.
+
+## 2026-10-05 Five-command continuation order — consume sequentially
+
+Slice A is complete: PR #22 merged the original-upload retry cache, and export-vs-preview evidence was recorded locally. Continue with these five commands:
+
+1. **Processed-image replacement parity:** test background removal/upscale/auto-fix replacement; preserve frame, scale, rotation, face, and cart payload for equal intrinsic dimensions; fit changed dimensions exactly once; verify five released families.
+2. **Product switching and variant identity:** test product detail → Studio → cart and restored drafts; keep product/color/size/face authoritative, re-fit artwork to the target zone, warn unsupported faces, and prevent stale linked products.
+3. **Checkout lifecycle safety:** use throwaway data and no payment provider to test validation, shipping/deposit messaging, inventory/promo, retry/idempotency, duplicate clicks, allowed transitions, confirmation, and truthful notification failures. N9 remains dry-run/design only.
+4. **Canonical catalog/image audit:** read-only audit of the six-family/70-product snapshot, variants, 188-surface contract, product URLs, retired paths, missing/duplicate/invalid records, and first-party fallbacks. Produce a dry-run report; do not mutate production data.
+5. **Mockup/release evidence:** reconcile 188 surfaces, 94 accepted/94 candidate split, Smart Object provenance, geometry/pixel parity, bottle hold, and live/provider evidence. Keep bottle and candidates fail-closed and do not claim photorealistic release or live health without evidence.
+
+For each command, update this file, root `reports.md`, and `AGENT_HANDOFF.md` with command number, files, tests/evidence, limits, and next command. Stop at real-device, live-storage, provider-log, production-database, schema, payment, order, customer-data, or visual-approval boundaries.
