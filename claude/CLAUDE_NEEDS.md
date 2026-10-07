@@ -191,3 +191,18 @@ Last updated: 2026-10-05 (N11 added)
 - 2026-10-05: first list answered in `claude/reports.md`.
 
 - 2026-10-05: N10 decided by operator: Activity Log is enough for contact messages; Telegram/email stay unconfigured and truthful. N9: design and dry-run only, no schema change.
+
+
+## 2026-10-08 Current consolidated work order
+
+Claude should pick up the following commands automatically in order. Existing N1-N11 answers and safety boundaries remain binding.
+
+1. **PR #27 / live upload:** wait for green CI, active-app, and Pages checks; merge the small tested CSRF-header fix only after checks pass; deploy; run one harmless live Studio PNG upload and Add to Cart test; stop before checkout; record exact deployment and result.
+2. **Studio reliability:** complete local/stand-in-storage evidence for upload retry/cache, processed-image replacement, export-versus-canvas parity, switching/variant identity, draft restore, cart payload, and supported faces across T-shirt, long sleeve, hoodie, mug, and cap. Add focused tests only where a real gap exists.
+3. **Live/device verification:** keep real-phone touch and any unavailable live route explicitly UNVERIFIED until evidence exists; after code merges verify the custom domain, Pages bundle, health aliases, catalog reads, mockups, and Studio route.
+4. **Checkout/order safety:** local/throwaway-DB checks only for idempotency, duplicates, pricing, stock, promo, statuses, cancellation/restock, payment truthfulness, and notifications. No real order, payment, customer notification, or live data mutation. Persistent idempotency schema work is design/dry-run only.
+5. **Catalog/images:** perform a read-only audit from a sanitized live product export if available. No live imports/deletes/repairs without a reversible dry run and explicit approval. Keep the bottle custom-order hold.
+6. **Mockup release:** preserve 94 accepted plus 94 candidate status until saved visual evidence is available; do not claim Photoshop/Photopea-level editability or 188/188 release approval from historical statements alone; do not promote bottle masters or activate templates.
+7. **Errors/infrastructure:** inspect only sanitized Activity Log/Render/health evidence. Do not change R2 CORS, DNS, Render variables, Neon, Upstash, schema, or credentials under this queue.
+
+After each command, update `reports.md`, `claude/reports.md`, and `AGENT_HANDOFF.md` with status, exact tests/evidence, commit/PR/deployment ID, limitation, and next command. Never expose secrets or claim live success from local tests.
