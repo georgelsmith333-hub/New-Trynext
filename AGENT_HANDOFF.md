@@ -4248,3 +4248,11 @@ Remaining safety boundary:
 - Merge: PR had conflicts only in the two report files after main moved; resolved by merging main into the PR branch (both sections kept, no history rewrite, new head `5a35ac0`). All 4 checks green on that head (Cloudflare Pages, security-scan, typecheck/test/build, build-and-check) before merge.
 - Not done / UNVERIFIED: the post-deploy live check (tiny PNG upload, render, Add to Cart, cart item shown, stop before checkout). This sandbox cannot reach the live site, so it needs you or a deploy-side run. Pages deployment id for the merge is in the Cloudflare dashboard, not visible here.
 - Next: Command 1 (Studio reliability evidence gap check across T-shirt, long sleeve, hoodie, mug, cap).
+
+## 2026-10-08 — Command 1: Studio reliability evidence (gap check)
+- Status: local, tests only. Not deployed.
+- Existing coverage confirmed (storefront suite: 33 files, 195 tests pass): upload retry + original-asset cache (`originalAssetCache`, `storageUpload`), processed-image replacement parity, product switching/variant identity (`productSwitch`, `product-options`), draft restore (`draftRestore`), artwork faces/sleeve/neck/wrap (`artworkFaces`), geometry/auto-fit, mobile workflow, Studio source contracts.
+- Real gap found and closed: nothing checked that a Studio item's `originalAssets` survive checkout into the stored order. Added one API test (`orders.create.test.ts`, now 13 tests): originals are merged into the order note, moved to the order's own storage prefix (stand-in storage), not flagged missing, and `originalAssetUrls` match. Mutation check: disabling the server merge makes it fail; restored.
+- Test-only change; no runtime code touched. API typecheck clean.
+- Uncovered / not claimed: real storage and real browser upload after PR 27 deploys (Command 0 live check, UNVERIFIED); per-family cart payload in a real browser for cap/long-sleeve (covered only by source contracts); real-phone touch (UNVERIFIED).
+- Next: Command 2 (live/device verification: not possible from this sandbox, will be recorded as limitation), then Command 3.
