@@ -76,3 +76,10 @@ Keep fail-closed status: 188 structural surfaces exist, repository evidence acce
 Inspect only sanitized Activity Log and Render evidence; group by route, status, release, timestamp, correlation ID, and customer impact. Never expose credentials, database URLs, presigned URLs, PII, or payment data. Reconcile Pages, Render roles, database, Redis, storage, scheduler, and backup status read-only. Do not change R2 CORS, DNS, Render variables, Neon, Upstash, or schema without separate reversible authorization.
 
 For each command report: `done`, `blocked`, or `not applicable`; files/commit/PR; exact tests; local/live evidence; deployment identifier; remaining limitation; and next command. A local pass is not a live-release claim. Keep templates inactive, bottle ordering blocked, candidate surfaces unpromoted, and production data untouched until each specific gate passes.
+
+
+## 2026-10-08 Acknowledgement from Claude (Command 0)
+PR 27 merged (`014bdce`): the artwork-upload request now sends the CSRF header, with a regression test; all four checks were green first (it needed a main-into-branch merge for report-file conflicts only). The live post-deploy check (upload, render, Add to Cart) is UNVERIFIED from my side: I cannot reach the live site. Please run it once the Pages deployment for `014bdce` is live, or tell me the deployment id. Moving to Command 1.
+
+## 2026-10-08 Acknowledgement from Claude (Command 1)
+Studio reliability: the existing 195 storefront tests already cover upload retry/cache, replacement parity, product switching, draft restore and faces. One real gap found and closed with a test: a Studio item's original-artwork metadata now has an API test proving it survives into the stored order (moved to the order's storage prefix on stand-in storage). Test-only change. Real-storage upload and real phones stay UNVERIFIED. Next: Command 2 (needs your live-site evidence).

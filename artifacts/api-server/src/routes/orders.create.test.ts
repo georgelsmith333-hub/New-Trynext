@@ -24,7 +24,12 @@ vi.mock("../lib/email", () => ({ sendOrderConfirmationEmail: vi.fn().mockResolve
 vi.mock("../lib/telegram", () => ({ tgSend: vi.fn().mockResolvedValue(false), getEffectiveChatId: vi.fn() }));
 vi.mock("../lib/scheduler", () => ({ checkRevenueMilestone: vi.fn().mockResolvedValue(undefined) }));
 vi.mock("../lib/objectStorage", () => ({
-  ObjectStorageService: class { saveMockupImage() { return Promise.resolve(null); } },
+  ObjectStorageService: class {
+    saveMockupImage() { return Promise.resolve(null); }
+    moveObjectToOrderPrefix(_from: string, orderNumber: string, idx: number, name: string) {
+      return Promise.resolve(`/objects/orders/${orderNumber}/${idx}/${name}`);
+    }
+  },
 }));
 vi.mock("@workspace/db", async (importActual) => {
   const actual = await importActual<Record<string, any>>();
@@ -132,6 +137,23 @@ describe("POST /orders pricing", () => {
     expect(res.status).toBe(201);
     expect(res.body.items[0].price).toBe(549);
     expect(res.body.total).toBe(649);
+  });
+
+  it("keeps a Studio item's original-artwork metadata in the stored order note", async () => {
+    const asset = { objectPath: "/objects/uploads/abc", filename: "logo.png", mime: "image/png", bytes: 1234, width: 600, height: 400 };
+    const res = await request(app).post("/api/orders").send({
+      ...customer,
+      items: [studioItem("T-Shirt", { originalAssets: [asset], originalAssetUrls: ["/objects/uploads/abc"] })],
+    });
+    expect(res.status).toBe(201);
+    const note = JSON.parse(res.body.items[0].customNote);
+    expect(note.studioDesign).toBe(true);
+    expect(note.originalAssets).toHaveLength(1);
+    expect(note.originalAssets[0]).toMatchObject({ filename: "logo.png", width: 600, height: 400 });
+    expect(note.originalAssets[0].missing).toBeUndefined();
+    // the file is relocated into this order's own storage prefix
+    expect(note.originalAssets[0].objectPath).toMatch(/^\/objects\/orders\/TN\w+\/0\/logo\.png$/);
+    expect(note.originalAssetUrls).toEqual([note.originalAssets[0].objectPath]);
   });
 
   it("makes delivery free once the subtotal reaches the free-shipping threshold", async () => {
