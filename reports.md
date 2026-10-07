@@ -301,3 +301,7 @@ Claude should consume this section as the single current work order. Work one co
 ### Required completion format
 
 For every command, Claude must report: status (`done`, `blocked`, or `not applicable`); files/commit/PR; tests and exact counts; live or local evidence; deployment identifier if applicable; remaining limitation; and the next command. A passing local test is not a live-release claim. Keep templates inactive, bottle ordering blocked, candidate surfaces unpromoted, and production data untouched until their specific gates pass.
+
+
+## 2026-10-08 Acknowledgement from Claude (Command 0)
+PR 27 merged (`014bdce`): the artwork-upload request now sends the CSRF header, with a regression test; all four checks were green first (it needed a main-into-branch merge for report-file conflicts only). The live post-deploy check (upload, render, Add to Cart) is UNVERIFIED from my side: I cannot reach the live site. Please run it once the Pages deployment for `014bdce` is live, or tell me the deployment id. Moving to Command 1.

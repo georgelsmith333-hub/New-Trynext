@@ -4241,3 +4241,10 @@ Remaining safety boundary:
 - Mismatch to know about (no change made): both water-bottle surfaces are marked `accepted` in the manifest, while the owner says the bottle print area is "not yet" approved. The customer hold stays enforced in code (Studio blocks it, `POST /orders` answers 409 `mockup_not_approved`; covered by a test). The manifest status is not customer approval; do not read it as one.
 - Not claimed: photorealistic release, live health, curved-product accuracy beyond the approximation, real phones.
 - Five-command order status: commands 1, 2, 3 (part 1), 4 (repo side) and 5 done; real-device, live-storage, provider-log and production-database items remain owner-blocked (N1, N3, N4, N8, N11).
+
+## 2026-10-08 — Command 0: PR 27 (Studio upload CSRF header)
+- Status: merged to main (squash `014bdce`). NOT confirmed deployed or live-tested from here.
+- What: the request that prepares an original-artwork upload now sends `X-Requested-With: XMLHttpRequest` (one line in `DesignStudioV2.tsx`) plus a source-contract regression test. Without it the live API answered `403 csrf_blocked` and Add to Cart stopped (owner's live finding).
+- Merge: PR had conflicts only in the two report files after main moved; resolved by merging main into the PR branch (both sections kept, no history rewrite, new head `5a35ac0`). All 4 checks green on that head (Cloudflare Pages, security-scan, typecheck/test/build, build-and-check) before merge.
+- Not done / UNVERIFIED: the post-deploy live check (tiny PNG upload, render, Add to Cart, cart item shown, stop before checkout). This sandbox cannot reach the live site, so it needs you or a deploy-side run. Pages deployment id for the merge is in the Cloudflare dashboard, not visible here.
+- Next: Command 1 (Studio reliability evidence gap check across T-shirt, long sleeve, hoodie, mug, cap).
