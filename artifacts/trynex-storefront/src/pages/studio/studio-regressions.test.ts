@@ -23,6 +23,14 @@ describe("Design Studio reliability contracts", () => {
     expect(studio).toContain("Every uploaded artwork must be preserved before checkout");
   });
 
+  it("marks the original-artwork upload request as an XMLHttpRequest", () => {
+    const requestBlock = studio.slice(
+      studio.indexOf('getApiUrl("/api/storage/uploads/request-url")'),
+      studio.indexOf('getApiUrl("/api/storage/uploads/request-url")') + 260,
+    );
+    expect(requestBlock).toContain('"X-Requested-With": "XMLHttpRequest"');
+  });
+
   it("uses active product geometry when switching products and adding generated artwork", () => {
     expect(productSwitcher).toContain("planProductSwitch(");
     expect(studio).toContain("planProductSwitch(");

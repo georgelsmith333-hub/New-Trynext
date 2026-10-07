@@ -1058,7 +1058,7 @@ export default function DesignStudioV2() {
         const safeName = (layer.name || "design").replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 80);
         const filename = `${safeName}-${Date.now()}.${ext}`;
         const reqRes = await fetch(getApiUrl("/api/storage/uploads/request-url"), {
-          method: "POST", headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
           body: JSON.stringify({ name: filename, size: blob.size, contentType: mime }),
         });
         if (!reqRes.ok) {
