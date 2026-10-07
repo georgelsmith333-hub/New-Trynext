@@ -4256,3 +4256,13 @@ Remaining safety boundary:
 - Test-only change; no runtime code touched. API typecheck clean.
 - Uncovered / not claimed: real storage and real browser upload after PR 27 deploys (Command 0 live check, UNVERIFIED); per-family cart payload in a real browser for cap/long-sleeve (covered only by source contracts); real-phone touch (UNVERIFIED).
 - Next: Command 2 (live/device verification: not possible from this sandbox, will be recorded as limitation), then Command 3.
+
+## 2026-10-08 — Commands 0-6 status (after PR 29, merge `488a30b`)
+- Command 0: PR 27 merged (`014bdce`). Live post-deploy upload + Add to Cart test: UNVERIFIED (blocked: sandbox proxy returns 403 for the live domain; confirmed again this run).
+- Command 1: done (test-only, PR 29 `488a30b`). 195 storefront + 13 order-creation tests pass.
+- Command 2 (device/live): blocked. Real-phone touch UNVERIFIED. Domain, Pages bundle, health aliases, catalog/mockup reads, service worker, canonical host: cannot be checked from here (403 tunnel). Needs owner/deploy-side evidence.
+- Command 3 (checkout/order safety): done as far as local checks go. Covered by 13 stand-in-DB tests (validation, quantity, bottle hold, server pricing, shipping threshold, stock-out, promo applied/expired/used-up/min/race, discount floor, Studio originals) plus earlier browser checks. Still open and needs an owner decision: allowed status transitions and restock-on-cancel (found: any status can move to any status; cancel does not restock). Persistent idempotency stays design/dry-run only (no schema work done). No real order, payment or notification was made.
+- Command 4 (catalog audit): blocked on the sanitized product export (N11). Nothing changed.
+- Command 5 (mockup gate): unchanged and fail-closed. 188 surfaces = 94 accepted + 94 candidate; no saved validator report; bottle hold kept; nothing promoted.
+- Command 6 (errors/health): blocked on sanitized Activity Log / Render evidence. No provider, CORS, DNS, variable or schema change.
+- Next safe action: owner runs the live upload test after the `014bdce` deploy and supplies the product export, sanitized logs, and a decision on status transitions/restock. Claude idles on those until they arrive.

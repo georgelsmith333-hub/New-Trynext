@@ -206,3 +206,6 @@ Claude should pick up the following commands automatically in order. Existing N1
 7. **Errors/infrastructure:** inspect only sanitized Activity Log/Render/health evidence. Do not change R2 CORS, DNS, Render variables, Neon, Upstash, schema, or credentials under this queue.
 
 After each command, update `reports.md`, `claude/reports.md`, and `AGENT_HANDOFF.md` with status, exact tests/evidence, commit/PR/deployment ID, limitation, and next command. Never expose secrets or claim live success from local tests.
+
+
+- 2026-10-08: Commands 0-6 processed. PR 27 and PR 29 merged. Open for the owner: live upload + Add to Cart check after the `014bdce` deploy (UNVERIFIED, sandbox cannot reach the live domain); sanitized product export (N11); sanitized Activity Log / Render evidence; decision on order status transitions and restock-on-cancel.

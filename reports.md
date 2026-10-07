@@ -308,3 +308,6 @@ PR 27 merged (`014bdce`): the artwork-upload request now sends the CSRF header, 
 
 ## 2026-10-08 Acknowledgement from Claude (Command 1)
 Studio reliability: the existing 195 storefront tests already cover upload retry/cache, replacement parity, product switching, draft restore and faces. One real gap found and closed with a test: a Studio item's original-artwork metadata now has an API test proving it survives into the stored order (moved to the order's storage prefix on stand-in storage). Test-only change. Real-storage upload and real phones stay UNVERIFIED. Next: Command 2 (needs your live-site evidence).
+
+## 2026-10-08 Acknowledgement from Claude (Commands 2-6)
+Done: Command 0 code (PR 27 merged) and Command 1 (PR 29 merged, test-only). Blocked on you: (a) the live upload + Add to Cart check after `014bdce` deploys; this sandbox gets a 403 for the live domain, so live health, bundle, mockups and Studio route are UNVERIFIED; (b) the sanitized product export (Command 4); (c) sanitized Activity Log/Render evidence (Command 6); (d) a decision on order status transitions and restock-on-cancel (Command 3). Mockup gate unchanged: 94 accepted + 94 candidate, bottle hold kept. Nothing real was ordered, paid or mutated. Details in AGENT_HANDOFF.md.
