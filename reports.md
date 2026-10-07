@@ -242,3 +242,62 @@ Command 2 merged (PR 24, product switching shares one refit plan; finding: size 
 ## 2026-10-08 Live Design Studio CSRF finding and fix
 
 A safe live smoke test on `https://trynext.shop/design-studio` used a harmless 185-byte asymmetric PNG. The artwork rendered in the Studio, but Add to Cart stopped before checkout with `403 csrf_blocked`. Cloudflare Pages production metadata identifies project `trynext-shop-new` at production commit `11f8e5962fea89cd5d52fe00b0cd3cb598145685`; the deployed `DesignStudioV2` chunk showed the original-artwork `POST /api/storage/uploads/request-url` request sending only `Content-Type`. The API correctly requires `X-Requested-With: XMLHttpRequest`, while the fallback PUT path already sent it. The fix is prepared on `manus/fix-studio-upload-csrf-2026-10-08`: add the missing header and a source-contract regression test. Focused Studio regression tests passed 7/7, storage upload tests passed 7/7, and the storefront production build passed. The fix is not yet merged or deployed; repeat the live upload/Add to Cart smoke test only after the Pages deployment serves the new bundle. No checkout, order, payment, provider setting, database, or customer-data mutation was performed.
+## 2026-10-08 Consolidated Claude execution order — pick up automatically
+
+Claude should consume this section as the single current work order. Work one command at a time, keep every release gate fail-closed, and append exact evidence to `reports.md`, `claude/reports.md`, and `AGENT_HANDOFF.md` after each completed command.
+
+### Command 0 — Finish the confirmed live Studio upload defect
+
+1. Monitor PR #27 (`fix(studio): send CSRF header for original artwork upload`).
+2. Confirm CI, active-app verification, and Cloudflare Pages checks are green.
+3. Merge PR #27 automatically only when all checks are green and the change remains limited to the tested Studio header fix and report entries; do not force-push or bypass checks.
+4. Wait for the production Pages deployment to serve the new bundle, then run one harmless live Design Studio test: upload a tiny PNG, confirm it renders, click Add to Cart, confirm the cart item appears, and stop before checkout. Remove the test cart item if the UI permits.
+5. Record the production deployment commit, bundle evidence, upload result, cart result, and any exact error. Do not claim this command passed before the post-deployment live check.
+
+### Command 1 — Complete Design Studio reliability evidence
+
+1. Use local/stand-in storage for repeatable tests; use real storage only for the single post-deployment smoke test above.
+2. Verify image upload failure, retry, original-asset cache, processed-image replacement, export PNG versus canvas, product switching, variant identity, draft restore, and cart payload preservation.
+3. Cover T-shirt, long sleeve, hoodie, mug, and cap; cover front, back, sleeve, neck, and mug wrap where supported.
+4. Add only small source-of-truth fixes with focused regression tests. Do not change bottle geometry or release status.
+5. Run storefront tests, typecheck, build, and browser verification; report exact counts and uncovered areas.
+
+### Command 2 — Real-device and live-site boundaries
+
+1. Keep real-phone touch editing marked UNVERIFIED unless a permitted device result is supplied.
+2. After every merged code change, verify the live custom domain and Pages deployment identifiers; do not infer live health from GitHub success.
+3. Check the public health aliases, product/category/mockup reads, service-worker/bundle freshness, canonical host, and representative Studio route.
+4. If the environment cannot verify a route, record the exact limitation instead of claiming success.
+
+### Command 3 — Checkout and order safety, with no real transaction
+
+1. Continue local/throwaway-DB verification only: idempotent order retry, duplicate-click protection, pricing, stock, promo redemption, allowed status values/transitions, cancellation/restock behavior, payment-state truthfulness, and notification failure states.
+2. Do not create a real order, submit payment, send a customer notification, or change live order/customer data.
+3. For any schema change such as persistent idempotency keys, prepare a reversible migration and dry-run report only; do not run it without explicit approval for that change.
+4. Preserve the 25% COD advance language and settings-driven payment/contact configuration.
+5. Record the unresolved N10 contact-notification choice truthfully: Activity Log is sufficient for now; Telegram/email remain unconfigured.
+
+### Command 4 — Catalog and first-party image audit
+
+1. Complete the read-only catalog audit only from a sanitized product export or authenticated read-only evidence.
+2. Compare live six-family/70-product records against supported variants, images, prices, stock, and the 188-surface contract.
+3. Do not import, delete, hide, rewrite, or repair live products or images without a dry run, reversible plan, and explicit approval for that exact change.
+4. Keep water-bottle custom ordering blocked until its print-zone proof is reviewed and approved.
+
+### Command 5 — Mockup release gate
+
+1. Preserve the fail-closed state: 188 structural surfaces exist, 94 front/back surfaces are accepted in repository evidence, and 94 side-view/mug-wrap surfaces remain candidates unless a saved validator report is added.
+2. Do not claim Photoshop/Photopea-level editability, photorealistic displacement, or full 188/188 release approval from historical operator statements alone.
+3. Do not regenerate or promote checksum-bound bottle masters or activate templates until the required visual proof and owner approval are present.
+4. Keep the customer compositor and order hold truthful; document any approximation as an approximation.
+
+### Command 6 — Errors, health, and deployment evidence
+
+1. Obtain or inspect only sanitized Admin Activity Log and Render error evidence; group by route, status, release, timestamp, correlation ID, and customer impact.
+2. Never expose passwords, tokens, database URLs, presigned URLs, customer PII, payment data, or provider credentials.
+3. Reconcile Cloudflare Pages, Render primary/standby roles, database, Redis, storage, scheduler, and backup status without changing provider settings.
+4. Do not change Cloudflare/R2 CORS, DNS, Render environment variables, Neon, Upstash, or database schema unless separately authorized with a reversible plan.
+
+### Required completion format
+
+For every command, Claude must report: status (`done`, `blocked`, or `not applicable`); files/commit/PR; tests and exact counts; live or local evidence; deployment identifier if applicable; remaining limitation; and the next command. A passing local test is not a live-release claim. Keep templates inactive, bottle ordering blocked, candidate surfaces unpromoted, and production data untouched until their specific gates pass.
