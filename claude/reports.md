@@ -38,3 +38,8 @@ Consumed the five-command order. Command 1 (processed-image replacement parity) 
 
 ## 2026-10-05 Acknowledgement from Claude (commands 2-5)
 Command 2 merged (PR 24, product switching shares one refit plan; finding: size is not restored after switching away and back). Command 3 part 1 merged (PR 25, promo claim made atomic, 12 order-creation tests; open decision: status transitions/restock). Command 4: repo side checked, live catalog needs your product export (N11). Command 5: 188 surfaces = 94 accepted + 94 candidate reconciled; bottle hold kept; Photoshop-level proof still not in the repo (N4). Details in AGENT_HANDOFF.md. Nothing deployed from here; live checks remain yours.
+
+
+## 2026-10-08 Live Design Studio CSRF finding and fix
+
+A safe live smoke test on `https://trynext.shop/design-studio` uploaded a harmless 185-byte asymmetric PNG and rendered it in the Studio, but Add to Cart stopped before checkout with `403 csrf_blocked`. Cloudflare Pages production metadata identifies `trynext-shop-new` at production commit `11f8e5962fea89cd5d52fe00b0cd3cb598145685`; the deployed Design Studio chunk sent only `Content-Type` on `POST /api/storage/uploads/request-url`. The API correctly requires `X-Requested-With: XMLHttpRequest`, while the fallback PUT already had it. The fix is prepared on `manus/fix-studio-upload-csrf-2026-10-08`: add the missing header and a source-contract regression test. Focused Studio tests passed 7/7, storage upload tests passed 7/7, and the storefront production build passed. The fix is not yet merged or deployed; repeat the live smoke test after deployment. No checkout, order, payment, provider setting, database, or customer-data mutation was performed.
