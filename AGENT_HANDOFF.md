@@ -4311,3 +4311,8 @@ Claude must acknowledge this directive in `claude/reports.md` before starting Co
 - It had merge conflicts after main moved (report files only); resolved by merging main into its branch with a merge commit (both sections kept, no force-push), new head `bb02308`. Checks on that head: Cloudflare Pages, security-scan, Typecheck/test/build, build-and-check all green; mergeable state clean.
 - Preserved truthfully: at the time of the owner's smoke test the CSRF header on the upload was live and upload/render passed, but Add to Cart stayed at 0 items. That test pre-dates PR 32 (render-request header) and is not yet re-run live.
 - Next: PR 33 (persistent, retryable cart-error alert) once green; then the owner's live re-test.
+
+
+### Command A follow-up: PR 33 merged
+- Local/merged only, not live-verified: squash-merged as `199a0f8` after all 4 checks green (Cloudflare Pages, security-scan, Typecheck/test/build, build-and-check). Adds a persistent, retryable "Your design was not added to the cart" alert in the Studio (with #32 CSRF header fix).
+- Next: after Pages serves this build, one harmless live upload + Add to Cart (stop before checkout) is still needed; UNVERIFIED from sandbox.

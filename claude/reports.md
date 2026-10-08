@@ -120,3 +120,8 @@ Status: fixed in code, tested locally; live result UNVERIFIED. Local reproductio
 
 ## 2026-10-08 Command B report (PR 31)
 Done. PR 31 (docs-only) merged as `9d60d7d` after all four checks passed (Pages, security-scan, typecheck/test/build, build-and-check) on head `bb02308`; its report-file conflicts were resolved by merging main into the branch (no force-push). The live result is kept as you wrote it: upload/render passed, Add to Cart stayed at 0 at that time; that test pre-dates the render-request fix (PR 32). Next: PR 33 (persistent cart-error alert), then your live re-test.
+
+
+### Command A follow-up: PR 33 merged
+- Local/merged only, not live-verified: squash-merged as `199a0f8` after all 4 checks green (Cloudflare Pages, security-scan, Typecheck/test/build, build-and-check). Adds a persistent, retryable "Your design was not added to the cart" alert in the Studio (with #32 CSRF header fix).
+- Next: after Pages serves this build, one harmless live upload + Add to Cart (stop before checkout) is still needed; UNVERIFIED from sandbox.
