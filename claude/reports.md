@@ -87,5 +87,24 @@ Studio reliability: the existing 195 storefront tests already cover upload retry
 ## 2026-10-08 Acknowledgement from Claude (Commands 2-6)
 Done: Command 0 code (PR 27 merged) and Command 1 (PR 29 merged, test-only). Blocked on you: (a) the live upload + Add to Cart check after `014bdce` deploys; this sandbox gets a 403 for the live domain, so live health, bundle, mockups and Studio route are UNVERIFIED; (b) the sanitized product export (Command 4); (c) sanitized Activity Log/Render evidence (Command 6); (d) a decision on order status transitions and restock-on-cancel (Command 3). Mockup gate unchanged: 94 accepted + 94 candidate, bottle hold kept. Nothing real was ordered, paid or mutated. Details in AGENT_HANDOFF.md.
 
+## 2026-10-08 Live post-deployment Studio smoke test — blocked at Add to Cart
+
+Status: blocked; upload/render passed, Add to Cart did not complete. On `https://trynext.shop/design-studio`, the live bundle contained the merged `X-Requested-With` header. A harmless 185-byte PNG was injected through the normal file-input change handler and appeared as a visible `live-upload-smoke` layer on the T-shirt preview. The browser reached the normal upload request and API fallback upload path; signed URLs and credentials are not recorded. Add to Cart entered `Preparing…`, returned to `Add to Cart`, but the cart indicator stayed at `0 items` with no visible error, success toast, or retry message. No checkout, order, payment, or customer-data mutation occurred. This is not a pass: investigate the post-upload/render-to-cart path using local/stand-in storage, add a regression test, and provide truthful retry/error feedback. Keep all other blockers unchanged.
+
+## 2026-10-08 Owner directive — Claude must pick up this work order
+
+**Command A — highest priority:** reproduce and fix the post-upload/render-to-cart failure. In local/stand-in storage, upload a harmless tiny PNG, verify the visible artwork layer and processed image, click Add to Cart, and trace the state transition through cart insertion. Inspect console/network errors, async exceptions, stale state, asset URLs, product/variant identity, and cart-store dispatch. Add a regression test that fails before the fix and passes after it; implement the smallest source-of-truth fix and truthful retry/error feedback. Do not weaken CSRF, upload validation, storage checks, or fail-closed order gates. Run relevant tests, typecheck, and build. Prepare a small PR; do not merge/deploy until checks are green and scope is reported. Then run one harmless live smoke test after deployment, stop before checkout, and report the cart item result. Never claim live success without evidence.
+
+**Command B:** monitor PR #31 and merge only after green checks as documentation-only; preserve the truthful result that upload/render passed but Add to Cart stayed at 0 items.
+
+**Command C:** keep mockup templates inactive, bottle ordering blocked, and 94 accepted plus 94 candidate surfaces unchanged until saved visual evidence proves the remaining surfaces.
+
+**Command D:** collect only sanitized read-only catalog, Activity Log, Render, Pages/health, and real-device evidence. Do not change provider settings, DNS, storage CORS, credentials, databases, backups, schema, or customer data.
+
+**Command E:** continue checkout/order tests only on local/throwaway data. No real order/payment. Owner decisions remain allowed status transitions and restock-on-cancel; persistent idempotency remains dry-run only.
+
+**Command F:** Meta campaign status is unverified. Do not spend the ৳600 budget or activate/change Braintrack.LLC ads from this work order without separate verified evidence and approval.
+
+Before starting Command A, acknowledge this directive in this file. For every command report status, files/commit/PR, exact tests, local/live evidence, deployment identifier, limitation, and next command.
 ## 2026-10-08 Acknowledgement from Claude (live Add to Cart blocker)
 Read your smoke-test result. Likely cause found in the code: the server mockup render request (`/api/mockup/render`, the second step of Add to Cart) did not send `X-Requested-With`, so the API returned 403 `csrf_blocked` to cookie-carrying visitors, the same class as PR 27; the failure toast shows briefly, which is easy to miss. Fixed that request and the two other Studio POSTs that lacked the header, with a test that guards every Studio mutating request. I could not reproduce it live (the sandbox cannot reach the domain), so this is UNVERIFIED until you re-run upload + Add to Cart on the new bundle.
