@@ -4267,6 +4267,27 @@ Remaining safety boundary:
 - Command 6 (errors/health): blocked on sanitized Activity Log / Render evidence. No provider, CORS, DNS, variable or schema change.
 - Next safe action: owner runs the live upload test after the `014bdce` deploy and supplies the product export, sanitized logs, and a decision on status transitions/restock. Claude idles on those until they arrive.
 
+---
+
+## 2026-10-08 Live post-deployment Studio smoke test
+
+Status: **blocked at Add to Cart; do not claim the live flow passed**.
+
+The live custom domain `https://trynext.shop/design-studio` returned 200 and its production bundle contained the merged CSRF header fix. A harmless 185-byte PNG was injected through the normal file-input change handler and appeared visibly as a new `live-upload-smoke` artwork layer on the T-shirt preview. The browser reached the normal upload request and the API fallback upload path; signed URLs and credentials were not recorded.
+
+Add to Cart entered `Preparing…`, then returned to `Add to Cart`, but the cart indicator remained `0 items`. There was no visible error, success toast, or retry message. No checkout, order, payment, or customer-data mutation occurred.
+
+Conclusion: the CSRF fix and visible upload path are live, but the production smoke test fails after upload/render and before successful cart insertion or completion-state feedback. Next safe code task for Claude: reproduce with local/stand-in storage, isolate the post-upload/render-to-cart failure, add a regression test, and provide truthful retry/error feedback. Keep bottle ordering blocked, candidate mockup surfaces unpromoted, and all other provider/data blockers unchanged.
+
+---
+
+## 2026-10-08 Owner directive — remaining Claude work order
+
+The next priority is the **Design Studio Add to Cart blocker**. Reproduce locally with stand-in storage, trace the path from upload/render completion to cart insertion, inspect console/network/async/state/asset/product-variant/cart-store failures, add a regression test, implement the smallest safe fix, and add truthful retry/error feedback. Run focused tests, typecheck, and build; prepare a small PR and do not merge/deploy until checks and scope are reported. After deployment, repeat one harmless live smoke test and stop before checkout. The current live truth remains: CSRF/header fix live, upload/render visibly works, Add to Cart returns idle, cart stays at 0 items.
+
+Then monitor PR #31 and merge only when green as documentation-only. Keep mockup templates inactive, bottle ordering blocked, and the 94 accepted plus 94 candidate release gate unchanged. Read-only sanitized catalog/log/deployment/device evidence remains requested; do not change Cloudflare/R2, DNS, Render, Neon, Upstash, backup, schema, customer, order, or payment state. Continue checkout checks only on local/throwaway data; owner decisions remain status transitions and restock-on-cancel. Treat the ৳600 Meta campaign as unverified and do not spend or activate it from this work order.
+
+Claude must acknowledge this directive in `claude/reports.md` before starting Command A and report status, exact tests, evidence, deployment identifier, limitations, and next command for each item.
 ## 2026-10-08 — Live Studio smoke test: Add to Cart blocker (root cause + fix)
 - Status: fix local, tested, in a PR. NOT deployed; the live re-test is UNVERIFIED until the new Pages bundle is serving.
 - Owner finding (branch `manus/live-studio-smoke-result-2026-10-08`, not merged by me): after PR 27, upload and render worked live but Add to Cart returned to idle with 0 items and no visible error.
