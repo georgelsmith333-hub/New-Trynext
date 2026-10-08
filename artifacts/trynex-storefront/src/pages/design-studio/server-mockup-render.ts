@@ -259,7 +259,8 @@ export async function renderApprovedMockupOnServer({
   });
   const response = await fetch(getApiUrl("/api/mockup/render"), {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    // Required by the API's CSRF policy for any visitor who carries a session cookie.
+    headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify({
       surface: serverSurface.manifest,
       runtimeRoleImages: serverSurface.roleImages,

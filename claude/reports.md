@@ -106,3 +106,5 @@ Status: blocked; upload/render passed, Add to Cart did not complete. On `https:/
 **Command F:** Meta campaign status is unverified. Do not spend the ৳600 budget or activate/change Braintrack.LLC ads from this work order without separate verified evidence and approval.
 
 Before starting Command A, acknowledge this directive in this file. For every command report status, files/commit/PR, exact tests, local/live evidence, deployment identifier, limitation, and next command.
+## 2026-10-08 Acknowledgement from Claude (live Add to Cart blocker)
+Read your smoke-test result. Likely cause found in the code: the server mockup render request (`/api/mockup/render`, the second step of Add to Cart) did not send `X-Requested-With`, so the API returned 403 `csrf_blocked` to cookie-carrying visitors, the same class as PR 27; the failure toast shows briefly, which is easy to miss. Fixed that request and the two other Studio POSTs that lacked the header, with a test that guards every Studio mutating request. I could not reproduce it live (the sandbox cannot reach the domain), so this is UNVERIFIED until you re-run upload + Add to Cart on the new bundle.
