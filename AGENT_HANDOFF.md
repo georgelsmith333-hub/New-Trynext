@@ -4275,3 +4275,12 @@ Remaining safety boundary:
 - Test: new `studioCsrfHeader.test.ts` scans every POST/PUT/PATCH/DELETE `fetch` in the Studio files and requires the header. Mutation check: removing the header from the render call fails it. Storefront: 34 files, 199 tests pass; typecheck clean.
 - Not done: no persistent (non-toast) error banner was added; a visual change I could not verify here. Real-browser re-test after deploy is the owner's step.
 - Next: owner re-runs the live upload + Add to Cart test once the new bundle is live; Claude idles on the other owner items.
+
+## 2026-10-08 — Command A: Add to Cart blocker (local reproduction, test, persistent feedback)
+- Status: local, tested; in a PR; NOT deployed. Live re-test UNVERIFIED (sandbox cannot reach the live domain).
+- Reproduced locally (throwaway Postgres, local API with stand-in S3, Vite dev server, Playwright, signed-in customer = real `customer_token` cookie, no bearer): upload `POST /api/storage/uploads/request-url -> 200`, then `POST /api/mockup/render -> 403 csrf_blocked`, cart stays at 0 items. Same symptom as the owner's live test. Only a signed-in/cookie visitor hits it; an anonymous visitor does not (the older anonymous e2e script passed, which is why it was missed).
+- Root cause: `/api/mockup/render` request lacked `X-Requested-With`. Fixed in PR 32 (`74c51ef`, merged after the owner's 07:10 smoke test, so that test pre-dates the fix). With the header: render `-> 200`, cart holds 1 item, "Added to cart!" shown.
+- New in this PR (feedback only; CSRF, upload validation and order gates untouched): every Add to Cart failure path now calls one `reportCartFailure(...)`: toast plus a persistent, dismissible `role="alert"` banner ("Your design was not added to the cart. <reason>") with a **Try again** button, scrolled into view. Browser check with the header deliberately removed: 8 s after the click the banner is still on screen, cart empty; with the header: no banner, cart 1.
+- Tests: new source-contract test for the persistent alert (mutation check: reverting one failure path to a bare toast fails it); the earlier `studioCsrfHeader.test.ts` guards the header. Storefront 34 files / 200 tests pass; typecheck clean; `vite build` passes.
+- Limits: contract tests plus local browser run, not a real-phone or live run. The live post-deploy smoke test (one harmless PNG, Add to Cart, stop before checkout) still needs the new bundle live and a run by the owner.
+- Next: Command B (PR 31 docs-only merge after green), then idle on owner-blocked items.

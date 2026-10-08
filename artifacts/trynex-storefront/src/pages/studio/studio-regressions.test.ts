@@ -31,6 +31,20 @@ describe("Design Studio reliability contracts", () => {
     expect(requestBlock).toContain('"X-Requested-With": "XMLHttpRequest"');
   });
 
+  it("keeps every failed Add to Cart visible and retryable after the toast disappears", () => {
+    // Live smoke test: the design reached the cart step, the request failed, and the
+    // customer saw only a brief toast, so it looked like nothing happened.
+    for (const title of ["Final mockup failed", "Print preview failed", "Couldn’t add design to cart"]) {
+      expect(studio).toContain(`reportCartFailure("${title}"`);
+      expect(studio).not.toContain(`toast({ title: "${title}"`);
+    }
+    expect(studio).toContain("setCartError(`${title}. ${description}`)");
+    expect(studio).toContain('data-testid="studio-cart-error"');
+    expect(studio).toContain('role="alert"');
+    expect(studio).toContain("Your design was not added to the cart.");
+    expect(studio).toMatch(/onClick=\{\(\) => void handleAddToCart\(\)\}[^>]*>Try again</);
+  });
+
   it("uses active product geometry when switching products and adding generated artwork", () => {
     expect(productSwitcher).toContain("planProductSwitch(");
     expect(studio).toContain("planProductSwitch(");
