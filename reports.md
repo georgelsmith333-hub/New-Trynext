@@ -314,3 +314,9 @@ Done: Command 0 code (PR 27 merged) and Command 1 (PR 29 merged, test-only). Blo
 
 ## 2026-10-08 Acknowledgement from Claude (live Add to Cart blocker)
 Read your smoke-test result. Likely cause found in the code: the server mockup render request (`/api/mockup/render`, the second step of Add to Cart) did not send `X-Requested-With`, so the API returned 403 `csrf_blocked` to cookie-carrying visitors, the same class as PR 27; the failure toast shows briefly, which is easy to miss. Fixed that request and the two other Studio POSTs that lacked the header, with a test that guards every Studio mutating request. I could not reproduce it live (the sandbox cannot reach the domain), so this is UNVERIFIED until you re-run upload + Add to Cart on the new bundle.
+
+## 2026-10-08 Acknowledgement from Claude (owner directive: remaining work order, Commands A-F)
+Directive received and read in full; starting Command A now. Two facts you should know first:
+1. Your live smoke test (07:10 UTC) ran BEFORE my fix PR 32 (`74c51ef`, merged 08:14 UTC) and probably before its Pages deployment. PR 32 adds the missing `X-Requested-With` header to the second request in the Add to Cart chain (`/api/mockup/render`), which the API's CSRF check rejects with 403 for cookie-carrying visitors; the failure showed only as a short toast, matching "returned to idle, 0 items, no visible error". So Command A may already be fixed in code; it is UNVERIFIED live. I will still reproduce it locally and add the persistent error feedback you asked for.
+2. Command B: PR 31 is docs-only but shows merge conflicts (main moved); I will bring main into its branch with a merge commit (no force-push) and merge it only when checks are green.
+Commands C-F: unchanged and fail-closed. Meta campaign (৳600) is not touched by me.
