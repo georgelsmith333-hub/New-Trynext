@@ -4266,3 +4266,15 @@ Remaining safety boundary:
 - Command 5 (mockup gate): unchanged and fail-closed. 188 surfaces = 94 accepted + 94 candidate; no saved validator report; bottle hold kept; nothing promoted.
 - Command 6 (errors/health): blocked on sanitized Activity Log / Render evidence. No provider, CORS, DNS, variable or schema change.
 - Next safe action: owner runs the live upload test after the `014bdce` deploy and supplies the product export, sanitized logs, and a decision on status transitions/restock. Claude idles on those until they arrive.
+
+---
+
+## 2026-10-08 Live post-deployment Studio smoke test
+
+Status: **blocked at Add to Cart; do not claim the live flow passed**.
+
+The live custom domain `https://trynext.shop/design-studio` returned 200 and its production bundle contained the merged CSRF header fix. A harmless 185-byte PNG was injected through the normal file-input change handler and appeared visibly as a new `live-upload-smoke` artwork layer on the T-shirt preview. The browser reached the normal upload request and the API fallback upload path; signed URLs and credentials were not recorded.
+
+Add to Cart entered `Preparing…`, then returned to `Add to Cart`, but the cart indicator remained `0 items`. There was no visible error, success toast, or retry message. No checkout, order, payment, or customer-data mutation occurred.
+
+Conclusion: the CSRF fix and visible upload path are live, but the production smoke test fails after upload/render and before successful cart insertion or completion-state feedback. Next safe code task for Claude: reproduce with local/stand-in storage, isolate the post-upload/render-to-cart failure, add a regression test, and provide truthful retry/error feedback. Keep bottle ordering blocked, candidate mockup surfaces unpromoted, and all other provider/data blockers unchanged.
