@@ -236,6 +236,9 @@ export default function DesignStudioV2() {
   const [canvasSize, setCanvasSize] = useState(600);
   const [imageAction, setImageAction] = useState<"remove-bg" | "upscale" | "auto-fix" | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  // A failed Add to Cart must stay visible (and retryable) after the toast is gone.
+  const [cartError, setCartError] = useState<string | null>(null);
+  const cartErrorRef = useRef<HTMLDivElement>(null);
   const uploadedOriginals = useRef(new OriginalAssetCache());
   const [isExporting, setIsExporting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -1025,6 +1028,11 @@ export default function DesignStudioV2() {
   const handleAddToCart = async () => {
     if (isAddingToCart) return;
     setIsAddingToCart(true);
+    setCartError(null);
+    const reportCartFailure = (title: string, description: string) => {
+      toast({ title, description, variant: "destructive" });
+      setCartError(`${title}. ${description}`);
+    };
     try {
       if (isPsdTshirtStaging) {
         toast({ title: "Local PSD staging preview", description: "This white-front T-shirt review mode cannot be added to cart." });
@@ -1110,7 +1118,7 @@ export default function DesignStudioV2() {
       });
     } catch (err) {
       console.error("Mockup compose failed", err);
-      toast({ title: "Final mockup failed", description: err instanceof Error ? err.message : "The server could not validate this mockup. Your design was not added to cart.", variant: "destructive" });
+      reportCartFailure("Final mockup failed", err instanceof Error ? err.message : "The server could not validate this mockup. Your design was not added to cart.");
       return;
     }
 
@@ -1125,7 +1133,7 @@ export default function DesignStudioV2() {
       frontTexUrl = frontTexCanvas.toDataURL("image/webp", 0.85);
     } catch (err) {
       console.error("Front texture compose failed", err);
-      toast({ title: "Print preview failed", description: "Could not generate the printable texture. Try a different image or refresh.", variant: "destructive" });
+      reportCartFailure("Print preview failed", "Could not generate the printable texture. Try a different image or refresh.");
       return;
     }
 
@@ -1201,15 +1209,15 @@ export default function DesignStudioV2() {
     setTimeout(() => navigate("/cart"), 800);
     } catch (error) {
       console.error("[studio] add to cart failed", error);
-      toast({
-        title: "Couldn’t add design to cart",
-        description: error instanceof Error ? error.message : "Your design was not added. Please retry.",
-        variant: "destructive",
-      });
+      reportCartFailure("Couldn’t add design to cart", error instanceof Error ? error.message : "Your design was not added. Please retry.");
     } finally {
       setIsAddingToCart(false);
     }
   };
+
+  useEffect(() => {
+    if (cartError) cartErrorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [cartError]);
 
   const handleExportPNG = async () => {
     if (isExporting) return;
@@ -1310,6 +1318,14 @@ export default function DesignStudioV2() {
 
       <div className="flex-1 container-wide mx-auto w-full px-2 sm:px-4 py-4 sm:py-6">
         <div className="mb-4 space-y-3">
+          {cartError && (
+            <div ref={cartErrorRef} role="alert" data-testid="studio-cart-error" className="flex flex-wrap items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-800">
+              <Info className="mt-0.5 h-4 w-4 flex-shrink-0" />
+              <p className="min-w-0 flex-1 break-words"><strong>Your design was not added to the cart.</strong> {cartError}</p>
+              <button type="button" onClick={() => void handleAddToCart()} disabled={isAddingToCart} className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-50">Try again</button>
+              <button type="button" onClick={() => setCartError(null)} className="rounded-lg px-2 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100" aria-label="Dismiss cart error">Dismiss</button>
+            </div>
+          )}
           <StudioFirstUseGuide
             steps={[
               { id: "upload", title: "Upload your artwork", description: "Choose a JPG, PNG, or WebP and it will be fitted to the selected print area." },
