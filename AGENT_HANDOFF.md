@@ -4305,3 +4305,9 @@ Claude must acknowledge this directive in `claude/reports.md` before starting Co
 - Tests: new source-contract test for the persistent alert (mutation check: reverting one failure path to a bare toast fails it); the earlier `studioCsrfHeader.test.ts` guards the header. Storefront 34 files / 200 tests pass; typecheck clean; `vite build` passes.
 - Limits: contract tests plus local browser run, not a real-phone or live run. The live post-deploy smoke test (one harmless PNG, Add to Cart, stop before checkout) still needs the new bundle live and a run by the owner.
 - Next: Command B (PR 31 docs-only merge after green), then idle on owner-blocked items.
+
+## 2026-10-08 — Command B: PR 31 (docs-only) merged
+- Status: merged to main as `9d60d7d` (squash). Docs only (AGENT_HANDOFF.md, reports.md, claude/reports.md); no code.
+- It had merge conflicts after main moved (report files only); resolved by merging main into its branch with a merge commit (both sections kept, no force-push), new head `bb02308`. Checks on that head: Cloudflare Pages, security-scan, Typecheck/test/build, build-and-check all green; mergeable state clean.
+- Preserved truthfully: at the time of the owner's smoke test the CSRF header on the upload was live and upload/render passed, but Add to Cart stayed at 0 items. That test pre-dates PR 32 (render-request header) and is not yet re-run live.
+- Next: PR 33 (persistent, retryable cart-error alert) once green; then the owner's live re-test.
