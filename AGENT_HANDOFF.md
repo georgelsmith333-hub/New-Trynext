@@ -4266,3 +4266,12 @@ Remaining safety boundary:
 - Command 5 (mockup gate): unchanged and fail-closed. 188 surfaces = 94 accepted + 94 candidate; no saved validator report; bottle hold kept; nothing promoted.
 - Command 6 (errors/health): blocked on sanitized Activity Log / Render evidence. No provider, CORS, DNS, variable or schema change.
 - Next safe action: owner runs the live upload test after the `014bdce` deploy and supplies the product export, sanitized logs, and a decision on status transitions/restock. Claude idles on those until they arrive.
+
+## 2026-10-08 — Live Studio smoke test: Add to Cart blocker (root cause + fix)
+- Status: fix local, tested, in a PR. NOT deployed; the live re-test is UNVERIFIED until the new Pages bundle is serving.
+- Owner finding (branch `manus/live-studio-smoke-result-2026-10-08`, not merged by me): after PR 27, upload and render worked live but Add to Cart returned to idle with 0 items and no visible error.
+- Root cause (from code, not reproduced live; the sandbox cannot reach the domain): Add to Cart makes a second POST, to `/api/mockup/render`, via `renderApprovedMockupOnServer`. It sent no `X-Requested-With` header. The API's global CSRF middleware (`app.ts`) answers 403 `csrf_blocked` to any cookie-carrying mutation without that header or a bearer token. Same class as PR 27. A signed-in/cookie visitor (the owner's browser) hits it; the handler toasts "Final mockup failed" and returns before `addToCart`, which matches the symptom. The error toast exists (Toaster is mounted, default ~5s) but is easy to miss.
+- Fix: add the header to `/api/mockup/render`, plus the two other customer Studio POSTs that lacked it (`/api/remove-bg`, `/api/ai/reference`).
+- Test: new `studioCsrfHeader.test.ts` scans every POST/PUT/PATCH/DELETE `fetch` in the Studio files and requires the header. Mutation check: removing the header from the render call fails it. Storefront: 34 files, 199 tests pass; typecheck clean.
+- Not done: no persistent (non-toast) error banner was added; a visual change I could not verify here. Real-browser re-test after deploy is the owner's step.
+- Next: owner re-runs the live upload + Add to Cart test once the new bundle is live; Claude idles on the other owner items.

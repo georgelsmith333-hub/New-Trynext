@@ -157,7 +157,7 @@ export function AIPanel() {
         setProgress(18);
         const uploadRes = await fetch(getApiUrl("/api/ai/reference"), {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
           body: JSON.stringify({ image: referenceSrc }),
         });
         const uploadJson = await uploadRes.json().catch(() => ({})) as { url?: string; error?: string };

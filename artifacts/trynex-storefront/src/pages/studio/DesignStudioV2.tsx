@@ -749,7 +749,7 @@ export default function DesignStudioV2() {
         } else {
           response = await fetch(getApiUrl("/api/remove-bg"), {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
           body: JSON.stringify({ image: selectedLayer.src }),
           signal: controller.signal,
           });
