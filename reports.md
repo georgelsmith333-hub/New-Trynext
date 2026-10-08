@@ -316,3 +316,37 @@ Done: Command 0 code (PR 27 merged) and Command 1 (PR 29 merged, test-only). Blo
 ## 2026-10-08 Live post-deployment Studio smoke test — blocked at Add to Cart
 
 Status: blocked; upload/render passed, Add to Cart did not complete. The live custom domain `https://trynext.shop/design-studio` returned 200 and its production bundle contained the merged `X-Requested-With` header. A harmless 185-byte PNG was injected through the normal file-input change handler and appeared visibly as a new `live-upload-smoke` artwork layer on the T-shirt preview. The browser reached the normal upload request and API fallback upload path; signed URLs and credentials are not recorded. Add to Cart entered `Preparing…`, returned to `Add to Cart`, but the cart indicator stayed at `0 items` with no visible error, success toast, or retry message. No checkout, order, payment, or customer-data mutation occurred. This is not a pass: investigate the post-upload/render path before local cart insertion or the final completion state using local/stand-in storage, and add a regression test plus truthful user feedback for the failure path. Keep all other blockers unchanged.
+
+## 2026-10-08 Owner directive — remaining work order for Claude
+
+This is the current executable order. Work sequentially and append exact evidence to all three coordination files after each command. Keep production fail-closed: no real order, payment, customer notification, provider-setting change, database/schema change, product-data repair, mockup promotion, or ad-budget spend without the separately required approval.
+
+### Command A — Design Studio Add to Cart blocker (highest priority)
+
+Reproduce the live result in local/stand-in storage: upload a harmless tiny PNG, confirm the artwork layer and processed image, click Add to Cart, and trace the state transition from upload/render completion through cart insertion. Inspect browser console/network errors, async exceptions, stale state, missing asset URLs, product/variant identity, and cart-store dispatch. Add a focused regression test that fails before the fix and passes after it. Implement the smallest source-of-truth fix and truthful retry/error feedback. Do not weaken CSRF, upload validation, storage checks, or fail-closed order gates.
+
+Run the relevant storefront/API tests, typecheck, and build. Prepare a small PR; do not merge or deploy until checks are green and the scope is reported. After deployment, repeat exactly one harmless live smoke test on the canonical domain, stop before checkout, and record whether the cart shows one item. If live verification is unavailable, report it as blocked rather than claiming success.
+
+### Command B — Verify and close the documentation PR
+
+Monitor PR #31. Merge only after checks are green and only as a documentation-only change; do not force-push or bypass checks. Preserve the live result: CSRF/header fix is live, upload/render passed, but Add to Cart remained at 0 items. Update the reports with the merge commit and check results.
+
+### Command C — Mockup release gate
+
+Keep templates inactive, bottle custom ordering blocked, and candidate surfaces unpromoted. Do not claim 188/188 release approval, Photoshop/Photopea-level editability, or photorealistic displacement from historical statements. The repository evidence remains 94 accepted plus 94 candidate surfaces until a saved validator report proves the remainder. Do not alter PSD masters or manifests without a reproducible failure and a reviewed, reversible plan.
+
+### Command D — Read-only evidence blockers
+
+Request or inspect only sanitized evidence for the live six-family/70-product catalog, Admin Activity Log, Render status/errors, Pages deployment identifiers, health aliases, service-worker freshness, and real-device touch behavior. Never record credentials, tokens, database URLs, presigned URLs, PII, payment data, or customer content. Do not change Cloudflare/R2, DNS, Render variables, Neon, Upstash, backups, or schema.
+
+### Command E — Checkout safety
+
+Continue local/throwaway-DB tests only. Cover duplicate-click/idempotent retry, pricing, stock, promo redemption, payment-state truthfulness, notification failures, and allowed status transitions. Do not create a real order or payment. Keep persistent idempotency schema work as a dry-run design only. The owner decision still required is: allowed order-status transitions and whether cancellation restores stock.
+
+### Command F — Meta campaign status
+
+Treat the requested ৳600 / four-day women 18–44 Bangladesh campaign as unverified in this repository. Do not spend budget, activate ads, change targeting, or alter the Braintrack.LLC account from this work order. Only record a campaign as complete after sanitized evidence identifies the exact ad account, campaign/ad-set/ad status, budget, schedule, audience, and activation state.
+
+### Required report for every command
+
+Report `done`, `blocked`, or `not applicable`; files/commit/PR; exact tests and counts; local versus live evidence; deployment identifier; remaining limitation; and next command. Claude must acknowledge this directive in `claude/reports.md` before beginning Command A.
