@@ -37,6 +37,12 @@ Run on a scratch local database created from the repo schema (`pnpm --filter @wo
 - New columns start `NULL`; there are no historic keys, so **no collision is possible at migration time**.
 - `claude/t8/collision-report.sql` part 2 is a read-only report of historic look-alike orders (same phone, same total, under 5 minutes apart) to show how often the in-memory guard was bypassed. It changes nothing and prints only order numbers and a 3-digit phone suffix. It has **not** been run on live data; the owner/operator can run it read-only and paste the sanitized output if wanted.
 
+## Correction found on 2026-10-09: a plain `idempotency_key` column may already exist
+`repairTargetSchemas()` in `dbBackupSync.ts` (runs only when `ALLOW_DB_SCHEMA_REPAIR=true`) already executes `ALTER TABLE orders ADD COLUMN IF NOT EXISTS idempotency_key text` on the backup targets, and its comment says the production mirror was ahead of the shared schema package. So the backup database, and possibly the primary, may **already have the column, possibly with values in it**. `up.sql` stays safe (`IF NOT EXISTS`), but:
+- **Before** building the unique index, run part 1 of `claude/t8/collision-report.sql` on each database and also `SELECT count(*), count(idempotency_key) FROM orders`. If any key appears twice, `CREATE UNIQUE INDEX` will fail (it will not damage anything, but the duplicates must be reviewed first; do not delete or rewrite orders to make it pass).
+- Check which of the two columns each database already has before choosing which statements to run.
+- The operator's note `docs/IDEMPOTENCY_KEY_MIGRATION_DRY_RUN.md` (open PR #40) proposes the same index on one column without the fingerprint column; the extra fingerprint column here is only for refusing a reused key with a different cart and can be dropped if a smaller change is preferred.
+
 ## Important rollout constraint (found in `dbBackupSync.ts`)
 The backup mirror is fail-closed: if the **primary** has a column the **backup** database lacks, the sync stops with `Schema mismatch ... column missing on target. Run migrations on the target first.` Therefore:
 1. Take a Neon restore point/branch of both databases first.
