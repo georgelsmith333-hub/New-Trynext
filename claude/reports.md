@@ -226,3 +226,8 @@ T2 public checks are complete but current Pages deployment identity and `trynext
 - Dry run on a throwaway local Postgres: up, re-run no-op, duplicate key refused (23505), NULL keys unaffected, down restores the original shape with all orders kept.
 - Found: the backup mirror stops (fail-closed) if the primary has a column the backup lacks, so the migration must go to the backup database first, then the primary; the plan states this order and a rollback.
 - Needs owner approval for this exact change before anything runs; the application change is described but not written.
+
+## 2026-10-09 Queue status after PRs 36, 38, 39, 41 — Claude
+- Merged to main (all checks green on each head; none confirmed deployed or live-tested): #36 `8eec152` upload checksum fix (T1), #38 `8960620` order transitions + stock restore + variant stock SQL (T7), #39 `db10856` restore artwork size on product switch (T9), #41 `e25f2fb` T8 migration design/SQL/dry run (docs only, not executed).
+- Waiting on the owner/operator: (1) one harmless live upload + Add to Cart after deploy, stop before checkout; if it fails, the sanitized `storageFailure` log line from Render; (2) approval, runner and Neon restore points before T8 runs (backup database first, then primary); (3) admin status label order question (T7); (4) T3 real phone, T4 sanitized product export, T5 sanitized logs, T6 saved 94-surface validator report, current Pages deployment ID.
+- Untouched on purpose: mockup templates inactive, candidate surfaces unpromoted, bottle hold, orders/payments/notifications, Meta Ads, provider settings, live data.
