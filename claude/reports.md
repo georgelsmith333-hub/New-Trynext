@@ -198,3 +198,6 @@ T2 public checks are complete but current Pages deployment identity and `trynext
 - Test: `src/lib/objectStorage.r2.test.ts` (fails before: URL carries the checksum params; passes after). Also run: storage.upload.test.ts (direct-fail/API-success and API-write-failure 502 with no leak, already present), api-server typecheck, full api-server vitest (181 passed), `node ./build.mjs`.
 - Limits: the real 502 from `/api/storage/upload-via-api` is a storage write error; the checksum fix explains the direct failure, but the API-write failure may also be credentials/permissions/bucket settings (not changed, not visible from here). Needs one sanitized Render log line (`storageFailure`) after deploy. No live test run; sandbox cannot reach the live site.
 - Next: PR, green checks, merge, then one harmless live upload + Add to Cart (stop before checkout). Then T7 (order transitions + stock restore, local only) and T9 (restore artwork size on product switch), T8 migration dry run only.
+
+### T1 follow-up: PR 36 merged
+- Merged (not yet confirmed deployed or live-tested): squash `8eec152` after all 4 checks green on `41133be`. Next for the owner/operator: confirm the Pages/Render deploy for `8eec152`, then one harmless live upload + Add to Cart (stop before checkout). If it still fails, send the sanitized `storageFailure` log line.
