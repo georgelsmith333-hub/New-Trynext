@@ -20,7 +20,9 @@ import { ProductCardSkeleton } from "@/components/Skeleton";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/lib/api";
 
-const SORT_OPTIONS = [
+type SortValue = NonNullable<Parameters<typeof api.getProducts>[0]>["sort"];
+
+const SORT_OPTIONS: { value: NonNullable<SortValue>; label: string }[] = [
   { value: "newest", label: "Newest" },
   { value: "price_asc", label: "Price ↑" },
   { value: "price_desc", label: "Price ↓" },
@@ -39,7 +41,7 @@ export default function ShopScreen() {
     params.categoryId ? parseInt(params.categoryId) : 0,
   );
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("newest");
+  const [sort, setSort] = useState<NonNullable<SortValue>>("newest");
   const [page, setPage] = useState(1);
 
   const { data: categoriesData } = useQuery({
@@ -59,6 +61,7 @@ export default function ShopScreen() {
       api.getProducts({
         categoryId: selectedCategory || undefined,
         search: search || undefined,
+        sort,
         limit: 20,
         page,
       }),
@@ -93,7 +96,7 @@ export default function ShopScreen() {
             returnKeyType="search"
           />
           {search.length > 0 && (
-            <Pressable onPress={() => setSearch("")} hitSlop={8}>
+            <Pressable onPress={() => { setSearch(""); setPage(1); }} hitSlop={8}>
               <Feather name="x" size={16} color={colors.mutedForeground} />
             </Pressable>
           )}
@@ -133,7 +136,7 @@ export default function ShopScreen() {
           {SORT_OPTIONS.map((s) => (
             <Pressable
               key={s.value}
-              onPress={() => setSort(s.value)}
+              onPress={() => { setSort(s.value); setPage(1); }}
               style={[
                 styles.sortPill,
                 sort === s.value

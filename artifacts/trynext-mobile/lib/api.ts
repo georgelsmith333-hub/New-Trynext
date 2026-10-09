@@ -203,6 +203,7 @@ export const api = {
     featured?: boolean;
     customizable?: boolean;
     search?: string;
+    sort?: "newest" | "oldest" | "price_asc" | "price_desc" | "name_asc" | "name_desc" | "featured";
     page?: number;
     limit?: number;
   }) => {
@@ -211,6 +212,7 @@ export const api = {
     if (params?.featured) query.set("featured", "true");
     if (params?.customizable) query.set("customizable", "true");
     if (params?.search) query.set("search", params.search);
+    if (params?.sort) query.set("sort", params.sort);
     if (params?.page) query.set("page", String(params.page));
     if (params?.limit) query.set("limit", String(params.limit));
     const qs = query.toString();
