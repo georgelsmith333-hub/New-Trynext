@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { useDesignStore } from "./useDesignStore";
 import { PRODUCTS } from "@/pages/design-studio/mockups";
+import { planProductSwitch } from "@/pages/studio/productSwitch";
 
 const imageLayer = {
   id: "layer-1",
@@ -134,5 +135,56 @@ describe("Design Studio history", () => {
 
     useDesignStore.getState().undo();
     expect(useDesignStore.getState()).toMatchObject({ mugMode: "side1", activeFace: "front" });
+  });
+});
+
+describe("Design Studio product switching keeps artwork size", () => {
+  beforeEach(() => {
+    useDesignStore.setState(useDesignStore.getInitialState(), true);
+  });
+
+  const switchTo = (product: (typeof PRODUCTS)[number]) => {
+    const s = useDesignStore.getState();
+    const plan = planProductSwitch({ from: s.selectedProduct, fromColor: s.selectedColor, fromMugMode: s.mugMode, to: product, layers: s.layers, memory: s.switchMemory });
+    s.switchProduct(product, plan.color, plan.layerTransforms, plan.mugMode, plan.memory);
+  };
+  const sizeOf = () => useDesignStore.getState().layers[0].transform;
+
+  it("restores the exact size after switching tee -> mug -> tee, and undo steps back through each switch", () => {
+    const tee = PRODUCTS.find((p) => p.category === "tshirt")!;
+    const mug = PRODUCTS.find((p) => p.category === "mug")!;
+    useDesignStore.getState().setProduct(tee);
+    useDesignStore.getState().addLayer({ ...imageLayer, transform: { x: 33, y: -12, scale: 0.61, rotation: 7, opacity: 1 } });
+    const original = sizeOf();
+
+    switchTo(mug);
+    const onMug = sizeOf();
+    expect(onMug).not.toEqual(original);
+
+    switchTo(tee);
+    expect(sizeOf()).toEqual(original);
+
+    useDesignStore.getState().undo(); // back to the mug state
+    expect(useDesignStore.getState().selectedProduct.id).toBe(mug.id);
+    expect(sizeOf()).toEqual(onMug);
+    useDesignStore.getState().undo(); // back to the tee state
+    expect(useDesignStore.getState().selectedProduct.id).toBe(tee.id);
+    expect(sizeOf()).toEqual(original);
+  });
+
+  it("does not use an old remembered size after the customer resizes the artwork on the other product", () => {
+    const tee = PRODUCTS.find((p) => p.category === "tshirt")!;
+    const mug = PRODUCTS.find((p) => p.category === "mug")!;
+    useDesignStore.getState().setProduct(tee);
+    useDesignStore.getState().addLayer({ ...imageLayer, transform: { x: 0, y: 0, scale: 1, rotation: 0, opacity: 1 } });
+    const original = sizeOf();
+    switchTo(mug);
+    const onMugScale = sizeOf().scale;
+    useDesignStore.getState().updateLayer(imageLayer.id, { transform: { ...sizeOf(), scale: sizeOf().scale * 0.5 } });
+    const resized = sizeOf();
+    const expected = planProductSwitch({ from: mug, fromColor: mug.colors[0], fromMugMode: "side1", to: tee, layers: [{ ...useDesignStore.getState().layers[0] }] }).layerTransforms[0].transform;
+    switchTo(tee);
+    expect(sizeOf()).not.toEqual(original);
+    expect(sizeOf()).toEqual(expected); // refitted from what they made, not reset to the old size
   });
 });
