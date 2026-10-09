@@ -6,7 +6,8 @@ import { requireAdmin } from "../middlewares/adminAuth";
 import { logActivity, getAdminId } from "../lib/activityLog";
 import { verifyCustomerToken, extractCustomerToken } from "../lib/customerAuth";
 import { logger } from "../lib/logger";
-import { isOrderStatus, ORDER_STATUS_MESSAGE } from "../lib/orderStatus";
+import { isOrderStatus, ORDER_STATUS_MESSAGE, canMoveOrderStatus, invalidTransitionMessage } from "../lib/orderStatus";
+import { restoreOrderStock, type RestockResult } from "../lib/orderStock";
 import { orderIdempotency } from "../lib/idempotency";
 import { getVirtualPromo, calcVirtualDiscount } from "../lib/spinPromos";
 import { ObjectStorageService } from "../lib/objectStorage";
@@ -1064,8 +1065,11 @@ router.post("/orders", orderIdempotency.middleware, async (req, res) => {
           // product can no longer be silently clobbered by this
           // transaction overwriting the whole variants array with a copy
           // it read before that other order committed.
+          // The position must be cast to int: an untyped parameter after `->`
+          // is read as a text key, which finds nothing in a JSON array and made
+          // every variant order look out of stock.
           const jsonPath = sql`ARRAY[${index}::text, 'stock']`;
-          const currentStockExpr = sql`(${productsTable.variants}->${index}->>'stock')::numeric`;
+          const currentStockExpr = sql`(${productsTable.variants}->${sql`${index}::int`}->>'stock')::numeric`;
           const [updated] = await tx.update(productsTable)
             .set({ variants: sql`jsonb_set(${productsTable.variants}, ${jsonPath}, to_jsonb(${currentStockExpr} - ${item.quantity}))` })
             .where(and(eq(productsTable.id, item.productId), sql`${currentStockExpr} >= ${item.quantity}`))
@@ -1425,14 +1429,34 @@ const updateOrderStatusHandler = async (req: Request, res: Response) => {
       res.status(400).json({ error: "validation_error", message: ORDER_STATUS_MESSAGE });
       return;
     }
-    const [beforeSnap] = await db.select().from(ordersTable).where(eq(ordersTable.id, id));
-    const [order] = await db.update(ordersTable).set({ status, updatedAt: new Date() }).where(eq(ordersTable.id, id)).returning();
-    if (!order) {
+    // Lock the order row, check the move, change the status and (for a
+    // cancellation) put the reserved stock back in ONE transaction. A second
+    // cancel sees "cancelled" and does nothing, so stock is restored once.
+    const outcome = await db.transaction(async (tx) => {
+      const [before] = await tx.select().from(ordersTable).where(eq(ordersTable.id, id)).for("update");
+      if (!before) return { kind: "not_found" as const };
+      if (before.status === status) return { kind: "unchanged" as const, order: before };
+      if (!canMoveOrderStatus(before.status, status)) return { kind: "rejected" as const, from: before.status };
+      const [updated] = await tx.update(ordersTable).set({ status, updatedAt: new Date() }).where(eq(ordersTable.id, id)).returning();
+      let restock: RestockResult | null = null;
+      if (status === "cancelled") restock = await restoreOrderStock(tx, before.items);
+      return { kind: "changed" as const, before, order: updated, restock };
+    });
+    if (outcome.kind === "not_found") {
       res.status(404).json({ error: "not_found", message: "Order not found" });
       return;
     }
+    if (outcome.kind === "rejected") {
+      res.status(400).json({ error: "validation_error", code: "invalid_status_transition", message: invalidTransitionMessage(outcome.from, status) });
+      return;
+    }
+    if (outcome.kind === "unchanged") {
+      res.json(mapOrder(outcome.order));
+      return;
+    }
+    const { before: beforeSnap, order, restock } = outcome;
     const mapped = mapOrder(order);
-    logActivity({ action: "update", entity: "order", entityId: id, entityName: order.orderNumber, before: (beforeSnap ?? null) as unknown as Record<string, unknown>, after: order as unknown as Record<string, unknown>, adminId: getAdminId(req) });
+    logActivity({ action: "update", entity: "order", entityId: id, entityName: order.orderNumber, before: (beforeSnap ?? null) as unknown as Record<string, unknown>, after: (restock ? { ...order, stockRestored: restock } : order) as unknown as Record<string, unknown>, adminId: getAdminId(req) });
     res.json(mapped);
 
     sendStatusUpdateNotification(mapped, status).catch((err) => logger.warn({ err }, "sendStatusUpdateNotification failed (fire-and-forget)"));
