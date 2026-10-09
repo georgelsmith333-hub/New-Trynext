@@ -98,6 +98,18 @@ let s3Client: S3Client | null = null;
 let s3BucketName = "";
 let s3PublicBaseUrl = "";
 
+/**
+ * Newer AWS SDK releases add a body checksum to every request by default.
+ * For a presigned upload that signs the checksum of an EMPTY body into the URL
+ * (x-amz-checksum-crc32=AAAAAA==), so the bucket then refuses every real file
+ * the browser sends to it. Only add a checksum when an operation requires one;
+ * object validation (magic bytes, size, type) is unaffected.
+ */
+const S3_CHECKSUM_OPTIONS = {
+  requestChecksumCalculation: "WHEN_REQUIRED",
+  responseChecksumValidation: "WHEN_REQUIRED",
+} as const;
+
 function ensureS3Client(): { client: S3Client; bucket: string } {
   if (s3Client) return { client: s3Client, bucket: s3BucketName };
   if (BACKEND === "r2") {
@@ -110,6 +122,7 @@ function ensureS3Client(): { client: S3Client; bucket: string } {
         secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
       },
       forcePathStyle: false,
+      ...S3_CHECKSUM_OPTIONS,
     });
     s3BucketName = process.env.R2_BUCKET!;
     s3PublicBaseUrl = process.env.R2_PUBLIC_BASE_URL || "";
@@ -122,6 +135,7 @@ function ensureS3Client(): { client: S3Client; bucket: string } {
         secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
       },
       forcePathStyle: !!process.env.S3_FORCE_PATH_STYLE,
+      ...S3_CHECKSUM_OPTIONS,
     });
     s3BucketName = process.env.S3_BUCKET!;
     s3PublicBaseUrl = process.env.S3_PUBLIC_BASE_URL || "";
