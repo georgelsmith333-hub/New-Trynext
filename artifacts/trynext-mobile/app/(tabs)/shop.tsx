@@ -17,6 +17,8 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProductCard } from "@/components/ProductCard";
 import { ProductCardSkeleton } from "@/components/Skeleton";
+import { ShopFilterSheet } from "@/components/ShopFilterSheet";
+import { countActiveFilters, EMPTY_SHOP_FILTERS, filtersToParams, type ShopFilters } from "@/lib/shopFilters";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/lib/api";
 
@@ -43,6 +45,9 @@ export default function ShopScreen() {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<NonNullable<SortValue>>("newest");
   const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<ShopFilters>(EMPTY_SHOP_FILTERS);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilterCount = countActiveFilters(filters);
 
   const { data: categoriesData } = useQuery({
     queryKey: ["categories"],
@@ -56,12 +61,13 @@ export default function ShopScreen() {
   ];
 
   const { data, isLoading, isError, refetch, isRefetching } = useQuery({
-    queryKey: ["products", "list", selectedCategory, search, sort, page],
+    queryKey: ["products", "list", selectedCategory, search, sort, filters, page],
     queryFn: () =>
       api.getProducts({
         categoryId: selectedCategory || undefined,
         search: search || undefined,
         sort,
+        ...filtersToParams(filters),
         limit: 20,
         page,
       }),
@@ -84,22 +90,42 @@ export default function ShopScreen() {
       <View style={[styles.header, { paddingTop: topPad + 12, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <Text style={[styles.title, { color: colors.foreground }]}>Shop</Text>
 
-        {/* Search */}
-        <View style={[styles.searchWrap, { backgroundColor: colors.muted, borderColor: colors.border }]}>
-          <Feather name="search" size={16} color={colors.mutedForeground} />
-          <TextInput
-            style={[styles.searchInput, { color: colors.foreground }]}
-            placeholder="Search products…"
-            placeholderTextColor={colors.mutedForeground}
-            value={search}
-            onChangeText={(t) => { setSearch(t); setPage(1); }}
-            returnKeyType="search"
-          />
-          {search.length > 0 && (
-            <Pressable onPress={() => { setSearch(""); setPage(1); }} hitSlop={8}>
-              <Feather name="x" size={16} color={colors.mutedForeground} />
-            </Pressable>
-          )}
+        {/* Search + filters */}
+        <View style={styles.searchRow}>
+          <View style={[styles.searchWrap, { backgroundColor: colors.muted, borderColor: colors.border, flex: 1 }]}>
+            <Feather name="search" size={16} color={colors.mutedForeground} />
+            <TextInput
+              style={[styles.searchInput, { color: colors.foreground }]}
+              placeholder="Search products…"
+              placeholderTextColor={colors.mutedForeground}
+              value={search}
+              onChangeText={(t) => { setSearch(t); setPage(1); }}
+              returnKeyType="search"
+            />
+            {search.length > 0 && (
+              <Pressable onPress={() => { setSearch(""); setPage(1); }} hitSlop={8}>
+                <Feather name="x" size={16} color={colors.mutedForeground} />
+              </Pressable>
+            )}
+          </View>
+          <Pressable
+            onPress={() => setFiltersOpen(true)}
+            style={[
+              styles.filterBtn,
+              activeFilterCount > 0
+                ? { backgroundColor: colors.secondary, borderColor: colors.primary }
+                : { backgroundColor: colors.muted, borderColor: colors.border },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={`Open filters${activeFilterCount ? `, ${activeFilterCount} active` : ""}`}
+          >
+            <Feather name="sliders" size={18} color={activeFilterCount > 0 ? colors.primary : colors.mutedForeground} />
+            {activeFilterCount > 0 && (
+              <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
+                <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+              </View>
+            )}
+          </Pressable>
         </View>
 
         {/* Categories */}
@@ -176,8 +202,18 @@ export default function ShopScreen() {
           <Feather name="package" size={52} color={colors.mutedForeground} />
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No products found</Text>
           <Text style={[styles.emptySub, { color: colors.mutedForeground }]}>
-            {search ? "Try a different search" : "Check back soon"}
+            {search ? "Try a different search" : activeFilterCount > 0 ? "No products match these filters" : "Check back soon"}
           </Text>
+          {activeFilterCount > 0 && (
+            <Pressable
+              onPress={() => { setFilters(EMPTY_SHOP_FILTERS); setPage(1); }}
+              style={[styles.retryBtn, { backgroundColor: colors.primary, marginTop: 4 }]}
+              accessibilityRole="button"
+              accessibilityLabel="Clear all filters"
+            >
+              <Text style={styles.retryBtnText}>Clear filters</Text>
+            </Pressable>
+          )}
         </View>
       ) : (
         <FlatList
@@ -216,6 +252,17 @@ export default function ShopScreen() {
           }
         />
       )}
+      <ShopFilterSheet
+        visible={filtersOpen}
+        value={filters}
+        onClose={() => setFiltersOpen(false)}
+        onApply={(next) => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          setFilters(next);
+          setPage(1);
+          setFiltersOpen(false);
+        }}
+      />
     </View>
   );
 }
@@ -234,6 +281,10 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_700Bold",
     letterSpacing: -0.5,
   },
+  searchRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  filterBtn: { width: 44, height: 44, borderRadius: 12, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  filterBadge: { position: "absolute", top: -6, right: -6, minWidth: 18, height: 18, borderRadius: 9, alignItems: "center", justifyContent: "center", paddingHorizontal: 4 },
+  filterBadgeText: { color: "#fff", fontSize: 10, fontWeight: "800" },
   searchWrap: {
     flexDirection: "row",
     alignItems: "center",

@@ -206,6 +206,9 @@ export const api = {
     customizable?: boolean;
     search?: string;
     sort?: "newest" | "oldest" | "price_asc" | "price_desc" | "name_asc" | "name_desc" | "featured";
+    /** Whole taka, applied to the price the customer pays (the discounted price when there is one). */
+    minPrice?: number;
+    maxPrice?: number;
     page?: number;
     limit?: number;
   }) => {
@@ -215,6 +218,8 @@ export const api = {
     if (params?.customizable) query.set("customizable", "true");
     if (params?.search) query.set("search", params.search);
     if (params?.sort) query.set("sort", params.sort);
+    if (params?.minPrice !== undefined) query.set("minPrice", String(params.minPrice));
+    if (params?.maxPrice !== undefined) query.set("maxPrice", String(params.maxPrice));
     if (params?.page) query.set("page", String(params.page));
     if (params?.limit) query.set("limit", String(params.limit));
     const qs = query.toString();

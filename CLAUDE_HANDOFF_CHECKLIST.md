@@ -199,6 +199,18 @@ These are dated observations. Recheck them at the start of the next session.
 - [ ] Optional: browser-test the web `Products.tsx` filter drawer at narrow and
   tall viewports.
 
+**2026-10-09 update (owner delegated the decision, "do everything"):** the Expo
+shop now has a filter sheet (`components/ShopFilterSheet.tsx`, `lib/shopFilters.ts`):
+price range and "Customizable only", with an active-count badge, Reset, a
+"Clear filters" action on the empty state, labels for screen readers and
+Android back-to-close. The API gained `minPrice` / `maxPrice` on
+`GET /api/products` (applied to the price the customer pays; cache keys carry
+the range; a reversed range is swapped). Verified in the Expo web build at
+390px against a local API: sheet fits, request carries the range and the sort,
+badge shows the count. NOT verified on a real phone or in Expo Go (N1). Not
+included: an in-stock filter (stock lives in per-variant JSON; needs its own
+design).
+
 ### C. Verify live cache behavior after an approved release only
 
 - [x] Keep the local cache safety tests passing: cookie/auth bypass, search and
