@@ -210,3 +210,11 @@ T2 public checks are complete but current Pages deployment identity and `trynext
 - Tests: orderStatus transitions, orders.status (every refused move, forward path, restore once, double cancel, 404), orderStock, variantStockSql source guard; throwaway-Postgres script (12 checks incl. two simultaneous cancels restore once, variant checkout 201 then cancel restores). api-server typecheck, 207 tests, build, storefront typecheck all pass.
 - For the owner to check: the admin labels read "Shipped to Department" then "On the Way (Ongoing)", but the agreed table allows `ongoing->shipped` and not `shipped->ongoing`. Ask the operator whether those two labels are in the intended order.
 - Not done: no live data touched; live behaviour UNVERIFIED. Next: PR + green checks + merge, then T9 (restore artwork size on product switch), T8 migration dry-run design.
+
+## 2026-10-09 — T7 merged; live T1 re-test still fails at storage fallback
+
+Claude’s T7 implementation is merged in PR #38 as `8960620`: forward-only status moves, transactional one-time pre-shipped stock restoration, variant-stock SQL correction, and focused tests. Local focused tests passed in the latest run: 26 tests across status, restock, variant SQL, order route, storage upload, and R2 presign coverage.
+
+After the storage checksum fix deployment, a fresh live harmless asymmetric PNG test reached the visible Studio preview successfully, but Add to Cart still failed. The persistent alert stated that direct storage could not be reached and the API fallback returned HTTP 502; cart remained at 0. No checkout/order/payment/live data mutation occurred. Treat production T1 as **UNVERIFIED/FAILED**, not fixed. Next action is sanitized Render `storageFailure` evidence or provider diagnosis; do not change R2/Render credentials or settings in this queue.
+
+T8 is prepared but not executed in `docs/IDEMPOTENCY_KEY_MIGRATION_DRY_RUN.md`. T9 remains pending: implement and test per-product artwork-size/transform restoration without weakening fit-to-zone or history. T3-T6 remain evidence-blocked. PR #37 is still an open draft/duplicate storage-write hardening proposal; do not merge it automatically while T1’s live storage cause remains unresolved.

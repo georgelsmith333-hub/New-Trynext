@@ -4360,3 +4360,11 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Tests: orderStatus transitions, orders.status (every refused move, forward path, restore once, double cancel, 404), orderStock, variantStockSql source guard; throwaway-Postgres script (12 checks incl. two simultaneous cancels restore once, variant checkout 201 then cancel restores). api-server typecheck, 207 tests, build, storefront typecheck all pass.
 - For the owner to check: the admin labels read "Shipped to Department" then "On the Way (Ongoing)", but the agreed table allows `ongoing->shipped` and not `shipped->ongoing`. Ask the operator whether those two labels are in the intended order.
 - Not done: no live data touched; live behaviour UNVERIFIED. Next: PR + green checks + merge, then T9 (restore artwork size on product switch), T8 migration dry-run design.
+
+## 2026-10-09 — T7 merged and fresh live storage failure evidence
+
+T7 merged to main as PR #38 / commit `8960620`: forward-only order status transitions plus transactional one-time stock restoration on pre-shipped cancellation. Focused local tests passed; no live order or inventory mutation occurred.
+
+Fresh live Design Studio verification after the storage checksum fix: harmless asymmetric PNG appeared in the Studio preview as a new layer, but Add to Cart failed with the persistent alert stating direct storage was unreachable and the API fallback returned HTTP 502. Cart remained at zero. No checkout, order, payment, notification, or live-data mutation occurred. Production T1 remains unverified/failed. Require sanitized Render storage-failure classification or provider diagnosis; do not change provider settings.
+
+T8 dry-run design is prepared at `docs/IDEMPOTENCY_KEY_MIGRATION_DRY_RUN.md` and was not executed. T9 per-product artwork transform restoration remains pending. T3-T6 and exact Pages deployment parity remain blocked. Keep all mockup, bottle, provider, schema, transaction, and Meta Ads gates fail-closed.
