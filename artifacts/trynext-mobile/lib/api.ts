@@ -192,7 +192,9 @@ export interface Review {
   id: number;
   customerName: string;
   rating: number;
-  comment?: string;
+  /** Review text, as the API returns it (also exposed as `body`). */
+  text?: string | null;
+  body?: string | null;
   createdAt?: string;
   approved: boolean;
 }
@@ -203,6 +205,10 @@ export const api = {
     featured?: boolean;
     customizable?: boolean;
     search?: string;
+    sort?: "newest" | "oldest" | "price_asc" | "price_desc" | "name_asc" | "name_desc" | "featured";
+    /** Whole taka, applied to the price the customer pays (the discounted price when there is one). */
+    minPrice?: number;
+    maxPrice?: number;
     page?: number;
     limit?: number;
   }) => {
@@ -211,6 +217,9 @@ export const api = {
     if (params?.featured) query.set("featured", "true");
     if (params?.customizable) query.set("customizable", "true");
     if (params?.search) query.set("search", params.search);
+    if (params?.sort) query.set("sort", params.sort);
+    if (params?.minPrice !== undefined) query.set("minPrice", String(params.minPrice));
+    if (params?.maxPrice !== undefined) query.set("maxPrice", String(params.maxPrice));
     if (params?.page) query.set("page", String(params.page));
     if (params?.limit) query.set("limit", String(params.limit));
     const qs = query.toString();
@@ -272,16 +281,17 @@ export const api = {
     apiFetch<{ testimonials: Testimonial[] }>(`/api/testimonials`),
 
   getReviews: (productId: number) =>
-    apiFetch<{ reviews: Review[] }>(`/api/reviews?productId=${productId}`),
+    apiFetch<{ reviews: Review[] }>(`/api/reviews/${productId}`),
 
   submitReview: (data: {
     productId: number;
     customerName: string;
-    customerPhone?: string;
+    /** Required by the API (one review per email per product). */
+    customerEmail: string;
     rating: number;
-    comment?: string;
+    text?: string;
   }) =>
-    apiFetch<{ review: Review; message?: string }>(`/api/reviews`, {
+    apiFetch<Review & { message?: string }>(`/api/reviews`, {
       method: "POST",
       headers: { "X-Requested-With": "XMLHttpRequest" },
       body: JSON.stringify(data),

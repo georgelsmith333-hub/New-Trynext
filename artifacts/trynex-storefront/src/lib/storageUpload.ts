@@ -36,8 +36,11 @@ export function resetDirectUploadMemory(): void {
 
 async function readServerMessage(response: Response): Promise<string> {
   try {
-    const body = (await response.json()) as { message?: unknown };
-    if (typeof body.message === "string" && body.message) return body.message.slice(0, 160);
+    const body = (await response.json()) as { message?: unknown; reason?: unknown };
+    const message = typeof body.message === "string" && body.message ? body.message.slice(0, 160) : "";
+    // A short machine code such as "storage_access_denied" says WHY storage refused the file.
+    const reason = typeof body.reason === "string" && /^[a-z_]{1,40}$/.test(body.reason) ? body.reason : "";
+    if (message || reason) return `${message}${reason ? ` [${reason}]` : ""}`.trim();
   } catch {
     /* not JSON */
   }

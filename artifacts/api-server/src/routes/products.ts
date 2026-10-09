@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { normalizePriceRange, parsePriceBound } from "../lib/priceRange";
 import { z } from "zod";
 import { db, productsTable, categoriesTable } from "@workspace/db";
 import { eq, ilike, or, and, sql, desc, asc } from "drizzle-orm";
@@ -109,8 +110,9 @@ async function productCacheKey(params: Record<string, string | undefined>): Prom
   const lim  = params.limit ?? "12";
   const srt  = params.sort ?? "newest";
   const total = params.includeTotal ?? "true";
+  const price = `${params.minPrice ?? ""}-${params.maxPrice ?? ""}`;
   const version = await getProductCacheVersion();
-  return `trynext:products:${version}:${cat}:${feat}:${custom}:${srt}:pg${pg}:lim${lim}:total${total}`;
+  return `trynext:products:${version}:${cat}:${feat}:${custom}:${srt}:price${price}:pg${pg}:lim${lim}:total${total}`;
 }
 
 function localProductCacheKey(params: Record<string, string | undefined>): string {
@@ -119,6 +121,8 @@ function localProductCacheKey(params: Record<string, string | undefined>): strin
     params.featured ?? "false",
     params.customizable ?? "false",
     params.sort ?? "newest",
+    params.minPrice ?? "",
+    params.maxPrice ?? "",
     params.page ?? "1",
     params.limit ?? "12",
     params.includeTotal ?? "true",
@@ -178,6 +182,7 @@ router.get("/products", async (req, res) => {
   try {
     const { categoryId: rawCategoryId, category, search, featured, customizable, page = "1", limit = "12", sort } = req.query;
     const includeTotal = req.query.includeTotal !== "false";
+    const { min: minPrice, max: maxPrice } = normalizePriceRange(parsePriceBound(req.query.minPrice), parsePriceBound(req.query.maxPrice));
     // Accept both the canonical API name and the storefront-friendly alias.
     const categoryId = rawCategoryId ?? category;
     const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
@@ -194,6 +199,8 @@ router.get("/products", async (req, res) => {
           page: page as string,
           limit: limit as string,
           sort: sort as string | undefined,
+          minPrice: minPrice === undefined ? undefined : String(minPrice),
+          maxPrice: maxPrice === undefined ? undefined : String(maxPrice),
           includeTotal: String(includeTotal),
         })
       : null;
@@ -219,6 +226,8 @@ router.get("/products", async (req, res) => {
       page: page as string,
       limit: limit as string,
       sort: sort as string | undefined,
+      minPrice: minPrice === undefined ? undefined : String(minPrice),
+      maxPrice: maxPrice === undefined ? undefined : String(maxPrice),
       includeTotal: String(includeTotal),
     });
     if (cacheKey) {
@@ -264,6 +273,11 @@ router.get("/products", async (req, res) => {
     }
     if (featured === "true") conditions.push(eq(productsTable.featured, true));
     if (customizable === "true") conditions.push(eq(productsTable.customizable, true));
+    // Price range applies to the price a customer actually pays (the discounted
+    // price when there is one).
+    const effectivePrice = sql`COALESCE(${productsTable.discountPrice}, ${productsTable.price})`;
+    if (minPrice !== undefined) conditions.push(sql`${effectivePrice} >= ${minPrice}`);
+    if (maxPrice !== undefined) conditions.push(sql`${effectivePrice} <= ${maxPrice}`);
 
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 
