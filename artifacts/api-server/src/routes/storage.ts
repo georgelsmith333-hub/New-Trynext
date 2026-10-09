@@ -318,7 +318,13 @@ router.put("/storage/upload-via-api/:objectId", async (req: Request, res: Respon
     await objectStorageService.storeUploadedObject(grant.objectId, body, detectedType);
     res.status(200).json({ success: true, objectPath: `/objects/${grant.objectId}`, detectedType, via: "api" });
   } catch (err) {
-    req.log.error({ err }, "Upload through the API could not be stored");
+    // Sanitized class of the storage failure (no message, key or URL), so the
+    // cause (denied, missing bucket, timeout, bad checksum...) shows up in logs.
+    const e = err as { name?: string; Code?: string; code?: string; $metadata?: { httpStatusCode?: number } };
+    req.log.error(
+      { err, storageFailure: { name: e?.name, code: e?.Code ?? e?.code, httpStatus: e?.$metadata?.httpStatusCode } },
+      "Upload through the API could not be stored",
+    );
     res.status(502).json({ error: "storage_write_failed", message: "The file could not be saved to storage. Please try again later." });
   }
 });
