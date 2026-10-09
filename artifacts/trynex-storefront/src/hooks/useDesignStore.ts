@@ -14,6 +14,7 @@ import {
   type DraftPayload,
 } from "@/pages/studio/types";
 import { PRODUCTS } from "@/pages/design-studio/mockups";
+import type { SwitchMemory } from "@/pages/studio/productSwitch";
 
 export interface HistoryFrame {
   layers: Layer[];
@@ -59,6 +60,9 @@ export interface DesignStoreState {
   saveStatus: SaveStatus;
   hasDraft: boolean;
   legacyDraftFound: { version: number } | null;
+
+  /** Sizes remembered across product switches (not part of undo history or drafts). */
+  switchMemory: SwitchMemory<Layer["transform"]>;
 }
 
 export interface DesignStoreActions {
@@ -72,6 +76,7 @@ export interface DesignStoreActions {
     color: { name: string; hex: string },
     transforms: Array<{ id: string; transform: Layer["transform"] }>,
     mugMode: MugMode,
+    memory?: SwitchMemory<Layer["transform"]>,
   ) => void;
   setSize: (size: string) => void;
   setQuantity: (qty: number | ((prev: number) => number)) => void;
@@ -164,6 +169,7 @@ const initialState: DesignStoreState = {
   saveStatus: "idle",
   hasDraft: false,
   legacyDraftFound: null,
+  switchMemory: { saved: {}, applied: {} },
 };
 
 type DS = Draft<DesignStoreState>;
@@ -236,8 +242,9 @@ export const useDesignStore = create<DesignStore>()(
         state.activeFace = nextFace;
       });
     },
-    switchProduct: (product, color, transforms, mugMode) => {
+    switchProduct: (product, color, transforms, mugMode, memory) => {
       set((state: DS) => {
+        if (memory) state.switchMemory = memory;
         const nextFace = product.category === "mug" && mugMode === "side2" ? "back" : "front";
         const changed = state.selectedProduct.id !== product.id
           || state.selectedColor.hex.toLowerCase() !== color.hex.toLowerCase()

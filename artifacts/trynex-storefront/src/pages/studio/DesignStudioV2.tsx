@@ -573,8 +573,8 @@ export default function DesignStudioV2() {
 
   const handleQuickProductSwitch = (prod: DesignProduct) => {
     if (prod.id === selectedProduct.id) return;
-    const plan = planProductSwitch({ from: selectedProduct, fromColor: selectedColor, fromMugMode: mugMode, to: prod, layers });
-    switchProduct(prod, plan.color, plan.layerTransforms, plan.mugMode);
+    const plan = planProductSwitch({ from: selectedProduct, fromColor: selectedColor, fromMugMode: mugMode, to: prod, layers, memory: useDesignStore.getState().switchMemory });
+    switchProduct(prod, plan.color, plan.layerTransforms, plan.mugMode, plan.memory);
     setLinkedStoreProduct(null);
     setQuantity(1);
   };

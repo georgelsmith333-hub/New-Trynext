@@ -89,10 +89,10 @@ export function ProductSwitcher() {
 
   const chooseProduct = (product: DesignProduct) => {
     if (product.id !== selectedProduct.id) {
-      const plan = planProductSwitch({ from: selectedProduct, fromColor: selectedColor, fromMugMode: mugMode, to: product, layers });
+      const plan = planProductSwitch({ from: selectedProduct, fromColor: selectedColor, fromMugMode: mugMode, to: product, layers, memory: useDesignStore.getState().switchMemory });
       // Product, colour, face, mug mode, and refitted artwork are one history
       // transaction so one undo restores the complete previous design state.
-      switchProduct(product, plan.color, plan.layerTransforms, plan.mugMode);
+      switchProduct(product, plan.color, plan.layerTransforms, plan.mugMode, plan.memory);
       // Preserve artwork for the apply-to-product workflow, but reset product-specific
       // commerce identity, quantity, and incompatible face/mug state.
       setLinkedStoreProduct(null);

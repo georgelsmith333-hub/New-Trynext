@@ -210,3 +210,13 @@ T2 public checks are complete but current Pages deployment identity and `trynext
 - Tests: orderStatus transitions, orders.status (every refused move, forward path, restore once, double cancel, 404), orderStock, variantStockSql source guard; throwaway-Postgres script (12 checks incl. two simultaneous cancels restore once, variant checkout 201 then cancel restores). api-server typecheck, 207 tests, build, storefront typecheck all pass.
 - For the owner to check: the admin labels read "Shipped to Department" then "On the Way (Ongoing)", but the agreed table allows `ongoing->shipped` and not `shipped->ongoing`. Ask the operator whether those two labels are in the intended order.
 - Not done: no live data touched; live behaviour UNVERIFIED. Next: PR + green checks + merge, then T9 (restore artwork size on product switch), T8 migration dry-run design.
+
+### T7 follow-up: PR 38 merged
+- Merged (not yet confirmed deployed or live-tested): squash `8960620` after all 4 checks green on `fb5f937`. Release scope: API order-status route (forward-only moves, stock restored once on cancel, Activity Log `stockRestored`), variant stock SQL fix in order creation, admin screen shows the server reason. No schema change, no live data touched.
+- Owner question still open: admin labels order ("Shipped to Department" then "On the Way (Ongoing)") versus the agreed table (`ongoing->shipped`, not `shipped->ongoing`).
+
+## 2026-10-09 T9 restore artwork size after switching products — Claude report (local only; not merged or deployed)
+- Behaviour: the Studio now remembers each layer's size/position/rotation when it leaves a product and gives it back exactly when the customer returns to that product (also through chains such as tee -> mug -> cap -> tee), including after undo steps.
+- Safety kept: it is only reused when the layer is unchanged since the last switch and the print zone has the same size as before; otherwise the existing fit-to-zone refit runs, so artwork cannot overflow. A customer edit or an undo always wins. New layers use the normal refit. Face behaviour, undo/redo history and variant identity (linked store product reset) are unchanged; the memory is not saved in drafts or undo history.
+- Files: `pages/studio/productSwitch.ts`, `hooks/useDesignStore.ts`, `DesignStudioV2.tsx`, `toolbar/ProductSwitcher.tsx`; tests in `productSwitch.test.ts` (7 new, mutation-checked) and `useDesignStore.test.ts` (2 new, through the real store incl. undo).
+- Checks: storefront typecheck, 209 tests, build. Not checked: visual overflow in a real browser or phone for T-shirt/hoodie/mug/cap (logic-level only), so treat the look as UNVERIFIED until someone switches products on the live Studio.
