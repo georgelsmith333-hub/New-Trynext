@@ -209,3 +209,11 @@ After each command, update `reports.md`, `claude/reports.md`, and `AGENT_HANDOFF
 
 
 - 2026-10-08: Commands 0-6 processed. PR 27 and PR 29 merged. Open for the owner: live upload + Add to Cart check after the `014bdce` deploy (UNVERIFIED, sandbox cannot reach the live domain); sanitized product export (N11); sanitized Activity Log / Render evidence; decision on order status transitions and restock-on-cancel.
+
+## 2026-10-09 Owner decisions and execution update
+
+The owner authorized Manus to decide the remaining behavior choices conservatively. T7 is now decided: forward-only transitions are `pending -> processing|cancelled`, `processing -> ongoing|shipped|cancelled`, `ongoing -> shipped|cancelled`, and `shipped -> delivered`; no transitions out of `delivered` or `cancelled`. Cancellation is allowed only before shipping and restores reserved stock exactly once with an audit record. Claude must implement and test locally/throwaway only before any release or live-data change.
+
+T8: prepare the reversible persistent `idempotency_key` migration and dry run, but do not execute it. T9: remember and restore each product’s pre-switch artwork size while retaining fit-to-zone safety, face behavior, undo/redo, and variant identity. T10 remains `not yet`; T11 remains Activity Log sufficient, with Telegram/email unconfigured.
+
+The current highest-priority task is reproducing and fixing or classifying the live API fallback upload 502. T2 public verification passed 30/30; T3 real phone, T4 sanitized product export, T5 sanitized Activity Log/Render evidence, T6 saved 94-surface validator report, and current Pages deployment parity remain blocked. Do not fabricate evidence or change provider settings, live data, mockup promotion, bottle hold, payments, orders, or ads.

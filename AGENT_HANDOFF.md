@@ -4331,3 +4331,13 @@ Blocker: live fallback failure requires code investigation; admin/provider/devic
 Next safe action: Claude should inspect the API fallback upstream error path, add a regression test for 502 plus success, open a small PR, and keep all mockup, bottle, order, payment, provider, and Meta Ads gates fail-closed.
 
 Verification: 30/30 critical-flow checks passed; public endpoint statuses were 200; exact live Add to Cart failure was captured; no secrets were recorded.
+
+---
+
+## 2026-10-09 — Owner-decided remaining work order
+
+The owner authorized conservative decisions for the previously open behavior choices. Order transitions are forward-only: `pending -> processing|cancelled`, `processing -> ongoing|shipped|cancelled`, `ongoing -> shipped|cancelled`, and `shipped -> delivered`; no transitions out of delivered or cancelled. Cancellation is allowed only before shipping and must restore reserved stock exactly once with an audit record. This is a local/throwaway implementation task first; no live data or schema change is authorized.
+
+Prepare a reversible `idempotency_key` migration and dry run, but do not execute it. Restore each product’s pre-switch artwork size when switching back while preserving fit-to-zone safety, face behavior, undo/redo, and variant identity. Keep bottle approval at `not yet`, keep Activity Log sufficient for contact messages, and leave Telegram/email unconfigured.
+
+The highest-priority unresolved production issue is the live API fallback upload 502. Claude must reproduce direct-upload failure/API-side success and API-side storage failure locally, inspect the S3/R2 PutObject path and sanitized error classification, add regression tests, and prepare the smallest safe PR if code is responsible. If provider credentials or permissions are responsible, report that without changing provider settings. Public T2 checks passed 30/30; T3-T6 and Pages deployment parity remain evidence-blocked. Mockup promotion, bottle ordering, real transactions, provider changes, and Meta Ads remain fail-closed.

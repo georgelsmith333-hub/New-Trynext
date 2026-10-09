@@ -172,3 +172,22 @@ Done. PR 31 (docs-only) merged as `9d60d7d` after all four checks passed (Pages,
 ### PR and next command
 
 PR #34 (this Manus task list) passed all four checks and was merged as `dc0aff1`. Next command for Claude is the local reproduction and fix for the API fallback 502, followed by a new small PR and one post-deployment live smoke test. Meta Ads remain untouched and unverified.
+
+## 2026-10-09 Owner decisions and complete remaining-work order
+
+The owner asked Manus to decide safe remaining items using common sense and keep Claude’s queue complete. These decisions apply unless new evidence shows a release-safety conflict:
+
+- **T7 order transitions:** choose conservative forward-only transitions. Allowed moves are `pending -> processing|cancelled`, `processing -> ongoing|shipped|cancelled`, `ongoing -> shipped|cancelled`, `shipped -> delivered`, and no transitions out of `delivered` or `cancelled`. Reject all other moves with a clear validation response. Cancellation is allowed only before `shipped`.
+- **T7 cancellation stock:** choose **yes**, restore reserved stock on a successful pre-shipped cancellation, exactly once and with an audit record. The implementation must be idempotent and must not restore stock for delivered/shipped orders or double-clicks. Claude must implement and test this only on local/throwaway data first; no live schema/data change.
+- **T8 duplicate-order persistence:** choose migration design plus dry run, but **do not execute** the schema migration. Prepare a reversible `idempotency_key` migration, uniqueness analysis, collision report, and rollback plan; ask again before running it.
+- **T9 product switching:** choose remembering/restoring each product’s pre-switch artwork size, while preserving fit-to-zone safety, current face behavior, undo/redo, and variant identity. Implement only with focused tests for T-shirt/hoodie/mug/cap switching and no visual overflow.
+- **T10 bottle:** keep `not yet`; do not promote masters or lift the customer-order hold.
+- **T11 contact messages:** Activity Log remains sufficient; Telegram/email remain unconfigured.
+
+### Immediate code task — T1 API fallback 502
+
+The latest live re-test reached `/api/storage/uploads/request-url`, attempted the direct upload, then attempted `/api/storage/upload-via-api/<redacted-id>` and received HTTP 502. The user-facing persistent alert is correct. Reproduce this exact path locally with a stand-in storage adapter that rejects direct browser access but accepts API-side writes, then with a storage adapter that rejects API writes. Compare the local request to the live evidence. Inspect the S3/R2 `PutObject` call, bucket/key construction, content type, grant/object-id binding, body size, timeout, and sanitized upstream error classification. Add regression tests for direct-failure/API-success and API-write-failure/502, preserving secret redaction. If code is the cause, prepare a small PR; if credentials/permissions/provider configuration are the cause, report that without changing provider settings. After a green deploy, repeat one harmless live upload/Add to Cart test and stop before checkout.
+
+### Remaining evidence queue
+
+T2 public checks are complete but current Pages deployment identity and `trynext.pages.dev` parity remain unverified. T3 needs a real phone. T4 needs a sanitized 70-product export. T5 needs sanitized Activity Log and Render evidence. T6 needs the saved 94-surface Photopea/hash report. Do not fabricate any of these. Keep mockup templates inactive, candidate surfaces unpromoted, bottle ordering blocked, real orders/payments/customer notifications disabled, and Meta Ads untouched.
