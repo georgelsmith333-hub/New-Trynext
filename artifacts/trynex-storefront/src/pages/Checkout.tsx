@@ -32,6 +32,7 @@ import { BD_UPAZILAS, getDivisionForDistrict, getAllDistricts, getPostCode } fro
 import { DeliveryAreaPicker } from "@/components/DeliveryAreaPicker";
 import { OrderSuccessCelebration } from "@/components/orders/OrderSuccessCelebration";
 import { downloadOrderInvoicePdf, type InvoiceOrder } from "@/lib/order-invoice";
+import { resolveShippingCity } from "@/lib/shippingLocality";
 
 const checkoutSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -463,6 +464,9 @@ export default function Checkout() {
     const utm = getStoredUtm();
     const orderPayload = {
       ...rest,
+      // The local area (e.g. Adabor) reads better beside the district on invoices and
+      // alerts than the division did; same convention as the mobile app.
+      shippingCity: resolveShippingCity(shippingUpazila, rest.shippingCity),
       shippingAddress: formattedAddress,
       customerName,
       paymentMethod,
