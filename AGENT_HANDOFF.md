@@ -4405,3 +4405,12 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Mobile: filter sheet (price range, customizable only), badge, Reset, empty-state "Clear filters". Pure helpers in `lib/shopFilters.ts` (digits-only input, count, params) checked with a throwaway script; the app has no test runner. Checked in the Expo web build at 390px with the app's API calls redirected to the local API: found and fixed one layout defect (Max field ran off the sheet).
 - Tests: API 33 files / 244 pass (new `priceRange.test.ts`, 21), storefront 34 files / 211 pass, root typecheck clean, API bundle builds, Expo web export builds.
 - Not done: in-stock filter (variant stock is per-variant JSON); web `Products.tsx` filters still filter the loaded page client-side and could use the new server range later (behavior change, left alone).
+
+## 2026-10-09 — Further functional checks (local, throwaway database; no live data)
+- Customer auth: register (duplicate 409, weak password 400), login (wrong password 401, right 200), `/auth/me`, `/orders/my`, logout ends the session (me -> 401). Profile name rejects digits by design.
+- Admin: create/update/delete category and product; the public list and the new price filter reflect each change immediately (cache invalidation works); an out-of-stock product is refused at checkout with a clear message.
+- Promo: create, below-minimum refused with the minimum shown, 10% of ৳849 = ৳85 (total ৳864 with ৳100 delivery), one-use code refuses a second use.
+- Contact form: stored in the Activity Log and answered truthfully (`delivered:false`, `stored:true`); bad input 400.
+- Payment evidence (`PUT /orders/:id/payment-info`): wrong phone 403, wrong payment method 400. Mobile app is guest-only; every endpoint it calls exists after the two contract fixes.
+- Public settings expose no secret values (`metaCapiTokenConfigured` is a boolean flag).
+- Local servers and the scratch Postgres cluster were stopped afterwards; nothing from this audit persists outside the sandbox.
