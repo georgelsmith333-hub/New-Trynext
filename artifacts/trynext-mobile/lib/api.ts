@@ -192,7 +192,9 @@ export interface Review {
   id: number;
   customerName: string;
   rating: number;
-  comment?: string;
+  /** Review text, as the API returns it (also exposed as `body`). */
+  text?: string | null;
+  body?: string | null;
   createdAt?: string;
   approved: boolean;
 }
@@ -274,16 +276,17 @@ export const api = {
     apiFetch<{ testimonials: Testimonial[] }>(`/api/testimonials`),
 
   getReviews: (productId: number) =>
-    apiFetch<{ reviews: Review[] }>(`/api/reviews?productId=${productId}`),
+    apiFetch<{ reviews: Review[] }>(`/api/reviews/${productId}`),
 
   submitReview: (data: {
     productId: number;
     customerName: string;
-    customerPhone?: string;
+    /** Required by the API (one review per email per product). */
+    customerEmail: string;
     rating: number;
-    comment?: string;
+    text?: string;
   }) =>
-    apiFetch<{ review: Review; message?: string }>(`/api/reviews`, {
+    apiFetch<Review & { message?: string }>(`/api/reviews`, {
       method: "POST",
       headers: { "X-Requested-With": "XMLHttpRequest" },
       body: JSON.stringify(data),
