@@ -407,3 +407,9 @@ The current highest-priority engineering blocker is the live API fallback upload
 - Safety kept: it is only reused when the layer is unchanged since the last switch and the print zone has the same size as before; otherwise the existing fit-to-zone refit runs, so artwork cannot overflow. A customer edit or an undo always wins. New layers use the normal refit. Face behaviour, undo/redo history and variant identity (linked store product reset) are unchanged; the memory is not saved in drafts or undo history.
 - Files: `pages/studio/productSwitch.ts`, `hooks/useDesignStore.ts`, `DesignStudioV2.tsx`, `toolbar/ProductSwitcher.tsx`; tests in `productSwitch.test.ts` (7 new, mutation-checked) and `useDesignStore.test.ts` (2 new, through the real store incl. undo).
 - Checks: storefront typecheck, 209 tests, build. Not checked: visual overflow in a real browser or phone for T-shirt/hoodie/mug/cap (logic-level only), so treat the look as UNVERIFIED until someone switches products on the live Studio.
+
+## 2026-10-09 T8 persistent duplicate-order protection — Claude report (design + dry run only; nothing executed live)
+- Delivered as documents only: `claude/T8_IDEMPOTENCY_MIGRATION_PLAN.md`, `claude/t8/up.sql`, `claude/t8/down.sql`, `claude/t8/collision-report.sql`. No schema file, no app code and no live database was changed.
+- Dry run on a throwaway local Postgres: up, re-run no-op, duplicate key refused (23505), NULL keys unaffected, down restores the original shape with all orders kept.
+- Found: the backup mirror stops (fail-closed) if the primary has a column the backup lacks, so the migration must go to the backup database first, then the primary; the plan states this order and a rollback.
+- Needs owner approval for this exact change before anything runs; the application change is described but not written.
