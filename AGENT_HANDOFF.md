@@ -4311,3 +4311,23 @@ Claude must acknowledge this directive in `claude/reports.md` before starting Co
 - It had merge conflicts after main moved (report files only); resolved by merging main into its branch with a merge commit (both sections kept, no force-push), new head `bb02308`. Checks on that head: Cloudflare Pages, security-scan, Typecheck/test/build, build-and-check all green; mergeable state clean.
 - Preserved truthfully: at the time of the owner's smoke test the CSRF header on the upload was live and upload/render passed, but Add to Cart stayed at 0 items. That test pre-dates PR 32 (render-request header) and is not yet re-run live.
 - Next: PR 33 (persistent, retryable cart-error alert) once green; then the owner's live re-test.
+
+---
+
+## 2026-10-09 — Manus AI task execution checkpoint
+
+Status: **blocked** at live original-artwork fallback upload; public health checks passed.
+
+Last completed: read and executed `claude/MANUS_AI_TODO_TASKS.md`; merged its documentation PR #34 as `dc0aff1`; ran `node scripts/verify-critical-flows.mjs` with 30/30 passes; verified both canonical custom hosts returned identical HTTP 200 homepage content; checked public health/readiness/products/categories/mockups/service-worker endpoints; ran the live Design Studio Add to Cart test without checkout.
+
+Stopped at: live Add to Cart. The direct storage upload could not be reached and `/api/storage/upload-via-api/<redacted-id>` returned 502. The cart stayed at 0. The persistent user-facing alert correctly displayed the failure reason and retry guidance. No order, payment, notification, or live data mutation occurred.
+
+Files/areas changed: reports only on the follow-up evidence branch; no application/provider/database changes. Main includes PR #34 task list and PR #33 persistent cart-error alert.
+
+Remaining work: reproduce and fix the API fallback 502 with local/stand-in storage and tests; then deploy and repeat one harmless live Studio test. Obtain sanitized product export, Activity Log/Render evidence, saved validator hashes, real-phone result, and exact Pages deployment identity when available. Resolve owner decisions for status transitions/restock-on-cancel and artwork-size restoration.
+
+Blocker: live fallback failure requires code investigation; admin/provider/device evidence is unavailable from this environment. `trynext.pages.dev` did not resolve, and `/service-worker.js` served SPA HTML, so deployment/service-worker parity is not claimed.
+
+Next safe action: Claude should inspect the API fallback upstream error path, add a regression test for 502 plus success, open a small PR, and keep all mockup, bottle, order, payment, provider, and Meta Ads gates fail-closed.
+
+Verification: 30/30 critical-flow checks passed; public endpoint statuses were 200; exact live Add to Cart failure was captured; no secrets were recorded.

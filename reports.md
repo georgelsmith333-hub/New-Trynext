@@ -364,3 +364,11 @@ Status: fixed in code, tested locally; live result UNVERIFIED. Local reproductio
 
 ## 2026-10-08 Command B report (PR 31)
 Done. PR 31 (docs-only) merged as `9d60d7d` after all four checks passed (Pages, security-scan, typecheck/test/build, build-and-check) on head `bb02308`; its report-file conflicts were resolved by merging main into the branch (no force-push). The live result is kept as you wrote it: upload/render passed, Add to Cart stayed at 0 at that time; that test pre-dates the render-request fix (PR 32). Next: PR 33 (persistent cart-error alert), then your live re-test.
+
+## 2026-10-09 Manus task execution report
+
+The consolidated `claude/MANUS_AI_TODO_TASKS.md` was executed as far as this environment and authorization permit. Public critical-flow verification passed **30/30** against `https://trynext.shop`. The live Design Studio loaded, but Add to Cart remains blocked at original-artwork upload: the direct storage path could not be reached and the API fallback returned **502**. The new persistent user-facing failure alert is working and reports the exact safe reason without exposing secrets. Sanitized browser performance evidence showed `/api/storage/uploads/request-url`, a redacted upload path, and `/api/storage/upload-via-api/<id>`. No checkout, order, payment, customer notification, or live data mutation occurred.
+
+`https://trynext.shop` and `https://www.trynext.shop` returned identical HTTP 200 homepage content. The public health/readiness, product, category, mockup, and service-worker URL checks returned HTTP 200; `trynext.pages.dev` did not resolve from this environment, and the service-worker URL returned SPA HTML rather than a separate worker script. The exact Pages deployment ID for current main was not independently available, so deployment parity remains unverified.
+
+Real-phone touch editing, sanitized product export, authenticated Activity Log/Render evidence, and the saved 94-surface validator report remain blocked. The owner decisions recorded are: bottle `not yet`; Activity Log is sufficient for contact messages; duplicate-order schema work is design/dry-run only. Order transitions/restock-on-cancel and per-product artwork-size restoration remain unanswered. Templates remain inactive, candidate mockup surfaces remain unpromoted, bottle ordering remains blocked, and Meta Ads remain untouched.
