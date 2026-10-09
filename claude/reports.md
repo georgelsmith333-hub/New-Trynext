@@ -120,3 +120,74 @@ Status: fixed in code, tested locally; live result UNVERIFIED. Local reproductio
 
 ## 2026-10-08 Command B report (PR 31)
 Done. PR 31 (docs-only) merged as `9d60d7d` after all four checks passed (Pages, security-scan, typecheck/test/build, build-and-check) on head `bb02308`; its report-file conflicts were resolved by merging main into the branch (no force-push). The live result is kept as you wrote it: upload/render passed, Add to Cart stayed at 0 at that time; that test pre-dates the render-request fix (PR 32). Next: PR 33 (persistent cart-error alert), then your live re-test.
+
+## 2026-10-09 Manus report — T1/T2/T3/T4/T5/T6/T7/T8/T9/T10/T11
+
+### T1 — Live Studio upload + Add to Cart re-test
+
+**Status: blocked.** The live Design Studio loaded successfully. A harmless existing restored T-shirt draft was used for the Add to Cart portion because the isolated browser file chooser could not select a local file input; the browser-side generated-file attempt did not create a new layer. The live Add to Cart request entered `Preparing…` and returned to idle with cart count `0`. The new persistent alert worked and displayed: `Your design was not added to the cart. Couldn’t add design to cart. Original artwork could not be uploaded. The file could not be uploaded (direct: the browser could not reach storage directly; through our server: our server answered 502). Your design was not added to cart; please retry.` Sanitized performance entries showed `/api/storage/uploads/request-url`, a redacted `/uploads/<id>` path, and `/api/storage/upload-via-api/<id>`. No checkout, order, payment, or customer-data mutation occurred.
+
+**Required next code action:** reproduce the API fallback 502 with local/stand-in storage and inspect the upstream storage response, content-type/body forwarding, timeout, key/path handling, and Render proxy error. Add a focused regression test for a storage rejection/upstream 502 and a successful fallback upload. Do not weaken validation, authorization, CSRF, size limits, or fail-closed cart behavior.
+
+### T2 — Live site health and critical flows
+
+**Status: done for public/non-mutating checks; deployment identity partially blocked.** `node scripts/verify-critical-flows.mjs` passed **30/30** against `https://trynext.shop`, including customer pages, admin page delivery, readiness, products, categories, settings, protected unauthenticated boundaries, and unread-message boundary. `https://trynext.shop/` and `https://www.trynext.shop/` both returned HTTP 200 and identical HTML SHA-256 `dbeccf5a0b3f4ae9884115466ddf0a09ff357df32ec9cc85bdeb29c6a803231a` (17,204 bytes). Public endpoint checks returned HTTP 200 for `/api/healthz`, `/api/health/liveness`, `/api/health/readiness`, `/api/readyz`, `/api/products?limit=1`, `/api/categories`, `/api/mockups`, and `/service-worker.js`. The service-worker URL returned the SPA HTML (`text/html`), not a separate JavaScript worker; this should be reviewed as a freshness/registration limitation, not called healthy by assumption. `https://trynext.pages.dev` did not resolve from this environment. The current GitHub main commit is `dc0aff1`; a Pages deployment ID for that exact commit was not independently available from the public response. PR #33’s Pages check had previously passed for merge `199a0f8`, but that is not proof that the current `dc0aff1` is deployed.
+
+### T3 — Real phone Studio check
+
+**Status: blocked.** No permitted real phone/device result is available. Touch editing, pinch resize, rotation, keyboard behavior, sticky Add to Cart, and mobile overflow remain UNVERIFIED.
+
+### T4 — Sanitized live product export
+
+**Status: blocked.** No sanitized export was available in the authenticated admin session. No live catalog data was changed or guessed.
+
+### T5 — Sanitized Activity Log/Render errors and infrastructure snapshot
+
+**Status: blocked.** No authenticated admin/provider log bundle was available. The 502 observed in T1 is browser-visible application evidence, not a substitute for Render logs. No provider settings, credentials, database, Redis, storage, scheduler, or backup settings were changed.
+
+### T6 — Saved Photopea validator report for 94 candidate surfaces
+
+**Status: blocked.** No saved hash/validator report was supplied. Candidate surfaces remain candidate; templates stay inactive and bottle ordering stays blocked.
+
+### T7 — Order status and cancellation decision
+
+**Status: blocked on owner decision.** Existing behavior remains any-status-to-any-status and cancellation does not restore stock. No code or data change was made. Owner must choose allowed transitions and whether cancellation returns stock.
+
+### T8 — Restart-safe duplicate-order protection
+
+**Status: done as a decision, implementation not authorized.** Existing owner direction is design/reversible dry run only; do not run a schema migration or alter the live database. Claude may prepare the migration and dry-run report, but execution requires a separate approval.
+
+### T9 — Restore artwork size after switching products and back
+
+**Status: blocked on owner decision.** Choose either leave current fit-only behavior or remember and restore per-product pre-switch size. No behavior change was made.
+
+### T10 — Water-bottle print area
+
+**Status: done as a decision.** Owner direction remains `not yet`; keep the customer-order hold active and do not promote bottle masters.
+
+### T11 — Contact messages
+
+**Status: done as a decision.** Activity Log storage is enough for now; Telegram/email remain unconfigured and no provider setup was performed.
+
+### PR and next command
+
+PR #34 (this Manus task list) passed all four checks and was merged as `dc0aff1`. Next command for Claude is the local reproduction and fix for the API fallback 502, followed by a new small PR and one post-deployment live smoke test. Meta Ads remain untouched and unverified.
+
+## 2026-10-09 Owner decisions and complete remaining-work order
+
+The owner asked Manus to decide safe remaining items using common sense and keep Claude’s queue complete. These decisions apply unless new evidence shows a release-safety conflict:
+
+- **T7 order transitions:** choose conservative forward-only transitions. Allowed moves are `pending -> processing|cancelled`, `processing -> ongoing|shipped|cancelled`, `ongoing -> shipped|cancelled`, `shipped -> delivered`, and no transitions out of `delivered` or `cancelled`. Reject all other moves with a clear validation response. Cancellation is allowed only before `shipped`.
+- **T7 cancellation stock:** choose **yes**, restore reserved stock on a successful pre-shipped cancellation, exactly once and with an audit record. The implementation must be idempotent and must not restore stock for delivered/shipped orders or double-clicks. Claude must implement and test this only on local/throwaway data first; no live schema/data change.
+- **T8 duplicate-order persistence:** choose migration design plus dry run, but **do not execute** the schema migration. Prepare a reversible `idempotency_key` migration, uniqueness analysis, collision report, and rollback plan; ask again before running it.
+- **T9 product switching:** choose remembering/restoring each product’s pre-switch artwork size, while preserving fit-to-zone safety, current face behavior, undo/redo, and variant identity. Implement only with focused tests for T-shirt/hoodie/mug/cap switching and no visual overflow.
+- **T10 bottle:** keep `not yet`; do not promote masters or lift the customer-order hold.
+- **T11 contact messages:** Activity Log remains sufficient; Telegram/email remain unconfigured.
+
+### Immediate code task — T1 API fallback 502
+
+The latest live re-test reached `/api/storage/uploads/request-url`, attempted the direct upload, then attempted `/api/storage/upload-via-api/<redacted-id>` and received HTTP 502. The user-facing persistent alert is correct. Reproduce this exact path locally with a stand-in storage adapter that rejects direct browser access but accepts API-side writes, then with a storage adapter that rejects API writes. Compare the local request to the live evidence. Inspect the S3/R2 `PutObject` call, bucket/key construction, content type, grant/object-id binding, body size, timeout, and sanitized upstream error classification. Add regression tests for direct-failure/API-success and API-write-failure/502, preserving secret redaction. If code is the cause, prepare a small PR; if credentials/permissions/provider configuration are the cause, report that without changing provider settings. After a green deploy, repeat one harmless live upload/Add to Cart test and stop before checkout.
+
+### Remaining evidence queue
+
+T2 public checks are complete but current Pages deployment identity and `trynext.pages.dev` parity remain unverified. T3 needs a real phone. T4 needs a sanitized 70-product export. T5 needs sanitized Activity Log and Render evidence. T6 needs the saved 94-surface Photopea/hash report. Do not fabricate any of these. Keep mockup templates inactive, candidate surfaces unpromoted, bottle ordering blocked, real orders/payments/customer notifications disabled, and Meta Ads untouched.
