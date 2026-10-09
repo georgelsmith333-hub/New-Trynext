@@ -157,13 +157,18 @@ export default function AdminOrders() {
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest', ...getAuthHeaders() },
         body: JSON.stringify({ status }),
       });
-      if (!res.ok) throw new Error('Failed');
+      if (!res.ok) {
+        // Show the server's reason (e.g. a move that is not allowed) instead of a bare "failed".
+        const body = await res.json().catch(() => null) as { message?: string } | null;
+        throw new Error(typeof body?.message === "string" ? body.message : 'Failed');
+      }
        queryClient.invalidateQueries({ queryKey: ordersQueryKey });
       broadcastInvalidate();
       toast({ title: "✓ Status updated" });
-    } catch {
+    } catch (err) {
       queryClient.invalidateQueries({ queryKey: ordersQueryKey });
-      toast({ title: "Update failed", variant: "destructive" });
+      const reason = err instanceof Error && err.message !== 'Failed' ? err.message : undefined;
+      toast({ title: "Update failed", description: reason, variant: "destructive" });
     } finally {
       setUpdatingOrderId(null);
     }
