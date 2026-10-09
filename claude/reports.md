@@ -210,3 +210,7 @@ T2 public checks are complete but current Pages deployment identity and `trynext
 - Tests: orderStatus transitions, orders.status (every refused move, forward path, restore once, double cancel, 404), orderStock, variantStockSql source guard; throwaway-Postgres script (12 checks incl. two simultaneous cancels restore once, variant checkout 201 then cancel restores). api-server typecheck, 207 tests, build, storefront typecheck all pass.
 - For the owner to check: the admin labels read "Shipped to Department" then "On the Way (Ongoing)", but the agreed table allows `ongoing->shipped` and not `shipped->ongoing`. Ask the operator whether those two labels are in the intended order.
 - Not done: no live data touched; live behaviour UNVERIFIED. Next: PR + green checks + merge, then T9 (restore artwork size on product switch), T8 migration dry-run design.
+
+### T7 follow-up: PR 38 merged
+- Merged (not yet confirmed deployed or live-tested): squash `8960620` after all 4 checks green on `fb5f937`. Release scope: API order-status route (forward-only moves, stock restored once on cancel, Activity Log `stockRestored`), variant stock SQL fix in order creation, admin screen shows the server reason. No schema change, no live data touched.
+- Owner question still open: admin labels order ("Shipped to Department" then "On the Way (Ongoing)") versus the agreed table (`ongoing->shipped`, not `shipped->ongoing`).
