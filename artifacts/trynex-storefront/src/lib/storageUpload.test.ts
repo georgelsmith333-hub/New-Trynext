@@ -53,6 +53,23 @@ describe("uploadToStorage", () => {
     expect(error.message).toContain("larger than the size it was declared with");
   });
 
+  it("shows the server's short reason code when storage refuses the write", async () => {
+    const fetchImpl = vi.fn()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce(status(502, { message: "The file could not be saved to storage.", reason: "storage_access_denied" }));
+    const error = await uploadToStorage(target, blob, "image/png", { fetchImpl, resolveApiUrl }).catch((e) => e);
+    expect(error.message).toContain("our server answered 502");
+    expect(error.message).toContain("[storage_access_denied]");
+  });
+
+  it("ignores a reason that is not a short code (no free text from the server)", async () => {
+    const fetchImpl = vi.fn()
+      .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+      .mockResolvedValueOnce(status(502, { reason: "<script>alert(1)</script>" }));
+    const error = await uploadToStorage(target, blob, "image/png", { fetchImpl, resolveApiUrl }).catch((e) => e);
+    expect(error.message).not.toContain("script");
+  });
+
   it("fails clearly when the API cannot be reached either", async () => {
     const fetchImpl = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
     const error = await uploadToStorage(target, blob, "image/png", { fetchImpl, resolveApiUrl }).catch((e) => e);

@@ -4376,3 +4376,10 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Dry run on a throwaway local Postgres: up, re-run no-op, duplicate key refused (23505), NULL keys unaffected, down restores the original shape with all orders kept.
 - Found: the backup mirror stops (fail-closed) if the primary has a column the backup lacks, so the migration must go to the backup database first, then the primary; the plan states this order and a rollback.
 - Needs owner approval for this exact change before anything runs; the application change is described but not written.
+
+## 2026-10-09 — Storage failure reason code and real-adapter test (rebuilt on main after PR 36/38/39/41)
+- Status: local, committed on `claude/awesome-goldberg-u7c4n4`, draft PR 37 (rebuilt; the checksum change it first carried is already on main as PR 36). Not merged, not deployed.
+- Why: live T1 re-test still ends in `502` from `/api/storage/upload-via-api` after the checksum fix, so the API's own bucket write is being refused or cannot connect. That is most likely a storage permission, credential or bucket-name problem (provider settings, which Claude does not change), but nothing in the browser says which.
+- Change: the 502 body now carries a short non-secret `reason` (`storage_access_denied`, `storage_credentials_rejected`, `storage_bucket_missing`, `storage_unreachable`, `storage_error`); the log line carries the sanitized class; the Studio alert shows it as `[reason]`, so the next live attempt names the cause without Render logs.
+- Tests: new `objectStorage.write.test.ts` (real adapter and AWS SDK against a local stand-in S3 server: key, content type, no optional checksum, refused write without leaking the secret), `storageErrors.test.ts`, two route tests, two storefront tests.
+- Next: after deploy, one harmless live upload + Add to Cart; read the `[reason]` in the alert. `storage_access_denied` / `storage_credentials_rejected` / `storage_bucket_missing` = fix in the Cloudflare R2 token/bucket (owner action, not code); `storage_unreachable` = endpoint/account id.

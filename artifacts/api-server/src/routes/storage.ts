@@ -7,6 +7,7 @@ import { z } from "zod";
 import sharp from "sharp";
 import { buildApiUploadPath, isUploadObjectId, parseUploadGrant, UPLOAD_GRANT_TTL_SEC, verifyUploadGrant } from "../lib/uploadGrant";
 import { BodyTimeoutError, BodyTooLargeError, readBoundedBody } from "../lib/readBoundedBody";
+import { classifyStorageWriteError } from "../lib/storageErrors";
 
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 
@@ -318,14 +319,9 @@ router.put("/storage/upload-via-api/:objectId", async (req: Request, res: Respon
     await objectStorageService.storeUploadedObject(grant.objectId, body, detectedType);
     res.status(200).json({ success: true, objectPath: `/objects/${grant.objectId}`, detectedType, via: "api" });
   } catch (err) {
-    // Sanitized class of the storage failure (no message, key or URL), so the
-    // cause (denied, missing bucket, timeout, bad checksum...) shows up in logs.
-    const e = err as { name?: string; Code?: string; code?: string; $metadata?: { httpStatusCode?: number } };
-    req.log.error(
-      { err, storageFailure: { name: e?.name, code: e?.Code ?? e?.code, httpStatus: e?.$metadata?.httpStatusCode } },
-      "Upload through the API could not be stored",
-    );
-    res.status(502).json({ error: "storage_write_failed", message: "The file could not be saved to storage. Please try again later." });
+    const failure = classifyStorageWriteError(err);
+    req.log.error({ err, storageFailure: failure }, "Upload through the API could not be stored");
+    res.status(502).json({ error: "storage_write_failed", reason: failure.reason, message: "The file could not be saved to storage. Please try again later." });
   }
 });
 

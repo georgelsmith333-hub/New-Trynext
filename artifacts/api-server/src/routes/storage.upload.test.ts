@@ -122,6 +122,21 @@ describe("PUT /storage/upload-via-api/:objectId", () => {
     expect(JSON.stringify(res.body)).not.toMatch(/FAKE-KEY|confidential|X-Amz/i);
   });
 
+  it("tells the caller WHY storage refused, as a short code only", async () => {
+    storeUploadedObject.mockRejectedValue(Object.assign(new Error("denied FAKE-KEY-123"), { name: "AccessDenied", $metadata: { httpStatusCode: 403 } }));
+    const res = await put(buildApiUploadPath(grant()), PNG);
+    expect(res.status).toBe(502);
+    expect(res.body.reason).toBe("storage_access_denied");
+    expect(JSON.stringify(res.body)).not.toMatch(/FAKE-KEY/);
+  });
+
+  it("still succeeds when the first direct attempt failed (API path stores the file)", async () => {
+    const res = await put(buildApiUploadPath(grant()), PNG);
+    expect(res.status).toBe(200);
+    expect(res.body.via).toBe("api");
+    expect(res.body.objectPath).toBe(`/objects/${ID}`);
+  });
+
   it("signature helper and route agree (a hand-built signature works, a wrong key does not)", async () => {
     const g = grant();
     const sig = signUploadGrant(g);
