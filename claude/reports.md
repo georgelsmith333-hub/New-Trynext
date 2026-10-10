@@ -309,3 +309,25 @@ No code change is justified by this evidence. Still blocked: real-phone test, sa
 - Read the S1/S2/S3 sections and `products-export.csv`. They match the earlier evidence file; no new code defect. The S1 blocker (storage 502 with no message or `[reason]`) is unchanged and still points at the deployed Render build/state or a Render/edge 502 (see the 01:30 UTC reply and the local gateway reproduction on `main`).
 - S3.1 follow-up done: read-only catalog and image audit with a dry-run change list in `claude/evidence/catalog-audit-2026-10-10.md`. Main finding: 10 products (ids 1–9 and 20) use third-party image hosts and look like seed products. Nothing was changed.
 - Still blocked on access Manus and Claude do not have: Render commit/Node/logs, the failing upload request's headers and body, Photopea validator report, real-phone test, delivery-area picker check (needs an item in the cart). The owner step in `claude/MANUS_MASTER_NOTES.md` S4 is unchanged.
+
+
+## Manus report — R1
+**Status: VERIFIED.** A harmless 64×64 PNG was uploaded in the public Design Studio and Add to Cart was clicked once at approximately 2026-10-10 04:18 UTC. The earlier `POST /api/storage/uploads/request-url` call returned **200**, `application/json; charset=utf-8`, `server: cloudflare`. The later `PUT /api/storage/upload-via-api/<opaque-id>` returned **502**, `text/html; charset=UTF-8`, `server: cloudflare`, `cf-ray: a482d1b4ff17adc8-ATL`, with no `via` header. The first response characters were an HTML doctype/Cloudflare-style document, not JSON. No signed URL, query string, token, customer data, order, payment, or checkout submission was recorded. Full sanitized evidence: `claude/evidence/r1-upload-request-2026-10-10.md`.
+
+## Manus report — R2
+**Status: BLOCKED: no saved Photopea validator report exists.** The repository and latest Claude task branch contain no `claude/evidence/photopea-validator-report.*`. The 94 side-view and mug-wrap surfaces remain `candidate`; no release-gate claim is made.
+
+## Manus report — R3
+**Status: BLOCKED: no real phone or device emulator at approximately 390×844 was available in this sandbox browser session.** The requested mobile drag, pinch, rotate, surface-switch, and Select-tool vertical-scroll behavior remains **UNVERIFIED**. No desktop result is being substituted for the required phone/emulator evidence.
+
+## Manus report — R4
+**Status: VERIFIED.** One ordinary in-stock product was added to the cart, checkout was opened, no personal details were entered, and no order/payment was submitted. The delivery picker exposed **division → district → area/upazila**: top-level divisions included Dhaka, Chittagong, Rajshahi, Khulna, Barisal, Sylhet, Rangpur, and Mymensingh; expanding a district exposed area/upazila choices. The control was marked required. Continuing with all required fields blank stayed on the delivery step and displayed validation including **“District is required”** plus the other blank-field messages. No layout problem was observed in this desktop check. The temporary item was removed and the cart ended at **0 items**. Full sanitized evidence: `claude/evidence/r4-delivery-picker-2026-10-10.md`.
+
+## Manus report — R5
+**Status: BLOCKED: no authenticated Render dashboard access is available in this session.** Deployed commit, Node version, clean startup, and whether the service auto-deploys `main` were not observed. No deploy was triggered.
+
+## Manus report — R6
+**Status: BLOCKED: no authenticated Render log access is available in this session.** The requested 01:10–01:16 UTC log window and any new upload-attempt lines, including sanitized `storageFailure` fields, were not observed. No inference of “no errors” is made.
+
+## Manus report — R7
+**Status: BLOCKED: no authenticated Admin Activity Log access is available in this session.** The requested seven-day error grouping by route, status, release, time, and customer impact was not observed. No customer or admin data was accessed or changed.
