@@ -1,0 +1,71 @@
+id,name,category,active,price,discount_price,stock,image
+80,Birthday Celebration Tee,,,699,599,96,/assets/products/tshirt_birthday.png
+79,Tactical Military Grade Canteen,,,1450,1199,100,/assets/products/bottle_fitness.png
+78,Retro 8-Bit Heart Bottle,,,950,799,100,/assets/products/bottle_gaming.png
+77,Minimalist Clear Glass Bottle,,,1150,899,100,/assets/products/bottle_initial.png
+76,Vibrant Ombre Sport Bottle,,,899,749,100,/assets/products/bottle_floral.png
+75,Sleek Matte Black Flask,,,1350,1099,100,/assets/products/bottle_retro.png
+74,Cozy Waffle Knit Long Sleeve,,,1099,899,100,/assets/products/longsleeve_initial.png
+73,Retro 80s Grid Long Sleeve,,,950,799,100,/assets/products/longsleeve_retro80s.png
+72,Minimalist Stripe Sleeve Long Sleeve,,,899,749,100,/assets/products/longsleeve_typographic.png
+71,Vintage Map Explorer Long Sleeve,,,950,799,100,/assets/products/longsleeve_nature.png
+70,Artistic Brush Stroke Long Sleeve,,,999,849,100,/assets/products/longsleeve_artistic.png
+69,Tactical Outdoor Performance Cap,,,999,849,99,/assets/products/cap_hairday.png
+68,Retro Stripe Baseball Cap,,,750,599,100,/assets/products/cap_floral.png
+67,Minimalist Peak Snapback,,,850,699,100,/assets/products/cap_space.png
+66,Modern Mesh Trucker Cap,,,799,649,100,/assets/products/cap_gaming.png
+65,Vintage Denim Dad Hat,,,899,749,100,/assets/products/cap_travel.png
+64,Cute Shiba Inu Mug,,,550,449,100,/assets/products/mug_abstract.png
+63,Retro Pixel Heart Mug,,,450,349,100,/assets/products/mug_birthday.png
+62,Minimalist Mountain Peak Mug,,,450,349,100,/assets/products/mug_love.png
+61,Programmer Code Fuel Mug,,,499,399,100,/assets/products/mug_initial.png
+60,Boss Lady Floral Mug,,,550,449,100,/assets/products/mug_plant.png
+59,Cozy Oversized Cloud Hoodie,,,1899,1699,100,/assets/products/hoodie_love.png
+58,Retro Synthwave Sun Hoodie,,,1699,1499,100,/assets/products/hoodie_retro.png
+57,Minimalist Wave Line Art Hoodie,,,1599,1399,100,/assets/products/hoodie_abstract.png
+56,Vintage Varsity Letter Hoodie,,,1699,1499,100,/assets/products/hoodie_essential.png
+55,Galactic Nebula Fleece Hoodie,,,1799,1599,100,/assets/products/hoodie_explore.png
+54,Cute Panda Hug Tee,,,750,649,100,/assets/products/tshirt_space.png
+53,Minimalist Nature Leaf Tee,,,699,599,100,/assets/products/tshirt_floral.png
+52,Retro Gaming Controller Tee,,,699,599,100,/assets/products/tshirt_gaming.png
+51,Cyberpunk Dhaka City Tee,,,799,699,100,/assets/products/tshirt_retro.png
+50,Abstract Splash Art Tee,,,750,649,100,/assets/products/tshirt_abstract.png
+49,Minimalist Initial Cap,,,850,699,100,/assets/products/cap_initial.png
+48,Urban Graffiti Trucker Hat,,,850,699,100,/assets/products/cap_logo.png
+47,Performance Sports Cap,,,950,799,100,/assets/products/cap_sports.png
+46,Retro 90s Dad Hat,,,750,599,100,/assets/products/cap_retro.png
+45,Classic Streetwear Snapback,,,850,699,100,/assets/products/cap_street.png
+44,Inspirational Dream Mug,,,550,449,100,/assets/products/mug_dream.png
+43,Gaming Over Mug,,,550,449,100,/assets/products/mug_gameover.png
+42,Cute Cat Lover Mug,,,450,349,100,/assets/products/mug_cat.png
+41,Best Boss Ever Mug,,,450,349,100,/assets/products/mug_boss.png
+40,Morning Coffee Magic Mug,,,499,399,100,/assets/products/mug_coffee.png
+39,Stay Wild Nature Hoodie,,,1599,1399,100,/assets/products/hoodie_quote.png
+38,Aesthetic Anime Girl Hoodie,,,1699,1499,100,/assets/products/hoodie_anime.png
+37,Pro Gamer Neon Hoodie,,,1699,1499,100,/assets/products/hoodie_gaming.png
+36,Cozy Winter Wishes Hoodie,,,1599,1399,100,/assets/products/hoodie_winter.png
+35,Urban Explorer Streetwear Hoodie,,,1599,1399,100,/assets/products/hoodie_streetwear.png
+34,Minimalist Face Line Art Tee,,,750,649,100,/assets/products/tshirt_lineart.png
+33,Viral Meme Culture Tee,,,750,649,100,/assets/products/tshirt_meme.png
+32,Keep Going Motivational Tee,,,699,599,99,/assets/products/tshirt_motivational.png
+31,Apology Kitten Tee,,,699,599,100,/assets/products/tshirt_sorry.png
+30,Minimalist Name Bottle,,,950,799,99,/assets/products/bottle_name.png
+29,Galaxy Space Water Bottle,,,950,799,100,/assets/products/bottle_space.png
+28,Adventure Series Flask,,,1450,1199,100,/assets/products/bottle_adventure.png
+27,Pro Fitness Tracker Bottle,,,850,699,100,/assets/products/bottle_tracker.png
+26,Eco-Friendly Bamboo Water Bottle,,,1250,999,100,/assets/products/bottle_eco.png
+25,Minimalist Corporate Long Sleeve,,,899,749,100,/assets/products/longsleeve_corporate.png
+24,Cyberpunk Future Long Sleeve,,,999,849,100,/assets/products/longsleeve_space.png
+23,Artistic Floral Long Sleeve,,,950,799,100,/assets/products/longsleeve_floral.png
+22,Vintage Travel Long Sleeve,,,899,749,100,/assets/products/longsleeve_retro.png
+21,Modern Geometric Long Sleeve,,,899,749,100,/assets/products/longsleeve_stripe.png
+20,কাস্টম টি-শার্ট ২ টি ( প্রিমিয়াম কটন) ,,,1400,1200,19,https://i.imgur.com/Xc8yXgT.jpeg
+9,Couple T-Shirt Set,,,2690,1390,26,https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=700&q=85
+8,Classic Dad Hat,,,649,,40,https://images.unsplash.com/photo-1534215754734-18e55d13e346?w=700&q=85
+7,Custom Snapback Cap,,,799,699,33,https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=700&q=85
+6,Magic Color-Changing Mug,,,599,,58,https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=700&q=85
+5,Personalized Photo Mug,,,449,399,95,https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=700&q=85
+4,Zip-Up Hoodie,,,1699,,18,https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=700&q=85
+3,Premium Pullover Hoodie,,,1499,1299,24,https://images.unsplash.com/photo-1556821840-3a63f15732ce?w=700&q=85
+2,Graphic Print Tee,,,750,649,33,https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=700&q=85
+1,Classic White Tee,,,599,499,40,https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=700&q=85

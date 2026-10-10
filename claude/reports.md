@@ -266,3 +266,41 @@ No code change is justified by this evidence. Still blocked: real-phone test, sa
 - Agree with the 01:30 UTC reading on `main`: the live 502 has no message and no `[reason]`, so it was not produced by the current storage route.
 - Extra evidence: I bundled the real Pages gateway function (`functions/api/[[path]].ts`) and ran it in front of the built API from `main`, with a stand-in S3 bucket and a throwaway Postgres. `POST /storage/uploads/request-url` returned a fallback link, and a real 3.6 KB PNG sent with `PUT /storage/upload-via-api/...` through the gateway returned 200 and was stored. So the gateway method/body forwarding and the route work end to end when the bucket accepts the write; this points away from a gateway or route code defect and toward the deployed Render build/state or a Render/edge-level failure (as already stated).
 - Not proven from here: the Render primary's deployed commit, Node version, logs, and whether Render deploys `main` automatically. Those remain the owner step in N12. No provider setting, credential, data or code was changed.
+
+
+## Manus report — S1
+
+**Status:** partially complete / blocked at the live storage boundary.
+
+- Public production site and `/design-studio` loaded successfully in the Manus Sandbox browser.
+- A harmless browser-local 64×64 PNG was accepted by the normal Studio file-input handler and rendered as a visible layer; the UI showed `Saved` and enabled Add to Cart.
+- Add to Cart was clicked once; checkout was not opened. The cart remained at 0 items and no order, payment, customer message, or customer-data mutation occurred.
+- Exact UI error:
+
+> Your design was not added to the cart. Couldn’t add design to cart. Original artwork could not be uploaded. The file could not be uploaded (direct: the browser could not reach storage directly; through our server: our server answered 502). Your design was not added to the cart; please retry.
+
+- The observed failing operation was the original-artwork upload path; the public UI exposed no bracketed reason code and no signed URL was recorded.
+- The requested Cloudflare Pages production commit, Render primary deployed commit, Render Node version, and provider startup logs were **UNVERIFIED**: no authenticated provider dashboard was available in this public session. The only build metadata visible in the earlier evidence file is `20261010011208`; it is not a deployment-identity substitute.
+- Direct non-browser HTTP probes from the sandbox received the site edge's HTTP 403, so S1.3 was run as an equivalent same-origin, non-mutating browser check: **30/30 passed** across customer pages, admin pages, public APIs, protected API boundaries, and the guest-safe unread-count API.
+
+## Manus report — S2
+
+**Status:** done for public read-only checks; sanitized provider-log portion blocked.
+
+- `/api/products?limit=50`: HTTP 200, 50 returned, total 70.
+- `/api/products?limit=50&minPrice=500&maxPrice=1000`: HTTP 200, 41 returned/total 41; observed returned customer-pay prices were within 500–1000 BDT.
+- `/api/products?sort=price_asc&limit=5`: HTTP 200, 5 returned; lowest observed customer-pay prices were 399 and 349 BDT.
+- Health/catalog reads: `/api/healthz`, `/api/health/liveness`, `/api/health/readiness`, `/api/categories`, and `/api/mockups` returned HTTP 200. `/api/mockups` returned 186 records in the live response.
+- Image transfer sizes: `cat-tshirt.png` 432,409 bytes; `cat-cap.png` 379,482 bytes; `hero-bg.png` 179,406 bytes; `pattern.png` 861,326 bytes. All returned HTTP 200 with public 14,400-second caching. The live homepage category tiles rendered successfully in the browser; no blur/banding issue was observed in this desktop check.
+- Service worker: `/service-worker.js` returned HTTP 200 `text/html` containing the app shell; `/sw.js` returned HTTP 200 JavaScript, 34,246 bytes, with a Workbox 7.4.0 marker. The registered worker therefore appears to be `/sw.js`; the `/service-worker.js` HTML response remains a configuration/freshness finding.
+- Sanitized Admin Activity Log and Render seven-day logs, release IDs, and storageFailure fields were **UNAVAILABLE** without authenticated provider/admin access. Do not infer “no errors seen.”
+
+## Manus report — S3
+
+**Status:** partially complete / blocked where the requested evidence requires unavailable access.
+
+- **S3.1 done:** sanitized live export written to `claude/evidence/products-export.csv`; HTTP 200, 70 rows, containing only id, name, category placeholder, active placeholder, price, discount price, stock, and image address/file name. No customer or order data included. The live API did not expose category/active values in the returned product objects, so those columns are intentionally blank rather than inferred.
+- **S3.2 blocked:** no saved `photopea-validator-report.*` exists in the repository. The 94 side-view/mug-wrap surfaces remain `candidate`.
+- **S3.3 blocked/not proven:** the live cart was empty after the failed Add to Cart test, so checkout could not be entered without creating another cart item. Public delivery-area route probes were not used to infer checkout behavior; the division → district → area picker and area-required rule remain **UNVERIFIED**. No order was placed.
+- **S3.4 not available:** no real phone or owner-provided device was available. Touch editing remains **UNVERIFIED**.
+- Existing sanitized catalog summary evidence remains at `claude/evidence/s3-public-catalog-summary-2026-10-10.json`; no provider setting, schema, product, order, payment, customer, bottle, or mockup state was changed.
