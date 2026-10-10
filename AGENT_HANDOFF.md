@@ -4486,3 +4486,9 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Why the reason was invisible: Cloudflare in front of Render replaces an origin 502 body with its own HTML page.
 - Changed: `artifacts/api-server/src/routes/storage.ts` now returns 424 (not 502) for a storage write failure so the JSON reason reaches the browser; tests updated first in `storage.upload.test.ts` and `storageUpload.test.ts` (14 + 9 passing, API typecheck clean).
 - Remaining: owner fixes the R2 token permission, then one harmless Studio upload to confirm. Still blocked: Photopea report, real-phone test, bottle approval (`not yet`).
+
+
+## 2026-10-10 06:40 UTC — Current open list moved to claude/MANUS_TO_DO_REPORTS.md (docs only; state: local, then PR)
+- Status: all repository-side work is merged (last code change #57, 424 status). The live Studio upload still fails because Cloudflare R2 refuses the server-side write (AccessDenied/403). The next action needs dashboard access: give the R2 token Object Read & Write on the configured bucket and match account ID/bucket/endpoint in Render, then one harmless Studio upload (M1, M2).
+- Also open: Render build confirmation (M3), Photopea report (M4), real-phone check (M5), admin log (M6), owner decisions D1–D6.
+- Next safe action: Manus or the owner does M1; Claude acts on each report within minutes.

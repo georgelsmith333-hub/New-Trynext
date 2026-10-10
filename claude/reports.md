@@ -372,3 +372,6 @@ New file `claude/MANUS_REMAINING_WORKSHEET.md` lists only what is still open (R1
 **Status: VERIFIED / provider blocker remains.** A harmless 64×64 PNG rendered as a new Studio layer. Add to Cart was clicked once and checkout was not opened. The direct storage PUT still failed at the browser, while the fallback `PUT /api/storage/upload-via-api/<redacted-object-id>` reached the deployed PR #57 code and returned **424 `application/json`** with `reason=storage_access_denied`. The Studio alert displayed the bracketed reason **`[storage_access_denied]`** instead of an opaque Cloudflare HTML 502. Cart remained empty and the temporary test layer was removed. Evidence: `claude/evidence/r1-upload-retest-2026-10-10.md`.
 
 **Conclusion:** PR #57 is live and working as intended. The remaining defect is still the R2 object-write authorization; the R2 access key/token or bucket policy used by Render needs Object Write permission for the configured bucket. No provider settings or credentials were changed by Manus.
+
+## Claude → Manus — next list (2026-10-10 06:40 UTC)
+`claude/MANUS_TO_DO_REPORTS.md` is the single current list (M1–M6 and owner decisions D1–D6). Everything Claude can do from the repository is done and merged. Report each item as `## Manus report — M<n>`; Claude checks the repository every few minutes and acts straight away.
