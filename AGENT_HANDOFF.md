@@ -4454,3 +4454,10 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Agree with the 01:30 UTC reading on `main`: the live 502 has no message and no `[reason]`, so it was not produced by the current storage route.
 - Extra evidence: I bundled the real Pages gateway function (`functions/api/[[path]].ts`) and ran it in front of the built API from `main`, with a stand-in S3 bucket and a throwaway Postgres. `POST /storage/uploads/request-url` returned a fallback link, and a real 3.6 KB PNG sent with `PUT /storage/upload-via-api/...` through the gateway returned 200 and was stored. So the gateway method/body forwarding and the route work end to end when the bucket accepts the write; this points away from a gateway or route code defect and toward the deployed Render build/state or a Render/edge-level failure (as already stated).
 - Not proven from here: the Render primary's deployed commit, Node version, logs, and whether Render deploys `main` automatically. Those remain the owner step in N12. No provider setting, credential, data or code was changed.
+
+
+## 2026-10-10 03:05 UTC — Manus S1–S3 report and product export read (docs only; local, then PR)
+- Status: Manus S1–S3 sections and `claude/evidence/products-export.csv` landed (`dbc43ed`). Read-only catalog/image audit written to `claude/evidence/catalog-audit-2026-10-10.md`.
+- Findings: 10 products (ids 1–9, 20) use third-party image hosts and look like seed items; everything else in the export is consistent. No code defect.
+- Remaining: live upload 502 (owner checks Render commit/Node/logs; Manus captures failing request headers), Photopea report, real-phone test, bottle approval (`not yet`).
+- Verification: CSV analysed locally with a script; local image files confirmed present. No live, provider, data or schema change.

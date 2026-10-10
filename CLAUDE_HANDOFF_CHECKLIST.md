@@ -479,3 +479,10 @@ does not mean production was changed or verified.
 - Blocker: live Studio upload still returns a 502 with no message or `[reason]`. The current storage route always sends both, so the 502 did not come from this code: either the primary Render instance is on an older build or Render/edge produced the 502.
 - Next safe action: owner checks the Render primary's deployed commit, Node version and logs around 01:12 UTC, deploys `main` normally if older; Manus captures the failing request's status, content-type, server/cf-ray headers and first 200 body characters. No code change, provider change or data change was made.
 - Verification: read-only review of evidence files and `storageUpload.ts`, `routes/storage.ts`, `functions/api/[[path]].ts`, `vite.config.ts`.
+
+
+## 2026-10-10 03:05 UTC — Manus S1–S3 report and product export read (docs only; local, then PR)
+- Status: Manus S1–S3 sections and `claude/evidence/products-export.csv` landed (`dbc43ed`). Read-only catalog/image audit written to `claude/evidence/catalog-audit-2026-10-10.md`.
+- Findings: 10 products (ids 1–9, 20) use third-party image hosts and look like seed items; everything else in the export is consistent. No code defect.
+- Remaining: live upload 502 (owner checks Render commit/Node/logs; Manus captures failing request headers), Photopea report, real-phone test, bottle approval (`not yet`).
+- Verification: CSV analysed locally with a script; local image files confirmed present. No live, provider, data or schema change.
