@@ -56,9 +56,9 @@ describe("uploadToStorage", () => {
   it("shows the server's short reason code when storage refuses the write", async () => {
     const fetchImpl = vi.fn()
       .mockRejectedValueOnce(new TypeError("Failed to fetch"))
-      .mockResolvedValueOnce(status(502, { message: "The file could not be saved to storage.", reason: "storage_access_denied" }));
+      .mockResolvedValueOnce(status(424, { message: "The file could not be saved to storage.", reason: "storage_access_denied" }));
     const error = await uploadToStorage(target, blob, "image/png", { fetchImpl, resolveApiUrl }).catch((e) => e);
-    expect(error.message).toContain("our server answered 502");
+    expect(error.message).toContain("our server answered 424");
     expect(error.message).toContain("[storage_access_denied]");
   });
 
