@@ -473,3 +473,9 @@ Update `AGENT_HANDOFF.md` and any tracker file whose status changed. State:
 In the final response, state what changed, what was preserved, what was
 verified, and what still needs approval or evidence. A successful local build
 does not mean production was changed or verified.
+
+## 2026-10-10 01:30 UTC — Manus S1–S3 live evidence read (docs only; state: local, then PR)
+- Status: Manus S1–S3 evidence landed (`f47c7b8`). Price filter, image weight and health verified live; `/sw.js` is the real worker (no defect).
+- Blocker: live Studio upload still returns a 502 with no message or `[reason]`. The current storage route always sends both, so the 502 did not come from this code: either the primary Render instance is on an older build or Render/edge produced the 502.
+- Next safe action: owner checks the Render primary's deployed commit, Node version and logs around 01:12 UTC, deploys `main` normally if older; Manus captures the failing request's status, content-type, server/cf-ray headers and first 200 body characters. No code change, provider change or data change was made.
+- Verification: read-only review of evidence files and `storageUpload.ts`, `routes/storage.ts`, `functions/api/[[path]].ts`, `vite.config.ts`.

@@ -4442,3 +4442,10 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Change: `lib/shippingLocality.ts` (`resolveShippingCity`) applied in `Checkout.tsx` when the order payload is built; the address text is unchanged (it already includes the area). Orders already stored keep their old values; no data migration and no schema change.
 - Verified on a throwaway database in a real browser: new order stores `shipping_city = Adabor`, `shipping_district = Dhaka`; the downloaded invoice shows "Adabor, Dhaka". Unit tests (9) plus a source guard that the helper is applied after the form values are spread. Storefront tests all pass.
 - Not done: no backfill of older orders (live data; needs a dry run and approval if ever wanted).
+
+
+## 2026-10-10 01:30 UTC — Manus S1–S3 live evidence read (docs only; state: local, then PR)
+- Status: Manus S1–S3 evidence landed (`f47c7b8`). Price filter, image weight and health verified live; `/sw.js` is the real worker (no defect).
+- Blocker: live Studio upload still returns a 502 with no message or `[reason]`. The current storage route always sends both, so the 502 did not come from this code: either the primary Render instance is on an older build or Render/edge produced the 502.
+- Next safe action: owner checks the Render primary's deployed commit, Node version and logs around 01:12 UTC, deploys `main` normally if older; Manus captures the failing request's status, content-type, server/cf-ray headers and first 200 body characters. No code change, provider change or data change was made.
+- Verification: read-only review of evidence files and `storageUpload.ts`, `routes/storage.ts`, `functions/api/[[path]].ts`, `vite.config.ts`.
