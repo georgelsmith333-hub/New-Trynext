@@ -4472,3 +4472,10 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Blocker: no code blocker; the unrelated live storage 502/provider issue remains unchanged.
 - Next safe action: review/deploy the storefront through the normal connected workflow, then verify at narrow phone widths with upload, scroll, drag, pinch, rotate, surface switching, export, and Add to Cart (stop before checkout).
 - Verification: focused `DesignStudioV2.mobile-workflow.test.ts` and `studio-regressions.test.ts` passed; storefront typecheck passed; storefront production build passed. Build emitted only the existing large-chunk warning.
+
+
+## 2026-10-10 04:35 UTC — Manus R1–R7 read (docs only; on PR branch, not yet merged)
+- Status: R1 and R4 VERIFIED by Manus (`8f43d75`). R2, R3, R5, R6, R7 BLOCKED (no Photopea report, no phone, no dashboard/admin access).
+- Key finding: the live `upload-via-api` 502 is an HTML Cloudflare-style page, so it did not come from the storage route in `main` (that route only sends JSON errors). Likely Render origin or edge failure; local reproduction through the real gateway passes. No code cause found, no code changed.
+- Next safe action: owner opens the Render dashboard for the primary service, notes deployed commit and Node version, reads logs for 04:18 and 01:12 UTC, redeploys `main` normally if older than `7c284f5`, and pastes sanitized lines as R5/R6.
+- Delivery picker (R4) matches intended behaviour. No provider, data or schema change.

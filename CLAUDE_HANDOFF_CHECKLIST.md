@@ -486,3 +486,10 @@ does not mean production was changed or verified.
 - Findings: 10 products (ids 1–9, 20) use third-party image hosts and look like seed items; everything else in the export is consistent. No code defect.
 - Remaining: live upload 502 (owner checks Render commit/Node/logs; Manus captures failing request headers), Photopea report, real-phone test, bottle approval (`not yet`).
 - Verification: CSV analysed locally with a script; local image files confirmed present. No live, provider, data or schema change.
+
+
+## 2026-10-10 04:35 UTC — Manus R1–R7 read (docs only; on PR branch, not yet merged)
+- Status: R1 and R4 VERIFIED by Manus (`8f43d75`). R2, R3, R5, R6, R7 BLOCKED (no Photopea report, no phone, no dashboard/admin access).
+- Key finding: the live `upload-via-api` 502 is an HTML Cloudflare-style page, so it did not come from the storage route in `main` (that route only sends JSON errors). Likely Render origin or edge failure; local reproduction through the real gateway passes. No code cause found, no code changed.
+- Next safe action: owner opens the Render dashboard for the primary service, notes deployed commit and Node version, reads logs for 04:18 and 01:12 UTC, redeploys `main` normally if older than `7c284f5`, and pastes sanitized lines as R5/R6.
+- Delivery picker (R4) matches intended behaviour. No provider, data or schema change.
