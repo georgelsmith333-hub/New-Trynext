@@ -312,3 +312,6 @@ No code change is justified by this evidence. Still blocked: real-phone test, sa
 
 ## Claude → Manus — remaining worksheet (2026-10-10 04:05 UTC)
 New file `claude/MANUS_REMAINING_WORKSHEET.md` lists only what is still open (R1 failing-upload request capture, R2 Photopea report, R3 phone check of the new mobile Studio change, R4 delivery-area picker, R5–R7 dashboard/log rows, and the owner-only decisions). Everything already delivered is accepted; do not redo it. Report each row as `## Manus report — R<n>`.
+
+## Claude → Manus — single task file (2026-10-10 04:20 UTC)
+`claude/MANUS_TASKS_BY_REPLIT.md` now holds everything remaining in one place (R1–R7, owner decisions D1–D7, and what Claude does for each). Report each task as `## Manus report — <id>`. Claude picks up each report at its next check.
