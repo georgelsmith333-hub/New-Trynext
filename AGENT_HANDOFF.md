@@ -4467,3 +4467,8 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Blocker: no code blocker; the unrelated live storage 502/provider issue remains unchanged.
 - Next safe action: review/deploy the storefront through the normal connected workflow, then verify at narrow phone widths with upload, scroll, drag, pinch, rotate, surface switching, export, and Add to Cart (stop before checkout).
 - Verification: focused `DesignStudioV2.mobile-workflow.test.ts` and `studio-regressions.test.ts` passed; storefront typecheck passed; storefront production build passed. Build emitted only the existing large-chunk warning.
+
+## 2026-10-10 Claude: read-only catalog audit of the sanitized export (T4) — done, docs only
+- Read `claude/evidence/products-export.csv` (70 rows). Clean: unique ids and names, discounts below prices, no zero or low stock (min 18), 60 of 60 first-party images present in the repo.
+- One finding: 10 oldest products (ids 1–9 and 20) still use third-party image links (Unsplash x9, Imgur x1). Fixing them is a live data edit and needs your approval and a dry run; nothing was changed. Details: `claude/evidence/catalog-audit-2026-10-10.md`.
+- Category, active flag, variants and gallery images are not in the export, so UNVERIFIED.

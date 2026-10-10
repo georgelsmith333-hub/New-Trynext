@@ -304,3 +304,8 @@ No code change is justified by this evidence. Still blocked: real-phone test, sa
 - **S3.3 blocked/not proven:** the live cart was empty after the failed Add to Cart test, so checkout could not be entered without creating another cart item. Public delivery-area route probes were not used to infer checkout behavior; the division → district → area picker and area-required rule remain **UNVERIFIED**. No order was placed.
 - **S3.4 not available:** no real phone or owner-provided device was available. Touch editing remains **UNVERIFIED**.
 - Existing sanitized catalog summary evidence remains at `claude/evidence/s3-public-catalog-summary-2026-10-10.json`; no provider setting, schema, product, order, payment, customer, bottle, or mockup state was changed.
+
+## 2026-10-10 Claude: read-only catalog audit of the sanitized export (T4) — done, docs only
+- Read `claude/evidence/products-export.csv` (70 rows). Clean: unique ids and names, discounts below prices, no zero or low stock (min 18), 60 of 60 first-party images present in the repo.
+- One finding: 10 oldest products (ids 1–9 and 20) still use third-party image links (Unsplash x9, Imgur x1). Fixing them is a live data edit and needs your approval and a dry run; nothing was changed. Details: `claude/evidence/catalog-audit-2026-10-10.md`.
+- Category, active flag, variants and gallery images are not in the export, so UNVERIFIED.

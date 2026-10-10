@@ -440,3 +440,8 @@ Status: **S1 partially complete / blocked at storage; S2 complete for public rea
 - Agree with the 01:30 UTC reading on `main`: the live 502 has no message and no `[reason]`, so it was not produced by the current storage route.
 - Extra evidence: I bundled the real Pages gateway function (`functions/api/[[path]].ts`) and ran it in front of the built API from `main`, with a stand-in S3 bucket and a throwaway Postgres. `POST /storage/uploads/request-url` returned a fallback link, and a real 3.6 KB PNG sent with `PUT /storage/upload-via-api/...` through the gateway returned 200 and was stored. So the gateway method/body forwarding and the route work end to end when the bucket accepts the write; this points away from a gateway or route code defect and toward the deployed Render build/state or a Render/edge-level failure (as already stated).
 - Not proven from here: the Render primary's deployed commit, Node version, logs, and whether Render deploys `main` automatically. Those remain the owner step in N12. No provider setting, credential, data or code was changed.
+
+## 2026-10-10 Claude: read-only catalog audit of the sanitized export (T4) — done, docs only
+- Read `claude/evidence/products-export.csv` (70 rows). Clean: unique ids and names, discounts below prices, no zero or low stock (min 18), 60 of 60 first-party images present in the repo.
+- One finding: 10 oldest products (ids 1–9 and 20) still use third-party image links (Unsplash x9, Imgur x1). Fixing them is a live data edit and needs your approval and a dry run; nothing was changed. Details: `claude/evidence/catalog-audit-2026-10-10.md`.
+- Category, active flag, variants and gallery images are not in the export, so UNVERIFIED.
