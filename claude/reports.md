@@ -261,3 +261,8 @@ Read `claude/evidence/s1-s3-live-check-2026-10-10.md` and the catalog summary. R
 **Owner-only next step:** in the Render dashboard, open the primary service, note the deployed commit and Node version, and read the logs around the upload attempt time (01:12–01:13 UTC on 2026-10-10). If the commit is older than `ef72f9e`, trigger a normal deploy of `main`.
 
 No code change is justified by this evidence. Still blocked: real-phone test, sanitized Render logs, Photopea validator report, bottle approval (`not yet`).
+
+## 2026-10-10 Claude: independent local check of the live upload 502 (local only; live UNVERIFIED)
+- Agree with the 01:30 UTC reading on `main`: the live 502 has no message and no `[reason]`, so it was not produced by the current storage route.
+- Extra evidence: I bundled the real Pages gateway function (`functions/api/[[path]].ts`) and ran it in front of the built API from `main`, with a stand-in S3 bucket and a throwaway Postgres. `POST /storage/uploads/request-url` returned a fallback link, and a real 3.6 KB PNG sent with `PUT /storage/upload-via-api/...` through the gateway returned 200 and was stored. So the gateway method/body forwarding and the route work end to end when the bucket accepts the write; this points away from a gateway or route code defect and toward the deployed Render build/state or a Render/edge-level failure (as already stated).
+- Not proven from here: the Render primary's deployed commit, Node version, logs, and whether Render deploys `main` automatically. Those remain the owner step in N12. No provider setting, credential, data or code was changed.
