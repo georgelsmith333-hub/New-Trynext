@@ -53,4 +53,23 @@ describe("mobile Design Studio upload workflow", () => {
     expect(studio).toContain("materialEffectClipPath");
     expect(studio).toContain("activePsdMaterialEffects.length > 0 && hasVisibleArtworkOnFace");
   });
+
+  it("keeps the mobile preview inside narrow phones and centers it after upload", () => {
+    const studio = readFileSync(new URL("./DesignStudioV2.tsx", import.meta.url), "utf8");
+
+    expect(studio).toContain("export function getStudioCanvasSize");
+    expect(studio).toContain("Math.max(280, Math.min(560, availableWidth - 16))");
+    expect(studio).toContain('padding: isMobile ? 0.78 : 0.92');
+    expect(studio).toContain('maxScale: isMobile ? 2.5 : 4');
+    expect(studio).toContain('data-testid="studio-mobile-preview"');
+    expect(studio).toContain('scrollIntoView({ behavior: "smooth", block: "center" })');
+  });
+
+  it("allows vertical page scrolling while keeping canvas tools gesture-safe", () => {
+    const canvas = readFileSync(new URL("./CanvasArea.tsx", import.meta.url), "utf8");
+
+    expect(canvas).toContain('touchAction: activeTool === "select" ? "pan-y" : "none"');
+    expect(canvas).toContain('overscrollBehavior: "contain"');
+    expect(canvas).toContain("e.evt.preventDefault()");
+  });
 });

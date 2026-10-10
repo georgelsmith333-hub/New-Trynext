@@ -91,6 +91,15 @@ function normalizeStudioProductId(raw: string): string {
 
 function uid() { return Math.random().toString(36).slice(2, 10); }
 
+export function getStudioCanvasSize(containerWidth: number, viewportWidth: number): number {
+  const mobile = viewportWidth < 768;
+  const availableWidth = Math.max(0, containerWidth || viewportWidth);
+  if (mobile) {
+    return Math.max(280, Math.min(560, availableWidth - 16));
+  }
+  return Math.max(320, Math.min(720, availableWidth - 360));
+}
+
 function detectCategoryFromProduct(prod: any): DesignProduct["category"] {
   const text = [prod.name ?? "", prod.category?.name ?? "", prod.categoryName ?? ""].join(" ").toLowerCase();
   if (text.includes("mug") || text.includes("cup")) return "mug";
@@ -233,6 +242,7 @@ export default function DesignStudioV2() {
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState(600);
   const [imageAction, setImageAction] = useState<"remove-bg" | "upscale" | "auto-fix" | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -393,8 +403,7 @@ export default function DesignStudioV2() {
       const width = containerRef.current?.clientWidth ?? window.innerWidth;
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      const maxWidth = mobile ? width - 32 : Math.min(width - 360, 720);
-      setCanvasSize(Math.max(320, Math.min(maxWidth, 720)));
+      setCanvasSize(getStudioCanvasSize(width, window.innerWidth));
     };
     onResize();
     window.addEventListener("resize", onResize, { passive: true });
@@ -604,7 +613,10 @@ export default function DesignStudioV2() {
           id: uid(), name: file.name.replace(/\.[^.]+$/, "") || "Image",
           type: "image", src, naturalW: img.naturalWidth, naturalH: img.naturalHeight,
           visible: true, locked: false,
-          transform: fitImageTransform(img.naturalWidth, img.naturalHeight, { w: pz.w, h: pz.h }, { padding: 0.92, maxScale: 4 }),
+          transform: fitImageTransform(img.naturalWidth, img.naturalHeight, { w: pz.w, h: pz.h }, {
+            padding: isMobile ? 0.78 : 0.92,
+            maxScale: isMobile ? 2.5 : 4,
+          }),
           face: activeFace, brightness: 100, contrast: 100,
         };
         addLayer(layer);
@@ -627,6 +639,9 @@ export default function DesignStudioV2() {
         // (preview and Add to Cart) right when the customer wants to see the
         // design on the product.
         setActiveTab("upload");
+        if (isMobile) {
+          requestAnimationFrame(() => previewRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }));
+        }
         toast({
           title: "✓ Design placed!",
           description: isMobile
@@ -1423,7 +1438,7 @@ export default function DesignStudioV2() {
               </div>
             </div>
 
-             <div className="relative order-1 rounded-3xl overflow-hidden select-none md:order-none" style={{ background: "radial-gradient(ellipse at 50% 35%, #ffffff 0%, #f8f8f8 55%, #f0f0f0 100%)", border: "1px solid #e5e5e7", boxShadow: "0 6px 40px rgba(0,0,0,0.08)" }} onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
+             <div ref={previewRef} data-testid="studio-mobile-preview" className="relative order-1 w-full max-w-full overflow-hidden rounded-3xl select-none md:order-none" style={{ background: "radial-gradient(ellipse at 50% 35%, #ffffff 0%, #f8f8f8 55%, #f0f0f0 100%)", border: "1px solid #e5e5e7", boxShadow: "0 6px 40px rgba(0,0,0,0.08)", overscrollBehavior: "contain" }} onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
                {activeSurfaceUnavailable && (
                  <div role="alert" className="absolute inset-x-4 top-4 z-30 rounded-2xl border border-amber-300 bg-amber-50/95 px-4 py-3 text-center shadow-lg backdrop-blur">
                    <div className="flex items-center justify-center gap-2 text-sm font-black text-amber-950"><ShieldCheck className="h-4 w-4" /> Surface unavailable</div>

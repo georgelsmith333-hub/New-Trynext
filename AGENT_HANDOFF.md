@@ -4454,3 +4454,16 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Agree with the 01:30 UTC reading on `main`: the live 502 has no message and no `[reason]`, so it was not produced by the current storage route.
 - Extra evidence: I bundled the real Pages gateway function (`functions/api/[[path]].ts`) and ran it in front of the built API from `main`, with a stand-in S3 bucket and a throwaway Postgres. `POST /storage/uploads/request-url` returned a fallback link, and a real 3.6 KB PNG sent with `PUT /storage/upload-via-api/...` through the gateway returned 200 and was stored. So the gateway method/body forwarding and the route work end to end when the bucket accepts the write; this points away from a gateway or route code defect and toward the deployed Render build/state or a Render/edge-level failure (as already stated).
 - Not proven from here: the Render primary's deployed commit, Node version, logs, and whether Render deploys `main` automatically. Those remain the owner step in N12. No provider setting, credential, data or code was changed.
+
+
+## 2026-10-10 — Mobile Design Studio preview and touch responsiveness
+- Status: complete for the approved storefront scope; local, ready for review, not deployed.
+- Last completed: fixed narrow-phone preview sizing, mobile upload presentation, smooth post-upload centering, and scroll-safe canvas touch behavior.
+- Stopped at: after focused Studio tests, storefront typecheck, production build, and `git diff --check` all passed.
+- Files/areas changed: `artifacts/trynex-storefront/src/pages/studio/DesignStudioV2.tsx`, `CanvasArea.tsx`, and `DesignStudioV2.mobile-workflow.test.ts`.
+- Behavior: mobile canvas no longer has a forced 320px minimum; it is contained within narrow phone widths with a 280px lower bound and 560px cap. Uploaded artwork uses a smaller initial mobile fit (`0.78` print-zone padding, max scale `2.5`), and the preview smoothly centers after upload. Select mode allows vertical page scrolling (`pan-y`) while draw/pinch modes retain gesture capture; canvas overscroll is contained.
+- Preserved: desktop sizing and artwork fit, upload immediacy, transforms, front/back/surface switching, export, cart metadata, and photoreal curved-product rendering.
+- Remaining work: none for this approved local UX scope. Real-device validation and deployment remain separate follow-ups.
+- Blocker: no code blocker; the unrelated live storage 502/provider issue remains unchanged.
+- Next safe action: review/deploy the storefront through the normal connected workflow, then verify at narrow phone widths with upload, scroll, drag, pinch, rotate, surface switching, export, and Add to Cart (stop before checkout).
+- Verification: focused `DesignStudioV2.mobile-workflow.test.ts` and `studio-regressions.test.ts` passed; storefront typecheck passed; storefront production build passed. Build emitted only the existing large-chunk warning.
