@@ -359,7 +359,8 @@ export function CanvasArea({
         border: "1px solid #e5e5e7",
         boxShadow: "0 6px 40px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,1)",
         isolation: "isolate",
-        touchAction: "none",
+        touchAction: activeTool === "select" ? "pan-y" : "none",
+        overscrollBehavior: "contain",
       }}
     >
       <div
@@ -399,7 +400,7 @@ export function CanvasArea({
         width={width}
         height={height}
         className="absolute inset-0"
-        style={{ touchAction: "none" }}
+        style={{ touchAction: activeTool === "select" ? "pan-y" : "none" }}
         onMouseDown={(e: Konva.KonvaEventObject<MouseEvent>) => {
           const stage = e.target.getStage();
           const point = getCanvasPoint(e);
