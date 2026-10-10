@@ -493,3 +493,10 @@ does not mean production was changed or verified.
 - Key finding: the live `upload-via-api` 502 is an HTML Cloudflare-style page, so it did not come from the storage route in `main` (that route only sends JSON errors). Likely Render origin or edge failure; local reproduction through the real gateway passes. No code cause found, no code changed.
 - Next safe action: owner opens the Render dashboard for the primary service, notes deployed commit and Node version, reads logs for 04:18 and 01:12 UTC, redeploys `main` normally if older than `7c284f5`, and pastes sanitized lines as R5/R6.
 - Delivery picker (R4) matches intended behaviour. No provider, data or schema change.
+
+
+## 2026-10-10 04:50 UTC — Live upload 502 root cause found (Manus R5/R6); small status-code fix (state: committed on PR branch, not merged)
+- Status: Manus read Render: live `6feed17`, Node 24.14.1, clean start. Both upload attempts failed at the R2 write with `AccessDenied` / 403 (`storage_access_denied`). Root cause is the R2 token/bucket authorization (owner action in Cloudflare R2: Object Read & Write on the configured bucket; account ID, bucket and endpoint must match). No provider setting was changed.
+- Why the reason was invisible: Cloudflare in front of Render replaces an origin 502 body with its own HTML page.
+- Changed: `artifacts/api-server/src/routes/storage.ts` now returns 424 (not 502) for a storage write failure so the JSON reason reaches the browser; tests updated first in `storage.upload.test.ts` and `storageUpload.test.ts` (14 + 9 passing, API typecheck clean).
+- Remaining: owner fixes the R2 token permission, then one harmless Studio upload to confirm. Still blocked: Photopea report, real-phone test, bottle approval (`not yet`).

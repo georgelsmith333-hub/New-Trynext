@@ -118,14 +118,14 @@ describe("PUT /storage/upload-via-api/:objectId", () => {
   it("reports a storage failure plainly and leaks nothing", async () => {
     storeUploadedObject.mockRejectedValue(new Error("AccessDenied: key FAKE-KEY-123 confidential"));
     const res = await put(buildApiUploadPath(grant()), PNG);
-    expect(res.status).toBe(502);
+    expect(res.status).toBe(424);
     expect(JSON.stringify(res.body)).not.toMatch(/FAKE-KEY|confidential|X-Amz/i);
   });
 
   it("tells the caller WHY storage refused, as a short code only", async () => {
     storeUploadedObject.mockRejectedValue(Object.assign(new Error("denied FAKE-KEY-123"), { name: "AccessDenied", $metadata: { httpStatusCode: 403 } }));
     const res = await put(buildApiUploadPath(grant()), PNG);
-    expect(res.status).toBe(502);
+    expect(res.status).toBe(424);
     expect(res.body.reason).toBe("storage_access_denied");
     expect(JSON.stringify(res.body)).not.toMatch(/FAKE-KEY/);
   });

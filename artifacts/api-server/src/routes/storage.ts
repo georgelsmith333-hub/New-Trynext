@@ -321,7 +321,9 @@ router.put("/storage/upload-via-api/:objectId", async (req: Request, res: Respon
   } catch (err) {
     const failure = classifyStorageWriteError(err);
     req.log.error({ err, storageFailure: failure }, "Upload through the API could not be stored");
-    res.status(502).json({ error: "storage_write_failed", reason: failure.reason, message: "The file could not be saved to storage. Please try again later." });
+    // 424, not 502: Cloudflare (in front of Render) replaces an origin 502/504 body with its own HTML page,
+    // which hid this JSON reason from the browser. A 4xx status passes through untouched.
+    res.status(424).json({ error: "storage_write_failed", reason: failure.reason, message: "The file could not be saved to storage. Please try again later." });
   }
 });
 
