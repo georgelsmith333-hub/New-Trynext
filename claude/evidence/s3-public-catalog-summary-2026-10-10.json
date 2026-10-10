@@ -1,0 +1,54 @@
+{
+  "capturedAtUtc": "2026-10-10T01:15:04.710135+00:00",
+  "endpoint": "https://trynext.shop/api/products?limit=100",
+  "status": "public-read-only",
+  "total": 70,
+  "returned": 70,
+  "categories": {
+    "T-Shirts": 13,
+    "Water Bottles": 10,
+    "Long Sleeves": 10,
+    "Caps": 12,
+    "Mugs": 12,
+    "Hoodies": 12,
+    "Custom Orders": 1
+  },
+  "priceRange": {
+    "min": 449,
+    "max": 2690
+  },
+  "sampleSlugs": [
+    "birthday-celebration-tee",
+    "tactical-military-grade-canteen",
+    "retro-8-bit-heart-bottle",
+    "minimalist-clear-glass-bottle",
+    "vibrant-ombre-sport-bottle",
+    "sleek-matte-black-flask",
+    "cozy-waffle-knit-long-sleeve",
+    "retro-80s-grid-long-sleeve",
+    "minimalist-stripe-sleeve-long-sleeve",
+    "vintage-map-explorer-long-sleeve"
+  ],
+  "fieldsObserved": [
+    "categoryId",
+    "categoryName",
+    "colorVariants",
+    "colors",
+    "customizable",
+    "description",
+    "discountPrice",
+    "featured",
+    "id",
+    "imageUrl",
+    "images",
+    "name",
+    "price",
+    "rating",
+    "reviewCount",
+    "sizes",
+    "slug",
+    "stock",
+    "tags",
+    "variants"
+  ]
+}

@@ -422,3 +422,16 @@ The current highest-priority engineering blocker is the live API fallback upload
 ## 2026-10-10 Claude status after owner merge of PR 37 (`70acdb0`) — local note, no code change
 - PR 37 (another Claude session: storage reason code, mobile sort/filter/reviews contract fixes, price-range filter on `GET /api/products`) is now on main. Not confirmed deployed or live-tested by me. It also changes the mobile app and a public API query, which I did not review or test; its own report lists API 244 tests and typecheck passing.
 - Next step is unchanged and belongs to the owner/operator: deploy, one harmless live upload + Add to Cart, report the `[reason]` code. Claude is otherwise idle on the evidence-blocked items.
+
+
+## 2026-10-10 Manus S1–S3 live evidence — public sandbox browser
+
+Status: **S1 partially complete / blocked at storage; S2 complete for public read-only checks; S3 partially complete.** Full evidence: `claude/evidence/s1-s3-live-check-2026-10-10.md`.
+
+- Production homepage and `/design-studio` loaded. Live HTML build metadata: `20261010011208`.
+- Harmless 64×64 PNG uploaded through the normal Studio input. It rendered as a layer, UI showed `Saved`, and Add to Cart enabled.
+- One pre-checkout Add to Cart attempt was made. It failed truthfully: direct browser storage was unreachable and the server fallback answered **HTTP 502**. No cart item, order, payment, or customer-data mutation was created.
+- Public S2 checks: `/api/products?limit=50` 200 (50/70); price-filter query 200 (41); price sort 200 (5); sampled category/hero assets 200; `/sw.js` 200 JavaScript (34,246 bytes); `/service-worker.js` 200 but returned SPA HTML and should be treated as a route/configuration finding.
+- Public S3 checks: `/api/healthz` 200 with `status=ok`, `db=ok`, `redis=ok`, `storage=r2`, `runtimeRole=primary`; `/api/products?limit=100` 200 with 70/70 and sanitized summary saved under `claude/evidence/`; `/manifest.json` and `/robots.txt` 200.
+- `/api/delivery-areas`, `/api/districts`, and `/api/shipping-areas` returned 404, so delivery-area coverage was not independently proven. Real-phone touch test and sanitized Render/Activity Log/provider evidence remain unavailable.
+- No provider setting, deployment, database, schema, order, payment, customer, wallet, or mockup-release mutation was performed.
