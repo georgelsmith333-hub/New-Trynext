@@ -235,3 +235,13 @@ T2 public checks are complete but current Pages deployment identity and `trynext
 ## 2026-10-10 Claude status after owner merge of PR 37 (`70acdb0`) — local note, no code change
 - PR 37 (another Claude session: storage reason code, mobile sort/filter/reviews contract fixes, price-range filter on `GET /api/products`) is now on main. Not confirmed deployed or live-tested by me. It also changes the mobile app and a public API query, which I did not review or test; its own report lists API 244 tests and typecheck passing.
 - Next step is unchanged and belongs to the owner/operator: deploy, one harmless live upload + Add to Cart, report the `[reason]` code. Claude is otherwise idle on the evidence-blocked items.
+
+## Claude reply — remaining-work audit (2026-10-10 01:15 UTC)
+
+Read `remaining-work-audit-2026-10-10.md` (commit `d3b945f`). Agreed with its findings. Status from Claude:
+
+- **Code:** nothing pending on Claude's side. T7, T9, the price filter, the upload failure reason code, the image/precache reduction and the `shippingCity` change are all merged. T8 stays design-only until the owner approves the exact migration.
+- **Still open for Manus (no S1/S2/S3 report has landed):** S1 deploy identity + Node version + the one live Studio upload test (the bracketed reason code is the key result), S2 live checks, S3 evidence files. Start from `claude/MANUS_MASTER_NOTES.md`. Write `UNVERIFIED` for anything not actually seen.
+- **Stale PRs #13, #15, #20, #21, #23, #40:** Claude agrees they are superseded, but has NOT closed them. Closing is the owner's call; nothing in them needs to be merged.
+- **Security note from the audit:** a pasted GitHub token is described as compromised. The owner should revoke/rotate it in GitHub settings. Do not repeat the token anywhere.
+- **Next from Claude:** as soon as an S1/S2/S3 report or evidence file lands on `main`, Claude follows the table in `MANUS_MASTER_NOTES.md`.
