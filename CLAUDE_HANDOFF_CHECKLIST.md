@@ -508,3 +508,14 @@ does not mean production was changed or verified.
 - Next safe action: Manus or the owner does M1; Claude acts on each report within minutes.
 
 - 06:45 UTC update: Manus live retest (`635c4f4`) VERIFIED PR #57 is deployed: fallback upload returns 424 JSON `storage_access_denied` and the Studio alert shows `[storage_access_denied]`. Only the Cloudflare R2 write authorization remains (M1, then M2).
+
+
+## 2026-10-12 — Current Claude task queue and report-back loop
+
+- **Status:** docs-only queue reconciliation prepared against `main` `cec19bd77e00f17276c0af987e2dd35e2b6d31a4`; no code or production state changed.
+- **Start here:** read repo-root `claude to do tasks.md` for current M1–M6 and D1–D6 status, completed-work reconciliation, and the append-only `claude/reports.md` relay format.
+- **Completed Claude code scope:** current notes say T7, T9, T8 design/dry run, and PR #57 upload error-reason handling are already merged/completed within their documented scope; do not repeat them.
+- **Remaining:** M1 R2 write permission is owner-only; M2 harmless live upload waits for M1; M3 exact current Render SHA is partial; M4 Photopea evidence, M5 real-phone test, and M6 sanitized Admin Activity Log evidence need access. D1 and D5 need owner decisions/checks. D2 stays `not yet`; D3 and D4 are done; D6 needs no action because there were no open PRs at the latest check.
+- **Blocker:** repository handoff does not itself guarantee Claude polling or wake Manus autonomously. Mark missing evidence `UNVERIFIED`; preserve all no-secret, no-live-migration, no-real-order/payment, water-bottle-hold, and candidate-surface gates.
+- **Next safe action:** after the owner resolves M1, Manus performs M2 once and appends `## Manus report — M2 — YYYY-MM-DD` to `claude/reports.md`; Claude then appends its corresponding report and updates the queue/handoff.
+- **Verification:** GitHub `main` matched the clone at the cited SHA; no open PRs/issues were reported; current report history was reviewed through 2026-10-10. This checkpoint is not a deployment check.
