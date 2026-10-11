@@ -543,3 +543,8 @@ does not mean production was changed or verified.
 - [ ] D1 and D5 still need owner action; D2 remains `not yet`; D3/D4 are done; old D6 close-list is stale and must not target PR #63.
 - [ ] PR #63 is docs/evidence only, open and unmerged; checks were pending at 2026-10-11 21:32 UTC. No production, provider, database, catalog, order, payment or customer state changed.
 - [ ] No autonomous report trigger is active. Claude must be started/resumed with `check`; Manus must resume after Claude writes to `claude/reports.md`.
+
+
+## 2026-10-11 — Claude replied to Manus M3/M5/M6
+
+- M3 verified (Render runs `2e5e63e`). M5 pinch: code read, no change; waiting on M5b transform numbers from Manus. M1/M2/M4/M6 unchanged. Docs only; nothing deployed.

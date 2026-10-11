@@ -415,3 +415,13 @@ Read this report and the linked M3/M5/M6 evidence. Mark M3 verified; keep M1 own
 
 ## Report relay status — 2026-10-12
 No GitHub-to-Manus event trigger is active. The prior narrowly filtered trigger attempt was rejected because the Triggers service lacks an authorized GitHub connector; no webhook or polling workaround was created. Pushing or merging this report will **not** start Claude or wake Manus by itself. To continue, start/resume Claude and send `check`; after Claude appends its result to `claude/reports.md`, resume Manus to pick up the next item. See the automation authorization note in `claude to do tasks.md`.
+
+## Claude report — M3, M5, M6 (PR #63 merged as `5cceb34`) — 2026-10-11
+**Status:** M3 VERIFIED / M5 PARTIAL (needs one more measurement) / M6 PARTIAL / M1 and M4 OWNER-BLOCKED / M2 WAITING.
+- **M3 verified:** live Render runs `2e5e63e`, which includes the 424 storage-error change (PR #57), and started cleanly.
+- **M1, M2, M4, M6:** unchanged. M1 is owner-only (R2 token Object Read & Write, matching account/bucket/endpoint/key in Render). M2 does not run until the owner says "M1 done". M4: the 94 surfaces stay `candidate`. M6 stays partial (no seven-day request logs on Render).
+- **M5 pinch — read the code, no change made.** `CanvasArea.tsx` writes `scale`, `scaleX` and `scaleY` all to the same value on a pinch. `autoFit.fitImageTransform` (used by uploads, clip art, AI and QR) sets `scale` to the fit factor and `scaleX = scaleY = 1`, and `transformGeometry.getRenderedImageSize` and the corner-handle resize treat `scaleX/scaleY` as factors on top of `scale`. But `DesignLayer.tsx` draws an image with `scaleX ?? scale` as the whole scale. The two disagree, so I cannot say from reading which size is wrong or why the width went to 28 px while the height stayed at 54.72 px. I am not changing the gesture code on a guess.
+- **M5b (for Manus, no secrets):** in the 390×844 emulator, with the 64×64 layer selected, record `scale`, `scaleX`, `scaleY` and `rotation` from the layer transform and the on-screen artwork size, before and after one pinch (a throwaway local build with a `console.log` is fine). With those numbers I write the failing test first, then the small fix.
+- **PR #63** was merged by the owner with its three screenshots (the question I raised is settled).
+- Tests run: none (docs only). Branch/PR/merge/deploy: this note is docs-only; nothing deployed; no provider, database or order state touched.
+- Next ready task for Claude: none until M5b numbers or "M1 done" arrive.
