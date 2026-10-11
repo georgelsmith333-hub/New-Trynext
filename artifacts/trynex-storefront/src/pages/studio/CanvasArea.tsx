@@ -9,6 +9,7 @@ import type { ComposerLayer, UnifiedMockupSurface } from "../design-studio/compo
 import { RotateCw, X } from "lucide-react";
 import { getRenderedImageSize } from "./transformGeometry";
 import { canStartSelectionGesture, isSelectionGesturePointer } from "./selectionGesturePointer";
+import { pinchScaleRotation } from "./pinchGesture";
 
 interface CanvasPoint {
   x: number;
@@ -151,6 +152,8 @@ export function CanvasArea({
   const drawingRef = useRef(false);
   const pinchRef = useRef<{ distance: number; angle: number; scale: number; rotation: number } | null>(null);
   const selectionGestureRef = useRef<SelectionGesture | null>(null);
+  // Draggable nodes switched off while a two-finger pinch runs (Konva stops delivering Stage touchmove once a drag starts).
+  const suspendedDragRef = useRef<Konva.Node[]>([]);
   const {
     layers,
     selectedIds,
@@ -457,8 +460,17 @@ export function CanvasArea({
         onTouchStart={(e: Konva.KonvaEventObject<TouchEvent>) => {
           const stage = e.target.getStage();
           const pinch = getTouchPair(e);
+          if (suspendedDragRef.current.length) {
+            suspendedDragRef.current.forEach((node) => node.draggable(true));
+            suspendedDragRef.current = [];
+          }
           if (pinch && selectedLayer && selectedIds.length === 1 && !selectedLayer.locked && (selectedLayer.face ?? "front") === activeFace) {
             e.evt.preventDefault();
+            // The first finger may already have armed a drag on the artwork under it; that drag
+            // would stop Stage touchmove after the first pinch move and also move the artwork.
+            const suspended = stage ? stage.find((node: Konva.Node) => node.draggable()) : [];
+            suspended.forEach((node) => node.draggable(false));
+            suspendedDragRef.current = suspended;
             beginHistoryGroup();
             pinchRef.current = {
               ...pinch,
@@ -487,15 +499,12 @@ export function CanvasArea({
           const start = pinchRef.current;
           if (pinch && start && selectedLayer) {
             e.evt.preventDefault();
-            const nextScale = Math.max(0.05, Math.min(8, start.scale * (pinch.distance / Math.max(1, start.distance))));
-            const nextRotation = start.rotation + ((pinch.angle - start.angle) * 180) / Math.PI;
+            const next = pinchScaleRotation(start, start, pinch);
             updateLayer(selectedLayer.id, {
               transform: {
                 ...selectedLayer.transform,
-                scale: nextScale,
-                scaleX: nextScale,
-                scaleY: nextScale,
-                rotation: nextRotation,
+                scale: next.scale,
+                rotation: next.rotation,
               },
             }, { history: false });
             return;
@@ -507,6 +516,8 @@ export function CanvasArea({
         }}
         onTouchEnd={() => {
           if (pinchRef.current) {
+            suspendedDragRef.current.forEach((node) => node.draggable(true));
+            suspendedDragRef.current = [];
             pinchRef.current = null;
             commit();
             return;
