@@ -531,3 +531,9 @@ does not mean production was changed or verified.
 ## 2026-10-11 — Claude reconciled the Manus queue
 
 - Read `claude to do tasks.md` (PR #60/#61) at `main` `8139505`; nothing is READY for Claude. Remaining items are owner/device/admin evidence (M1–M6) and owner decisions (D1, D5). No code, provider or production state changed. The earlier 5-minute loop was session-bound and is not running.
+
+
+## 2026-10-12 — Claude
+- [x] M5 pinch applied the scale twice: fixed with tests (local; PR pending merge; not deployed).
+- [ ] Retest pinch after deploy (emulator or real phone).
+- [ ] M1 owner action, then M2.

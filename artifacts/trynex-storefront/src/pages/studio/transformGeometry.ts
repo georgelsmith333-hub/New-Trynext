@@ -60,3 +60,34 @@ export function preserveRenderedImageSize(
     scaleY: previous.height / Math.max(1, nextNaturalH) / baseScale,
   };
 }
+
+export interface PinchStart {
+  distance: number;
+  angle: number;
+  scale: number;
+  rotation: number;
+}
+
+export interface PinchPair {
+  distance: number;
+  angle: number;
+}
+
+/**
+ * Two-finger pinch: change the base scale once and rotate by the change in
+ * finger angle. scaleX/scaleY are relative axes (see getRenderedImageSize), so
+ * they must be left alone; overwriting them with the new base scale applied the
+ * scale twice and squared every pinch.
+ */
+export function applyPinchTransform<T extends ImageTransformLike & { rotation: number }>(
+  transform: T,
+  start: PinchStart,
+  pair: PinchPair,
+): T {
+  const ratio = pair.distance / Math.max(1, start.distance);
+  return {
+    ...transform,
+    scale: Math.max(0.05, Math.min(8, start.scale * ratio)),
+    rotation: start.rotation + ((pair.angle - start.angle) * 180) / Math.PI,
+  };
+}

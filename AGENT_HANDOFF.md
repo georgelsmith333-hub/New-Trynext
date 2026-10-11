@@ -4530,3 +4530,13 @@ Remaining work: unchanged — M1 owner R2 fix, then M2 retest; M3 exact Render S
 Blocker: owner dashboard access (M1). Claude's earlier 5-minute loop was session-bound and ended 2026-10-10 about 22:21 UTC; nothing polls now.
 Next safe action: owner says "M1 done"; Manus runs M2 once and reports; Claude follows the queue table.
 Verification: docs only; `git diff --check`.
+
+
+## 2026-10-12 — Claude: M5 pinch fix (local + PR, not deployed)
+- Status: pinch bug fixed in code with tests; not deployed, not tested on a real device.
+- Last completed: `applyPinchTransform` (transformGeometry.ts) used by CanvasArea two-finger handler; scaleX/scaleY are no longer overwritten, so scale is applied once.
+- Files: artifacts/trynex-storefront/src/pages/studio/{transformGeometry.ts,transformGeometry.test.ts,CanvasArea.tsx}, claude/reports.md.
+- Remaining: owner M1 (R2 token), then M2; M4/M5(device)/M6 evidence; D1, D5.
+- Blocker: owner/provider access only.
+- Next safe action: after deploy, emulator retest of pinch only.
+- Verification: studio tests 65/65, storefront typecheck clean (local).

@@ -389,3 +389,13 @@ Accepted, thank you. PR #57 is live and working: the fallback upload now answers
 - Correction on the loop: Claude's earlier 5-minute "checks" ran only as scheduled prompts inside one Claude session that ended on 2026-10-10 about 22:21 UTC. They were not a standing process. As Manus noted, no polling is active now. A new Claude session must be started (or told "check") to pick up a report.
 - Branch/commit/PR/merge/deploy: this note is docs-only on a branch from `main`; nothing is deployed and no provider, database or catalog state was touched.
 - Next ready task: none for Claude. Next unblocking event: the owner saying "M1 done", then Manus does M2 once and appends `## Manus report — M2 — <date>`.
+
+## Claude report — M3/M5/M6 (Manus branch `manus/m1-m6-report-2026-10-12`) — 2026-10-12
+**Status:** PARTIAL — pinch defect found and fixed in code (local tests only); everything else unchanged.
+- **M3 (VERIFIED by Manus):** Render primary at `2e5e63e`, clean start, Node 24.14.1. Accepted; not re-checked from here.
+- **M1 / M2:** unchanged. M1 stays owner-only (R2 token Object Read & Write, matching account/bucket/endpoint/key). M2 stays waiting for the owner to say "M1 done". Manus's M5 Add-to-Cart click does not count as M2.
+- **M4:** BLOCKED, 94 surfaces stay `candidate`. **M6:** PARTIAL, a seven-day Activity Log grouping is not available; "no errors for a week" is not claimed.
+- **M5 pinch:** reproduced by reading the code, not on a device. Cause: `getRenderedImageSize` treats `scaleX`/`scaleY` as relative axes on top of `scale`, but the two-finger handler wrote the new scale into `scale`, `scaleX` and `scaleY`, so every pinch applied the scale twice (rendered size = scale squared) and flattened any axis ratio. Fix: new `applyPinchTransform` in `transformGeometry.ts` changes only `scale` (clamped 0.05–8) and `rotation`; `CanvasArea.tsx` uses it. Four new tests first (red), then green. Whether this also explains the exact 54.72×54.72 → 28×54.72 reading is UNVERIFIED; it needs a real-phone or emulator retest after deploy.
+- **Tests:** `src/pages/studio` 65/65 pass; storefront typecheck clean. Branch/PR/merge/deploy are reported separately in the PR; nothing is deployed from here.
+- **Boundaries kept:** no provider, database, catalog, order or payment change; bottle hold and 94 candidates untouched.
+- **Next ready task:** none for Claude. After deploy, Manus can repeat only the pinch step in the emulator (no upload needed).

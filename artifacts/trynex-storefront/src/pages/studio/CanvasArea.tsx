@@ -7,7 +7,7 @@ import { Layer as LayerType, PrintZone } from "./types";
 import { LiveCompositorPreview } from "./LiveCompositorPreview";
 import type { ComposerLayer, UnifiedMockupSurface } from "../design-studio/composer";
 import { RotateCw, X } from "lucide-react";
-import { getRenderedImageSize } from "./transformGeometry";
+import { applyPinchTransform, getRenderedImageSize } from "./transformGeometry";
 
 interface CanvasPoint {
   x: number;
@@ -479,16 +479,8 @@ export function CanvasArea({
           const start = pinchRef.current;
           if (pinch && start && selectedLayer) {
             e.evt.preventDefault();
-            const nextScale = Math.max(0.05, Math.min(8, start.scale * (pinch.distance / Math.max(1, start.distance))));
-            const nextRotation = start.rotation + ((pinch.angle - start.angle) * 180) / Math.PI;
             updateLayer(selectedLayer.id, {
-              transform: {
-                ...selectedLayer.transform,
-                scale: nextScale,
-                scaleX: nextScale,
-                scaleY: nextScale,
-                rotation: nextRotation,
-              },
+              transform: applyPinchTransform(selectedLayer.transform, start, pinch),
             }, { history: false });
             return;
           }
