@@ -13,7 +13,7 @@ Claude has finished the prior repository tasks. New evidence is appended to `cla
    - D2: water-bottle print area: `approve`, `change`, or `not yet` (now: `not yet`).
    - D3: contact messages: keep in the Admin Activity Log (now) or add Telegram or email?
    - D4: prepare (not run) the order-protection database migration: yes or no?
-   - D6: nothing to do — a 2026-10-12 check found no open PRs, so the old close-list (#13, #15, #20, #21, #23, #40) no longer applies.
+   - D6: the old close-list (#13, #15, #20, #21, #23, #40) remains superseded. PR #63 is the current M1–M6 evidence PR; leave it open for review and do not close it as a stale PR.
 4. **Security (GitHub settings, 2 minutes):** revoke the GitHub token that was pasted in chat earlier (D5).
 5. **M5 emulator evidence is recorded.** A physical-phone check is optional; do not repeat Add to Cart until M1 is explicitly done. See `claude/evidence/m5-mobile-emulator-2026-10-12.md`.
 
@@ -52,7 +52,7 @@ If it works, Claude records the upload as verified.
 - **D3** Contact messages: stay in the Admin Activity Log (current) or add Telegram or email.
 - **D4** Prepare (not run) the order-idempotency migration in `claude/T8_IDEMPOTENCY_MIGRATION_PLAN.md`: yes or no.
 - **D5** Revoke or rotate the GitHub token that was pasted earlier and flagged as compromised.
-- **D6** Close the stale open PRs #13, #15, #20, #21, #23 and #40 (all superseded).
+- **D6 — NO ACTION:** the stale close-list (#13, #15, #20, #21, #23, #40) was not open at the baseline check. PR #63 is the current evidence PR and is not part of that old list; leave it open for review.
 
 ## What Claude does when each item lands
 | Item | Claude's action |

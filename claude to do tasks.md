@@ -2,7 +2,7 @@
 
 **Prepared:** 2026-10-12 03:29 +06:00
 **Repository:** `georgelsmith333-hub/New-Trynext`
-**Snapshot checked:** `main` at `2e5e63eda6d06800e15b2291225eff615d948849` (`origin/main` matched; PR #62 merged)
+**Snapshot checked:** `main` at `2e5e63eda6d06800e15b2291225eff615d948849` (`origin/main` matched; PR #62 merged). Current report/evidence PR: [#63](https://github.com/georgelsmith333-hub/New-Trynext/pull/63), open and intentionally unmerged.
 **Purpose:** one concise entry point for Claude’s next safe work and the Manus ↔ Claude report loop. This is a repository handoff document, **not** a background scheduler or proof that either agent is polling continuously.
 
 ## Start here
@@ -15,7 +15,7 @@
 ## Verified project snapshot and completed work
 
 - The checkout was clean on `main`; local `HEAD` and GitHub `origin/main` both resolved to `cec19bd77e00f17276c0af987e2dd35e2b6d31a4`.
-- GitHub reported **no open pull requests** and **no open issues** when checked on 2026-10-12. Therefore the older D6 instruction to close PRs #13, #15, #20, #21, #23, and #40 is stale as an action; do not try to close anything unless a fresh check shows an open PR.
+- GitHub reported **no open pull requests** and **no open issues** before this report PR was opened on 2026-10-12. PR #63 is the current docs/evidence handoff and must remain open for review; it does not revive the stale D6 close-list (#13, #15, #20, #21, #23, #40).
 - Existing project reports say all currently identified repository-side code work is merged. No fresh code defect was established in this review. Claude should wait for new evidence or a newly authorized code task rather than inventing more implementation work.
 - The live upload failure remains the substantive product blocker: the latest recorded harmless Studio attempt (2026-10-10, after PR #57) showed `storage_access_denied`; the API fallback returned 424 JSON and surfaced the reason, but the cart stayed empty. Render logs attributed the failed write to Cloudflare R2 `AccessDenied` / HTTP 403. This is an owner-controlled bucket/token/environment configuration issue, not evidence for another code patch.
 - **M3 is now verified:** current live Render commit is `2e5e63eda6d06800e15b2291225eff615d948849`, which includes PR #57; the deployment succeeded, Node is `v24.14.1`, and startup logged `Server listening`. Evidence is in `claude/evidence/m3-render-current-2026-10-12.md`.
@@ -39,7 +39,7 @@ Status meanings: **READY** = can be done now with authorized access; **BLOCKED�
 | **D3 — Contact-message destination** | **DONE** | Activity Log is sufficient for now; Telegram/email remain unconfigured. Do not revisit absent a new owner decision. | — |
 | **D4 — T8 idempotency preparation** | **DONE—DESIGN/DRY RUN ONLY** | Plan, reversible SQL, collision query, rollback, and throwaway dry run are already recorded. Never execute against a live database without separate explicit approval for that exact migration. | — until a new explicit approval |
 | **D5 — GitHub token security** | **OWNER CHECK NEEDED** | Historical repo notes flag a pasted GitHub token as potentially compromised. Whether it was revoked/rotated is not evidenced in the files reviewed. Owner should verify/revoke in GitHub settings; do not search for, reproduce, or share the token. | Owner |
-| **D6 — Close stale PRs** | **NO ACTION CURRENTLY** | The current GitHub open-PR query returned none. This old queue item is superseded; re-check only if a fresh query shows open PRs. | — |
+| **D6 — Close stale PRs** | **NO ACTION** | Old close-list (#13, #15, #20, #21, #23, #40) remains superseded. Current report PR #63 is open for review and must not be closed as stale. | — |
 
 ### Priority order
 
