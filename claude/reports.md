@@ -479,3 +479,25 @@ Read the M5b evidence above. First add a focused regression test that reproduces
 **Claude next action:** Read the exact repo-root `claude to do tasks.md` and this entry on the PR #69 report branch; your comment says you read PR #69 directly. If the test stack allows, add an integration regression for the actual Konva Stage drag-suspension/multi-move flow (your helper/unit tests do not exercise that integration). Do not change the 44px handle layout without an owner decision; keep M5 partial pending the owner’s UI decision and any physical-device evidence. Keep PR #67 draft; no merge/deploy without per-PR owner approval.
 
 **Report location/relay:** This updated queue/evidence is being published on [docs/evidence-only PR #69](https://github.com/georgelsmith333-hub/New-Trynext/pull/69), not yet on `main`. Exact evidence file: `claude/evidence/m5b-pr67-c9d55-retest-2026-10-12.md`. The queue file in that same PR is the repo-root `claude to do tasks.md`. Claude should report the next result in `claude/reports.md` and update the queue/handoff there. No automatic wake-up is active.
+
+
+## Claude report — M5b integration-test decision — 2026-10-12
+
+**Status:** Preview retest accepted; an automated integration test for the real Konva Stage drag-suspension path was **not added** because the current test environment cannot instantiate the required browser Stage. The M5 test automation decision is **BLOCKED—OWNER DECISION**. PR #67 remains draft/open/unmerged/undeployed.
+
+Claude reports that storefront tests run in Vitest’s `node` environment without `jsdom`, `happy-dom`, `canvas`, or Playwright. `Konva.Stage` throws “Konva.js unsupported environment” there, while the behavior to guard requires a real Stage and pointer events. The helper/math tests in `c9d55a3` do not cover that component integration; the manual local and preview touch-emulation runs remain the only evidence for that path. Claude made no dependency, lockfile, or CI changes.
+
+**Owner choice requested by Claude:** reply **“add the browser test”** to authorize a separate PR that adds a browser-capable regression setup and corresponding CI coverage. Playwright is the more direct option for a real Stage/pointer-event test; this is a proposed test strategy, not approved dependency work. Choosing to add the test does not approve merging or deploying PR #67. If deferred, document that the integration path remains manually tested and keep M5 PARTIAL. The 10.7px small-artwork handle gap and lack of physical-phone evidence remain separate M5 limitations.
+
+**Current relay:** Claude’s report is [on PR #67](https://github.com/georgelsmith333-hub/New-Trynext/pull/67#issuecomment-6115033792). The updated repo-root `claude to do tasks.md`, canonical queue, ledger and evidence remain on [PR #69](https://github.com/georgelsmith333-hub/New-Trynext/pull/69), head `738af069d57e21cd888e49ee60ecfc7ec5214673`; PR #69 is open, unmerged, with all four checks successful. Neither PR has been merged or deployed. No dependencies or production/provider settings changed.
+
+
+## Manus report — M3 production deployment identity — 2026-10-12
+
+**Status: DONE for current production release identity (Cloudflare Pages and Render).** Cloudflare Pages project `trynext-shop-new` is on production branch `main`; the latest production-filtered deployment is `065ea212-1430-434e-9a78-93afe9603b2e`, succeeded at `2026-10-11T22:38:42Z`, and its GitHub trigger commit `e6c7041b6bdb0c38d5ce86d276c8e85705c866aa` matches current `main`. Its production aliases are `trynext.shop` and `www.trynext.shop`. I used the production-only deployment list because the project’s generic `latest_deployment` field referred to a newer preview.
+
+Render remains live at `dep-db5vau95efls73b3eq00`, commit `2e5e63eda6d06800e15b2291225eff615d948849`; the previously recorded M3 evidence confirms Node `v24.14.1`, successful startup, and PR #57 inclusion. GitHub comparison shows only two commits (`4a922c1`, `e6c7041`) between the Render commit and current `main`; their changed paths are documentation/evidence only, with no application code. No Render redeploy is indicated. PR #67 is still draft/unmerged/undeployed, so its gesture fix is not in production; PR #69 is unmerged.
+
+**Evidence:** `claude/evidence/pages-production-current-2026-10-12.md` and `claude/evidence/m3-render-current-2026-10-12.md`. This verifies deployment identity, not R2 write access: M1 remains owner-blocked and M2 remains gated on an explicit `M1 done`. No provider setting or production data was changed.
+
+**Next items:** owner/provider actions M1, M4, M6, D1, D5; M2 only after M1; owner decisions on the M5 browser-test/dependency choice and handle layout; separate per-PR approval remains required before merging PR #67. This documentation/evidence update belongs on open PR #69, which remains unmerged. Recheck the updated PR's CI after push; green checks are not merge approval.

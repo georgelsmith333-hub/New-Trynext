@@ -580,3 +580,17 @@ does not mean production was changed or verified.
 - [x] The exact repo-root `claude to do tasks.md`, current ledger, and evidence are included in docs/evidence PR #69, not yet in `main`; Claude confirmed reading PR #69 directly. A direct pointer was also added to PR #67.
 - [ ] Claude: add an actual Konva Stage integration regression for drag suspension and multi-move if feasible; unit/helper coverage alone does not test the real component event path. Owner decision remains needed before changing the ~10.7px small-artwork handle gap.
 - [ ] M5 remains partial (no physical phone and unresolved handle-layout decision). PR #67 stays draft; owner approval required before merge/deploy. M1 owner gate and M2 dependency are unchanged.
+
+
+## 2026-10-12 — New Claude report: M5 browser-test choice needed
+- [x] Claude accepted the c9d55a3 preview retest; four pinch/rotate moves reached the expected final transform. PR #67 remains draft/open/unmerged/undeployed with four successful checks.
+- [x] Claude did not add real Konva Stage integration coverage: the current Vitest `node` environment has no browser/canvas support and `Konva.Stage` throws unsupported-environment. A browser regression requires new dev dependencies and CI changes; no dependency, lockfile, or workflow changed.
+- [ ] Owner choice: say **“add the browser test”** to authorize a separate Playwright/browser-test and CI PR, or defer. This does not authorize merge/deploy of PR #67.
+- [ ] Owner choice: keep the 44px handles or authorize a reviewed mobile layout change for the ~10.7px gap on small art; no physical phone test exists.
+- [ ] Other incomplete items remain M1, M2-after-M1, M4, M6, D1, and D5. See the latest full inventory in `claude to do tasks.md` and `claude/MANUS_TO_DO_REPORTS.md` on PR #69; PR #69’s checks are green but it remains unmerged. D2–D4 and D6 are settled as described in the queue.
+
+
+## 2026-10-12 — Production release identity reconciliation
+- [x] Cloudflare Pages production deployment verified read-only: `trynext-shop-new`, deployment `065ea212-1430-434e-9a78-93afe9603b2e`, current `main` commit `e6c7041`; production deploy succeeded and aliases include `trynext.shop` / `www.trynext.shop`.
+- [x] Render remains on `2e5e63e`; the two commits ahead on `main` are documentation/evidence only, so no application-code redeploy is indicated. M3 is complete for both services; R2 write permission is still unresolved (M1).
+- [x] PR #67 remains draft/unmerged/undeployed and is not represented by the production Pages commit. PR #69 is open/unmerged; updated evidence needs fresh checks after it is pushed.
