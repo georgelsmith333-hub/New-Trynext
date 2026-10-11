@@ -8,6 +8,7 @@ import { LiveCompositorPreview } from "./LiveCompositorPreview";
 import type { ComposerLayer, UnifiedMockupSurface } from "../design-studio/composer";
 import { RotateCw, X } from "lucide-react";
 import { getRenderedImageSize } from "./transformGeometry";
+import { canStartSelectionGesture, isSelectionGesturePointer } from "./selectionGesturePointer";
 
 interface CanvasPoint {
   x: number;
@@ -18,12 +19,14 @@ type PrintFrameHandle = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 
 type SelectionGesture =
   | {
+      pointerId: number;
       kind: "scale";
       handle: PrintFrameHandle;
       startPoint: CanvasPoint;
       startTransform: LayerType["transform"];
     }
   | {
+      pointerId: number;
       kind: "rotate";
       startAngle: number;
       startTransform: LayerType["transform"];
@@ -245,6 +248,8 @@ export function CanvasArea({
     if (!point) return;
     event.preventDefault();
     event.stopPropagation();
+    // A second finger on another handle must not replace or steer the active gesture.
+    if (!canStartSelectionGesture(selectionGestureRef.current)) return;
       try {
         event.currentTarget.setPointerCapture(event.pointerId);
       } catch {
@@ -253,6 +258,7 @@ export function CanvasArea({
     beginHistoryGroup();
     if (kind === "rotate") {
       selectionGestureRef.current = {
+        pointerId: event.pointerId,
         kind,
           startAngle: Math.atan2(point.y - selectedCenter.y, point.x - selectedCenter.x),
         startTransform: { ...selectedLayer.transform },
@@ -261,6 +267,7 @@ export function CanvasArea({
     }
     if (!handle) return;
     selectionGestureRef.current = {
+      pointerId: event.pointerId,
       kind,
       handle,
       startPoint: point,
@@ -273,6 +280,7 @@ export function CanvasArea({
       const gesture = selectionGestureRef.current;
       const layer = selectedLayer;
       if (!gesture || !layer || layer.type !== "image" || layer.locked) return;
+      if (!isSelectionGesturePointer(gesture, event.pointerId)) return;
       const point = getViewPoint(event);
       if (!point) return;
       event.preventDefault();
@@ -314,8 +322,8 @@ export function CanvasArea({
       }, { history: false });
     };
 
-    const finishSelectionGesture = () => {
-      if (!selectionGestureRef.current) return;
+    const finishSelectionGesture = (event: PointerEvent) => {
+      if (!isSelectionGesturePointer(selectionGestureRef.current, event.pointerId)) return;
       selectionGestureRef.current = null;
       commit();
     };
