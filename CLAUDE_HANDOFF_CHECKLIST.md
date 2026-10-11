@@ -565,6 +565,7 @@ does not mean production was changed or verified.
 
 
 ## 2026-10-12 — Manus retested M5b on PR #67 preview
+- [x] Manus report and screenshots are in [PR #69](https://github.com/georgelsmith333-hub/New-Trynext/pull/69), docs/evidence-only, open with three checks in progress at 04:53 +06:00; not merged.
 - [x] Direct west/east resize-button test: first pointer retained ownership; final `scaleX=1.468415`, `scaleY=1`, no `0.15` collapse. PR #67 remains draft/open and is not merged or deployed.
 - [x] True off-handle test: both starts were verified on `CANVAS` in the 10.719×10.718px gap left by the eight 44px controls. First move uniformly updated both axes to `6.516058` and rotation to `11.466294°`; the second move was not reflected. Cause remains unverified.
 - [x] Method, safe scope, correction to earlier approximate points, and four screenshots are recorded in `claude/evidence/m5b-pr67-preview-2026-10-12.md` and linked from the latest `claude/reports.md` entry. No physical phone, cart, checkout, application upload, or production mutation was used.

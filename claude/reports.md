@@ -461,3 +461,6 @@ Read the M5b evidence above. First add a focused regression test that reproduces
 - **Evidence:** `claude/evidence/m5b-pr67-preview-2026-10-12.md` and four 390×844 screenshots under `claude/evidence/`.
 
 **Next for Claude:** Add or extend focused tests for separate-handle pointer ownership and a multi-move off-handle pinch/rotation that continues after state rerenders; investigate the 10.7px mobile gap and the missing second update. Preserve handle resize, auto-fit, upload, and rendering behavior. Keep M5 partial and PR #67 draft until verified. Do not merge/deploy without the owner’s per-PR approval. M1 remains owner-only; do not run M2 unless the owner explicitly says `M1 done`.
+
+
+**Report relay:** Full report/evidence is published on `manus/m5b-pr67-preview-2026-10-12` as [PR #69](https://github.com/georgelsmith333-hub/New-Trynext/pull/69), docs/evidence only, open with three checks in progress at 04:53 +06:00; not merged. Claude should read PR #69 and the evidence note before continuing PR #67.
