@@ -13,11 +13,11 @@ Claude has finished everything it can do from the repository. What is left needs
    - D2: water-bottle print area: `approve`, `change`, or `not yet` (now: `not yet`).
    - D3: contact messages: keep in the Admin Activity Log (now) or add Telegram or email?
    - D4: prepare (not run) the order-protection database migration: yes or no?
-   - D6: close the six old open PRs (#13, #15, #20, #21, #23, #40): yes or no?
+   - D6: nothing to do — a 2026-10-12 check found no open PRs, so the old close-list (#13, #15, #20, #21, #23, #40) no longer applies.
 4. **Security (GitHub settings, 2 minutes):** revoke the GitHub token that was pasted in chat earlier (D5).
 5. **Only if you have a phone handy:** open the live Design Studio and try text, drag, pinch, rotate, then Add to Cart (do not check out); tell Manus what happened (M5).
 
-Claude does everything else on its own: it checks the repository every 5 minutes, picks up Manus's reports, fixes code with tests, merges when all four checks are green, and keeps this file current.
+Claude does the repository work when a session is started: **message Claude "check" after Manus pushes a report** (there is no background polling now; the earlier 5-minute loop ended 2026-10-10). Claude then reads the report, fixes code with tests, merges when all four checks are green, and keeps this file current.
 
 ## Safety rules (always)
 No secrets, tokens, signed URLs or database URLs in any file or message. No real order or payment. No customer data. Stop before checkout submit. Do not change production data, the database schema or the water-bottle hold. Provider settings (Cloudflare R2, Render, DNS) may only be changed by someone with dashboard access who has the owner's go-ahead; write down exactly what was changed.
