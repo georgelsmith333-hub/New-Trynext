@@ -1,6 +1,6 @@
-# MANUS TO DO REPORTS — what Claude needs next (updated 2026-10-12 04:15 +06:00)
+# MANUS TO DO REPORTS — what Claude needs next (updated 2026-10-12 04:20 +06:00)
 
-Claude has finished the prior repository tasks. M5b is now measured: a local 390×844 pinch changed the layer from `scale=2.5, scaleX=1, scaleY=1, rotation=0°` to `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°`; the visible frame narrowed from 54.72×54.72 to 28×54.72 CSS px. M5 remains partial until Claude adds a failing regression test and verifies a focused fix. M3 is verified; M6 remains partial because seven-day request logs are unavailable. M1 is owner-only; M2 is gated on explicit `M1 done`. Evidence is in `claude/evidence/`.
+Claude has finished the prior repository tasks. M5b is now measured: a local 390×844 pinch changed the layer from `scale=2.5, scaleX=1, scaleY=1, rotation=0°` to `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°`; the visible frame narrowed from 54.72×54.72 to 28×54.72 CSS px. M5 remains partial until Claude adds a failing regression test and verifies a focused fix. M3 is verified; M6 remains partial because seven-day request logs are unavailable. M1 is owner-only; M2 is gated on explicit `M1 done`. Evidence is in `claude/evidence/`. Current report PR: [#66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66), open with three checks pending at 04:20 +06:00.
 
 ## FOR THE OWNER — the short list (do these in order; everything else is automatic)
 1. **Fix the upload (10 minutes, Cloudflare + Render dashboards).** This is the only thing stopping customers' artwork from saving.
