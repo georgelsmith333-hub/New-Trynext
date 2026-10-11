@@ -1,21 +1,19 @@
-# MANUS TO DO REPORTS — what Claude needs next (updated 2026-10-12 04:20 +06:00)
+# MANUS TO DO REPORTS — what Claude needs next (updated 2026-10-12 05:47 +06:00)
 
-Claude has finished the prior repository tasks. M5b is now measured: a local 390×844 pinch changed the layer from `scale=2.5, scaleX=1, scaleY=1, rotation=0°` to `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°`; the visible frame narrowed from 54.72×54.72 to 28×54.72 CSS px. M5 remains partial until Claude adds a failing regression test and verifies a focused fix. M3 is verified; M6 remains partial because seven-day request logs are unavailable. M1 is owner-only; M2 is gated on explicit `M1 done`. Evidence is in `claude/evidence/`. Current report PR: [#66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66), open with three checks pending at 04:20 +06:00.
+Claude's latest observed PR #67 activity was at 2026-10-12 05:20 +06: he accepted the preview retest, attempted the real Konva Stage integration regression, and reported it cannot run in the current Vitest `node` environment. No dependencies/CI changes or later Claude activity were observed; he is waiting for the owner to say “add the browser test” or defer. PR #67 remains draft/open/unmerged/undeployed. PR #69 is open/unmerged at `a4f09cd` with all four checks green; current main remains `e6c7041`. M3 is verified for Pages and Render. M4 still has no saved Photopea report/hash list; keep the 94 surfaces candidate. Full M5 evidence: `claude/evidence/m5b-pr67-c9d55-retest-2026-10-12.md`; latest Claude/Manus relay: `claude/reports.md`.
 
-## FOR THE OWNER — the short list (do these in order; everything else is automatic)
+## FOR THE OWNER — outstanding actions (remaining work is tracked below)
 1. **Fix the upload (10 minutes, Cloudflare + Render dashboards).** This is the only thing stopping customers' artwork from saving.
    - Cloudflare R2 dashboard -> your bucket -> API tokens: make sure the token Render uses has **Object Read & Write** on that bucket (create a new token if unsure).
    - Render dashboard -> the API service -> Environment: the R2 account ID, bucket name, endpoint and the access key pair must all belong to that bucket and that token. Do not paste the keys into GitHub or chat.
    - If you changed anything in Render, redeploy the service.
 2. **Tell Manus "M1 done"** (or write `## Manus report — M1` yourself in `claude/reports.md`). Manus then runs M2, the one harmless Studio upload. Claude records the result the same minute it lands.
-3. **Answer these when you can** (one line each is enough, in `claude/reports.md` or to Manus):
-   - D1: the 10 products with Unsplash or imgur images (ids 1-9 and 20): replace with your own images, hide, or keep?
-   - D2: water-bottle print area: `approve`, `change`, or `not yet` (now: `not yet`).
-   - D3: contact messages: keep in the Admin Activity Log (now) or add Telegram or email?
-   - D4: prepare (not run) the order-protection database migration: yes or no?
-   - D6: the old close-list (#13, #15, #20, #21, #23, #40) remains superseded. PR #63 is merged and was never part of that stale list; do not target it for closure.
-4. **Security (GitHub settings, 2 minutes):** revoke the GitHub token that was pasted in chat earlier (D5).
-5. **M5b transform evidence is recorded.** Before/after values and screenshots are in `claude/evidence/m5b-transform-local-2026-10-12.md`. Claude’s next action is a focused failing regression test, then the smallest source-of-truth fix; no merge/deploy without owner approval. No physical phone was used, and do not repeat Add to Cart until M1 is explicitly done.
+3. **M5 browser-test choice:** Claude says the current Vitest `node` environment cannot instantiate a Konva Stage. Reply **“add the browser test”** to authorize a separate browser-level test dependency/CI PR, or explicitly defer it. This is not approval to merge/deploy PR #67.
+4. **M5 handle-layout choice:** keep the current 44px controls, or authorize a reviewed mobile layout change to address the ~10.7px gap on initially small artwork. No layout change before your decision. No physical phone was tested.
+5. **D1 catalog choice:** for products 1–9 and 20, keep, hide, or replace the third-party images. No live catalog edits before the decision and reviewed change plan.
+6. **D5 security check:** verify in GitHub settings whether the previously exposed token has been revoked/rotated; do not copy or share it.
+
+Already settled, not new owner asks: D2 water-bottle print area remains `not yet` (keep order hold); D3 Activity Log is sufficient for now (do not add Telegram/email absent a new decision); D4 migration plan/dry run is complete but must not be run against the live DB without separate explicit approval; D6 stale close-list (#13, #15, #20, #21, #23, #40) is superseded, and PR #63 is merged and must not be targeted.
 
 Claude does the repository work when a session is started: **message Claude "check" after Manus pushes a report** (there is no background polling now; the earlier 5-minute loop ended 2026-10-10). Claude then reads the report, fixes code with tests, asks before merging, and keeps this file current.
 
@@ -34,14 +32,14 @@ Report as M1: what you changed (names only, no keys), and the time.
 On `https://trynext.shop/design-studio` upload a 64x64 PNG on a T-shirt and click Add to Cart. Report: did the cart count go to 1; the exact alert text if it failed (it should now end in a short bracketed reason such as `[storage_access_denied]`); the failing request's status and `content-type`. Then remove the cart item. Do not check out.
 If it works, Claude records the upload as verified.
 
-## M3 — Render confirmation of the latest build
-**Status: VERIFIED (2026-10-12).** Current live commit is `2e5e63eda6d06800e15b2291225eff615d948849`, which includes PR #57's 424 fix. Deploy `dep-db5vau95efls73b3eq00` succeeded; Node `v24.14.1`; startup logged `Server listening`. Full evidence: `claude/evidence/m3-render-current-2026-10-12.md`. Do not redeploy or repeat this check unless the release changes.
+## M3 — Production deployment identities (Cloudflare Pages + Render)
+**Status: VERIFIED (2026-10-12).** Cloudflare Pages project `trynext-shop-new` is on production branch `main`; deployment `065ea212-1430-434e-9a78-93afe9603b2e` succeeded on current `main` commit `e6c7041b6bdb0c38d5ce86d276c8e85705c866aa` and serves `trynext.shop` / `www.trynext.shop`. Render deploy `dep-db5vau95efls73b3eq00` remains live on `2e5e63eda6d06800e15b2291225eff615d948849`, includes PR #57's 424 fix, runs Node `v24.14.1`, and logged `Server listening`. The two commits after Render are documentation/evidence only, so no code redeploy is warranted. See `claude/evidence/pages-production-current-2026-10-12.md` and `claude/evidence/m3-render-current-2026-10-12.md`. Do not repeat unless the release changes; M1 R2 write access remains unresolved.
 
 ## M4 — Photopea validator report
-**Status: BLOCKED — no report exists.** No `photopea-validator-report.*` or Photopea hash list is in `claude/evidence/`; the 94 side-view and mug-wrap surfaces stay `candidate` until valid evidence is provided.
+**Status: BLOCKED — no report exists.** No `photopea-validator-report.*` or 94-surface hash list is in `claude/evidence/`; the structural 188/188 validator is not Photopea visual proof. Prefer the Admin > Mockups report/hash list saved at `claude/evidence/photopea-validator-report.*`. The owner may instead explicitly accept the operator-reported 188/188 result as owner-accepted (not independently retested), or leave all 94 surfaces `candidate`. No acceptance choice has been made; keep them `candidate`.
 
 ## M5 — Mobile check of the Design Studio
-**Status: PARTIAL — emulator evidence; no physical phone.** The requested M5b local 390×844 check used a disposable 64×64 image. Before pinch the layer transform was `scale=2.5, scaleX=1, scaleY=1, rotation=0°`; after pinch it was `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°`. The visible frame changed from 54.72×54.72 to 28×54.72 CSS px. Stage touch-callback diagnostics did not fire in this sequence, so Claude should trace the actual touch/pointer/Transformer path, write a focused failing regression test first, then make a small fix. Prior live Add to Cart remains blocked by `storage_access_denied` / HTTP 424; this is not M2. Evidence: `claude/evidence/m5b-transform-local-2026-10-12.md` and `claude/evidence/m5-mobile-emulator-2026-10-12.md`.
+**Status: PARTIAL — preview passes, browser-integration decision blocked on owner.** PR #67 head `c9d55a3` reached `scale=5.278495`, `scaleX=scaleY=1`, and `rotation=14.209831°` after four off-handle moves. Claude cannot instantiate Konva Stage under current Vitest `node`; browser-level coverage requires a new test dependency and CI changes. Owner must say **“add the browser test”** to authorize a separate test PR, or defer and leave the component path manually covered. Separately, the 10.719×10.718px clear gap for initially small art needs an owner UI decision; do not change handle layout without it. No physical phone was tested. Evidence: `claude/evidence/m5b-pr67-c9d55-retest-2026-10-12.md`. PR #67 is draft/open/unmerged/undeployed; owner approval remains required. The prior live Add-to-Cart failure (`storage_access_denied` / HTTP 424) is not M2.
 
 ## M6 — Admin Activity Log, last 7 days (needs admin login)
 **Status: PARTIAL — historical route-level request logs unavailable.** The sanitized live-health snapshot showed 7 requests / 2 4xx / 0 5xx in its last 60 minutes, but this process-local telemetry is not a seven-day history. Render exposed `app` and `build` log types only, not `request`; no operational failure/restart/suspension events were returned in the seven-day window. The requested seven-day route/status/release/time/customer-impact grouping and customer impact remain unverified. See `claude/evidence/m6-admin-health-2026-10-12.md`; do not claim a week with no errors.
@@ -62,6 +60,6 @@ If it works, Claude records the upload as verified.
 | M2 fails with a reason code | Names the cause and says exactly which setting to fix; fixes any code cause test first. |
 | M3 older commit | Tells the owner to redeploy `main`. |
 | M4 report | Updates the mockup release gate (fail-closed unless every check holds). |
-| M5b transform measurements | Writes a focused failing test first, traces the touch/pointer/Transformer event path, then prepares the smallest fix PR; asks the owner before merging or deploying. |
+| M5b PR #67 preview retest | Preview test passes. Claude requests owner authorization (“add the browser test”) before adding a browser test dependency and CI workflow in a separate PR. Owner also decides handle-gap UX; keep M5 partial and PR #67 draft. No merge/deploy without approval. |
 | M6 lines | Reads sanitized fields and fixes any code cause with a test. |
 | D1–D4 answers | Applies them inside the safety rules; D1 image changes go through the admin or a reviewed change list, not a bulk script. |

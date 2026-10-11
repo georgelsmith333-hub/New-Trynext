@@ -562,3 +562,44 @@ does not mean production was changed or verified.
 ## 2026-10-11 — M5b diagnosis
 
 - Two-finger pinch landed on two resize handles; `scaleX` hit the 0.15 floor. Fix is PR #67 (draft, not merged, not verified in a browser). Needs Manus rerun on the preview and owner approval.
+
+
+## 2026-10-12 — Manus retested M5b on PR #67 preview
+- [x] Manus report and screenshots are in [PR #69](https://github.com/georgelsmith333-hub/New-Trynext/pull/69), docs/evidence-only, open with three checks in progress at 04:53 +06:00; not merged.
+- [x] Direct west/east resize-button test: first pointer retained ownership; final `scaleX=1.468415`, `scaleY=1`, no `0.15` collapse. PR #67 remains draft/open and is not merged or deployed.
+- [x] True off-handle test: both starts were verified on `CANVAS` in the 10.719×10.718px gap left by the eight 44px controls. First move uniformly updated both axes to `6.516058` and rotation to `11.466294°`; the second move was not reflected. Cause remains unverified.
+- [x] Method, safe scope, correction to earlier approximate points, and four screenshots are recorded in `claude/evidence/m5b-pr67-preview-2026-10-12.md` and linked from the latest `claude/reports.md` entry. No physical phone, cart, checkout, application upload, or production mutation was used.
+- [ ] Claude: add/extend focused tests for separate-handle pointer ownership and multi-move off-handle pinch/rotation; investigate the missing second update and tiny mobile gap. Keep M5 partial until resolved.
+- [ ] PR #67 must remain draft until the gesture behavior is verified; owner approval is required before merge/deploy. M1 remains owner-only and M2 is gated on explicit `M1 done`.
+- No autonomous report trigger is active; Claude must read the new report in a resumed session and Manus must resume after Claude reports.
+
+
+## 2026-10-12 — M5b retest on PR #67 head c9d55a3
+- [x] On the checked preview, four successive off-handle moves reached final `scale=5.278495`, `scaleX=scaleY=1`, `rotation=14.209831°`; expected scale from finger distance was `5.278497`, expected angle `14.21°`. Per-move screenshots are saved under `claude/evidence/m5b-c9d55-*-390x844.png`.
+- [x] Corrected the earlier finding: the second-move symptom did not recur on `c9d55a3`; intermediate persisted-draft snapshots were debounced and stale during the gesture. Final state and screenshots are the evidence.
+- [x] The exact repo-root `claude to do tasks.md`, current ledger, and evidence are included in docs/evidence PR #69, not yet in `main`; Claude confirmed reading PR #69 directly. A direct pointer was also added to PR #67.
+- [ ] Claude: add an actual Konva Stage integration regression for drag suspension and multi-move if feasible; unit/helper coverage alone does not test the real component event path. Owner decision remains needed before changing the ~10.7px small-artwork handle gap.
+- [ ] M5 remains partial (no physical phone and unresolved handle-layout decision). PR #67 stays draft; owner approval required before merge/deploy. M1 owner gate and M2 dependency are unchanged.
+
+
+## 2026-10-12 — New Claude report: M5 browser-test choice needed
+- [x] Claude accepted the c9d55a3 preview retest; four pinch/rotate moves reached the expected final transform. PR #67 remains draft/open/unmerged/undeployed with four successful checks.
+- [x] Claude did not add real Konva Stage integration coverage: the current Vitest `node` environment has no browser/canvas support and `Konva.Stage` throws unsupported-environment. A browser regression requires new dev dependencies and CI changes; no dependency, lockfile, or workflow changed.
+- [ ] Owner choice: say **“add the browser test”** to authorize a separate Playwright/browser-test and CI PR, or defer. This does not authorize merge/deploy of PR #67.
+- [ ] Owner choice: keep the 44px handles or authorize a reviewed mobile layout change for the ~10.7px gap on small art; no physical phone test exists.
+- [ ] Other incomplete items remain M1, M2-after-M1, M4, M6, D1, and D5. See the latest full inventory in `claude to do tasks.md` and `claude/MANUS_TO_DO_REPORTS.md` on PR #69; PR #69’s checks are green but it remains unmerged. D2–D4 and D6 are settled as described in the queue.
+
+
+## 2026-10-12 — Production release identity reconciliation
+- [x] Cloudflare Pages production deployment verified read-only: `trynext-shop-new`, deployment `065ea212-1430-434e-9a78-93afe9603b2e`, current `main` commit `e6c7041`; production deploy succeeded and aliases include `trynext.shop` / `www.trynext.shop`.
+- [x] Render remains on `2e5e63e`; the two commits ahead on `main` are documentation/evidence only, so no application-code redeploy is indicated. M3 is complete for both services; R2 write permission is still unresolved (M1).
+- [x] PR #67 remains draft/unmerged/undeployed and is not represented by the production Pages commit. PR #69 is open/unmerged; updated evidence needs fresh checks after it is pushed.
+
+
+## 2026-10-12 — Claude relay status and M4 evidence check
+- [x] Latest observed Claude comment on PR #67 is at 05:20 +06: preview retest accepted; Konva Stage integration test not possible in current Vitest `node`; no dependency/CI changes. Claude requests owner choice (“add the browser test”) before a separate test PR. No later Claude activity was found in the checked GitHub state.
+- [x] PR #69 branch head `a4f09cd` is open/unmerged and has four successful checks. Main remains `e6c7041`; PR #67 remains draft/unmerged.
+- [x] Searched the repository evidence folder; no saved `photopea-validator-report.*` or 94-surface hash list exists. The structural 188-surface validation is not Photopea visual proof; keep the 94 side-view/mug-wrap surfaces `candidate`.
+- [ ] Owner: provide the Admin > Mockups validator report/hash list; or explicitly accept the operator-reported 188/188 Photopea pass as owner-accepted, not independently retested; or leave candidates unchanged.
+- [ ] Owner: M1 R2 permission fix, then explicit `M1 done` before M2; M5 browser-test and handle-layout decisions; M6 sanitized seven-day request logs; D1 image policy; D5 token revocation/rotation verification.
+- [ ] Claude: read the newest Manus report and repo-root queue, confirm consumption in `claude/reports.md`, and wait for the relevant owner decision before gated implementation. Do not merge/deploy PR #67 without separate per-PR approval.
