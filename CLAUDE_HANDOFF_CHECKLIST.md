@@ -1,3 +1,536 @@
+# Trynext Lifestyle — Claude Handoff and Full-Project Checklist
+
+**Prepared:** 2026-10-04
+**Purpose:** A self-contained starting point for Claude or another agent taking
+over this project. This document records the latest known checkpoint, safe next
+steps, project-wide acceptance areas, and how to distinguish real open work from
+stale tracker entries.
+
+## Read these first
+
+- [ ] Read `CLAUDE.md`; it is the automatic Claude Code entry point.
+- [ ] Read `AGENTS.md` for the project's operating, safety, and handoff rules.
+- [ ] Read `AGENT_HANDOFF.md` from the beginning through its newest dated
+  checkpoint. Its newest entry is the primary source for the latest work.
+- [ ] Read `replit.md` only for architecture/history; do not assume its
+  Replit-specific workflow instructions apply in a GitHub clone.
+- [ ] Read this file for the current consolidated work list.
+- [ ] Inspect the current source, tests, branch, and workflow state before acting.
+- [ ] Treat the user's latest request as higher priority than older plans.
+- [ ] Before editing, report the current checkpoint, proposed scope, preserved
+  behavior, verification plan, and any work that must wait for approval.
+
+Do not assume private chat history will be available. Do not claim an item is
+current or verified until the repository or a current service check supports it.
+
+## Authority and stale-document rules
+
+When project notes conflict, use this order:
+
+1. The user's latest explicit instruction.
+2. Current code, tests, and current environment evidence.
+3. The newest dated section of `AGENT_HANDOFF.md`.
+4. `AGENTS.md` and `replit.md` for durable rules and architecture.
+5. Tracker files and older handoff prompts, after verifying their claims.
+
+`PROJECT_REBUILD_TRACKER/` was last updated in July 2026 and contains unchecked
+items that later work says were implemented. Use it as a topic inventory, not as
+proof that every box is still open. Reconcile it against current code and the
+newest handoff before changing statuses or starting broad work.
+
+`docs/trynext-agent-handoff-prompt.md` is a historical Smart Mockup prompt. Its
+claims about Smart v4/v7 and a Smart v8 target are superseded by the later
+accepted Smart v10.3 release recorded in `AGENT_HANDOFF.md`. Do not use that
+prompt as the current project plan.
+
+## Current checkpoint — 2026-10-04
+
+### Post-merge update (Claude Code session, 2026-10-03 22:45 UTC)
+
+This block supersedes the dated observations below where they conflict.
+
+- PR #2 is **merged** (`2549742`) and so is PR #3 (`dd6f1e2`: truthful admin
+  health probes, AI fallback timeout, handoff docs); CI and Active app
+  verification both succeeded on each. The remote is named `origin`.
+- Newer work (admin Live Health page, API crash fix, clean 400/409 errors, mockup
+  readiness checks, tracker reconciliation) is in the pull request that carries
+  this update. Check GitHub for whether it is merged or deployed.
+- The local checkout is identical to `origin/main`, with no local commits and no
+  untracked attachments. The "Checkout state observed" notes below describe an
+  earlier Replit checkout and are historical.
+- Items A and B below were worked in this session; item C is blocked by the
+  session's network policy. See the newest `AGENT_HANDOFF.md` section for
+  evidence and limits.
+- Deployment of `2549742` and `dd6f1e2` to Cloudflare/Render has **not** been
+  confirmed from this session. Nothing here has been verified live.
+
+### Known complete locally
+
+- [x] The approved safe public catalog API-cache changes are implemented and
+  covered by local tests. The cache is limited to safe public catalog GETs;
+  cookie-bearing, authenticated, searching, unknown-query/header, and unsafe
+  responses bypass storage.
+- [x] The duplicate Workbox `offline.html` precache issue is fixed. The
+  generated service worker has one offline-shell precache entry; its other
+  reference is the runtime offline fallback.
+- [x] The order-success celebration respects reduced-motion preferences.
+- [x] Invoice PDF generation has a test that reads the generated PDF and checks
+  its signature and non-trivial output.
+- [x] Mobile shop-filter drawer work is present in the isolated design-system
+  preview and was visually checked at 402×874. Integration into the shipped
+  mobile app has not been established by the handoff; verify before calling it
+  complete.
+- [x] Local storefront tests, targeted cache/invoice tests, storefront
+  typecheck/build, mockup-sandbox typecheck/build, and `git diff --check` passed
+  per the latest handoff.
+- [x] The Smart v10.3 runtime was previously promoted and verified. Preserve its
+  accepted status and all water-bottle release gates.
+- [x] COD and the 25% advance-deposit rules remain in place. Do not create an
+  order or payment just to verify the code.
+
+### Latest known live state (read-only audit)
+
+- Cloudflare Pages served `trynext.shop` and `www.trynext.shop`; its latest
+  reported successful production deployment was `main` at
+  `80dbab30692b9e5f202cf9a01594b6abb7981c78` (2026-10-01).
+- That deployed `main` does not contain the invoice download and order-success
+  feature set recorded on `fix/waterbottle-white-identity`.
+- The handoff identifies the feature branch at `a19dbdc5d`. Confirm remote refs
+  and ancestry again before using them; these are the last recorded values, not
+  a substitute for a fresh fetch.
+- Live API product requests previously returned edge-cache `MISS` and
+  `CF-Cache-Status: DYNAMIC` on repeated requests. The code fix is locally
+  verified, but live Cloudflare cache-hit behavior remains unverified because
+  the changes have not been deployed.
+- Render/Neon account-level usage and backup-retention details were unavailable
+  during the audit. No provider setting was changed.
+
+### Checkout state observed while preparing this file
+
+- Branch: `fix/waterbottle-white-identity`, tracking `github/main`.
+- `git status --short --branch` most recently showed the branch 12 commits ahead
+  and no visible
+  modified or untracked paths at that time.
+- The configured `github` remote URL observed in this checkout points to
+  `georgelsmith333-hub/New-Trynext`, while the historical handoff prompt names
+  `georgelsmith333-hub/trynext-lifestyle`. Both repositories are visible to the
+  connected GitHub account and have push permission. The owner must select the
+  destination before publishing.
+- The local branch differs from its tracking ref by 13 commits and 81 paths;
+  27 paths are under `attached_assets/`, including pasted chat records and
+  customer-provided screenshots. Do not publish that history wholesale. Keep
+  those files local and build a clean, reviewed handoff branch from the
+  selected repository's current default branch.
+- The owner selected `georgelsmith333-hub/New-Trynext`; its current `main` tip
+  was verified through GitHub as `80dbab30692b9e5f202cf9a01594b6abb7981c78`.
+- Workflow status at handoff preparation: all configured workflows were stopped.
+  Start only the workflow needed for a requested local verification.
+
+These are dated observations. Recheck them at the start of the next session.
+
+### Owner's requested development-home transition
+
+- [x] Owner requested that GitHub plus Claude Code become the development home
+  and that the handoff documents be prepared.
+- [x] Owner selected `georgelsmith333-hub/New-Trynext` and explicitly requested
+  a live push after safety checks.
+- [x] Compared both repository trees. The only old-repository code path absent
+  from the newer repo is an older Studio V2 3D viewer; the newer Studio does not
+  import it. All other old-only paths are screenshots, so no old code/assets
+  need to be copied.
+- [x] Created clean branch `claude-handoff-2026-10-04` from the verified
+  `main`, containing only the 54-file reviewed candidate.
+- [x] Local release checks, full diff/path review, and the high-confidence
+  credential scan passed; all local attachments and Replit-only memory were
+  excluded.
+- [x] Opened PR #2 from the clean branch to `main`; its base, head, and 54-file
+  change list were verified with no attachment or agent-memory paths.
+- [x] Merge to `main` only after all required checks pass on the final PR head.
+  PR #2 was merged by the owner on 2026-10-03 22:22 UTC.
+- [x] Verify the resulting commit and workflow results through GitHub: `main` is
+  `2549742`; CI and Active app verification succeeded.
+- [ ] Verify the live site and deployment through read-only production checks.
+  Blocked in the Claude Code session: its network policy denies
+  `trynext.shop:443`.
+- [ ] After the owner confirms the GitHub handoff works, stop using Replit as
+  the development home. Keep deployment or provider changes separate.
+
+## Immediate remaining work
+
+- [x] Broken product/home/mobile images from retired `/mockups/` URLs repaired in code (see latest `AGENT_HANDOFF.md` section). [ ] Confirm on the live site after deploy.
+- [x] Owner answers in `claude/reports.md` read (2026-10-05). Work order: Design Studio reliability, checkout/orders, catalog/images. Merges: ask each time. Data repairs: dry run + approval each time.
+- [x] Studio draft restore keeps the link's product/variant and validates saved variant fields (PR open, not merged).
+- [ ] Studio: browser-verify export/cart parity per product family; mobile touch editing; upload failure states.
+
+### A. Browser/device verification for invoices
+
+- [x] Verify that the customer-facing invoice download actually triggers a
+  browser download from the Checkout success flow. (Chromium download event;
+  COD and bKash wallet paths; desktop 1280x800 and phone 390x844.)
+- [x] Verify the invoice download from Track Order. (Same two viewports.)
+- [x] Check a desktop browser and a mobile browser/device-size flow; verify the
+  filename, valid PDF contents, and that customer/order values are correct.
+  (`Trynext-Invoice-<orderNumber>.pdf`; valid 1-page PDF; contents checked with
+  `pdftotext`, including the 25% advance and settings-driven contact block.)
+- [x] Use a safe test fixture or mocked order response. Do not create a real
+  customer order or submit a payment without explicit owner approval. (All
+  `/api` calls were fixtures; non-localhost and unmocked writes were blocked.)
+- [x] Record limitations if an authenticated customer session is unavailable.
+  Limitations: Chromium only (no real device or Safari); mocked backend; no
+  authenticated-customer session; scripts were not added to the repo.
+- [ ] Optional follow-up: add a repeatable browser test for the invoice flow if
+  the owner wants one in CI.
+
+### B. Verify the mobile shop-filter integration
+
+- [x] Inspect the current Expo app route and determine whether the filter drawer
+  shown in the design-system preview is integrated into the actual mobile app.
+  Result: **not integrated.** `artifacts/trynext-mobile/app/(tabs)/shop.tsx` has
+  only inline search, category chips, and sort pills.
+- [x] If integrated, verify open/close, selected-filter count, keyboard/screen
+  reader labels, Escape/back handling, safe-area spacing, scroll locking, and
+  touch target at narrow and tall viewports. Not applicable to the Expo app. The
+  drawer does exist in the web storefront (`Products.tsx`) with these behaviors
+  present in code; it has not been exercised in a browser in this session.
+- [x] If not integrated, report it as follow-up work; do not treat the preview
+  as a shipped app feature or integrate it without including it in the approved
+  scope. Reported: building the Expo drawer is follow-up work that needs owner
+  approval.
+- [ ] Optional: browser-test the web `Products.tsx` filter drawer at narrow and
+  tall viewports.
+
+**2026-10-09 update (owner delegated the decision, "do everything"):** the Expo
+shop now has a filter sheet (`components/ShopFilterSheet.tsx`, `lib/shopFilters.ts`):
+price range and "Customizable only", with an active-count badge, Reset, a
+"Clear filters" action on the empty state, labels for screen readers and
+Android back-to-close. The API gained `minPrice` / `maxPrice` on
+`GET /api/products` (applied to the price the customer pays; cache keys carry
+the range; a reversed range is swapped). Verified in the Expo web build at
+390px against a local API: sheet fits, request carries the range and the sort,
+badge shows the count. NOT verified on a real phone or in Expo Go (N1). Not
+included: an in-stock filter (stock lives in per-variant JSON; needs its own
+design).
+
+### C. Verify live cache behavior after an approved release only
+
+- [x] Keep the local cache safety tests passing: cookie/auth bypass, search and
+  unknown query bypass, unsafe header/status bypass, and cache-key isolation.
+  (Storefront suite: 23 files / 96 tests passed on `2549742`.)
+- **Blocked (2026-10-03):** the live two-request check could not run because the
+  Claude Code session's network policy denies `trynext.shop:443`. Allow the host
+  in the environment's network settings, or run it elsewhere. A request such as
+  `/api/products?limit=4&includeTotal=false` uses only allowlisted parameters.
+- [ ] After the explicitly requested live push, send the same safe public
+  catalog request twice to the actual production domain and record response status,
+  cache headers, origin routing, and whether the second request is a hit.
+- [ ] Verify authenticated and user-specific requests remain uncached.
+- [ ] Do not edit Cloudflare settings to mask a code-level miss without evidence.
+
+### D. Decide the release boundary
+
+- [x] Review the source delta against `New-Trynext/main`; prepare a clean transfer
+  from the verified target tree rather than replaying the local commit history.
+- [x] Exclude all 27 `attached_assets/` paths and Replit-local `.agents/memory`
+  notes from the candidate. The reviewed candidate contains 54 files, with no
+  high-confidence credential patterns detected.
+- [x] Use `georgelsmith333-hub/New-Trynext` as selected by the owner. Its
+  verified `main` tip was `80dbab30692b9e5f202cf9a01594b6abb7981c78`.
+- [x] Preserve the Smart v10.3 accepted runtime and all existing mockup
+  approval/provenance gates.
+- The owner explicitly requested a live push to `New-Trynext`; this
+  authorizes a reviewed production push only after all required release checks
+  pass. It does not authorize pushing local history wholesale.
+- [x] Exclude pasted conversation files and customer screenshots from the
+  transfer branch. Never include secrets or credentials.
+- Do not change provider settings, production data, or database schema under
+  this push authorization.
+
+### E. Reconcile the older repository
+
+- [x] Compare the trees of `New-Trynext` and `trynext-lifestyle`.
+- [x] Confirmed the older repo's only code-only path missing from the newer repo
+  is its Studio V2 3D viewer. The current newer Studio does not import it, so do
+  not copy the stale viewer or old screenshots.
+- [x] Keep the newer repo's current Studio and Smart v10.3 runtime. Copy nothing
+  from the older repository unless a current dependency or regression proves it
+  necessary.
+
+### F. Make API validation checks database-independent
+
+- [x] Reproduced the GitHub API-check failure without database environment
+  variables: a pure validation test imported the full API route.
+- [x] Isolated the pure validator and confirmed all API tests pass without any
+  database URL configured.
+
+## Project-wide completion inventory
+
+This inventory is an **audit checklist**, not a claim that each item is broken.
+For every line, inspect current implementation and tests, then record one of:
+`VERIFIED`, `PARTIAL`, `BLOCKED`, `NOT APPLICABLE`, or `UNVERIFIED`. Fix only
+confirmed gaps in an approved scope.
+
+### Customer storefront and commerce
+
+- [ ] Home, shop, category, product details, cart, checkout, account, login,
+  signup, tracking, hampers, reviews, and help pages load and navigate.
+- [ ] Product options, price, availability, inventory, images, SEO, filters,
+  sorting, and pagination use authoritative current data.
+- [ ] Cart and checkout preserve artwork/customization, customer notes, product
+  options, shipping, and order totals from UI through API and admin.
+- [ ] Payment choices and payment numbers are settings-driven and fail safely
+  when unconfigured; no placeholder destination is shown as usable.
+- [ ] COD deposit behavior remains 25% wherever the deposit applies.
+- [ ] Order success, invoice generation/download, refunds, courier/tracking
+  details, and outstanding-balance display are correct.
+- [ ] Auth boundaries, validation/error messages, loading/empty/offline states,
+  and responsive layouts are verified without making real purchases.
+- [ ] Public contact/WhatsApp links read their configured values rather than
+  embedding a phone number in UI code.
+
+### Design Studio and Smart Mockups
+
+- [x] Preserve the accepted Smart v10.3 runtime; do not reactivate legacy
+  Smart v4/v7 assets or mass-activate database templates. (`validate:mockups`
+  accepted; no runtime code references the retired mockup folders.)
+- [x] Confirm the canonical six families: T-shirt, long sleeve, hoodie, mug,
+  cap, and white sublimation water bottle. (Masters: 40 / 50 / 50 / 30 / 16 / 2
+  = 188.)
+- [x] Validate the current canonical 188-surface contract from source code;
+  do not infer colors or surfaces from old documents. (188 surfaces, 1,128
+  runtime roles, all checksums match.)
+- [x] Keep editable PSD/PSB masters outside `public/`. Runtime assets must have
+  verified provenance/checksums and pass their release gates. (0 PSD/PSB files
+  under any `public/`; masters are in `dist-mockups/staging/smart-v10-v3/`.)
+- [x] No fake Smart Object, missing-face fallback, unreviewed asset, or
+  non-canonical/tinted water-bottle variant may be promoted. (188/188 masters
+  contain real Smart Objects. The water bottle is held: its proof shows the print
+  area off-centre, and it needs the owner's visual approval before release.)
+- [ ] Preserve in-browser immediate artwork preview, undo/redo, product-switch
+  refit, original-upload metadata, print-area selection, and cart snapshots.
+  (Partly verified: an uploaded image appears immediately on all five released
+  families at desktop and phone size. Undo/redo, refit and cart snapshots were
+  not re-tested in a browser.)
+- [ ] Verify apparel faces, mug controls, cap front/back, bottle front/back,
+  color resolution, print-zone alignment, current preview/export, and cart flow.
+  (Partly verified: all six families load only canonical v10.3 files with no
+  errors. Bottle faces are held; per-face and per-color alignment, export and
+  cart flow were not re-tested.)
+- [ ] Check the current Studio route before claiming curved products have a
+  customer-facing 3D viewer. The old repository's viewer is not imported by the
+  newer Studio and is outside this transfer unless separately approved.
+- [ ] Any future Smart Mockup release requires the full documented structural,
+  visual, functional, and browser gates before resolver promotion.
+
+### Admin and API
+
+- [ ] Verify admin authentication/session, role and permission checks, and
+  protected API boundaries. Do not add local password/JWT authentication.
+- [ ] Verify admin CRUD and status flows for products, categories, orders,
+  customers, reviews, blog, promos, hampers, referrals, newsletter, and settings.
+- [ ] Check AI/admin assistant data access and provider failure states. Never
+  return secret values in admin tool context, APIs, logs, or this handoff.
+- [ ] Verify admin-design assets are visible in order details when provided.
+- [ ] Verify settings, secrets-management restrictions, rate limits, CSRF/CORS,
+  input validation, output safety, and error responses against current code.
+- [ ] Verify system health, deployment, activity logs, DB cluster, and backup
+  admin screens match the actual API response shapes.
+- [ ] Do not reintroduce the duplicate system-health routes described in
+  `replit.md`.
+
+### Mobile app
+
+- [ ] Verify product browsing, product detail, cart, checkout, account, and
+  Design Studio against the same current API and business settings as web.
+- [ ] Verify custom-design source and `studioDesign`/`originalAssets` metadata
+  survive mobile cart and checkout.
+- [ ] Verify shipping thresholds/costs, payment numbers, and WhatsApp/contact
+  details come from settings where documented.
+- [ ] Check loading/error/empty states, inline checkout validation, touch
+  targets, back navigation, responsive layout, and image/file upload handling.
+- [ ] Verify that mobile shop filters are actually integrated before marking
+  their preview work complete.
+
+### Data, security, reliability, and operations
+
+- [ ] Check DB schema/migrations against the current schema source; never run a
+  destructive migration or convert databases without explicit authorization.
+- [ ] Verify FK/check constraints, indexes, orphan handling, transaction
+  boundaries, and migration history before changing schema.
+- [ ] Preserve the fail-closed backup-sync behavior: source/target checks,
+  schema mismatch failure, and no blind target truncation/auto-healing.
+- [ ] Confirm database primary/failover routing and backup state from current
+  health/admin evidence; do not infer a successful backup from a schedule label.
+- [ ] Verify API readiness/liveness and Redis/storage behavior. Redis may fall
+  back to in-process caching as documented; don't report it as a DB failure.
+- [ ] Verify environment validation and configured deployment origins. Never
+  copy, print, or commit secret values or database URLs.
+- [ ] Check CI/CD, uptime monitoring, error reporting, deployment rollback,
+  and provider usage status. Mark integrations unverified if access is absent.
+- [ ] Investigate the reported Render monthly outbound usage/quota and Neon
+  provider usage/backup retention only if those readings are provided through
+  a secure, authorized account view; never ask for credentials in chat.
+
+### Product-wide quality gates
+
+- [ ] Responsive review at representative mobile, tablet, and desktop sizes.
+- [ ] Keyboard, focus, labels, accessible contrast, reduced motion, and dialog
+  behavior checked for changed user-facing flows.
+- [ ] No fatal console/runtime errors in the verified routes.
+- [ ] Typecheck, focused tests, relevant full tests, and production build pass.
+- [ ] API source changes are rebuilt with the documented API build command and
+  the API workflow is restarted before runtime checks.
+- [ ] Critical-flow smoke checks are used only when non-mutating; avoid real
+  orders, payments, uploads, customer records, or admin mutations.
+- [ ] `git diff --check` passes and no unrelated files or customer attachments
+  are staged.
+
+## Historical tracker reconciliation
+
+Before using the July tracker as an active backlog:
+
+- [ ] Compare `PROJECT_REBUILD_TRACKER/All Tasks Left To Do/PHASES_CHECKLIST.md`
+  with current code, current tests, and this handoff. (Bannered as superseded.
+  Its individual 14-phase boxes were not re-audited one by one; the critical
+  findings behind them were.)
+- [x] Reconcile `CURRENT_AUDIT.md`, `PHASE_2_SECURITY_FIXES.md`,
+  `PHASE_8_DATABASE_SCHEMA.md`, and both Phase 14 notes. These files contain
+  older status values and may contradict later completion evidence. (Superseded
+  banners added; the three open Phase 2 verification tasks were ticked with
+  evidence; the audit's findings were re-checked in `CRITICAL_FINDINGS.md`.)
+- [x] Mark only evidence-supported work done. Convert old, broad items into
+  specific tests or findings; remove duplicates and obsolete instructions.
+  (Done for the critical findings, with a status and evidence per item.)
+- [ ] Do not claim “no TODOs/placeholders anywhere” by running only a text
+  search; inspect matches and classify them before reporting.
+- [x] Keep `CRITICAL_FINDINGS.md` current so confirmed fixed findings are not
+  reintroduced as new work. (See "Reconciliation 2026-10-04".)
+- [x] Preserve the historical files or update them with a clear superseded
+  status; do not silently delete useful audit history. (Nothing deleted.)
+
+## Project map and useful commands
+
+- Storefront and admin: `artifacts/trynex-storefront`
+- API server: `artifacts/api-server`
+- Mobile app: `artifacts/trynext-mobile`
+- Promo experience: `artifacts/trynext-promo`
+- Design system: `artifacts/trynext-lifestyle-design-system`
+- Isolated component preview: `artifacts/mockup-sandbox`
+- DB schema: `lib/db/src/schema/index.ts`
+- OpenAPI spec and generated clients: `lib/api-spec`, `lib/api-client-react`,
+  `lib/api-zod`
+
+Useful checks, subject to the relevant package scripts:
+
+```bash
+pnpm run typecheck
+pnpm run verify:critical-flows
+pnpm --filter @workspace/trynext-storefront run typecheck
+pnpm --filter @workspace/api-server run typecheck
+pnpm --filter @workspace/trynext-mobile run typecheck
+```
+
+- Inspect package scripts before assuming a test command or build target.
+- Do not run the root build as a shortcut if it requires workflow-provided
+  `PORT`/`BASE_PATH`; follow `replit.md` and the artifact workflow setup.
+- After editing API TypeScript, run `node ./build.mjs` from
+  `artifacts/api-server`, then restart its managed workflow before runtime
+  verification.
+- Use the existing managed workflows only. Do not create duplicate services.
+- Keep verification local and read-only unless the owner explicitly approves
+  a production action.
+
+## Safety and release rules
+
+- Never read out, print, paste, commit, or put secrets in logs, prompts, docs,
+  screenshots, or shell output. Refer to secret names only when needed.
+- Never stage or publish user-provided attachments unless they are explicitly
+  part of the approved release.
+- Never push, merge, deploy, mutate Cloudflare/Render/Neon settings, submit an
+  order, or create a payment without separate explicit authorization.
+- The owner's explicit authorization in this handoff covers only the reviewed
+  live push to `New-Trynext`, contingent on all required release checks passing.
+- Do not force-push or guess a repository URL. Fetch and reconcile against the
+  verified canonical remote before any approved publication.
+- Preserve working storefront, authentication, payments, storage, admin,
+  runtime mockups, database failover, and backup behavior.
+- Do not perform broad rewrites just to satisfy the old generic phase checklist.
+- Stop and report exact evidence if a task is blocked; do not make placeholder
+  behavior look complete.
+
+## Required handoff when pausing or finishing
+
+Update `AGENT_HANDOFF.md` and any tracker file whose status changed. State:
+
+- [ ] Status
+- [ ] Last completed
+- [ ] Stopped at
+- [ ] Files/areas changed
+- [ ] Remaining work
+- [ ] Blocker
+- [ ] Next safe action
+- [ ] Verification
+
+In the final response, state what changed, what was preserved, what was
+verified, and what still needs approval or evidence. A successful local build
+does not mean production was changed or verified.
+
+## 2026-10-10 01:30 UTC — Manus S1–S3 live evidence read (docs only; state: local, then PR)
+- Status: Manus S1–S3 evidence landed (`f47c7b8`). Price filter, image weight and health verified live; `/sw.js` is the real worker (no defect).
+- Blocker: live Studio upload still returns a 502 with no message or `[reason]`. The current storage route always sends both, so the 502 did not come from this code: either the primary Render instance is on an older build or Render/edge produced the 502.
+- Next safe action: owner checks the Render primary's deployed commit, Node version and logs around 01:12 UTC, deploys `main` normally if older; Manus captures the failing request's status, content-type, server/cf-ray headers and first 200 body characters. No code change, provider change or data change was made.
+- Verification: read-only review of evidence files and `storageUpload.ts`, `routes/storage.ts`, `functions/api/[[path]].ts`, `vite.config.ts`.
+
+
+## 2026-10-10 03:05 UTC — Manus S1–S3 report and product export read (docs only; local, then PR)
+- Status: Manus S1–S3 sections and `claude/evidence/products-export.csv` landed (`dbc43ed`). Read-only catalog/image audit written to `claude/evidence/catalog-audit-2026-10-10.md`.
+- Findings: 10 products (ids 1–9, 20) use third-party image hosts and look like seed items; everything else in the export is consistent. No code defect.
+- Remaining: live upload 502 (owner checks Render commit/Node/logs; Manus captures failing request headers), Photopea report, real-phone test, bottle approval (`not yet`).
+- Verification: CSV analysed locally with a script; local image files confirmed present. No live, provider, data or schema change.
+
+
+## 2026-10-10 04:35 UTC — Manus R1–R7 read (docs only; on PR branch, not yet merged)
+- Status: R1 and R4 VERIFIED by Manus (`8f43d75`). R2, R3, R5, R6, R7 BLOCKED (no Photopea report, no phone, no dashboard/admin access).
+- Key finding: the live `upload-via-api` 502 is an HTML Cloudflare-style page, so it did not come from the storage route in `main` (that route only sends JSON errors). Likely Render origin or edge failure; local reproduction through the real gateway passes. No code cause found, no code changed.
+- Next safe action: owner opens the Render dashboard for the primary service, notes deployed commit and Node version, reads logs for 04:18 and 01:12 UTC, redeploys `main` normally if older than `7c284f5`, and pastes sanitized lines as R5/R6.
+- Delivery picker (R4) matches intended behaviour. No provider, data or schema change.
+
+
+## 2026-10-10 04:50 UTC — Live upload 502 root cause found (Manus R5/R6); small status-code fix (state: committed on PR branch, not merged)
+- Status: Manus read Render: live `6feed17`, Node 24.14.1, clean start. Both upload attempts failed at the R2 write with `AccessDenied` / 403 (`storage_access_denied`). Root cause is the R2 token/bucket authorization (owner action in Cloudflare R2: Object Read & Write on the configured bucket; account ID, bucket and endpoint must match). No provider setting was changed.
+- Why the reason was invisible: Cloudflare in front of Render replaces an origin 502 body with its own HTML page.
+- Changed: `artifacts/api-server/src/routes/storage.ts` now returns 424 (not 502) for a storage write failure so the JSON reason reaches the browser; tests updated first in `storage.upload.test.ts` and `storageUpload.test.ts` (14 + 9 passing, API typecheck clean).
+- Remaining: owner fixes the R2 token permission, then one harmless Studio upload to confirm. Still blocked: Photopea report, real-phone test, bottle approval (`not yet`).
+
+
+## 2026-10-10 06:40 UTC — Current open list moved to claude/MANUS_TO_DO_REPORTS.md (docs only; state: local, then PR)
+- Status: all repository-side work is merged (last code change #57, 424 status). The live Studio upload still fails because Cloudflare R2 refuses the server-side write (AccessDenied/403). The next action needs dashboard access: give the R2 token Object Read & Write on the configured bucket and match account ID/bucket/endpoint in Render, then one harmless Studio upload (M1, M2).
+- Also open: Render build confirmation (M3), Photopea report (M4), real-phone check (M5), admin log (M6), owner decisions D1–D6.
+- Next safe action: Manus or the owner does M1; Claude acts on each report within minutes.
+
+- 06:45 UTC update: Manus live retest (`635c4f4`) VERIFIED PR #57 is deployed: fallback upload returns 424 JSON `storage_access_denied` and the Studio alert shows `[storage_access_denied]`. Only the Cloudflare R2 write authorization remains (M1, then M2).
+
+
+## 2026-10-12 — Current Claude task queue and report-back loop
+
+- **Status:** docs-only queue reconciliation prepared against `main` `cec19bd77e00f17276c0af987e2dd35e2b6d31a4`; no code or production state changed.
+- **Start here:** read repo-root `claude to do tasks.md` for current M1–M6 and D1–D6 status, completed-work reconciliation, and the append-only `claude/reports.md` relay format.
+- **Completed Claude code scope:** current notes say T7, T9, T8 design/dry run, and PR #57 upload error-reason handling are already merged/completed within their documented scope; do not repeat them.
+- **Remaining:** M1 R2 write permission is owner-only; M2 harmless live upload waits for M1; M3 exact current Render SHA is partial; M4 Photopea evidence, M5 real-phone test, and M6 sanitized Admin Activity Log evidence need access. D1 and D5 need owner decisions/checks. D2 stays `not yet`; D3 and D4 are done; D6 needs no action because there were no open PRs at the latest check.
+- **Blocker:** repository handoff does not itself guarantee Claude polling or wake Manus autonomously. Mark missing evidence `UNVERIFIED`; preserve all no-secret, no-live-migration, no-real-order/payment, water-bottle-hold, and candidate-surface gates.
+- **Next safe action:** after the owner resolves M1, Manus performs M2 once and appends `## Manus report — M2 — YYYY-MM-DD` to `claude/reports.md`; Claude then appends its corresponding report and updates the queue/handoff.
+- **Verification:** GitHub `main` matched the clone at the cited SHA; no open PRs/issues were reported; current report history was reviewed through 2026-10-10. This checkpoint is not a deployment check.
+
+
+## 2026-10-12 — Event-loop activation blocked by connector authorization
+
+- GitHub `commit_created` event discovery found the selected repo and `main` branch filters, but trigger creation failed with `connector(s) not installed for this user: github`. No event trigger is active.
+- Do not describe the report loop as autonomous yet. No webhook, connector change, or scheduled polling fallback was used. The Triggers guidance requires stopping at this authorization failure.
+- **Next action:** owner enables/authorizes the GitHub connector for Triggers through the supported Manus flow; then retry one event trigger filtered to `main` and report-commit subject markers `[Claude report]` / `[Owner report]`. Verify service-confirmed active status. Until then, Manus picks up new reports only when a session resumes; Claude polling is not verified.
+
+
+## 2026-10-11 — Claude reconciled the Manus queue
+
+- Read `claude to do tasks.md` (PR #60/#61) at `main` `8139505`; nothing is READY for Claude. Remaining items are owner/device/admin evidence (M1–M6) and owner decisions (D1, D5). No code, provider or production state changed. The earlier 5-minute loop was session-bound and is not running.
 
 
 ## 2026-10-12 — Manus M1–M6 report checkpoint (PR #63)
