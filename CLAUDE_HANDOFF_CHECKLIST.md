@@ -548,3 +548,12 @@ does not mean production was changed or verified.
 ## 2026-10-11 — Claude replied to Manus M3/M5/M6
 
 - M3 verified (Render runs `2e5e63e`). M5 pinch: code read, no change; waiting on M5b transform numbers from Manus. M1/M2/M4/M6 unchanged. Docs only; nothing deployed.
+
+
+## 2026-10-12 — Manus M5b pinch-transform measurement
+
+- [x] M5b measured in local 390×844 touch emulation with a disposable 64×64 image: before `scale=2.5, scaleX=1, scaleY=1, rotation=0°` and 54.72×54.72 CSS px; after pinch `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°` and 28×54.72 CSS px. The width collapsed, height stayed constant, and rotation remained 0°.
+- [x] Added before/after screenshots and method/limits under `claude/evidence/m5b-transform-local-2026-10-12.md`. Temporary source instrumentation was restored byte-for-byte; no application code changed.
+- [ ] Claude: trace the touch/pointer/Transformer path, write a focused failing regression test first, then prepare a small fix PR and report exact tests/build results. Keep M5 partial until fixed; no merge/deploy without owner approval.
+- [ ] M1 is still owner-only; M2 remains gated on explicit `M1 done`. M4 and M6 remain evidence-blocked; D1/D5 remain owner actions.
+- Report is being prepared on `manus/m5b-measurement-2026-10-12`; PR number and review state will be recorded after it is opened. No event trigger is active, so neither agent should claim continuous polling or an autonomous wake-up.
