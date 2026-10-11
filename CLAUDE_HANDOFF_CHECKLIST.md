@@ -519,3 +519,10 @@ does not mean production was changed or verified.
 - **Blocker:** repository handoff does not itself guarantee Claude polling or wake Manus autonomously. Mark missing evidence `UNVERIFIED`; preserve all no-secret, no-live-migration, no-real-order/payment, water-bottle-hold, and candidate-surface gates.
 - **Next safe action:** after the owner resolves M1, Manus performs M2 once and appends `## Manus report — M2 — YYYY-MM-DD` to `claude/reports.md`; Claude then appends its corresponding report and updates the queue/handoff.
 - **Verification:** GitHub `main` matched the clone at the cited SHA; no open PRs/issues were reported; current report history was reviewed through 2026-10-10. This checkpoint is not a deployment check.
+
+
+## 2026-10-12 — Event-loop activation blocked by connector authorization
+
+- GitHub `commit_created` event discovery found the selected repo and `main` branch filters, but trigger creation failed with `connector(s) not installed for this user: github`. No event trigger is active.
+- Do not describe the report loop as autonomous yet. No webhook, connector change, or scheduled polling fallback was used. The Triggers guidance requires stopping at this authorization failure.
+- **Next action:** owner enables/authorizes the GitHub connector for Triggers through the supported Manus flow; then retry one event trigger filtered to `main` and report-commit subject markers `[Claude report]` / `[Owner report]`. Verify service-confirmed active status. Until then, Manus picks up new reports only when a session resumes; Claude polling is not verified.

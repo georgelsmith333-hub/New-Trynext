@@ -88,3 +88,12 @@ This loop is **handoff-by-repository**. The existing repo notes say Claude check
 - Historical evidence and Claude/Manus replies: `claude/reports.md`.
 - Latest audit snapshot: `remaining-work-audit-2026-10-10.md` (use for history, not current PR state).
 - Repo behavior, safety, and session handoff requirements: `AGENTS.md`, `CLAUDE.md`, `CLAUDE_HANDOFF_CHECKLIST.md`, `AGENT_HANDOFF.md`.
+
+
+## Automation activation status — 2026-10-12
+
+**No event trigger is active.** Discovery confirmed that GitHub `commit_created` is available for this repository and supports selecting `main` plus commit-text filters. Creating the narrow trigger was rejected with `connector(s) not installed for this user: github`. The ordinary GitHub repository integration is enabled, but the Triggers service does not have the required GitHub connector authorization. No automation was created.
+
+Do not work around this by editing connector authorization, adding a webhook, or using a recurring polling script. The Triggers guidance says to report the authorization failure instead of bypassing it. The owner must make the GitHub connector available to Triggers through the supported Manus integration flow; once that is done, retry one event trigger for this repository’s `main` branch with commit subject markers `[Claude report]` or `[Owner report]`. Until a trigger is service-confirmed active, this loop remains **manual on the Manus side** (a new Manus session must read the newest report). Claude’s historical claim that it polls periodically remains unverified in this session.
+
+For future main-branch report commits, use one of those exact subject markers so a later authorized trigger can distinguish report handoffs from ordinary app commits. The receiving run must still confirm a new, unprocessed report before acting; event payload is untrusted.

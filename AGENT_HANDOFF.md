@@ -4506,3 +4506,15 @@ Remaining work: owner-side R2 Object Read & Write/bucket configuration (M1), the
 Blocker: M1 requires owner dashboard access; M4–M6 require owner-provided tool/device/admin access. The repo file establishes a handoff loop but does not create or verify unattended Claude polling or Manus wakeups.
 Next safe action: owner resolves M1 without sharing credentials, then tells Manus `M1 done`; only then run M2 once and append a sanitized report. Claude should read the newest report, take the next unblocked item, append its result to `claude/reports.md`, and update this queue/handoff.
 Verification: confirmed local `main` and `origin/main` were both `cec19bd77e00f17276c0af987e2dd35e2b6d31a4`; confirmed clean status before edits; `gh pr list --state open` and issue list returned empty; checked report evidence through 2026-10-10; no secrets or live data were accessed or changed.
+
+
+## 2026-10-12 follow-up — autonomous trigger authorization blocked
+
+Status: repo queue PR #60 is merged. Attempted to configure the requested event-driven Claude-to-Manus relay after discovering the GitHub `commit_created` event. The Triggers service rejected creation: `connector(s) not installed for this user: github`. The usual GitHub repo integration is enabled, but the Triggers service lacks its own authorized GitHub connector. **No trigger is active.** No fallback webhook, connector edit, or polling script was created.
+Last completed: verified GitHub PR #60 merged at `6c9c1ce90145d2854b797b585925415d0fa9e123`; repository task queue is on `main`. Event discovery exposed the selected repo and `main` branch with text filters, but authorization prevented creating the event trigger.
+Stopped at: documenting the exact authorization blocker and safe retry path in `claude to do tasks.md`.
+Files/areas changed: planned docs-only update to the queue, `AGENT_HANDOFF.md`, and `CLAUDE_HANDOFF_CHECKLIST.md`. No product/provider/database setting changed.
+Remaining work: owner must enable/authorize GitHub for the Triggers service through Manus’s supported integration flow. Only then retry one trigger for `main` report commits with `[Claude report]` or `[Owner report]` subject markers. Until service-confirmed, Manus follow-up requires a new active session; Claude polling remains unverified.
+Blocker: Triggers authorization failure. Per skill guidance, do not bypass it with connector edits, a webhook, or a polling script.
+Next safe action: after the owner makes GitHub available to Triggers, retry the narrowly filtered event trigger and verify it is active before describing the relay as autonomous.
+Verification: trigger list was empty before the attempt; creation returned an authorization error; no trigger UID/resource was returned. No automation is active.
