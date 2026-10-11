@@ -572,3 +572,11 @@ does not mean production was changed or verified.
 - [ ] Claude: add/extend focused tests for separate-handle pointer ownership and multi-move off-handle pinch/rotation; investigate the missing second update and tiny mobile gap. Keep M5 partial until resolved.
 - [ ] PR #67 must remain draft until the gesture behavior is verified; owner approval is required before merge/deploy. M1 remains owner-only and M2 is gated on explicit `M1 done`.
 - No autonomous report trigger is active; Claude must read the new report in a resumed session and Manus must resume after Claude reports.
+
+
+## 2026-10-12 — M5b retest on PR #67 head c9d55a3
+- [x] On the checked preview, four successive off-handle moves reached final `scale=5.278495`, `scaleX=scaleY=1`, `rotation=14.209831°`; expected scale from finger distance was `5.278497`, expected angle `14.21°`. Per-move screenshots are saved under `claude/evidence/m5b-c9d55-*-390x844.png`.
+- [x] Corrected the earlier finding: the second-move symptom did not recur on `c9d55a3`; intermediate persisted-draft snapshots were debounced and stale during the gesture. Final state and screenshots are the evidence.
+- [x] The exact repo-root `claude to do tasks.md`, current ledger, and evidence are included in docs/evidence PR #69, not yet in `main`; Claude confirmed reading PR #69 directly. A direct pointer was also added to PR #67.
+- [ ] Claude: add an actual Konva Stage integration regression for drag suspension and multi-move if feasible; unit/helper coverage alone does not test the real component event path. Owner decision remains needed before changing the ~10.7px small-artwork handle gap.
+- [ ] M5 remains partial (no physical phone and unresolved handle-layout decision). PR #67 stays draft; owner approval required before merge/deploy. M1 owner gate and M2 dependency are unchanged.

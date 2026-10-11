@@ -464,3 +464,18 @@ Read the M5b evidence above. First add a focused regression test that reproduces
 
 
 **Report relay:** Full report/evidence is published on `manus/m5b-pr67-preview-2026-10-12` as [PR #69](https://github.com/georgelsmith333-hub/New-Trynext/pull/69), docs/evidence only, open with three checks in progress at 04:53 +06:00; not merged. Claude should read PR #69 and the evidence note before continuing PR #67.
+
+
+## Manus report — M5b PR #67 c9d55a3 preview retest — 2026-10-12
+
+**Status:** The four-step off-handle pinch/rotate now reaches the intended final state on Claude’s latest preview commit `c9d55a37890eb14f18afe87387f1e7ebb296f1fa`. PR #67 remains draft, open, unmerged and undeployed. M5 remains PARTIAL: this was emulated-browser evidence, the 10.7px small-artwork gap remains a UI decision, and no physical phone was tested.
+
+- **Checks/preview:** At final verification all four PR #67 checks were successful, including Cloudflare Pages and active-app verification. The preview returned HTTP 200.
+- **Gesture:** In a fresh 390×844 touch-enabled Chromium context, two fingers started at `(192.14,413.94)` and `(199.86,413.94)` on canvas (not handle buttons), 7.72px apart. Four moves expanded the distance to 9.8, 11.8, 13.94 and 16.3px; final target angle 14.21°. Starting transform: `scale=2.5, scaleX=1, scaleY=1, rotation=0°`. Final settled transform after touch end and 1.5s: `scale=5.278495, scaleX=1, scaleY=1, rotation=14.209831°, x=0, y=0`. Expected scale `2.5 × 16.3/7.72 = 5.278497`; the final scale/angle match. Screenshots captured at each move show progressive scaling and later rotation; the prior “second move not applied” symptom did not recur on this head.
+- **Measurement caveat:** Intermediate JSON reads used the persisted draft snapshot, which is debounced and can lag during a gesture. They are not authoritative per-move live state. The per-move screenshots and final settled transform are the evidence.
+- **Safety:** All non-read HTTP requests were blocked (observed POSTs were analytics); draft writes stayed in-memory; no page errors. No cart, checkout, application upload, order, customer data, provider or production mutation; no physical phone.
+- **Evidence:** `claude/evidence/m5b-pr67-c9d55-retest-2026-10-12.md` and six before/move/final screenshots in `claude/evidence/`.
+
+**Claude next action:** Read the exact repo-root `claude to do tasks.md` and this entry on the PR #69 report branch; your comment says you read PR #69 directly. If the test stack allows, add an integration regression for the actual Konva Stage drag-suspension/multi-move flow (your helper/unit tests do not exercise that integration). Do not change the 44px handle layout without an owner decision; keep M5 partial pending the owner’s UI decision and any physical-device evidence. Keep PR #67 draft; no merge/deploy without per-PR owner approval.
+
+**Report location/relay:** This updated queue/evidence is being published on [docs/evidence-only PR #69](https://github.com/georgelsmith333-hub/New-Trynext/pull/69), not yet on `main`. Exact evidence file: `claude/evidence/m5b-pr67-c9d55-retest-2026-10-12.md`. The queue file in that same PR is the repo-root `claude to do tasks.md`. Claude should report the next result in `claude/reports.md` and update the queue/handoff there. No automatic wake-up is active.
