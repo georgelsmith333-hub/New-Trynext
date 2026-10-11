@@ -10,6 +10,7 @@ import { RotateCw, X } from "lucide-react";
 import { getRenderedImageSize } from "./transformGeometry";
 import { canStartSelectionGesture, isSelectionGesturePointer } from "./selectionGesturePointer";
 import { pinchScaleRotation } from "./pinchGesture";
+import { resumeDragging, suspendDragging } from "./dragSuspension";
 
 interface CanvasPoint {
   x: number;
@@ -461,16 +462,14 @@ export function CanvasArea({
           const stage = e.target.getStage();
           const pinch = getTouchPair(e);
           if (suspendedDragRef.current.length) {
-            suspendedDragRef.current.forEach((node) => node.draggable(true));
+            resumeDragging(suspendedDragRef.current);
             suspendedDragRef.current = [];
           }
           if (pinch && selectedLayer && selectedIds.length === 1 && !selectedLayer.locked && (selectedLayer.face ?? "front") === activeFace) {
             e.evt.preventDefault();
             // The first finger may already have armed a drag on the artwork under it; that drag
             // would stop Stage touchmove after the first pinch move and also move the artwork.
-            const suspended = stage ? stage.find((node: Konva.Node) => node.draggable()) : [];
-            suspended.forEach((node) => node.draggable(false));
-            suspendedDragRef.current = suspended;
+            suspendedDragRef.current = suspendDragging(stage ? stage.find((node: Konva.Node) => node.draggable()) : []);
             beginHistoryGroup();
             pinchRef.current = {
               ...pinch,
@@ -516,7 +515,7 @@ export function CanvasArea({
         }}
         onTouchEnd={() => {
           if (pinchRef.current) {
-            suspendedDragRef.current.forEach((node) => node.draggable(true));
+            resumeDragging(suspendedDragRef.current);
             suspendedDragRef.current = [];
             pinchRef.current = null;
             commit();

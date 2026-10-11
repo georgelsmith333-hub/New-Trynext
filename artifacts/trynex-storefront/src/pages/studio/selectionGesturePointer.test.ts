@@ -24,3 +24,25 @@ describe("selection gesture pointer ownership", () => {
     expect(isSelectionGesturePointer(null, 1)).toBe(false);
   });
 });
+
+describe("two fingers on two separate handles (M5b preview retest)", () => {
+  it("lets only the first pointer steer the gesture from start to release", () => {
+    let active: { pointerId: number } | null = null;
+    const down = (id: number) => {
+      if (canStartSelectionGesture(active)) active = { pointerId: id };
+    };
+    const up = (id: number) => {
+      if (isSelectionGesturePointer(active, id)) active = null;
+    };
+
+    down(1); // west handle
+    down(2); // east handle: refused
+    expect(active).toEqual({ pointerId: 1 });
+    expect(isSelectionGesturePointer(active, 2)).toBe(false); // its moves are ignored
+    expect(isSelectionGesturePointer(active, 1)).toBe(true);
+    up(2); // releasing the second finger does not end the first gesture
+    expect(active).toEqual({ pointerId: 1 });
+    up(1);
+    expect(active).toBeNull();
+  });
+});

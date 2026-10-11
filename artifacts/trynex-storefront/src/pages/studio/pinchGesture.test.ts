@@ -38,3 +38,20 @@ describe("pinch scale and rotation", () => {
     expect(Number.isFinite(next.scale)).toBe(true);
   });
 });
+
+describe("a pinch that keeps moving (M5b second-move regression)", () => {
+  it("computes every move from the touchstart values, so later moves differ and the last one wins", () => {
+    const begin = { scale: 2.5, rotation: 0 };
+    const startPair = { distance: 8, angle: 0 };
+    const moves = [
+      { distance: 10, angle: 0 },
+      { distance: 12, angle: 0.1 },
+      { distance: 14, angle: 0.2 },
+    ].map((pair) => pinchScaleRotation(begin, startPair, pair));
+
+    expect(new Set(moves.map((m) => m.scale)).size).toBe(3);
+    expect(new Set(moves.map((m) => m.rotation)).size).toBe(3);
+    expect(moves[2].scale).toBeCloseTo(2.5 * (14 / 8), 6);
+    expect(moves[2].rotation).toBeCloseTo((0.2 * 180) / Math.PI, 6);
+  });
+});
