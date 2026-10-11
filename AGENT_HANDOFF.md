@@ -4494,3 +4494,15 @@ The highest-priority unresolved production issue is the live API fallback upload
 - Next safe action: Manus or the owner does M1; Claude acts on each report within minutes.
 
 - 06:45 UTC update: Manus live retest (`635c4f4`) VERIFIED PR #57 is deployed: fallback upload returns 424 JSON `storage_access_denied` and the Studio alert shows `[storage_access_denied]`. Only the Cloudflare R2 write authorization remains (M1, then M2).
+
+
+## 2026-10-12 Manus — Claude queue reconciliation and relay handoff (docs only)
+
+Status: **ready for Claude/owner follow-up; no application code or production state changed.**
+Last completed: inspected the selected GitHub repository at `main` commit `cec19bd77e00f17276c0af987e2dd35e2b6d31a4`; local worktree was clean and matched `origin/main` before these documentation edits. Reviewed Claude's current queue, reports, project instructions, and latest handoff notes. GitHub showed no open PRs or issues on this check.
+Stopped at: published a current, reconciled Claude task queue and report-back protocol in `claude to do tasks.md`; it records only verified evidence and labels remaining access-dependent work as blocked/partial.
+Files/areas changed: new repo-root `claude to do tasks.md`; this handoff note; `CLAUDE_HANDOFF_CHECKLIST.md` appended with this checkpoint. No code, provider, database, catalog, order, payment, or mockup state changed.
+Remaining work: owner-side R2 Object Read & Write/bucket configuration (M1), then one harmless live Studio upload test (M2); exact post-PR-57 Render deployment identity (M3); Photopea report (M4); real-phone Studio test (M5); sanitized Admin Activity Log summary (M6); owner decisions D1/D5. D2 remains `not yet`; D3 and D4 are done within their stated boundaries; D6 has no current open PRs to close. See the new queue for detail and relay format.
+Blocker: M1 requires owner dashboard access; M4–M6 require owner-provided tool/device/admin access. The repo file establishes a handoff loop but does not create or verify unattended Claude polling or Manus wakeups.
+Next safe action: owner resolves M1 without sharing credentials, then tells Manus `M1 done`; only then run M2 once and append a sanitized report. Claude should read the newest report, take the next unblocked item, append its result to `claude/reports.md`, and update this queue/handoff.
+Verification: confirmed local `main` and `origin/main` were both `cec19bd77e00f17276c0af987e2dd35e2b6d31a4`; confirmed clean status before edits; `gh pr list --state open` and issue list returned empty; checked report evidence through 2026-10-10; no secrets or live data were accessed or changed.
