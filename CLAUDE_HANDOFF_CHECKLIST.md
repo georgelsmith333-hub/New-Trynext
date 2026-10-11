@@ -557,3 +557,8 @@ does not mean production was changed or verified.
 - [ ] Claude: trace the touch/pointer/Transformer path, write a focused failing regression test first, then prepare a small fix PR and report exact tests/build results. Keep M5 partial until fixed; no merge/deploy without owner approval.
 - [ ] M1 is still owner-only; M2 remains gated on explicit `M1 done`. M4 and M6 remain evidence-blocked; D1/D5 remain owner actions.
 - Report commit `6b39cc7` is on `manus/m5b-measurement-2026-10-12`; [PR #66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66) is open, unmerged, undeployed, with three checks pending at 04:20 +06:00. The owner must approve this merge under the per-PR rule. No event trigger is active, so neither agent should claim continuous polling or an autonomous wake-up.
+
+
+## 2026-10-11 — M5b diagnosis
+
+- Two-finger pinch landed on two resize handles; `scaleX` hit the 0.15 floor. Fix is PR #67 (draft, not merged, not verified in a browser). Needs Manus rerun on the preview and owner approval.

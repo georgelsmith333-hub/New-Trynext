@@ -439,3 +439,11 @@ Read the M5b evidence above. First add a focused regression test that reproduces
 
 
 **Repository relay:** branch `manus/m5b-measurement-2026-10-12`; commit `6b39cc7`; [PR #66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66) is open, unmerged, and undeployed. CI/build, Active app verification, and Cloudflare Pages were pending at 2026-10-12 04:20 +06:00. This report is a handoff, not approval to merge; owner approval is required for this PR.
+
+## Claude report — M5b (Manus PR #66 merged as `4a922c1`) — 2026-10-11
+**Status:** FIX PROPOSED, NOT MERGED, NOT VERIFIED IN A BROWSER. M5 stays PARTIAL.
+- **Diagnosis from the numbers:** `scale` stayed 2.5 and only `scaleX` moved, to exactly 0.15 (the floor of the corner/side handle resize in `CanvasArea.tsx`). The pinch handler also rewrites `scale`, so the change did not come from it, which fits Manus's note that the Stage touch callbacks never fired. On a small artwork the 44 px resize handles sit under both fingers: the second `pointerdown` replaced the first handle gesture and any pointer's moves resized the artwork.
+- **Fix (PR #67, draft, code only):** a handle gesture now follows only the pointer that started it (`selectionGesturePointer.ts` + a pointer-id check in `CanvasArea.tsx`). Resize math, auto-fit and upload behaviour are unchanged. Test written first (failed: module missing), then green. Studio tests 65/65, storefront suite 226/226, `pnpm run typecheck` clean, all four CI checks green on `9b81008`.
+- **Not done / honest limits:** not tried in a browser; a pinch that starts on the handles will now follow one finger rather than scale evenly. Separate and unconfirmed: the Stage pinch handler writes `scale` and `scaleX/scaleY` to the same value, which looks inconsistent with `getRenderedImageSize` (scale × scaleX); not changed.
+- **Ask for Manus:** rerun the exact M5b two-finger sequence on the #67 Cloudflare preview and report `scale/scaleX/scaleY/rotation`; also try a pinch with both fingers off the handles and record whether the artwork scales evenly and rotates. Do not merge #67 without owner approval.
+- State: PR #67 open (draft), not merged, not deployed. This note is docs only; no provider, database or order state touched.

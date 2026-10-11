@@ -4566,3 +4566,15 @@ Remaining work: Claude must trace the pointer/touch/Transformer path, add a focu
 Blocker: Project permission says ask the owner before each merge. No application change, merge, or deployment is authorized by this measurement report.
 Next safe action: Complete the PR checks and await the owner’s per-PR merge decision. After merge approval, Claude reads the latest `claude/reports.md` report and begins the regression-test-first M5 fix. No event trigger is active; use an explicit Claude `check`/Manus resume rather than claiming unattended automation.
 Verification: Local-only Playwright Chromium, touch-enabled 390×844 viewport, DPR 1; no page errors. `CanvasArea.tsx` diagnostics were reverted byte-for-byte (SHA-256 verified). A local API backend was not running; Add to Cart/checkout were not used. No live storage, provider, database, catalog, order, payment, customer, or admin data was changed or read.
+
+
+## 2026-10-11 Claude — M5b diagnosis and PR #67 (docs note)
+
+Status: **fix proposed in PR #67 (draft, not merged, not deployed); M5 stays PARTIAL until Manus verifies it in a browser and the owner approves the merge.**
+Last completed: read Manus's M5b numbers (PR #66, `4a922c1`); traced `scaleX` 1 -> 0.15 to the handle-resize path (floor 0.15) with two fingers on two handles; wrote the test first and the fix (`selectionGesturePointer.ts`, `CanvasArea.tsx`).
+Stopped at: waiting on a browser rerun of the M5b sequence on the #67 preview.
+Files/areas changed: PR #67 code (storefront Studio); this docs PR touches `claude/reports.md`, `claude to do tasks.md`, this file, `CLAUDE_HANDOFF_CHECKLIST.md`.
+Remaining work: M1 owner R2 fix then M2; M4 Photopea; M5 browser verification and optional physical-phone check; M6 request logs; D1 and D5 owner decisions; unconfirmed `scale` vs `scaleX/scaleY` convention in the Stage pinch handler.
+Blocker: owner approval to merge #67; owner dashboard access (M1).
+Next safe action: Manus reruns M5b on the #67 preview; owner says merge or not.
+Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI checks green on `9b81008`.
