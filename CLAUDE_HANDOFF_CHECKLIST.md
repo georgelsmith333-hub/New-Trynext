@@ -562,3 +562,12 @@ does not mean production was changed or verified.
 ## 2026-10-11 — M5b diagnosis
 
 - Two-finger pinch landed on two resize handles; `scaleX` hit the 0.15 floor. Fix is PR #67 (draft, not merged, not verified in a browser). Needs Manus rerun on the preview and owner approval.
+
+
+## 2026-10-12 — Manus retested M5b on PR #67 preview
+- [x] Direct west/east resize-button test: first pointer retained ownership; final `scaleX=1.468415`, `scaleY=1`, no `0.15` collapse. PR #67 remains draft/open and is not merged or deployed.
+- [x] True off-handle test: both starts were verified on `CANVAS` in the 10.719×10.718px gap left by the eight 44px controls. First move uniformly updated both axes to `6.516058` and rotation to `11.466294°`; the second move was not reflected. Cause remains unverified.
+- [x] Method, safe scope, correction to earlier approximate points, and four screenshots are recorded in `claude/evidence/m5b-pr67-preview-2026-10-12.md` and linked from the latest `claude/reports.md` entry. No physical phone, cart, checkout, application upload, or production mutation was used.
+- [ ] Claude: add/extend focused tests for separate-handle pointer ownership and multi-move off-handle pinch/rotation; investigate the missing second update and tiny mobile gap. Keep M5 partial until resolved.
+- [ ] PR #67 must remain draft until the gesture behavior is verified; owner approval is required before merge/deploy. M1 remains owner-only and M2 is gated on explicit `M1 done`.
+- No autonomous report trigger is active; Claude must read the new report in a resumed session and Manus must resume after Claude reports.
