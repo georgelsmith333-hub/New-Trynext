@@ -1,8 +1,8 @@
 # Claude To-Do Tasks and Report-Back Loop
 
-**Prepared:** 2026-10-12 03:29 +06:00
+**Prepared:** 2026-10-12 04:20 +06:00
 **Repository:** `georgelsmith333-hub/New-Trynext`
-**Snapshot checked:** `main` at `2e5e63eda6d06800e15b2291225eff615d948849` (`origin/main` matched; PR #62 merged). Current report/evidence PR: [#63](https://github.com/georgelsmith333-hub/New-Trynext/pull/63), open and intentionally unmerged.
+**Snapshot checked:** `main` at `f784997237c059c933c8fd781473a8e4ae49079e` (`origin/main` matched; PR #64 merged). PR #63 is merged; current M5b docs/evidence handoff is [PR #66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66), open from `manus/m5b-measurement-2026-10-12` with three checks pending at 04:20 +06:00.
 **Purpose:** one concise entry point for Claude’s next safe work and the Manus ↔ Claude report loop. This is a repository handoff document, **not** a background scheduler or proof that either agent is polling continuously.
 
 ## Start here
@@ -14,11 +14,11 @@
 
 ## Verified project snapshot and completed work
 
-- The checkout was clean on `main`; local `HEAD` and GitHub `origin/main` both resolved to `cec19bd77e00f17276c0af987e2dd35e2b6d31a4`.
-- GitHub reported **no open pull requests** and **no open issues** before this report PR was opened on 2026-10-12. PR #63 is the current docs/evidence handoff and must remain open for review; it does not revive the stale D6 close-list (#13, #15, #20, #21, #23, #40).
-- Existing project reports say all currently identified repository-side code work is merged. No fresh code defect was established in this review. Claude should wait for new evidence or a newly authorized code task rather than inventing more implementation work.
+- The checkout was clean on `main` at `f784997237c059c933c8fd781473a8e4ae49079e`; GitHub `origin/main` matched after PR #64 merged.
+- PR #63 (the prior M1–M6 docs/evidence handoff) and PR #64 are merged. PR #63 never revived the stale D6 close-list (#13, #15, #20, #21, #23, #40); this M5b reply is the current follow-up on a new docs/evidence branch.
+- Existing project reports say prior repository-side code work is merged. New M5b evidence now establishes a reproducible pinch defect: the image’s `scaleX` collapses while `scale` and `scaleY` remain unchanged. Claude should write the focused failing regression test first, trace the actual touch/pointer/Transformer path, and make only the smallest verified fix.
 - The live upload failure remains the substantive product blocker: the latest recorded harmless Studio attempt (2026-10-10, after PR #57) showed `storage_access_denied`; the API fallback returned 424 JSON and surfaced the reason, but the cart stayed empty. Render logs attributed the failed write to Cloudflare R2 `AccessDenied` / HTTP 403. This is an owner-controlled bucket/token/environment configuration issue, not evidence for another code patch.
-- **M3 is now verified:** current live Render commit is `2e5e63eda6d06800e15b2291225eff615d948849`, which includes PR #57; the deployment succeeded, Node is `v24.14.1`, and startup logged `Server listening`. Evidence is in `claude/evidence/m3-render-current-2026-10-12.md`.
+- **M3 is verified:** current live Render commit is `2e5e63eda6d06800e15b2291225eff615d948849`, which includes PR #57; the deployment succeeded, Node is `v24.14.1`, and startup logged `Server listening`. Evidence is in `claude/evidence/m3-render-current-2026-10-12.md`.
 - Already completed/merged: T7 order transitions and one-time stock restoration (PR #38), T9 artwork-size restoration on product switching (PR #39), T8 idempotency migration plan and throwaway dry run (design only), and the storage-failure 424 reason-code change (PR #57). Do not redo these. No live schema migration was run.
 - Existing read-only work already reported: S2 public checks; R1 live upload failure/reason capture; R4 required division → district → area checkout picker; R5 Render runtime/startup evidence; R6 sanitized Render storage failure logs. Do not rerun without a reason.
 
@@ -32,20 +32,20 @@ Status meanings: **READY** = can be done now with authorized access; **BLOCKED�
 | **M2 — Live Studio upload retest** | **WAITING ON M1** | Only after the owner says M1 is done: use one harmless 64×64 PNG on a T-shirt, click Add to Cart once, capture cart count, exact alert, HTTP status and content type; remove any temporary cart item; stop before checkout. | Manus/owner with live Studio access; Claude records/follows up |
 | **M3 — Render release identity** | **DONE (verified 2026-10-12)** | Current live commit `2e5e63eda6d06800e15b2291225eff615d948849` includes PR #57; deploy `dep-db5vau95efls73b3eq00` succeeded; Node `v24.14.1`; `Server listening` logged. See `claude/evidence/m3-render-current-2026-10-12.md`. | — unless release changes |
 | **M4 — Photopea visual validator evidence** | **BLOCKED—OWNER/TOOL** | No report/hash list exists. Keep the 94 side-view and mug-wrap surfaces `candidate`; the structural validator is not a substitute. | Owner/operator with Photopea evidence |
-| **M5 — Mobile Studio check** | **PARTIAL—EMULATOR** | 390×844 Android mobile emulation: preview, drag, dedicated rotate, Back switch, and Select-tool page scroll worked. Pinch narrowed artwork non-uniformly without rotating; Claude read the code (2026-10-11) and needs M5b: the layer `scale`/`scaleX`/`scaleY`/`rotation` and on-screen size before and after one pinch, then writes the failing test first. Add-to-Cart remains blocked by M1 (`storage_access_denied`/424); no checkout. See M5 evidence and screenshots. No physical phone was tested. | Claude investigates pinch; owner may provide phone for extra confirmation |
+| **M5 — Mobile Studio check** | **PARTIAL—M5b MEASURED** | Local 390×844 emulation with a disposable 64×64 image: before `scale=2.5, scaleX=1, scaleY=1, rotation=0°`, frame 54.72×54.72 CSS px; after pinch `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°`, frame 28×54.72 px. Stage touch-callback logs did not fire; Claude should trace the actual event path, write a failing regression test first, then a small fix PR. Evidence: `claude/evidence/m5b-transform-local-2026-10-12.md`. Previous Add-to-Cart failure remains gated on M1 and is not M2. No physical phone was tested. | Claude (test/fix); owner approval before merge/deploy |
 | **M6 — Admin Activity Log review** | **PARTIAL—HISTORICAL REQUEST LOGS UNAVAILABLE** | Current sanitized live health: 7 requests / 2 4xx / 0 5xx in a process-local 60-minute window. Render exposes only `app` and `build` logs, no `request` rows; no seven-day operational incident events returned. Seven-day route/status/release/time/customer-impact grouping remains unverified; do not claim no errors. See `claude/evidence/m6-admin-health-2026-10-12.md`. | Owner/provider log access or supported request-log source |
 | **D1 — Third-party product images** | **BLOCKED—OWNER DECISION** | Decide for products 1–9 and 20: replace with first-party images, hide, or keep. No live catalog edits before a decision and reviewed change plan. | Owner |
 | **D2 — Water-bottle print area** | **CURRENT DECISION: `not yet`** | Preserve the customer-order hold. Do not promote bottle masters or templates. | No action until owner changes the decision and evidence is reviewed |
 | **D3 — Contact-message destination** | **DONE** | Activity Log is sufficient for now; Telegram/email remain unconfigured. Do not revisit absent a new owner decision. | — |
 | **D4 — T8 idempotency preparation** | **DONE—DESIGN/DRY RUN ONLY** | Plan, reversible SQL, collision query, rollback, and throwaway dry run are already recorded. Never execute against a live database without separate explicit approval for that exact migration. | — until a new explicit approval |
 | **D5 — GitHub token security** | **OWNER CHECK NEEDED** | Historical repo notes flag a pasted GitHub token as potentially compromised. Whether it was revoked/rotated is not evidenced in the files reviewed. Owner should verify/revoke in GitHub settings; do not search for, reproduce, or share the token. | Owner |
-| **D6 — Close stale PRs** | **NO ACTION** | Old close-list (#13, #15, #20, #21, #23, #40) remains superseded. Current report PR #63 is open for review and must not be closed as stale. | — |
+| **D6 — Close stale PRs** | **NO ACTION** | Old close-list (#13, #15, #20, #21, #23, #40) remains superseded. PR #63 is merged and was never part of that list; do not target it for closure. | — |
 
 ### Priority order
 
 1. Owner resolves **M1** in secure dashboards; no credentials or provider changes by Claude/Manus under this task.
 2. After an explicit “M1 done” signal, perform **M2** once and record the exact result. The M5 emulator Add-to-Cart failure does not satisfy this gate.
-3. Claude investigates the M5 pinch mismatch with a focused regression test; M4 and the historical M6 request-log gap remain evidence blockers. M3 is already verified.
+3. Claude handles M5b: write a focused failing regression test, trace the touch/pointer/Transformer path, then prepare a small fix PR; request owner approval before merge/deploy. M4 and the historical M6 request-log gap remain evidence blockers. M3 is already verified.
 4. Ask/record **D1** and **D5** only as owner decisions/actions. D2–D4 and D6 are already settled as stated above.
 5. Claude should do code work only if a new report establishes a repository-level defect; test first, preserve behavior, use a focused branch/PR, and follow the project’s merge/release safeguards.
 
@@ -88,7 +88,6 @@ This loop is **handoff-by-repository**. The existing repo notes say Claude check
 - Historical evidence and Claude/Manus replies: `claude/reports.md`.
 - Latest audit snapshot: `remaining-work-audit-2026-10-10.md` (use for history, not current PR state).
 - Repo behavior, safety, and session handoff requirements: `AGENTS.md`, `CLAUDE.md`, `CLAUDE_HANDOFF_CHECKLIST.md`, `AGENT_HANDOFF.md`.
-
 
 ## Automation activation status — 2026-10-12
 

@@ -4554,3 +4554,15 @@ Remaining work: M1 owner R2 fix then M2; M4 Photopea; M5b numbers then failing t
 Blocker: owner dashboard access (M1); Manus emulator numbers (M5b).
 Next safe action: Manus posts M5b; Claude writes the failing test first.
 Verification: docs only; `git diff --check`.
+
+
+## 2026-10-12 — M5b local pinch-transform measurement (Manus)
+
+Status: **M5b measurement complete; docs/evidence-only PR #66 is open for review.**
+Last completed: Reproduced the M5 pinch in a local 390×844 mobile-emulated storefront with a disposable 64×64 PNG. Before: `scale=2.5, scaleX=1, scaleY=1, rotation=0°`, visible frame 54.72×54.72 CSS px. After one pinch: `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°`, visible frame 28×54.72 CSS px. The width collapsed, height stayed constant, and no rotation occurred.
+Stopped at: Report commit `6b39cc7` is pushed on `manus/m5b-measurement-2026-10-12`; [PR #66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66) is open, unmerged and undeployed. Three checks were pending at 2026-10-12 04:20 +06:00. No code fix was made.
+Files/areas changed: `claude/reports.md`, `claude/MANUS_TO_DO_REPORTS.md`, repo-root `claude to do tasks.md`, `claude/evidence/m5b-transform-local-2026-10-12.md`, the before/after 390×844 screenshots, and this handoff/checklist.
+Remaining work: Claude must trace the pointer/touch/Transformer path, add a focused failing regression test first, then prepare the smallest source-of-truth fix and report focused tests, storefront tests, typecheck, and build. M1 remains owner-only; do not run M2 without explicit `M1 done`. M4 Photopea evidence and M6 historical request logs remain unavailable; D1/D5 remain owner actions.
+Blocker: Project permission says ask the owner before each merge. No application change, merge, or deployment is authorized by this measurement report.
+Next safe action: Complete the PR checks and await the owner’s per-PR merge decision. After merge approval, Claude reads the latest `claude/reports.md` report and begins the regression-test-first M5 fix. No event trigger is active; use an explicit Claude `check`/Manus resume rather than claiming unattended automation.
+Verification: Local-only Playwright Chromium, touch-enabled 390×844 viewport, DPR 1; no page errors. `CanvasArea.tsx` diagnostics were reverted byte-for-byte (SHA-256 verified). A local API backend was not running; Add to Cart/checkout were not used. No live storage, provider, database, catalog, order, payment, customer, or admin data was changed or read.

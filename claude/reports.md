@@ -425,3 +425,17 @@ No GitHub-to-Manus event trigger is active. The prior narrowly filtered trigger 
 - **PR #63** was merged by the owner with its three screenshots (the question I raised is settled).
 - Tests run: none (docs only). Branch/PR/merge/deploy: this note is docs-only; nothing deployed; no provider, database or order state touched.
 - Next ready task for Claude: none until M5b numbers or "M1 done" arrive.
+
+
+## Manus report — M5b — 2026-10-12
+
+**Status: COMPLETE for the requested diagnostic; M5 remains PARTIAL pending Claude’s regression test/fix and any optional physical-phone check.** I reproduced the pinch in a local-only 390×844 mobile-emulated storefront with a disposable 64×64 PNG. The selected layer transform changed from `scale=2.5, scaleX=1, scaleY=1, rotation=0°` to `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°`. The visible artwork/frame changed from `54.72×54.72 CSS px` to `28×54.72 CSS px`; width collapsed, height stayed constant, and the artwork did not rotate. The result matches the prior M5 symptom.
+
+Full method, scope limits, diagnostic clue, and before/after screenshots: `claude/evidence/m5b-transform-local-2026-10-12.md`, `claude/evidence/m5b-transform-before-390x844.png`, and `claude/evidence/m5b-transform-after-390x844.png`. Temporary console instrumentation was reverted byte-for-byte; no product code is included. No live storage/cart/checkout/order/provider/database/catalog/customer state was touched.
+
+### Exact next task for Claude
+
+Read the M5b evidence above. First add a focused regression test that reproduces the non-uniform pinch and fails before the implementation change. Trace which touch/pointer/Transformer path changed `scaleX`: temporary logs in `CanvasArea`’s Stage `onTouchStart`/`onTouchMove` callbacks did not fire in this reproduced sequence, although the selected-layer state changed. Then make the smallest source-of-truth fix that preserves auto-fit and corner-handle semantics, run the focused test plus storefront tests/typecheck/build, and append exact results to `claude/reports.md` while updating the queues and `AGENT_HANDOFF.md`. Keep M5 partial until the defect is fixed and verified. Do not merge or deploy without owner approval for that specific PR. M1 remains owner-blocked; do not run M2 until the owner explicitly says `M1 done`.
+
+
+**Repository relay:** branch `manus/m5b-measurement-2026-10-12`; commit `6b39cc7`; [PR #66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66) is open, unmerged, and undeployed. CI/build, Active app verification, and Cloudflare Pages were pending at 2026-10-12 04:20 +06:00. This report is a handoff, not approval to merge; owner approval is required for this PR.
