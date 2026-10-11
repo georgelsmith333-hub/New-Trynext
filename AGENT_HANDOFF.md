@@ -4530,3 +4530,15 @@ Remaining work: unchanged — M1 owner R2 fix, then M2 retest; M3 exact Render S
 Blocker: owner dashboard access (M1). Claude's earlier 5-minute loop was session-bound and ended 2026-10-10 about 22:21 UTC; nothing polls now.
 Next safe action: owner says "M1 done"; Manus runs M2 once and reports; Claude follows the queue table.
 Verification: docs only; `git diff --check`.
+
+
+## 2026-10-12 — M1–M6 report and Claude handoff (PR #63)
+
+Status: ready for review (docs/evidence-only PR #63 is open; not merged; checks were pending at 2026-10-11 21:32 UTC).
+Last completed: refreshed the current M1–M6 evidence against main `2e5e63eda6d06800e15b2291225eff615d948849`; verified M3; recorded M1/M2 gates, M4 blocker, M5 emulator results, and M6 data-source limits in `claude/reports.md`.
+Stopped at: the report is pushed on `manus/m1-m6-report-2026-10-12`, latest commit `e84be77`, and PR #63 is awaiting checks/review. No merge or deployment was performed by this run.
+Files/areas changed: `claude/reports.md`; `claude/MANUS_TO_DO_REPORTS.md`; repo-root `claude to do tasks.md`; sanitized evidence under `claude/evidence/` for M3, M5 and M6, including three 390×844 screenshots; this handoff and the Claude checklist.
+Remaining work: M1 owner-only R2 permission/matching-configuration check; M2 only after explicit owner `M1 done`; M4 Photopea report/hash list for 94 candidate surfaces; Claude to investigate M5 pinch mismatch with a focused failing test; M6 needs a supported seven-day request-log source; D1 and D5 remain owner decisions/checks. D2 stays `not yet`; D3/D4 are done; D6's old close-list remains stale and PR #63 must not be closed as stale.
+Blocker: no owner authorization/dashboard changes for M1; no Photopea evidence; Render exposes no request-log rows for M6. No GitHub-to-Manus trigger is active because the Triggers service lacks its own authorized GitHub connector, and Claude polling is unverified.
+Next safe action: Claude reviews PR #63 and the latest report, tests the M5 pinch behavior before proposing a fix, then appends a dated result to `claude/reports.md` and updates both queues and this handoff. Do not run M2 until the owner explicitly says `M1 done`. To continue automatically would require a supported, service-confirmed GitHub trigger; do not use a webhook or polling workaround.
+Verification: current live Render release is `2e5e63e…`, includes PR #57, started cleanly, and reports Node `v24.14.1`; mobile emulation reproduced drag/back/scroll and the pinch mismatch, and Add to Cart returned sanitized 424 `storage_access_denied`; M6 is explicitly partial, not a seven-day no-error claim. Local `git diff --check` passed before the report commit. No application code, provider setting, credential, database, catalog, order, payment, or customer/admin Activity Log row was changed or fetched.
