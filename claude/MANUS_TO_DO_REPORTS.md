@@ -1,6 +1,6 @@
-# MANUS TO DO REPORTS — what Claude needs next (updated 2026-10-10 06:40 UTC)
+# MANUS TO DO REPORTS — what Claude needs next (updated 2026-10-12 03:29 +06:00)
 
-Claude has finished everything it can do from the repository. What is left needs access Claude does not have (Cloudflare and Render dashboards, a phone, Photopea). This file is the only list. Report each item as `## Manus report — <id>` in `claude/reports.md` (evidence in `claude/evidence/`), push each one as soon as it is done, and Claude picks it up within minutes and acts on it without waiting.
+Claude has finished the prior repository tasks. New evidence is appended to `claude/reports.md`; M3 is now verified, M5 has partial emulator results with a pinch mismatch, and M6 remains partial because seven-day request logs are unavailable. M1 is owner-only; M2 is still gated on an explicit `M1 done`. This file remains the current list. Evidence is in `claude/evidence/`.
 
 ## FOR THE OWNER — the short list (do these in order; everything else is automatic)
 1. **Fix the upload (10 minutes, Cloudflare + Render dashboards).** This is the only thing stopping customers' artwork from saving.
@@ -15,7 +15,7 @@ Claude has finished everything it can do from the repository. What is left needs
    - D4: prepare (not run) the order-protection database migration: yes or no?
    - D6: nothing to do — a 2026-10-12 check found no open PRs, so the old close-list (#13, #15, #20, #21, #23, #40) no longer applies.
 4. **Security (GitHub settings, 2 minutes):** revoke the GitHub token that was pasted in chat earlier (D5).
-5. **Only if you have a phone handy:** open the live Design Studio and try text, drag, pinch, rotate, then Add to Cart (do not check out); tell Manus what happened (M5).
+5. **M5 emulator evidence is recorded.** A physical-phone check is optional; do not repeat Add to Cart until M1 is explicitly done. See `claude/evidence/m5-mobile-emulator-2026-10-12.md`.
 
 Claude does the repository work when a session is started: **message Claude "check" after Manus pushes a report** (there is no background polling now; the earlier 5-minute loop ended 2026-10-10). Claude then reads the report, fixes code with tests, merges when all four checks are green, and keeps this file current.
 
@@ -35,16 +35,16 @@ On `https://trynext.shop/design-studio` upload a 64x64 PNG on a T-shirt and clic
 If it works, Claude records the upload as verified.
 
 ## M3 — Render confirmation of the latest build
-Report the live deploy commit (should be `6dbff52` or newer, which includes the 424 status fix) and confirm the service started cleanly.
+**Status: VERIFIED (2026-10-12).** Current live commit is `2e5e63eda6d06800e15b2291225eff615d948849`, which includes PR #57's 424 fix. Deploy `dep-db5vau95efls73b3eq00` succeeded; Node `v24.14.1`; startup logged `Server listening`. Full evidence: `claude/evidence/m3-render-current-2026-10-12.md`. Do not redeploy or repeat this check unless the release changes.
 
 ## M4 — Photopea validator report
-Save the report (or a hash list) for the 94 side-view and mug-wrap surfaces as `claude/evidence/photopea-validator-report.*`, or write `BLOCKED: no report exists`. The surfaces stay `candidate` until it exists.
+**Status: BLOCKED — no report exists.** No `photopea-validator-report.*` or Photopea hash list is in `claude/evidence/`; the 94 side-view and mug-wrap surfaces stay `candidate` until valid evidence is provided.
 
-## M5 — Real phone check of the Design Studio
-Phone (or a 390x844 emulator): upload the PNG, check the preview fits and scrolls into view, drag, pinch, rotate, switch to the back, scroll the page with the Select tool, tap Add to Cart (do not check out). Report device, browser, what worked and what broke.
+## M5 — Mobile check of the Design Studio
+**Status: PARTIAL — emulator evidence; no physical phone.** In a 390×844 Android emulator, upload preview, drag, dedicated rotate handle, Front→Back, and Select-tool page scroll worked. Two-finger pinch narrowed the frame non-uniformly and did not rotate; Claude should investigate with a focused regression test. Add to Cart still fails with `storage_access_denied` / HTTP 424, so this is not M2. Full results and screenshots: `claude/evidence/m5-mobile-emulator-2026-10-12.md` and linked PNGs.
 
 ## M6 — Admin Activity Log, last 7 days (needs admin login)
-Errors grouped by route, status, release, time and customer impact; sanitized fields only.
+**Status: PARTIAL — historical route-level request logs unavailable.** The sanitized live-health snapshot showed 7 requests / 2 4xx / 0 5xx in its last 60 minutes, but this process-local telemetry is not a seven-day history. Render exposed `app` and `build` log types only, not `request`; no operational failure/restart/suspension events were returned in the seven-day window. The requested seven-day route/status/release/time/customer-impact grouping and customer impact remain unverified. See `claude/evidence/m6-admin-health-2026-10-12.md`; do not claim a week with no errors.
 
 ## Owner decisions (Manus: relay them if the owner gives them; Claude acts on them as soon as they are written down in `claude/reports.md`)
 - **D1** The 10 products with third-party images (ids 1–9 and 20, see `claude/evidence/catalog-audit-2026-10-10.md`): replace with first-party images, hide, or keep.

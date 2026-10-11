@@ -389,3 +389,29 @@ Accepted, thank you. PR #57 is live and working: the fallback upload now answers
 - Correction on the loop: Claude's earlier 5-minute "checks" ran only as scheduled prompts inside one Claude session that ended on 2026-10-10 about 22:21 UTC. They were not a standing process. As Manus noted, no polling is active now. A new Claude session must be started (or told "check") to pick up a report.
 - Branch/commit/PR/merge/deploy: this note is docs-only on a branch from `main`; nothing is deployed and no provider, database or catalog state was touched.
 - Next ready task: none for Claude. Next unblocking event: the owner saying "M1 done", then Manus does M2 once and appends `## Manus report — M2 — <date>`.
+
+
+## Manus report — M1 — 2026-10-12
+**Status: BLOCKED — OWNER ACTION REQUIRED.** The current live health snapshot confirms the API is using the R2 backend and that its R2 configuration flag is present; this is not proof that the configured key can write. The 390×844 M5 test still returned `storage_access_denied` (HTTP 424 JSON) on the upload-via-API fallback. No Cloudflare R2 or Render setting, credential, bucket policy, or environment value was changed. Owner action remains: give the Render-used R2 token Object Read & Write on the intended bucket and verify the R2 account/bucket/endpoint/key pair match, without sharing key values. Evidence: `claude/evidence/m3-render-current-2026-10-12.md` and `claude/evidence/m5-mobile-emulator-2026-10-12.md`.
+
+## Manus report — M2 — 2026-10-12
+**Status: WAITING — NOT RUN.** The owner has not said `M1 done`. The Add-to-Cart click recorded under M5 is only an M5 emulator result and does not satisfy the M2 gate. Do not repeat the live upload until the owner explicitly reports M1 complete; then follow the M2 instructions once and remove any temporary cart item.
+
+## Manus report — M3 — 2026-10-12
+**Status: VERIFIED.** Current Render primary deployment is commit `2e5e63eda6d06800e15b2291225eff615d948849` (deploy `dep-db5vau95efls73b3eq00`, live), which includes PR #57’s 424 storage-failure change. Render reported a successful deployment; the application log said `Server listening`; the live-health runtime was primary / Node `v24.14.1`. No deploy or provider change was initiated by this Manus run. Full evidence: `claude/evidence/m3-render-current-2026-10-12.md`.
+
+## Manus report — M4 — 2026-10-12
+**Status: BLOCKED: no Photopea validator report or hash list exists in `claude/evidence/`.** The 94 side-view and mug-wrap surfaces remain `candidate`; no visual-release gate is being claimed. No master/template was activated. Recheck only when the owner/operator provides the saved Photopea evidence.
+
+## Manus report — M5 — 2026-10-12
+**Status: PARTIAL — emulator evidence captured; physical phone not tested.** In 390×844 Android 14 / Pixel 7 mobile emulation, the local 64×64 image preview, drag, dedicated rotate handle, Front→Back switch, and Select-tool page scroll worked. Two-finger pinch produced a non-uniform narrowing (frame 54.72×54.72 px → 28×54.72 px) with no rotation, so Claude should inspect and add a focused regression test before considering a code fix. Add to Cart failed with the exact `[storage_access_denied]` reason and 424 JSON response; no cart item was created and checkout was not opened. This does not clear M1 or satisfy M2. Full evidence and sanitized screenshots: `claude/evidence/m5-mobile-emulator-2026-10-12.md`, `claude/evidence/m5-mobile-gesture-390x844.png`, `claude/evidence/m5-mobile-pinch-only-390x844.png`, and `claude/evidence/m5-mobile-add-to-cart-424-390x844.png`.
+
+## Manus report — M6 — 2026-10-12
+**Status: PARTIAL.** The authenticated, sanitized live-health endpoint (not Activity Log rows) showed 7 requests / 2 4xx / 0 5xx in its last-60-minute window and no recent 5xx route rows; the process had been up about 31 minutes. Render had no server-failure/restart/suspension events in the exact seven-day window, but its available log types were only `app` and `build`, with no `request` logs. Thus the requested seven-day error grouping by route, status, release, time, and customer impact is **UNAVAILABLE**; customer impact is undetermined and a week-long “no errors” claim is not supported. No customer/admin audit records were retrieved. Details: `claude/evidence/m6-admin-health-2026-10-12.md`.
+
+## Claude — exact next action from this report
+Read this report and the linked M3/M5/M6 evidence. Mark M3 verified; keep M1 owner-blocked and M2 waiting; keep the 94 surfaces candidate for M4; treat M5 as emulator-only and investigate the pinch mismatch in `artifacts/trynex-storefront/src/pages/studio/CanvasArea.tsx` with a focused failing test before changing code; keep M6 partial unless safe seven-day request logs become available. Preserve the no-secrets/no-customer-data/no-order/no-payment/no-provider-change boundaries. Append your response under `## Claude report — <ID> — YYYY-MM-DD` in **`claude/reports.md`**, update `claude/MANUS_TO_DO_REPORTS.md`, `claude to do tasks.md`, and `AGENT_HANDOFF.md`, and state tests, branch, PR, merge, and deployment separately. Do not ask Manus to run M2 until the owner explicitly says `M1 done`.
+
+
+## Report relay status — 2026-10-12
+No GitHub-to-Manus event trigger is active. The prior narrowly filtered trigger attempt was rejected because the Triggers service lacks an authorized GitHub connector; no webhook or polling workaround was created. Pushing or merging this report will **not** start Claude or wake Manus by itself. To continue, start/resume Claude and send `check`; after Claude appends its result to `claude/reports.md`, resume Manus to pick up the next item. See the automation authorization note in `claude to do tasks.md`.

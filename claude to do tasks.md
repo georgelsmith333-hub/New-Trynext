@@ -1,8 +1,8 @@
 # Claude To-Do Tasks and Report-Back Loop
 
-**Prepared:** 2026-10-12 02:19 +06:00
+**Prepared:** 2026-10-12 03:29 +06:00
 **Repository:** `georgelsmith333-hub/New-Trynext`
-**Snapshot checked:** `main` at `cec19bd77e00f17276c0af987e2dd35e2b6d31a4` (`origin/main` matched; worktree clean)
+**Snapshot checked:** `main` at `2e5e63eda6d06800e15b2291225eff615d948849` (`origin/main` matched; PR #62 merged)
 **Purpose:** one concise entry point for Claude’s next safe work and the Manus ↔ Claude report loop. This is a repository handoff document, **not** a background scheduler or proof that either agent is polling continuously.
 
 ## Start here
@@ -18,7 +18,7 @@
 - GitHub reported **no open pull requests** and **no open issues** when checked on 2026-10-12. Therefore the older D6 instruction to close PRs #13, #15, #20, #21, #23, and #40 is stale as an action; do not try to close anything unless a fresh check shows an open PR.
 - Existing project reports say all currently identified repository-side code work is merged. No fresh code defect was established in this review. Claude should wait for new evidence or a newly authorized code task rather than inventing more implementation work.
 - The live upload failure remains the substantive product blocker: the latest recorded harmless Studio attempt (2026-10-10, after PR #57) showed `storage_access_denied`; the API fallback returned 424 JSON and surfaced the reason, but the cart stayed empty. Render logs attributed the failed write to Cloudflare R2 `AccessDenied` / HTTP 403. This is an owner-controlled bucket/token/environment configuration issue, not evidence for another code patch.
-- The API change in PR #57 was confirmed live by that response. A prior Render report recorded commit `6feed17` and Node 24.14.1 with a clean start, but the exact deployed commit after PR #57 was not recorded. M3 below is therefore **partially verified**, not complete.
+- **M3 is now verified:** current live Render commit is `2e5e63eda6d06800e15b2291225eff615d948849`, which includes PR #57; the deployment succeeded, Node is `v24.14.1`, and startup logged `Server listening`. Evidence is in `claude/evidence/m3-render-current-2026-10-12.md`.
 - Already completed/merged: T7 order transitions and one-time stock restoration (PR #38), T9 artwork-size restoration on product switching (PR #39), T8 idempotency migration plan and throwaway dry run (design only), and the storage-failure 424 reason-code change (PR #57). Do not redo these. No live schema migration was run.
 - Existing read-only work already reported: S2 public checks; R1 live upload failure/reason capture; R4 required division → district → area checkout picker; R5 Render runtime/startup evidence; R6 sanitized Render storage failure logs. Do not rerun without a reason.
 
@@ -30,10 +30,10 @@ Status meanings: **READY** = can be done now with authorized access; **BLOCKED�
 |---|---|---|---|
 | **M1 — R2 write permission** | **BLOCKED—OWNER** | In Cloudflare R2, verify the token used by Render has Object Read & Write on the intended bucket; verify the Render account ID, bucket, endpoint, and key pair correspond. Redeploy normally only if an environment value was changed. Record setting names and time only—never values or keys. | Owner with Cloudflare and Render access |
 | **M2 — Live Studio upload retest** | **WAITING ON M1** | Only after the owner says M1 is done: use one harmless 64×64 PNG on a T-shirt, click Add to Cart once, capture cart count, exact alert, HTTP status and content type; remove any temporary cart item; stop before checkout. | Manus/owner with live Studio access; Claude records/follows up |
-| **M3 — Render release identity** | **PARTIAL** | Confirm the exact current Render primary deployed commit (must include PR #57 / the 424 behavior) and clean startup. Earlier `6feed17` / Node 24.14.1 startup evidence predates the recorded live PR #57 retest; the retest proves the 424 behavior was live, but does not identify the exact commit. Do not trigger a deploy unless a confirmed mismatch and normal owner authorization warrant it. | Owner with Render dashboard access |
-| **M4 — Photopea visual validator evidence** | **BLOCKED—OWNER/TOOL** | Provide/save `claude/evidence/photopea-validator-report.*` or a hash list for the 94 side-view and mug-wrap surfaces. Until acceptable saved evidence exists, keep those surfaces `candidate`; the structural validator is not a substitute. | Owner/operator with Photopea evidence |
-| **M5 — Real-phone Studio check** | **BLOCKED—DEVICE** | On a real phone, report model/browser and test upload preview, scroll, drag, pinch, rotate, back/surface switching, Select-tool page scroll, and Add to Cart; do not check out. | Owner with phone; Manus records the result |
-| **M6 — Admin Activity Log review** | **BLOCKED—ADMIN ACCESS** | Provide a sanitized last-seven-days error summary grouped by route, status, release, time, and customer impact. No personal/customer/payment data or secrets. Render upload logs (R6) were already reviewed; this is the separate Admin Activity Log portion. | Owner/operator with admin access |
+| **M3 — Render release identity** | **DONE (verified 2026-10-12)** | Current live commit `2e5e63eda6d06800e15b2291225eff615d948849` includes PR #57; deploy `dep-db5vau95efls73b3eq00` succeeded; Node `v24.14.1`; `Server listening` logged. See `claude/evidence/m3-render-current-2026-10-12.md`. | — unless release changes |
+| **M4 — Photopea visual validator evidence** | **BLOCKED—OWNER/TOOL** | No report/hash list exists. Keep the 94 side-view and mug-wrap surfaces `candidate`; the structural validator is not a substitute. | Owner/operator with Photopea evidence |
+| **M5 — Mobile Studio check** | **PARTIAL—EMULATOR** | 390×844 Android mobile emulation: preview, drag, dedicated rotate, Back switch, and Select-tool page scroll worked. Pinch narrowed artwork non-uniformly without rotating; Claude should investigate with a focused regression test. Add-to-Cart remains blocked by M1 (`storage_access_denied`/424); no checkout. See M5 evidence and screenshots. No physical phone was tested. | Claude investigates pinch; owner may provide phone for extra confirmation |
+| **M6 — Admin Activity Log review** | **PARTIAL—HISTORICAL REQUEST LOGS UNAVAILABLE** | Current sanitized live health: 7 requests / 2 4xx / 0 5xx in a process-local 60-minute window. Render exposes only `app` and `build` logs, no `request` rows; no seven-day operational incident events returned. Seven-day route/status/release/time/customer-impact grouping remains unverified; do not claim no errors. See `claude/evidence/m6-admin-health-2026-10-12.md`. | Owner/provider log access or supported request-log source |
 | **D1 — Third-party product images** | **BLOCKED—OWNER DECISION** | Decide for products 1–9 and 20: replace with first-party images, hide, or keep. No live catalog edits before a decision and reviewed change plan. | Owner |
 | **D2 — Water-bottle print area** | **CURRENT DECISION: `not yet`** | Preserve the customer-order hold. Do not promote bottle masters or templates. | No action until owner changes the decision and evidence is reviewed |
 | **D3 — Contact-message destination** | **DONE** | Activity Log is sufficient for now; Telegram/email remain unconfigured. Do not revisit absent a new owner decision. | — |
@@ -44,8 +44,8 @@ Status meanings: **READY** = can be done now with authorized access; **BLOCKED�
 ### Priority order
 
 1. Owner resolves **M1** in secure dashboards; no credentials or provider changes by Claude/Manus under this task.
-2. After an explicit “M1 done” signal, perform **M2** once and record the exact result.
-3. In parallel when access exists, complete **M3**, **M4**, **M5**, and **M6**. They are evidence tasks, not invitations to fabricate evidence or change production state.
+2. After an explicit “M1 done” signal, perform **M2** once and record the exact result. The M5 emulator Add-to-Cart failure does not satisfy this gate.
+3. Claude investigates the M5 pinch mismatch with a focused regression test; M4 and the historical M6 request-log gap remain evidence blockers. M3 is already verified.
 4. Ask/record **D1** and **D5** only as owner decisions/actions. D2–D4 and D6 are already settled as stated above.
 5. Claude should do code work only if a new report establishes a repository-level defect; test first, preserve behavior, use a focused branch/PR, and follow the project’s merge/release safeguards.
 
