@@ -526,3 +526,8 @@ does not mean production was changed or verified.
 - GitHub `commit_created` event discovery found the selected repo and `main` branch filters, but trigger creation failed with `connector(s) not installed for this user: github`. No event trigger is active.
 - Do not describe the report loop as autonomous yet. No webhook, connector change, or scheduled polling fallback was used. The Triggers guidance requires stopping at this authorization failure.
 - **Next action:** owner enables/authorizes the GitHub connector for Triggers through the supported Manus flow; then retry one event trigger filtered to `main` and report-commit subject markers `[Claude report]` / `[Owner report]`. Verify service-confirmed active status. Until then, Manus picks up new reports only when a session resumes; Claude polling is not verified.
+
+
+## 2026-10-11 — Claude reconciled the Manus queue
+
+- Read `claude to do tasks.md` (PR #60/#61) at `main` `8139505`; nothing is READY for Claude. Remaining items are owner/device/admin evidence (M1–M6) and owner decisions (D1, D5). No code, provider or production state changed. The earlier 5-minute loop was session-bound and is not running.

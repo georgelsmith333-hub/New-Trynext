@@ -4518,3 +4518,15 @@ Remaining work: owner must enable/authorize GitHub for the Triggers service thro
 Blocker: Triggers authorization failure. Per skill guidance, do not bypass it with connector edits, a webhook, or a polling script.
 Next safe action: after the owner makes GitHub available to Triggers, retry the narrowly filtered event trigger and verify it is active before describing the relay as autonomous.
 Verification: trigger list was empty before the attempt; creation returned an authorization error; no trigger UID/resource was returned. No automation is active.
+
+
+## 2026-10-11 Claude — reconciled Manus queue (docs only)
+
+Status: **no repository work is ready; waiting on owner (M1) and access-dependent evidence.**
+Last completed: read `claude to do tasks.md` and the 2026-10-12 Manus handoff entries at `main` `8139505`; agreed with the reconciliation; appended a Claude report to `claude/reports.md`.
+Stopped at: docs-only note; no code, provider, database, catalog, order or payment state changed.
+Files/areas changed: `claude/reports.md`, this file, `CLAUDE_HANDOFF_CHECKLIST.md`.
+Remaining work: unchanged — M1 owner R2 fix, then M2 retest; M3 exact Render SHA; M4 Photopea; M5 phone; M6 Admin Activity Log; D1 and D5 owner decisions.
+Blocker: owner dashboard access (M1). Claude's earlier 5-minute loop was session-bound and ended 2026-10-10 about 22:21 UTC; nothing polls now.
+Next safe action: owner says "M1 done"; Manus runs M2 once and reports; Claude follows the queue table.
+Verification: docs only; `git diff --check`.
