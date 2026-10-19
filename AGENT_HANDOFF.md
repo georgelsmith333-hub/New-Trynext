@@ -4578,3 +4578,21 @@ Remaining work: M1 owner R2 fix then M2; M4 Photopea; M5 browser verification an
 Blocker: owner approval to merge #67; owner dashboard access (M1).
 Next safe action: Manus reruns M5b on the #67 preview; owner says merge or not.
 Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI checks green on `9b81008`.
+
+## 2026-10-19 — Claude audit and owner task note
+
+- Status: repo audited from the Claude workspace; no site code changed.
+- Last completed: merged `origin/main` (`e6c7041`) into `claude/nice-carson-nxjq7q`; full workspace typecheck PASS; wrote `manus to do tasks all main.md` (complete T1-T9 dashboard tasks, D1-D10 decisions, what Claude does after each).
+- Stopped at: waiting on owner/Manus reports; the hourly watcher found no change since 2026-10-12.
+- Files/areas changed: `manus to do tasks all main.md` (new), `AGENT_HANDOFF.md`.
+- Remaining work: everything in the new note (R2 write permission, live upload test, live deploy and cache check, Photopea evidence, real-phone check, admin log, token revoke, decisions).
+- Blocker: Claude workspace cannot reach `trynext.shop` (proxy 403); `scripts/verify-critical-flows.mjs` targets the live site and cannot run here. Live state is UNVERIFIED by Claude.
+- Next safe action: owner or Manus works the note and reports in `claude/reports.md`.
+- Verification: `pnpm run typecheck` passed for all packages. Nothing live was checked.
+- State: local + committed + pushed to the working branch only; not merged, not deployed.
+
+## 2026-10-19 — Claude routing audit and Manus report note
+- Status: no site code changed. Added `manus report.md` (routing audit from source, read-only live-check commands L1-L5, what Claude does when each result lands).
+- Findings: every in-app link has a matching `<Route>`; `_redirects` has the SPA fallback; the API gateway points both write and read roles at one Render service, so an asleep/suspended origin or an old Pages deploy would show an empty catalog. Live state is UNVERIFIED (sandbox cannot reach trynext.shop).
+- Next safe action: Manus runs L1-L5 and writes `## Manus report — L1..L5` in `claude/reports.md`. Claude polls every 5 minutes for 2 hours, then the hourly watcher continues.
+- State: local, committed and pushed to the working branch only (draft PR #70); not merged, not deployed.
