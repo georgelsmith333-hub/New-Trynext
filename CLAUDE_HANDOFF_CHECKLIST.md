@@ -347,8 +347,8 @@ confirmed gaps in an approved scope.
   details come from settings where documented.
 - [ ] Check loading/error/empty states, inline checkout validation, touch
   targets, back navigation, responsive layout, and image/file upload handling.
-- [ ] Verify that mobile shop filters are actually integrated before marking
-  their preview work complete.
+- [x] Mobile shop filters are integrated (`ShopFilterSheet` is used in
+  `artifacts/trynext-mobile/app/(tabs)/shop.tsx`); see section B.
 
 ### Data, security, reliability, and operations
 
