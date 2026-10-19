@@ -9,14 +9,14 @@ Do not assume Claude is polling or that a report automatically starts either age
 - Production liveness is 200, but readiness is 503 (`db=false`, `catalog=false`) and `/api/products` is 500 through both the public gateway and direct Render origin.
 - Both known Neon primary `production` branches (`trynex` and `trynex-db`) are archived. Which one Render targets is unverified. Owner must identify and restore the authoritative branch; no provider change or database query was performed.
 - PR #67 remains open/draft at `c9d55a3` with green checks and awaits the owner’s merge/handle decisions. PR #69 remains open/unmerged at `4255e9a` with green checks.
-- A local recovery branch has safe mobile URL, mockup gate, health-error, activity-log, and backup-setting fixes plus regression tests. It is not yet pushed, merged, or deployed. See `docs/recovery/` and `claude/evidence/phase1-live-evidence-2026-10-20.md`.
+- Recovery branch `manus/recovery-phase1-2026-10-16` is pushed in draft PR #71 at `5d61f91`; local tests pass and CI is pending. It is not merged or deployed. See `docs/recovery/` and `claude/evidence/phase1-live-evidence-2026-10-20.md`.
 - L1 route HTTP delivery was checked; L2/L3 API readiness currently fails; L4 release identities were checked; L5 DevTools/network rendering is UNVERIFIED. Do not treat HTTP 200 routes as proof of a working catalog.
 - M1/R2 and the Neon recovery are owner-only. M2 live upload waits for explicit `M1 done`. M4 Photopea evidence is absent; 94 surfaces remain candidate. M6 seven-day request logs remain unavailable. No real order/payment, checkout, schema migration, or data mutation occurred; preserve 25% advance COD.
 - Reports remain a manual handoff until an authorized trigger is confirmed. See `claude/reports.md` and `docs/recovery/DEPLOYMENT_REPORT.md`.
 
 How to use: do the tasks in order. After each one, write a short report in
-`claude/reports.md` under the heading shown in "Report as". Claude checks that file
-every hour and acts on it automatically.
+`claude/reports.md` under the heading shown in "Report as". No event trigger or
+Claude polling is verified; explicitly resume Claude after a report is pushed.
 
 ## Safety rules (apply to every task)
 - Never paste passwords, tokens, API keys, signed URLs, database URLs, payment numbers or customer data into GitHub, chat or any file. Write names and results only.

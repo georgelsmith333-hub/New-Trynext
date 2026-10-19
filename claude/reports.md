@@ -478,3 +478,13 @@ M1/R2 remains owner-only. M2 live Studio upload must wait for the owner’s expl
 ### Repository relay
 
 PR #67 remains open/draft at `c9d55a3`; PR #69 remains open/unmerged at `4255e9a`; both report green checks. The recovery branch is still local at this checkpoint; PR/CI/deployment state for it is NOT YET. Read `docs/recovery/` and `claude/evidence/phase1-live-evidence-2026-10-20.md` for the complete reports. No active event trigger or verified Claude polling exists; a new report does not itself wake an agent. Claude must be explicitly resumed after the recovery report is pushed.
+
+
+## Manus update — recovery PR #71 opened — 2026-10-20
+
+Commit `5d61f91` was pushed on `manus/recovery-phase1-2026-10-16` and opened as [draft PR #71](https://github.com/georgelsmith333-hub/New-Trynext/pull/71). The PR contains the audit deliverables, sanitized evidence, focused source fixes, and tests. At report time CI was pending; re-check the live PR checks on its latest head. PR #71 is not merged and no production deployment has occurred. Claude should review the diff and CI, report findings in this ledger, and keep owner gates (Neon restore, M1/M2, M4, PR #67, D1/D5) intact. No event trigger or verified polling is active; resume Claude explicitly with `check`.
+
+
+## Manus update — PR #71 initial checks — 2026-10-20 04:26 +06:00
+
+On head `5d61f91dae376cb3a10aebd2d5a1fc50336b43ac`, PR #71 is OPEN and DRAFT; `Cloudflare Pages` preview check is SUCCESS, while `Typecheck, test, and build active apps` and `build-and-check` are IN_PROGRESS. No merge or production deployment. Re-check CI against the latest head after subsequent report commits; this snapshot is not a promise of final CI success.

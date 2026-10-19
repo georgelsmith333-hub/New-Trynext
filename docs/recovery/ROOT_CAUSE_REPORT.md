@@ -24,4 +24,9 @@ The previously reported product-price mismatch, R2 `AccessDenied`, Studio pinch 
 
 ## 4. Safety and release status
 
-All code corrections are local on `manus/recovery-phase1-2026-10-16`, based on main `1d8fb7b…`. No code has been committed or pushed from this branch, and no PR, merge, or deployment exists for these corrections yet. No production data, provider settings, schema, orders, payments, or customer records were changed or accessed.
+All code corrections are on `manus/recovery-phase1-2026-10-16`, based on main `1d8fb7b…`; implementation commit `5d61f91` is pushed in draft PR #71. The PR is not merged or deployed. No production data, provider settings, schema, orders, payments, or customer records were changed or accessed.
+
+
+## Status update — 2026-10-20
+
+The code corrections and reports are now pushed in draft [PR #71](https://github.com/georgelsmith333-hub/New-Trynext/pull/71), implementation commit `5d61f91`. CI was pending at the report timestamp; the PR is not merged or deployed. The database dependency root cause remains operationally unresolved and owner-controlled.

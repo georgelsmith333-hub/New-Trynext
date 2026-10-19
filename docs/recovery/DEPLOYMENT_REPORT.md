@@ -28,7 +28,8 @@ Subsequent public requests from this egress received HTTP 403 at Cloudflare. No 
 - PR #70: merged; CI passed; docs-only.
 - PR #67: open, draft, head `c9d55a3`; CI passed; no owner merge approval; no production deployment.
 - PR #69: open, non-draft, head `4255e9a`; CI passed; not merged.
-- Recovery branch `manus/recovery-phase1-2026-10-16`: local only; no PR or deployment yet.
+- PR #71: open, draft, implementation commit `5d61f91`; required checks were running at 2026-10-20 04:26 +06:00; Cloudflare Pages preview check succeeded. Not merged or production-deployed.
+- Recovery branch `manus/recovery-phase1-2026-10-16`: pushed; no production deployment.
 
 ## Status labels
 

@@ -6,7 +6,7 @@ The latest main commit is `1d8fb7bcde6ab91dbb84c33a802e918d1e3d8322` (PR #70, do
 
 Both known Neon projects (`trynex` and `trynex-db`) currently report their primary `production` branches as archived. This strongly correlates with Render’s database failure, but the exact Render connection target is **UNVERIFIED** because connection values were not inspected. No branch was unarchived, no compute started, and no database contents were queried. Owner action is required to identify the authoritative project and restore it.
 
-A local, uncommitted recovery branch contains five code-level safeguards/fixes: native mobile relative-image URL resolution; fail-closed mockup review-status resolution; storage-health error redaction; activity-log secret redaction; and backup export/import secret-setting filtering. Local checks pass as described in `TEST_REPORT.md`. Nothing from this branch is committed, pushed, merged, or deployed.
+A recovery branch contains five code-level safeguards/fixes: native mobile relative-image URL resolution; fail-closed mockup review-status resolution; storage-health error redaction; activity-log secret redaction; and backup export/import secret-setting filtering. Commit `5d61f91` is pushed in draft PR #71. Local checks pass as described in `TEST_REPORT.md`; PR CI is pending. Nothing from this branch is merged or deployed.
 
 ## Severity-ranked findings
 
@@ -30,9 +30,9 @@ A local, uncommitted recovery branch contains five code-level safeguards/fixes: 
 
 - Pages production deployment: `9cd98a6f-b6e7-4278-9d71-2ba59a456f8d`, commit `1d8fb7b…`, success.
 - Render production deployment: `dep-dbb9553rjlhs73ck7r10`, commit `1d8fb7b…`, live.
-- PR #70 merged. PR #67 remains open/draft; PR #69 remains open/unmerged. Both have green checks.
+- PR #70 merged. PR #67 remains open/draft; PR #69 remains open/unmerged; draft PR #71 contains the recovery branch. PR #67/#69 checks are green; PR #71 checks are running and its Pages preview check succeeded.
 - Main source change in PR #70 was documentation only; the live application source was unchanged by that merge.
-- Current code branch: `manus/recovery-phase1-2026-10-16`, based on main `1d8fb7b…`; local changes are uncommitted and not deployed.
+- Current code branch: `manus/recovery-phase1-2026-10-16`, based on main `1d8fb7b…`; implementation commit `5d61f91` is pushed in PR #71, not merged or deployed.
 - Architecture remains Cloudflare Pages/Functions → Render API → Neon PostgreSQL, with Cloudflare R2 for object storage. Upstash is present in the repository; current quota/usage was not audited. Provider tier limits are account-specific and are not guessed here.
 
 ## Unverified acceptance areas
@@ -41,4 +41,4 @@ Real R2 direct/fallback upload, saved-design persistence, live cart behavior, ch
 
 ## Supporting reports
 
-See `ROOT_CAUSE_REPORT.md`, `IMPLEMENTATION_PLAN.md`, `TEST_REPORT.md`, `DEPLOYMENT_REPORT.md`, `FREE_TIER_ARCHITECTURE.md`, `ROLLBACK_PLAN.md`, and `RELEASE_CHECKLIST.md`. The sanitized live evidence ledger is `claude/evidence/phase1-live-evidence-2026-10-20.md` (to be added in the same recovery PR).
+See `ROOT_CAUSE_REPORT.md`, `IMPLEMENTATION_PLAN.md`, `TEST_REPORT.md`, `DEPLOYMENT_REPORT.md`, `FREE_TIER_ARCHITECTURE.md`, `ROLLBACK_PLAN.md`, and `RELEASE_CHECKLIST.md`. The sanitized live evidence ledger is `claude/evidence/phase1-live-evidence-2026-10-20.md`, included in draft PR #71.

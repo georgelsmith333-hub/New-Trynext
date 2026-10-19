@@ -4,7 +4,7 @@
 
 - `main` is `1d8fb7b…` after PR #70 merged; this was docs-only. Pages and Render report that commit deployed.
 - Production API is not ready: liveness 200, readiness 503 (`db=false`, `catalog=false`), products endpoint 500 through both public gateway and Render origin. Both known Neon primary production branches are archived; Render’s exact target is unverified. Owner must identify and restore the authoritative branch; no provider/database changes were made by Manus.
-- Local code branch `manus/recovery-phase1-2026-10-16` has mobile relative-image handling, fail-closed mockup review status, health-error redaction, activity-log redaction, and backup-setting secret filtering with local tests. It is not yet pushed/merged/deployed. See `docs/recovery/` and `claude/evidence/phase1-live-evidence-2026-10-20.md`.
+- Code branch `manus/recovery-phase1-2026-10-16` is pushed in draft PR #71 at `5d61f91`; local tests pass and CI is pending. It is not merged or deployed. See `docs/recovery/` and `claude/evidence/phase1-live-evidence-2026-10-20.md`.
 - PR #67 remains draft/open at `c9d55a3`; PR #69 remains open/unmerged at `4255e9a`; both have green checks. No owner merge decision is recorded for #67.
 - M1 (R2 permissions) remains owner-only; M2 waits for explicit `M1 done`. M4 Photopea evidence is absent, so the 94 surfaces stay candidate. M5 remains partial without physical-phone validation and the 44px-handle decision. M6 seven-day request logs remain unavailable. L5 browser DevTools remains UNVERIFIED.
 - Bangladesh 25% advance COD, water-bottle hold, no-live-migration, no-order/payment, and no-customer-data boundaries are unchanged. No autonomous report trigger or Claude polling is verified; resume Claude explicitly after this report is pushed.
@@ -13,8 +13,8 @@ The dated entries below remain useful historical evidence; use the checkpoint ab
 
 Historical 2026-10-12 snapshot: Claude had finished the prior repository tasks. M5b was measured locally; M3 was verified; M6 remained partial; M1/M2 were owner-gated. The referenced PR #66 status is historical and must not be treated as current.
 
-## FOR THE OWNER — the short list (do these in order; everything else is automatic)
-1. **Fix the upload (10 minutes, Cloudflare + Render dashboards).** This is the only thing stopping customers' artwork from saving.
+## FOR THE OWNER — the short list (do these in order; remaining work is not automatic)
+1. **Fix the R2 upload permission (10 minutes, Cloudflare + Render dashboards).** This is a separate owner-controlled blocker for Studio uploads; the current API/database outage is also blocking catalog service.
    - Cloudflare R2 dashboard -> your bucket -> API tokens: make sure the token Render uses has **Object Read & Write** on that bucket (create a new token if unsure).
    - Render dashboard -> the API service -> Environment: the R2 account ID, bucket name, endpoint and the access key pair must all belong to that bucket and that token. Do not paste the keys into GitHub or chat.
    - If you changed anything in Render, redeploy the service.

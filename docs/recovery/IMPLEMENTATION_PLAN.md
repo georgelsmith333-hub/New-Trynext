@@ -17,7 +17,7 @@ Current local branch `manus/recovery-phase1-2026-10-16` includes:
 - Activity-log secret redaction before write and on API/rollback responses.
 - Secret-like setting filtering for backup export/import.
 
-Before PR: incorporate independent review findings; run API/storefront/mobile tests, typechecks, builds, mockup validators, `git diff --check`, and security scan/CI. Push one focused PR. **Do not merge or deploy without owner approval for that specific code PR.** The current branch has not yet been pushed.
+Local review and validation are complete; commit `5d61f91` is pushed in draft PR #71. CI is pending. Resolve any CI/review findings in the PR. **Do not merge or deploy without owner approval for that specific code PR.**
 
 ## P1 — R2 upload and Design Studio
 

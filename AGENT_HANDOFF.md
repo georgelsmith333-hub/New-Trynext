@@ -4610,3 +4610,8 @@ Status: **Production API not ready; safe code fixes validated locally; no recove
 - Reports: `docs/recovery/` contains the audit, root-cause, implementation, test, deployment, architecture, rollback, and release-checklist documents. `claude/evidence/phase1-live-evidence-2026-10-20.md` contains sanitized live evidence. This report is prepared for a focused PR; push, CI, merge, and deployment must be stated separately.
 
 Next safe action: finish repo diff review, push the recovery branch and open a draft PR for Claude/owner review; do not merge. Owner’s first operational action is to identify the correct Neon production branch and restore it through the dashboard. No trigger or automatic polling is verified; resume Claude explicitly after the report is pushed.
+
+
+## 2026-10-20 — recovery PR #71 pushed (Manus)
+
+Implementation/evidence commit `5d61f91` is pushed on `manus/recovery-phase1-2026-10-16` as [draft PR #71](https://github.com/georgelsmith333-hub/New-Trynext/pull/71). The PR is not merged or deployed; CI was pending at handoff time and must be checked on the latest head. The current source remains distinct from production. Next safe action: Claude reviews the focused diff and reports the CI/review result in `claude/reports.md`; owner review is required before merge. Preserve the current API/Neon owner blocker and all product/commerce safeguards.

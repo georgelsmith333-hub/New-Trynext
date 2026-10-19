@@ -26,11 +26,11 @@ The full-file Prettier check on all touched legacy API source files reported sty
 
 ## CI / PR
 
-The recovery branch has not yet been pushed, so no CI result exists for these changes. **CI VERIFIED: NOT YET.** PR #67 and PR #69 have their own previously green CI but contain different work.
+Recovery commit `5d61f91` is pushed in draft PR #71. Required CI is pending; **CI VERIFIED: NOT YET.** PR #67 and PR #69 have their own previously green CI but contain different work.
 
 ## Not run / not tested
 
 - The first storefront command used the wrong pnpm filter (`@workspace/trynex-storefront`) and executed no storefront package tests; it was rerun with the correct `@workspace/trynext-storefront` filter and passed.
-- The first backup test harness run failed because its mock returned the wrong blog-post query shape; the mock was corrected. The subsequent full API suite passed at 250/250.
+- The first backup test harness run failed because its mock returned the wrong blog-post query shape; the mock was corrected. The subsequent full API suite passed at 251/251.
 - No Playwright/DevTools L5 test, physical phone, live upload, Add to Cart, checkout, order, payment, private artwork, production DB query, migration, live backup export/import, or R2 test was run.
 - Production liveness/readiness and catalog GETs were separately captured in `DEPLOYMENT_REPORT.md`; readiness/products currently fail and must not be treated as test-suite passes.

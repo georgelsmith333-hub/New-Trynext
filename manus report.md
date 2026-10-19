@@ -9,10 +9,10 @@ No active Manus event trigger is verified, and Claude polling is not verified he
 - Never paste tokens, passwords, signed URLs, database URLs, payment/contact numbers or customer data. Write names and results only.
 - If what you see does not match a step, stop and write what you see. Do not guess.
 
-## 1. What Claude did, and what is NOT done
+## 1. Historical status as of 2026-10-19 (current Manus results are appended below)
 | Item | State |
 |---|---|
-| Plan note `manus to do tasks all main.md` | Written and pushed (draft PR #70). |
+| Plan note `manus to do tasks all main.md` | Written and pushed; PR #70 later merged (docs only). |
 | Site code | **Not changed.** No storefront/API code was edited in this checkpoint. |
 | Deployed / live | **Nothing from Claude is deployed.** Claude cannot open `trynext.shop` from its workspace (proxy returns 403), so live state is UNVERIFIED by Claude. |
 
@@ -93,3 +93,8 @@ Open `https://trynext.shop/products` in a normal browser, open DevTools → Netw
 Readiness’s allowlisted fields were `status=error`, `db=false`, `catalog=false`, `dbLatencyMs=0`, and `runtimeRole=primary`. Both known Neon primary production branches (`trynex`, `trynex-db`) are archived; exact Render target remains unverified. Owner must identify and restore the authoritative database branch. No database state or provider settings changed.
 
 See `claude/reports.md` under this date and `docs/recovery/` for the full audit and tested local fixes. No recovery changes are yet merged or deployed. PR #67 is still draft/open; PR #69 is open/unmerged. There is no verified automatic report trigger or Claude polling; explicitly resume Claude after pushing the recovery handoff.
+
+
+## PR #71 status — 2026-10-20
+
+Recovery commit `5d61f91` is pushed on `manus/recovery-phase1-2026-10-16` as [draft PR #71](https://github.com/georgelsmith333-hub/New-Trynext/pull/71). CI was pending at this report timestamp; re-check the latest head. It is not merged or deployed. No owner approval for merge has been given.
