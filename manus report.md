@@ -73,8 +73,11 @@ Open `https://trynext.shop/products` in a normal browser, open DevTools → Netw
 ## 5. Status table (Claude updates this)
 | Check | Result | By | Time |
 |---|---|---|---|
-| L1 routes |  |  |  |
-| L2 API products |  |  |  |
-| L3 Render origin |  |  |  |
-| L4 deployed hashes |  |  |  |
-| L5 browser network |  |  |  |
+| L1 routes | 200 on sampled pages, `/sitemap.xml` 301 (HTTP only, rendering unverified) | Manus | 2026-10-20 04:00 +06 |
+| L2 API products | liveness 200, readiness 503 (`db=false`), `/api/products` 500 | Manus | 2026-10-20 |
+| L3 Render origin | same as L2 directly on Render: origin reachable, database not | Manus | 2026-10-20 |
+| L4 deployed hashes | Pages `9cd98a6f` and Render `dep-dbb9553rjlhs73ck7r10` both `1d8fb7b` = main (current) | Manus | 2026-10-20 |
+| L5 browser network | UNVERIFIED (no DevTools trace; later requests got Cloudflare 403) | Manus | 2026-10-20 |
+
+## 6. Conclusion so far (Claude, 2026-10-19)
+The routes and deploys are fine. The outage is the database: Neon production branches show as archived and the API reports `db=false`. Owner action N13 in `claude/CLAUDE_NEEDS.md` (restore the Neon production branch). Not a code bug, so no site code change can fix it.
