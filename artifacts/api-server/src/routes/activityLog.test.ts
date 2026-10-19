@@ -4,17 +4,26 @@ import request from "supertest";
 
 let capturedShapes: Array<Record<string, unknown>> = [];
 const rows = [
-  { id: 2, adminId: 1, adminName: "admin", action: "create", entity: "category", entityId: 7, entityName: "Mugs", createdAt: new Date("2026-10-04T10:00:00Z") },
+  {
+    id: 2, adminId: 1, adminName: "admin", action: "create", entity: "category", entityId: 7, entityName: "Mugs",
+    before: { removeBgApiKey: "test-only-secret", title: "Old title" },
+    after: { metaCapiToken: "test-only-token", title: "New title" },
+    createdAt: new Date("2026-10-04T10:00:00Z"),
+  },
 ];
 
 vi.mock("../middlewares/adminAuth", () => ({
   requireAdmin: (_req: unknown, _res: unknown, next: () => void) => next(),
 }));
 
-vi.mock("../lib/activityLog", () => ({
-  logActivity: vi.fn(),
-  getAdminId: () => 1,
-}));
+vi.mock("../lib/activityLog", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/activityLog")>();
+  return {
+    ...actual,
+    logActivity: vi.fn(),
+    getAdminId: () => 1,
+  };
+});
 
 vi.mock("@workspace/db", () => {
   const table = (name: string) => new Proxy({}, { get: (_t, column) => ({ name: `${name}.${String(column)}` }) });
@@ -68,6 +77,8 @@ describe("GET /api/admin/activity-logs", () => {
     const res = await request(app).get("/api/admin/activity-logs?limit=5").expect(200);
     expect(Object.keys(listShape())).toEqual(expect.arrayContaining(["id", "action", "entity", "before", "after"]));
     expect(res.body).toMatchObject({ total: 1, page: 1, limit: 5, logs: [{ id: 2, action: "create", entityName: "Mugs" }] });
+    expect(res.body.logs[0].before).toEqual({ removeBgApiKey: "[REDACTED]", title: "Old title" });
+    expect(res.body.logs[0].after).toEqual({ metaCapiToken: "[REDACTED]", title: "New title" });
   });
 
   it("leaves out the heavy before/after snapshots in summary mode", async () => {

@@ -19,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useColors } from "@/hooks/useColors";
 import { useCart } from "@/context/CartContext";
 import { api, getBaseUrl } from "@/lib/api";
+import { resolveImageUrl } from "@/lib/image-url";
 
 export default function CartScreen() {
   const colors = useColors();
@@ -118,9 +119,13 @@ export default function CartScreen() {
               const isWaterBottle = /\b(water[\s-]?bottle|bottle|tumbler|flask)\b/i.test(
                 `${item.product.name ?? ""} ${item.product.slug ?? ""}`,
               );
-              const imgUri = isWaterBottle
-                ? `${getBaseUrl()}${WATER_BOTTLE_PHOTO_PATH}`
-                : item.product.imageUrl ?? (item.product.images?.[0]) ?? null;
+              const baseUrl = getBaseUrl();
+              const imgUri = resolveImageUrl(
+                isWaterBottle
+                  ? `${baseUrl}${WATER_BOTTLE_PHOTO_PATH}`
+                  : item.product.imageUrl ?? item.product.images?.[0] ?? null,
+                baseUrl,
+              );
               const itemTotal = (item.product.discountPrice ?? item.product.price) * item.quantity;
               return (
                 <View

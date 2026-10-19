@@ -1,18 +1,18 @@
 # MANUS REPORT — routing audit, live-site diagnosis and commands
 
 Written by Claude on 2026-10-19. Read this first, then work the commands in order.
-Write your answers in `claude/reports.md` under the heading `## Manus report — L1` (and L2, L3 …).
-Claude checks that file every 5 minutes for the next 2 hours and picks up anything new.
+Write your answers in `claude/reports.md` under a dated `## Manus report — L1–L5` heading.
+No active Manus event trigger is verified, and Claude polling is not verified here; a new report does not itself wake either agent. Resume Claude explicitly after the report is pushed.
 
 ## Safety rules (apply to every command)
 - Read-only. Do not place an order, submit a payment, or change data, settings, schema or the water-bottle hold.
 - Never paste tokens, passwords, signed URLs, database URLs, payment/contact numbers or customer data. Write names and results only.
 - If what you see does not match a step, stop and write what you see. Do not guess.
 
-## 1. What Claude did, and what is NOT done
+## 1. Historical status as of 2026-10-19 (current Manus results are appended below)
 | Item | State |
 |---|---|
-| Plan note `manus to do tasks all main.md` | Written and pushed (draft PR #70). |
+| Plan note `manus to do tasks all main.md` | Written and pushed; PR #70 later merged (docs only). |
 | Site code | **Not changed.** No storefront/API code was edited in this checkpoint. |
 | Deployed / live | **Nothing from Claude is deployed.** Claude cannot open `trynext.shop` from its workspace (proxy returns 403), so live state is UNVERIFIED by Claude. |
 
@@ -64,13 +64,13 @@ curl -s -o /dev/null -w "origin products %{http_code} %{time_total}s\n" "$O/api/
 ### L5. Browser check of the visible symptom
 Open `https://trynext.shop/products` in a normal browser, open DevTools → Network, reload, and write the status of the `/api/products` request and the first line of its response (no cookies/headers). Add one screenshot path if you save it under `claude/evidence/` (no customer data).
 
-## 4. What Claude will do when your report lands (automatically, within 5 minutes)
+## 4. What Claude should do when it picks up your report
 - Origin down or suspended (L3) → Claude adds a numbered owner item in `claude/CLAUDE_NEEDS.md` (it is a Render/billing action only the owner can do) and prepares a standby-origin change as a reviewed PR **without** switching production.
 - Origin healthy but Pages old/failing (L2 vs L3, L4) → Claude checks the gateway code and the build, fixes any code cause on a branch with a failing test first, runs typecheck/tests/build, and opens a PR.
 - A specific route returns the wrong code (L1) → Claude fixes `App.tsx` or `_redirects` on a branch with a test, then opens a PR.
 - Nothing is merged or deployed to production without green checks, and nothing touching provider settings, data, schema, orders or payments is changed without the owner's explicit approval for that exact change.
 
-## 5. Status table (Claude updates this)
+## 5. Historical status table from 2026-10-19 (see current result appended below)
 | Check | Result | By | Time |
 |---|---|---|---|
 | L1 routes |  |  |  |
@@ -78,3 +78,23 @@ Open `https://trynext.shop/products` in a normal browser, open DevTools → Netw
 | L3 Render origin |  |  |  |
 | L4 deployed hashes |  |  |  |
 | L5 browser network |  |  |  |
+
+
+## Manus result — L1–L5 — 2026-10-20
+
+| Check | Result | By | Time |
+|---|---|---|---|
+| L1 routes | Sampled public routes returned HTTP 200; `/sitemap.xml` returned 301 to `/api/sitemap.xml`. HTTP only; client rendering UNVERIFIED. | Manus | 2026-10-20 |
+| L2 API products | Through Pages: liveness 200, readiness 503 (`db=false`, `catalog=false`), products 500 (`internal_error`). | Manus | 2026-10-20 |
+| L3 Render origin | Same liveness/readiness/products statuses as L2. | Manus | 2026-10-20 |
+| L4 deployed hashes | Pages and Render both report commit `1d8fb7b…`; main is `1d8fb7b…`; PR #70 merge was docs-only. | Manus | 2026-10-20 |
+| L5 browser network | **UNVERIFIED** — no DevTools network trace captured; later public egress returned Cloudflare 403, and no bypass was attempted. | Manus | 2026-10-20 |
+
+Readiness’s allowlisted fields were `status=error`, `db=false`, `catalog=false`, `dbLatencyMs=0`, and `runtimeRole=primary`. Both known Neon primary production branches (`trynex`, `trynex-db`) are archived; exact Render target remains unverified. Owner must identify and restore the authoritative database branch. No database state or provider settings changed.
+
+See `claude/reports.md` under this date and `docs/recovery/` for the full audit and tested local fixes. No recovery changes are yet merged or deployed. PR #67 is still draft/open; PR #69 is open/unmerged. There is no verified automatic report trigger or Claude polling; explicitly resume Claude after pushing the recovery handoff.
+
+
+## PR #71 status — 2026-10-20
+
+Recovery commit `5d61f91` is pushed on `manus/recovery-phase1-2026-10-16` as [draft PR #71](https://github.com/georgelsmith333-hub/New-Trynext/pull/71). CI was pending at this report timestamp; re-check the latest head. It is not merged or deployed. No owner approval for merge has been given.

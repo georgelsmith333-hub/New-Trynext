@@ -562,3 +562,30 @@ does not mean production was changed or verified.
 ## 2026-10-11 — M5b diagnosis
 
 - Two-finger pinch landed on two resize handles; `scaleX` hit the 0.15 floor. Fix is PR #67 (draft, not merged, not verified in a browser). Needs Manus rerun on the preview and owner approval.
+
+
+## 2026-10-20 — Phase 1 current checkpoint
+
+- [x] PR #70 merged as main `1d8fb7b…`; change was documentation-only. Pages and Render report that release deployed.
+- [x] L1 route HTTP delivery sampled; page paths returned 200 and `/sitemap.xml` 301. Rendering/catalog content is not implied.
+- [x] L4 Pages and Render deployment identities recorded; both at `1d8fb7b…`.
+- [x] L2/L3 API status captured: liveness 200, readiness 503 (`db=false`, `catalog=false`), product list 500 via both public gateway and Render origin.
+- [x] Neon metadata read only: both known primary production branches are archived. Exact Render target is UNVERIFIED; owner must identify and restore it. No provider/database state changed.
+- [ ] L5 browser DevTools/network proof is UNVERIFIED; later public egress returned Cloudflare 403.
+- [ ] M1 R2 permissions remain owner-only; M2 upload waits for explicit `M1 done`.
+- [ ] M4 Photopea report/hash list is absent; keep all 94 surfaces candidate and water-bottle hold.
+- [ ] M5 physical-phone validation and 44px-handle decision remain pending; PR #67 remains draft/open and not merged.
+- [ ] M6 seven-day request logs remain unavailable; customer impact remains UNVERIFIED.
+- [x] Local recovery tests: API 251/251, storefront 225/225, mobile resolver 9/9; package typechecks/builds and mockup validators pass. Recovery branch is not yet pushed/CI-verified/merged/deployed.
+- [ ] D1 third-party image policy and D5 historical GitHub token rotation require owner action. Preserve 25% advance COD and no-order/no-payment/no-migration safeguards.
+- [ ] No automatic Manus trigger or verified Claude polling exists; explicitly resume Claude after the report is pushed.
+
+Detailed reports: `docs/recovery/`; sanitized live evidence: `claude/evidence/phase1-live-evidence-2026-10-20.md`; ledger: `claude/reports.md`.
+
+
+## 2026-10-20 — PR #71 handoff
+
+- [x] Recovery package pushed on `manus/recovery-phase1-2026-10-16`, implementation commit `5d61f91`; [draft PR #71](https://github.com/georgelsmith333-hub/New-Trynext/pull/71) is open.
+- [ ] Re-check CI on the latest PR head; it was pending when this report was written.
+- [ ] Owner review/approval required before merge. No production deployment has occurred.
+- [ ] Claude to review changes and append findings to `claude/reports.md`; do not infer automatic pickup.

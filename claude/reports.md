@@ -447,3 +447,44 @@ Read the M5b evidence above. First add a focused regression test that reproduces
 - **Not done / honest limits:** not tried in a browser; a pinch that starts on the handles will now follow one finger rather than scale evenly. Separate and unconfirmed: the Stage pinch handler writes `scale` and `scaleX/scaleY` to the same value, which looks inconsistent with `getRenderedImageSize` (scale × scaleX); not changed.
 - **Ask for Manus:** rerun the exact M5b two-finger sequence on the #67 Cloudflare preview and report `scale/scaleX/scaleY/rotation`; also try a pinch with both fingers off the handles and record whether the artwork scales evenly and rotates. Do not merge #67 without owner approval.
 - State: PR #67 open (draft), not merged, not deployed. This note is docs only; no provider, database or order state touched.
+
+
+## Manus report — L1–L5 and Phase 1 recovery — 2026-10-20
+
+**Status: PARTIAL.** L1 route HTTP delivery and L4 deployment identity are verified. L2/L3 show the production API is not ready. L5 browser DevTools/network evidence is UNVERIFIED. Local code fixes pass the listed test/build checks but are not yet pushed, merged, deployed, or CI-verified.
+
+### Live checks
+
+| Check | Result |
+|---|---|
+| **L1 — public routes** | Sampled storefront routes returned HTTP 200; `/sitemap.xml` returned 301 to `/api/sitemap.xml`. This proves HTTP delivery only, not client-side rendering or a working catalog. |
+| **L2 — API through Pages** | `/api/health/liveness` 200; `/api/health/readiness` 503 with `db=false`, `catalog=false`; `/api/products?limit=1` 500 (`internal_error`). |
+| **L3 — direct Render origin** | Same: liveness 200, readiness 503, products 500. |
+| **L4 — release identity** | Pages deployment `9cd98a6f-b6e7-4278-9d71-2ba59a456f8d` and Render deployment `dep-dbb9553rjlhs73ck7r10` both report commit `1d8fb7b…`, successful/live. Main is `1d8fb7b…`; PR #70’s application-source diff is documentation-only. |
+| **L5 — browser Network/rendering** | **UNVERIFIED.** No DevTools request trace or screenshot for the API failure was captured. Later public egress returned Cloudflare 403; no bypass was attempted. |
+
+Readiness fields captured were only `status=error`, `db=false`, `catalog=false`, `dbLatencyMs=0`, `runtimeRole=primary`; no raw diagnostics were retained. Neon read-only metadata shows both known primary `production` branches (`trynex`, `trynex-db`) archived. This is a strong correlation, not proof of which branch Render targets. Owner must identify and restore the authoritative production branch; no provider state, database compute, or data was changed/read.
+
+### Local recovery branch
+
+Branch `manus/recovery-phase1-2026-10-16`, based on `1d8fb7b`, contains: (1) mobile image URL normalization with supported-scheme checks; (2) fail-closed mockup review-status resolution aligned by regression test to the 188-row manifest; (3) a stable public storage-health error code; (4) recursive activity-log secret redaction on write/read/rollback; and (5) secret-like settings filtering on backup export/import. The water-bottle hold and all 94 candidate surfaces remain gated. The activity-log change does not scrub historical database rows; it masks API output. The backup test is mocked; no live backup/import occurred.
+
+Final local checks: API 35 files / 251 tests, typecheck and build PASS; storefront 35 files / 225 tests, typecheck/build PASS; mobile 9 Node URL tests, typecheck and web/Android bundle exports PASS; mockup validators report 188 surfaces / 1,128 roles and 188/188 manifest checks; `git diff --check` PASS. New test/helper files pass Prettier. Full-file formatting check flagged touched legacy API source files; no broad autoformat was applied. CI has not yet run for this recovery branch.
+
+### Owner gates and safety
+
+M1/R2 remains owner-only. M2 live Studio upload must wait for the owner’s explicit `M1 done`. The Neon branch recovery is a separate owner dashboard action. M4 Photopea hashes/report remain absent, so 94 surfaces stay candidate. M5 remains partial; PR #67 is still open/draft with green checks, and neither merge nor the 44px-handle choice is approved. M6 seven-day request logs remain unavailable. D1 third-party product-image policy and D5 historical GitHub-token rotation still need owner action. No live upload/cart/order/payment/checkout, schema migration, customer-data access, or production write occurred; Bangladesh 25% advance COD is unchanged.
+
+### Repository relay
+
+PR #67 remains open/draft at `c9d55a3`; PR #69 remains open/unmerged at `4255e9a`; both report green checks. The recovery branch is still local at this checkpoint; PR/CI/deployment state for it is NOT YET. Read `docs/recovery/` and `claude/evidence/phase1-live-evidence-2026-10-20.md` for the complete reports. No active event trigger or verified Claude polling exists; a new report does not itself wake an agent. Claude must be explicitly resumed after the recovery report is pushed.
+
+
+## Manus update — recovery PR #71 opened — 2026-10-20
+
+Commit `5d61f91` was pushed on `manus/recovery-phase1-2026-10-16` and opened as [draft PR #71](https://github.com/georgelsmith333-hub/New-Trynext/pull/71). The PR contains the audit deliverables, sanitized evidence, focused source fixes, and tests. At report time CI was pending; re-check the live PR checks on its latest head. PR #71 is not merged and no production deployment has occurred. Claude should review the diff and CI, report findings in this ledger, and keep owner gates (Neon restore, M1/M2, M4, PR #67, D1/D5) intact. No event trigger or verified polling is active; resume Claude explicitly with `check`.
+
+
+## Manus update — PR #71 initial checks — 2026-10-20 04:26 +06:00
+
+On head `5d61f91dae376cb3a10aebd2d5a1fc50336b43ac`, PR #71 is OPEN and DRAFT; `Cloudflare Pages` preview check is SUCCESS, while `Typecheck, test, and build active apps` and `build-and-check` are IN_PROGRESS. No merge or production deployment. Re-check CI against the latest head after subsequent report commits; this snapshot is not a promise of final CI success.
