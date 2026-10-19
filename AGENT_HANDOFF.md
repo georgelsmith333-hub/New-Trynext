@@ -4601,3 +4601,9 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Status: Manus (branch `manus/recovery-phase1-2026-10-16`, read-only) found routes and deploys healthy (Pages and Render both at `1d8fb7b`) but the API unhealthy: readiness `db=false`, `/api/products` 500; both Neon production branches report archived. Recorded as owner action N13. No site code changed here.
 - Next safe action: owner restores the Neon production branch (dashboard); Manus reruns L2/L3. Manus's recovery code branch is NOT merged; Claude reviews and ports it separately via a normal PR.
 - State: docs only; committed locally, pushed with the PR below. Not deployed.
+
+## 2026-10-19 — Port of reviewed Manus recovery changes (PR pending)
+- Ported from `manus/recovery-phase1-2026-10-16` after review (branch itself not merged): health storage error now a stable code; mobile image URLs resolved against the API origin; activity-log secrets masked in API responses and rollback results; activity-log write failures log metadata only.
+- Not ported: write-time masking (breaks rollback), backup export/import secret filtering (owner decision N14), mockup allowlist (no behavior change, next to the bottle hold).
+- Verification: API 34 files / 249 tests, API typecheck and bundle build pass; mobile 9 URL tests and typecheck pass. Not run: storefront (no storefront change), device/browser checks.
+- State: local until the PR below; not merged, not deployed. The live outage (database unreachable, N13) is unaffected by this code.

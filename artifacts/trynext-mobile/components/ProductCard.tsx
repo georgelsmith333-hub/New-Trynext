@@ -11,7 +11,8 @@ import {
   View,
 } from "react-native";
 import { useColors } from "@/hooks/useColors";
-import { Product } from "@/lib/api";
+import { getBaseUrl, Product } from "@/lib/api";
+import { resolveImageUrl } from "@/lib/image-url";
 import { useWishlist } from "@/context/WishlistContext";
 
 const { width } = Dimensions.get("window");
@@ -37,10 +38,10 @@ export function ProductCard({ product, style, horizontal }: ProductCardProps) {
     router.push(`/product/${product.id}`);
   };
 
-  const imageUri =
-    product.imageUrl ||
-    (product.images && product.images[0]) ||
-    null;
+  const imageUri = resolveImageUrl(
+    product.imageUrl || (product.images && product.images[0]) || null,
+    getBaseUrl(),
+  );
 
   const discount =
     product.discountPrice && product.price > product.discountPrice

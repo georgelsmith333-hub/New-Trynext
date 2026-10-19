@@ -6,7 +6,7 @@ import {
 } from "@workspace/db";
 import { eq, desc, and, gte, lte, ilike, sql } from "drizzle-orm";
 import { requireAdmin } from "../middlewares/adminAuth";
-import { logActivity, getAdminId } from "../lib/activityLog";
+import { logActivity, getAdminId, redactActivityData } from "../lib/activityLog";
 
 const router: IRouter = Router();
 
@@ -71,8 +71,15 @@ router.get("/admin/activity-logs", requireAdmin, async (req, res) => {
 
     const total = Number(countResult[0]?.count ?? 0);
 
+    const safeRows = rows.map((row) => {
+      const safeRow: Record<string, unknown> = { ...row };
+      if ("before" in row) safeRow.before = redactActivityData(row.before);
+      if ("after" in row) safeRow.after = redactActivityData(row.after);
+      return safeRow;
+    });
+
     res.json({
-      logs: rows,
+      logs: safeRows,
       total,
       page: pageNum,
       limit: limitNum,
@@ -240,7 +247,7 @@ router.post("/admin/activity-logs/:id/rollback", requireAdmin, async (req, res) 
     res.json({
       success: true,
       message: `Rolled back ${entry.entityName} to its previous state.`,
-      result: rollbackResult,
+      result: redactActivityData(rollbackResult),
     });
   } catch (err) {
     req.log.error({ err }, "Rollback failed");

@@ -12,6 +12,34 @@ export interface AdminRequest extends Request {
   adminSession?: { adminId?: number | null; role?: string };
 }
 
+const SENSITIVE_ACTIVITY_KEY = /(?:password|passwd|secret|token|api[_-]?key|access[_-]?key|private[_-]?key|authorization|cookie|credential)/i;
+
+function redactNestedActivityData(value: unknown, ancestors: WeakSet<object>): unknown {
+  if (value instanceof Date || value === null || value === undefined) return value;
+  if (typeof value !== "object") return value;
+  if (ancestors.has(value)) return "[Circular]";
+
+  ancestors.add(value);
+  try {
+    if (Array.isArray(value)) {
+      return value.map((nested) => redactNestedActivityData(nested, ancestors));
+    }
+    return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, nested]) => [
+      key,
+      SENSITIVE_ACTIVITY_KEY.test(key) && nested !== null && nested !== undefined
+        ? "[REDACTED]"
+        : redactNestedActivityData(nested, ancestors),
+    ]));
+  } finally {
+    ancestors.delete(value);
+  }
+}
+
+/** Mask credential-like fields in activity snapshots returned to clients (never in what is stored). */
+export function redactActivityData(value: unknown): unknown {
+  return redactNestedActivityData(value, new WeakSet<object>());
+}
+
 /**
  * Log an admin mutation. Never throws — logging failures are caught and
  * logged to stderr so they never interrupt the primary request.
@@ -32,11 +60,19 @@ export async function logActivity(opts: {
       entity: opts.entity,
       entityId: String(opts.entityId),
       entityName: opts.entityName,
+      // Stored as-is on purpose: the rollback route restores values from the
+      // `before` snapshot, so masking here would overwrite real settings and
+      // records with "[REDACTED]". Responses are masked on read instead.
       before: opts.before ?? null,
       after: opts.after ?? null,
     });
   } catch (err) {
-    logger.error({ err, opts }, "[activity-log] Failed to insert activity log");
+    logger.error({
+      errorType: err instanceof Error ? err.name : typeof err,
+      action: opts.action,
+      entity: opts.entity,
+      entityId: String(opts.entityId),
+    }, "[activity-log] Failed to insert activity log");
   }
 }
 
