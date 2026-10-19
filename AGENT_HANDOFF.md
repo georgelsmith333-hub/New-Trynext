@@ -4590,3 +4590,9 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Next safe action: owner or Manus works the note and reports in `claude/reports.md`.
 - Verification: `pnpm run typecheck` passed for all packages. Nothing live was checked.
 - State: local + committed + pushed to the working branch only; not merged, not deployed.
+
+## 2026-10-19 — Claude routing audit and Manus report note
+- Status: no site code changed. Added `manus report.md` (routing audit from source, read-only live-check commands L1-L5, what Claude does when each result lands).
+- Findings: every in-app link has a matching `<Route>`; `_redirects` has the SPA fallback; the API gateway points both write and read roles at one Render service, so an asleep/suspended origin or an old Pages deploy would show an empty catalog. Live state is UNVERIFIED (sandbox cannot reach trynext.shop).
+- Next safe action: Manus runs L1-L5 and writes `## Manus report — L1..L5` in `claude/reports.md`. Claude polls every 5 minutes for 2 hours, then the hourly watcher continues.
+- State: local, committed and pushed to the working branch only (draft PR #70); not merged, not deployed.
