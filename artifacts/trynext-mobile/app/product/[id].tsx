@@ -23,6 +23,7 @@ import { useCart } from "@/context/CartContext";
 import { useToast } from "@/context/ToastContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { api, getBaseUrl } from "@/lib/api";
+import { resolveImageUrl } from "@/lib/image-url";
 
 const { width } = Dimensions.get("window");
 
@@ -58,12 +59,18 @@ export default function ProductDetailScreen() {
         `${product.name ?? ""} ${product.slug ?? ""} ${product.categoryName ?? ""}`,
       )
     : false;
-  const productImage = isWaterBottle
-    ? `${getBaseUrl()}${WATER_BOTTLE_PHOTO_PATH}`
-    : product?.imageUrl;
+  const baseUrl = getBaseUrl();
+  const productImage = resolveImageUrl(
+    isWaterBottle ? `${baseUrl}${WATER_BOTTLE_PHOTO_PATH}` : product?.imageUrl,
+    baseUrl,
+  ) ?? undefined;
   const productColors = isWaterBottle ? ["White"] : product?.colors ?? [];
-  const images = product
-    ? (isWaterBottle ? [productImage] : [product.imageUrl, ...(product.images ?? [])].filter(Boolean)) as string[]
+  const images: string[] = product
+    ? isWaterBottle
+      ? productImage ? [productImage] : []
+      : [product.imageUrl, ...(product.images ?? [])]
+          .map((imageUrl) => resolveImageUrl(imageUrl, baseUrl))
+          .filter((imageUrl): imageUrl is string => imageUrl !== null)
     : [];
 
   const currentImg = images[imageIdx] || null;

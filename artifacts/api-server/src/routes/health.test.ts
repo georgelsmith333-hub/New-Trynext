@@ -3,6 +3,10 @@ import express from "express";
 import healthRouter from "./health";
 import request from "supertest";
 
+const { getUploadUrlMock } = vi.hoisted(() => ({
+  getUploadUrlMock: vi.fn().mockResolvedValue("http://localhost/upload"),
+}));
+
 // Mock heavy dependencies so health tests run without DB / Redis / storage.
 vi.mock("@workspace/db", () => ({
   db: {
@@ -17,7 +21,7 @@ vi.mock("../lib/redis", () => ({
 vi.mock("../lib/objectStorage", () => ({
   ObjectStorageService: class {
     getBackendName() { return "local"; }
-    getObjectEntityUploadURL() { return Promise.resolve("http://localhost/upload"); }
+    getObjectEntityUploadURL() { return getUploadUrlMock(); }
   },
   ObjectNotFoundError: class extends Error {},
 }));
@@ -57,5 +61,20 @@ describe("Health endpoints", () => {
     expect(res.status).toBe(200);
     expect(res.body.status).toBe("ok");
     expect(res.body.db).toBe(true);
+  });
+
+  it("GET /api/health/storage does not expose provider exception details", async () => {
+    getUploadUrlMock.mockRejectedValueOnce(new Error("provider internal details"));
+
+    const res = await request(app).get("/api/health/storage");
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      backend: "local",
+      portable: false,
+      reachable: false,
+      error: "storage_unavailable",
+    });
+    expect(JSON.stringify(res.body)).not.toContain("provider internal details");
   });
 });
