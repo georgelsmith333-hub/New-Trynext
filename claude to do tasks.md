@@ -1,9 +1,18 @@
 # Claude To-Do Tasks and Report-Back Loop
 
-**Prepared:** 2026-10-12 04:20 +06:00
+**Historical snapshot prepared:** 2026-10-12 04:20 +06:00
 **Repository:** `georgelsmith333-hub/New-Trynext`
-**Snapshot checked:** `main` at `f784997237c059c933c8fd781473a8e4ae49079e` (`origin/main` matched; PR #64 merged). PR #63 is merged; current M5b docs/evidence handoff is [PR #66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66), open from `manus/m5b-measurement-2026-10-12` with three checks pending at 04:20 +06:00.
+**Historical snapshot checked:** `main` at `f784997237c059c933c8fd781473a8e4ae49079e`; superseded by the current checkpoint below.
 **Purpose:** one concise entry point for Claude’s next safe work and the Manus ↔ Claude report loop. This is a repository handoff document, **not** a background scheduler or proof that either agent is polling continuously.
+
+## Current checkpoint — 2026-10-20
+
+- Current `main`: `1d8fb7bcde6ab91dbb84c33a802e918d1e3d8322` (PR #70 merged; documentation-only relative to `e6c7041`). Cloudflare Pages and Render both report this commit deployed successfully.
+- Production API liveness is 200, readiness is 503 (`db=false`, `catalog=false`), and `/api/products` is 500 through both the Pages gateway and direct Render origin. Both known Neon primary production branches (`trynex`, `trynex-db`) are archived; the exact Render target is UNVERIFIED. Owner must identify and restore the authoritative branch.
+- PR #67 remains open/draft at `c9d55a3`, with all checks green; owner approval remains required. PR #69 remains open/unmerged at `4255e9a`, with all checks green.
+- Local branch `manus/recovery-phase1-2026-10-16` contains tested mobile relative-image, mockup review gate, health-error redaction, activity-log redaction, and backup-setting filter changes. These changes are not yet pushed, merged, or deployed; detailed reports are in `docs/recovery/`.
+- M1/R2 and Neon restore are owner-only; M2 waits for explicit `M1 done`; M4 validator evidence is absent; M6 seven-day request logs are unavailable; L5 browser DevTools evidence is UNVERIFIED. Preserve candidate surfaces, water-bottle hold, no-live-migration/no-order/no-payment boundaries, and Bangladesh 25% advance COD.
+- No event trigger or Claude polling is verified. Pushes do not prove autonomous pickup; Claude must be explicitly resumed with `check` after the report is pushed.
 
 ## Start here
 

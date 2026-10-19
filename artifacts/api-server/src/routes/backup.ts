@@ -6,6 +6,11 @@ import { repairTargetSchemas, runBackupSync } from "../lib/dbBackupSync";
 import { getBackupSyncStatus, recordBackupSyncResults } from "../lib/scheduler";
 
 const router: IRouter = Router();
+const SENSITIVE_SETTING_KEY = /(?:password|passwd|secret|token|api[_-]?key|access[_-]?key|private[_-]?key|authorization|cookie|credential)/i;
+
+function isSensitiveSettingKey(key: unknown): boolean {
+  return typeof key === "string" && SENSITIVE_SETTING_KEY.test(key);
+}
 
 /** Returns the current DB sync circuit-breaker state so the admin dashboard
  *  can surface it without digging through server logs. */
@@ -107,7 +112,8 @@ router.get("/admin/backup/export", requireAdmin, async (req, res) => {
     const backup = {
       version: 1,
       exportedAt: new Date().toISOString(),
-      data: { orders, products, categories, settings, blogPosts },
+      // Credentials belong in provider secret stores, not downloadable backup files.
+      data: { orders, products, categories, settings: settings.filter((setting) => !isSensitiveSettingKey(setting.key)), blogPosts },
     };
 
     res.setHeader('Content-Type', 'application/json');
@@ -187,8 +193,22 @@ router.post("/admin/backup/import", requireAdmin, async (req, res) => {
       results.orders = data.orders.length;
     }
 
-    if (data.settings?.length) {
-      for (const s of data.settings) {
+    const incomingSettings: unknown[] = Array.isArray(data.settings) ? data.settings : [];
+    const safeSettings: Array<{ key: string; value: string | null }> = [];
+    let sensitiveSettingsSkipped = 0;
+    for (const value of incomingSettings) {
+      if (!value || typeof value !== "object") continue;
+      const setting = value as { key?: unknown; value?: unknown };
+      if (typeof setting.key !== "string") continue;
+      if (isSensitiveSettingKey(setting.key)) {
+        sensitiveSettingsSkipped += 1;
+        continue;
+      }
+      if (setting.value !== null && typeof setting.value !== "string") continue;
+      safeSettings.push({ key: setting.key, value: setting.value });
+    }
+    if (safeSettings.length) {
+      for (const s of safeSettings) {
         await db.insert(settingsTable).values({
           key: s.key,
           value: s.value,
@@ -197,8 +217,9 @@ router.post("/admin/backup/import", requireAdmin, async (req, res) => {
           set: { value: s.value, updatedAt: new Date() },
         });
       }
-      results.settings = data.settings.length;
+      results.settings = safeSettings.length;
     }
+    if (sensitiveSettingsSkipped > 0) results.sensitiveSettingsSkipped = sensitiveSettingsSkipped;
 
     if (data.blogPosts?.length) {
       for (const b of data.blogPosts) {

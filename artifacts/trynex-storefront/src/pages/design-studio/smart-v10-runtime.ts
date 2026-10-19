@@ -30,6 +30,20 @@ export const SMART_V10_VIEWS: Readonly<Record<SmartMockupCategory, readonly Smar
   waterbottle: ["front", "back"],
 };
 
+/**
+ * Only surfaces marked accepted in the checked-in runtime manifest may be
+ * exposed to customers. Keep this allowlist in sync with each row's
+ * reviewStatus; the resolver regression test compares the two sources.
+ */
+export const SMART_V10_APPROVED_VIEWS: Readonly<Record<SmartMockupCategory, readonly SmartMockupFace[]>> = {
+  tshirt: ["front", "back"],
+  longsleeve: ["front", "back"],
+  hoodie: ["front", "back"],
+  mug: ["front", "back"],
+  cap: ["front", "back"],
+  waterbottle: ["front", "back"],
+};
+
 export const SMART_V10_SURFACE_COUNT = Object.entries(SMART_V10_COLORS).reduce(
   (count, [category, colors]) => count + colors.length * SMART_V10_VIEWS[category as SmartMockupCategory].length,
   0,
@@ -41,6 +55,15 @@ export function getSmartV10ColorSlug(
   sourceKitSlug: string,
 ): string | undefined {
   return SMART_V10_COLORS[category].includes(sourceKitSlug) ? sourceKitSlug : undefined;
+}
+
+export function isSmartV10SurfaceApproved(
+  category: SmartMockupCategory,
+  colorSlug: string,
+  face: SmartMockupFace,
+): boolean {
+  return SMART_V10_COLORS[category].includes(colorSlug)
+    && SMART_V10_APPROVED_VIEWS[category].includes(face);
 }
 
 export function getSmartV10SurfaceKey(

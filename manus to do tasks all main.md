@@ -1,8 +1,18 @@
 # MANUS TO DO TASKS — ALL MAIN
 
-Written by Claude on 2026-10-19 after a repo audit. This is the single complete list of
-everything that needs a human or Manus (Cloudflare, Render, GitHub, phone, decisions).
-Everything else Claude does by itself.
+Written by Claude on 2026-10-19 after a repo audit. This is the full task list for owner/Manus actions.
+Do not assume Claude is polling or that a report automatically starts either agent; resume it explicitly.
+
+## Current checkpoint — 2026-10-20 (supersedes the dated snapshot below)
+
+- GitHub `main` is `1d8fb7b…` after PR #70 merged; that merge is documentation-only. Cloudflare Pages and Render both report `1d8fb7b…` deployed successfully. The application-source baseline remains the prior code commit; no recovery fix is deployed.
+- Production liveness is 200, but readiness is 503 (`db=false`, `catalog=false`) and `/api/products` is 500 through both the public gateway and direct Render origin.
+- Both known Neon primary `production` branches (`trynex` and `trynex-db`) are archived. Which one Render targets is unverified. Owner must identify and restore the authoritative branch; no provider change or database query was performed.
+- PR #67 remains open/draft at `c9d55a3` with green checks and awaits the owner’s merge/handle decisions. PR #69 remains open/unmerged at `4255e9a` with green checks.
+- A local recovery branch has safe mobile URL, mockup gate, health-error, activity-log, and backup-setting fixes plus regression tests. It is not yet pushed, merged, or deployed. See `docs/recovery/` and `claude/evidence/phase1-live-evidence-2026-10-20.md`.
+- L1 route HTTP delivery was checked; L2/L3 API readiness currently fails; L4 release identities were checked; L5 DevTools/network rendering is UNVERIFIED. Do not treat HTTP 200 routes as proof of a working catalog.
+- M1/R2 and the Neon recovery are owner-only. M2 live upload waits for explicit `M1 done`. M4 Photopea evidence is absent; 94 surfaces remain candidate. M6 seven-day request logs remain unavailable. No real order/payment, checkout, schema migration, or data mutation occurred; preserve 25% advance COD.
+- Reports remain a manual handoff until an authorized trigger is confirmed. See `claude/reports.md` and `docs/recovery/DEPLOYMENT_REPORT.md`.
 
 How to use: do the tasks in order. After each one, write a short report in
 `claude/reports.md` under the heading shown in "Report as". Claude checks that file
@@ -14,7 +24,7 @@ every hour and acts on it automatically.
 - Do not change production data, the database schema, or the water-bottle hold.
 - If a step does not match what you see on screen, stop and write what you see. Do not guess.
 
-## What Claude verified on 2026-10-19 (so nobody repeats it)
+## Historical note — Claude verified on 2026-10-19 (superseded by the current checkpoint above)
 - `main` is at `e6c7041`. Nothing has been merged since 2026-10-12. No new owner or Manus reply has arrived since then.
 - Claude ran the full typecheck on current `main` (all packages: libs, api-server, storefront, mobile, promo, design systems, mockup-sandbox, scripts). Result: PASS, no errors.
 - Claude could NOT reach the live site (`trynext.shop` returned a proxy 403 from the Claude workspace). So these are UNVERIFIED by Claude: whether the latest code is live, the Cloudflare cache behavior, the live upload, the live invoice download, and real-phone touch editing. Tasks T3 to T8 exist to close exactly these gaps.
@@ -50,15 +60,15 @@ Why: Claude cannot confirm anything is live until it can open the site. After th
 If you do not want to do this: do T5 yourself after each merge and paste the output.
 Report as: `## Manus report — T3` — done, or "not allowing".
 
-### T4. Confirm what is actually deployed
+### T4. Confirm what is actually deployed — DONE (2026-10-20; see current checkpoint)
 Where: Cloudflare Pages and Render dashboards. Time: 5 minutes.
 1. Cloudflare dashboard -> Workers & Pages -> the storefront project -> Deployments. Write the commit hash and status of the latest Production deployment and its time.
 2. Render dashboard -> the API service -> Events or Deploys. Write the commit hash and status of the latest deploy.
-3. GitHub -> New-Trynext -> Commits on `main`: note the newest commit hash (Claude saw `e6c7041`).
+3. GitHub -> New-Trynext -> Commits on `main`: newest main is `1d8fb7b…`; PR #70 was docs-only. Pages and Render both report `1d8fb7b…` deployed.
 Done when: you have two hashes (Cloudflare, Render) and whether each equals the newest `main` commit that changed code. Docs-only commits do not need a deploy.
 Report as: `## Manus report — T4` — the two hashes and statuses.
 
-### T5. Safe public live check (read-only, no login)
+### T5. Safe public live check (read-only, no login) — PARTIAL (L1–L4 done; L5/cache unverified)
 Where: any computer with internet and Node installed (or the terminal in your hosting). Time: 3 minutes.
 1. In a clone of the repo run: `node scripts/verify-critical-flows.mjs`
 2. Paste the pass/fail lines (not secrets, there are none) into the report.

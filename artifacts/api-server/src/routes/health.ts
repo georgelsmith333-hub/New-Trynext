@@ -82,7 +82,9 @@ router.get("/health/storage", async (_req, res) => {
     await svc.getObjectEntityUploadURL();
     reachable = true;
   } catch (err) {
-    error = err instanceof Error ? err.message : String(err);
+    // Provider exceptions may include credentials or internal URLs; keep this
+    // public health response to a stable, non-sensitive error code.
+    error = "storage_unavailable";
   }
   res.json({
     backend,

@@ -1,6 +1,17 @@
-# MANUS TO DO REPORTS — what Claude needs next (updated 2026-10-12 04:20 +06:00)
+# MANUS TO DO REPORTS — what Claude needs next (updated 2026-10-20)
 
-Claude has finished the prior repository tasks. M5b is now measured: a local 390×844 pinch changed the layer from `scale=2.5, scaleX=1, scaleY=1, rotation=0°` to `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°`; the visible frame narrowed from 54.72×54.72 to 28×54.72 CSS px. M5 remains partial until Claude adds a failing regression test and verifies a focused fix. M3 is verified; M6 remains partial because seven-day request logs are unavailable. M1 is owner-only; M2 is gated on explicit `M1 done`. Evidence is in `claude/evidence/`. Current report PR: [#66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66), open with three checks pending at 04:20 +06:00.
+## Current checkpoint — 2026-10-20 (supersedes the historical snapshot below)
+
+- `main` is `1d8fb7b…` after PR #70 merged; this was docs-only. Pages and Render report that commit deployed.
+- Production API is not ready: liveness 200, readiness 503 (`db=false`, `catalog=false`), products endpoint 500 through both public gateway and Render origin. Both known Neon primary production branches are archived; Render’s exact target is unverified. Owner must identify and restore the authoritative branch; no provider/database changes were made by Manus.
+- Local code branch `manus/recovery-phase1-2026-10-16` has mobile relative-image handling, fail-closed mockup review status, health-error redaction, activity-log redaction, and backup-setting secret filtering with local tests. It is not yet pushed/merged/deployed. See `docs/recovery/` and `claude/evidence/phase1-live-evidence-2026-10-20.md`.
+- PR #67 remains draft/open at `c9d55a3`; PR #69 remains open/unmerged at `4255e9a`; both have green checks. No owner merge decision is recorded for #67.
+- M1 (R2 permissions) remains owner-only; M2 waits for explicit `M1 done`. M4 Photopea evidence is absent, so the 94 surfaces stay candidate. M5 remains partial without physical-phone validation and the 44px-handle decision. M6 seven-day request logs remain unavailable. L5 browser DevTools remains UNVERIFIED.
+- Bangladesh 25% advance COD, water-bottle hold, no-live-migration, no-order/payment, and no-customer-data boundaries are unchanged. No autonomous report trigger or Claude polling is verified; resume Claude explicitly after this report is pushed.
+
+The dated entries below remain useful historical evidence; use the checkpoint above for current deployment and queue status.
+
+Historical 2026-10-12 snapshot: Claude had finished the prior repository tasks. M5b was measured locally; M3 was verified; M6 remained partial; M1/M2 were owner-gated. The referenced PR #66 status is historical and must not be treated as current.
 
 ## FOR THE OWNER — the short list (do these in order; everything else is automatic)
 1. **Fix the upload (10 minutes, Cloudflare + Render dashboards).** This is the only thing stopping customers' artwork from saving.

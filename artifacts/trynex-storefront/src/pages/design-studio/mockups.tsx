@@ -10,6 +10,7 @@ import { getCanonicalMockupSpec, type MockupFamily } from "./canonical-mockup-sp
 import { COMPLETE_MOCKUP_MATRIX, getCompleteMockupEntry, type CompleteMockupFamily, type CompleteMockupView } from "./complete-mockup-matrix";
 import {
   getSmartV10ColorSlug,
+  isSmartV10SurfaceApproved,
   getSmartV10RuntimeRoles,
   SMART_V10_RELEASE_VERSION,
   SMART_V10_RUNTIME_ROOT,
@@ -687,7 +688,10 @@ export function resolveMockup(
   const releaseColorSlug = sourceKitSlug
     ? getSmartV10ColorSlug(category, sourceKitSlug)
     : undefined;
-  const v10Roles = releaseColorSlug && !whiteBottleCandidate
+  const v10SurfaceApproved = releaseColorSlug
+    ? isSmartV10SurfaceApproved(category, releaseColorSlug, face)
+    : false;
+  const v10Roles = releaseColorSlug && v10SurfaceApproved && !whiteBottleCandidate
     ? getSmartV10RuntimeRoles(category, releaseColorSlug, face)
     : undefined;
   const resolvedPrintZone = completeView.geometry.printZone;
@@ -699,6 +703,8 @@ export function resolveMockup(
   const runtimeStatus = v10Roles ? "approved" as const : "disabled" as const;
   const disabledReason = whiteBottleCandidate
     ? "White carabiner-bottle source and print area are awaiting authenticated visual approval."
+    : releaseColorSlug && !v10SurfaceApproved
+      ? `The ${category} ${releaseColorSlug} ${face} v10.3 surface is not approved for customer rendering.`
     : v10Roles
       ? undefined
       : `No approved ${category} ${sourceKitSlug} ${face} v10.3 source-kit surface is available.`;

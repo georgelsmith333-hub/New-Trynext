@@ -4596,3 +4596,17 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Findings: every in-app link has a matching `<Route>`; `_redirects` has the SPA fallback; the API gateway points both write and read roles at one Render service, so an asleep/suspended origin or an old Pages deploy would show an empty catalog. Live state is UNVERIFIED (sandbox cannot reach trynext.shop).
 - Next safe action: Manus runs L1-L5 and writes `## Manus report — L1..L5` in `claude/reports.md`. Claude polls every 5 minutes for 2 hours, then the hourly watcher continues.
 - State: local, committed and pushed to the working branch only (draft PR #70); not merged, not deployed.
+
+
+## 2026-10-20 — Phase 1 recovery, live API outage, and local fixes (Manus)
+
+Status: **Production API not ready; safe code fixes validated locally; no recovery PR or deployment yet.**
+
+- Main is `1d8fb7b…` after PR #70, a docs-only merge. Cloudflare Pages and Render report that commit deployed. L1 page HTTP checks and L4 release identities are recorded in `claude/reports.md`; HTTP 200 does not prove the catalog rendered.
+- Public gateway and direct Render origin both report liveness 200, readiness 503 (`db=false`, `catalog=false`), and products 500. Read-only Neon metadata shows both known primary production branches archived (`trynex`, `trynex-db`). Which one Render targets is **UNVERIFIED**; owner must identify and restore the authoritative branch. No provider setting, branch, compute, database row, or schema was changed.
+- L5 browser DevTools/network proof, cache HIT, seven-day request logs, R2 write, live upload, and real-phone behavior remain **UNVERIFIED**.
+- Local branch `manus/recovery-phase1-2026-10-16` has mobile image URI normalization, mockup candidate fail-closed gate, storage-health error redaction, activity-log secret masking, and backup setting-secret filtering. Local API tests 251/251, storefront tests 225/225, mobile URI tests 9/9, package typechecks/builds and mockup validators pass. No CI exists yet for this local branch. No merge/deploy.
+- Preserve all 94 candidate surfaces and the water-bottle hold; no Playwright dependency without owner authorization; PR #67 merge and 44px handle layout remain owner decisions. M1/R2 is owner-only; M2 waits for explicit `M1 done`. D1 and D5 remain owner actions. Keep no-order/no-payment/no-live-migration boundaries and Bangladesh 25% advance COD.
+- Reports: `docs/recovery/` contains the audit, root-cause, implementation, test, deployment, architecture, rollback, and release-checklist documents. `claude/evidence/phase1-live-evidence-2026-10-20.md` contains sanitized live evidence. This report is prepared for a focused PR; push, CI, merge, and deployment must be stated separately.
+
+Next safe action: finish repo diff review, push the recovery branch and open a draft PR for Claude/owner review; do not merge. Owner’s first operational action is to identify the correct Neon production branch and restore it through the dashboard. No trigger or automatic polling is verified; resume Claude explicitly after the report is pushed.
