@@ -4596,3 +4596,8 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Findings: every in-app link has a matching `<Route>`; `_redirects` has the SPA fallback; the API gateway points both write and read roles at one Render service, so an asleep/suspended origin or an old Pages deploy would show an empty catalog. Live state is UNVERIFIED (sandbox cannot reach trynext.shop).
 - Next safe action: Manus runs L1-L5 and writes `## Manus report — L1..L5` in `claude/reports.md`. Claude polls every 5 minutes for 2 hours, then the hourly watcher continues.
 - State: local, committed and pushed to the working branch only (draft PR #70); not merged, not deployed.
+
+## 2026-10-19 — Manus L1-L5 result and owner item N13
+- Status: Manus (branch `manus/recovery-phase1-2026-10-16`, read-only) found routes and deploys healthy (Pages and Render both at `1d8fb7b`) but the API unhealthy: readiness `db=false`, `/api/products` 500; both Neon production branches report archived. Recorded as owner action N13. No site code changed here.
+- Next safe action: owner restores the Neon production branch (dashboard); Manus reruns L2/L3. Manus's recovery code branch is NOT merged; Claude reviews and ports it separately via a normal PR.
+- State: docs only; committed locally, pushed with the PR below. Not deployed.
