@@ -4615,3 +4615,10 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Remaining work: N13, N14, Manus rerun of the three read-only API checks after the restore.
 - Blocker: database unreachable. Next safe action: owner restores the Neon production branch; Manus reruns liveness/readiness/products.
 - Verification: mobile `test:image-url` and `typecheck` pass locally. State: local until PR checks are green; not deployed.
+
+## 2026-10-20 checkpoint — Neon quota root cause (from Manus 9ce773b)
+- Status: Render healthy; API cannot reach the database because Neon returns quota error 53000. Products and admin login stay down until the owner fixes the Neon plan/quota and restores/starts the production branch.
+- Last completed: recorded the diagnosis (N13 update) and the exposed-keys warning (N15) in `claude/CLAUDE_NEEDS.md`.
+- Not done by Claude on purpose: no failover-chain change, no provider/Render/Neon change, no backup promotion.
+- Remaining work: owner restores Neon (N13), rotates keys (N15), decides N14. Then Manus reruns liveness/readiness/products and Claude verifies products + admin login.
+- State: local until the docs PR merges; nothing deployed by this change.
