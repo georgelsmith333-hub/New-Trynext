@@ -61,11 +61,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Mobile product image URL regression test
+        run: pnpm --filter @workspace/trynext-mobile run test:image-url
+
       - name: Build workspace libraries
         run: pnpm run typecheck:libs
 
       - name: TypeScript check (all packages)
-        run: pnpm --filter @workspace/trynext-storefront run typecheck && pnpm --filter @workspace/api-server run typecheck
+        run: pnpm --filter @workspace/trynext-storefront run typecheck && pnpm --filter @workspace/api-server run typecheck && pnpm --filter @workspace/trynext-mobile run typecheck
         continue-on-error: false
 
       - name: Lint check (configured packages)
