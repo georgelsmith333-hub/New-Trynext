@@ -4607,3 +4607,11 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Not ported: write-time masking (breaks rollback), backup export/import secret filtering (owner decision N14), mockup allowlist (no behavior change, next to the bottle hold).
 - Verification: API 34 files / 249 tests, API typecheck and bundle build pass; mobile 9 URL tests and typecheck pass. Not run: storefront (no storefront change), device/browser checks.
 - State: local until the PR below; not merged, not deployed. The live outage (database unreachable, N13) is unaffected by this code.
+
+## 2026-10-20 checkpoint — Manus current-truth read, CI wiring port
+- Status: read `manus/current-truth-2026-10-20` (docs only, not merged). Outage unchanged: liveness 200, readiness 503 `db=false`, products 500. N13 (restore Neon production branch) stays owner/Manus-gated; Manus did not answer M-A..M-D.
+- Last completed: PRs #74 (manus task note) and #75 (checklist fix) merged. Ported only the CI wiring from PR #71 (mobile `test:image-url` and mobile typecheck in `ci.yml`).
+- Not ported (owner decision N14): backup export/import secret filtering and mockup candidate gating. PR #71 conflicts with main and is not to be merged; #67 and #69 stay owner-gated.
+- Remaining work: N13, N14, Manus rerun of the three read-only API checks after the restore.
+- Blocker: database unreachable. Next safe action: owner restores the Neon production branch; Manus reruns liveness/readiness/products.
+- Verification: mobile `test:image-url` and `typecheck` pass locally. State: local until PR checks are green; not deployed.
