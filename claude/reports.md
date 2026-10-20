@@ -483,3 +483,22 @@ The authorized Neon connector currently returns no accessible projects. Therefor
 **Safe next action:** the owner must revoke/rotate the exposed keys, then authorize a working Neon connection or privately identify the Render database target by project/branch name only. Before any switch, verify that the candidate branch is the authoritative current production dataset, has the required schema (`products`, `orders`, and required runtime tables), and is approved for both reads and writes. If the original authoritative branch is merely archived or quota-blocked, restore/start that branch instead of switching to a backup. Only after this evidence is available may a narrowly scoped provider action be considered; do not create a new database or point production at an unverified backup.
 
 **Manus/Claude queue:** Manus may continue read-only Render/public health checks and repository documentation. Claude should not change the failover chain, add a provider fallback, merge PR #71, or claim recovery. The owner must supply the provider decision and explicit target before any production routing change.
+
+
+## 2026-10-21 Production smoke check — site partially working, database still blocked
+
+Fresh read-only checks at approximately 2026-10-21 03:17 +06:
+
+- `https://trynext.shop/`: HTTP 200; storefront HTML is being served.
+- `/api/health/liveness`: HTTP 200; API process is alive.
+- `/api/health/readiness`: HTTP 503 with `db=false` and `catalog=false`.
+- `/api/products?limit=1`: HTTP 500 (`Failed to list products`).
+- `/api/categories`: HTTP 500 (`Failed to list categories`).
+- `/api/mockups`: HTTP 200; mockup response is available.
+- Render API service remains unsuspended and deployed from `main` commit `35b7883`.
+
+**Conclusion:** TryNext is not fully operational. The storefront shell, liveness endpoint, and mockup route work, but the database-backed catalog, categories, and readiness do not.
+
+The repository database package already implements the intended candidate chain and safety checks: `DATABASE_URL_MAIN` → `DATABASE_FAILOVER` → `DATABASE_ANALYTICS` → `DATABASE_URL_TRYNEXT_DB` → `DATABASE_URL`; it probes candidates and requires both `products` and `orders` before selecting a transactional candidate. No confirmed source-code defect explains the current outage. The deployed Render logs identify PostgreSQL quota error `53000` (`Your account or project has exceeded the quota`), so blindly changing code or pointing production at one of four reported backups would be unsafe.
+
+**Action state:** no code patch, merge, deployment, Render environment-variable change, Neon change, migration, SQL, customer-data access, order, or payment action was performed. The remaining fix is provider/data-authority work: revoke and rotate the exposed Neon keys, identify the Render-targeted Neon project/branch privately, restore or start the authoritative current transactional branch or resolve its quota, then rerun readiness/products/categories. Do not substitute an unverified backup.
