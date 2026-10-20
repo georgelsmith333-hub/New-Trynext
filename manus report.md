@@ -81,3 +81,10 @@ Open `https://trynext.shop/products` in a normal browser, open DevTools → Netw
 
 ## 6. Conclusion so far (Claude, 2026-10-19)
 The routes and deploys are fine. The outage is the database: Neon production branches show as archived and the API reports `db=false`. Owner action N13 in `claude/CLAUDE_NEEDS.md` (restore the Neon production branch). Not a code bug, so no site code change can fix it.
+
+
+## 7. Current truth correction — 2026-10-20 06:32 +06
+
+The historical L1-L5 table above is retained as evidence from its stated time. A fresh read-only probe now confirms both the public gateway and Render origin return liveness 200, readiness 503 with `db=false` and `catalog=false`, and `/api/products?limit=1` 500. This remains a database-readiness incident; the exact Render Neon target is still unverified because no connection values were inspected.
+
+Current GitHub state: `main` is `a6aff31`; PR #71 is open/draft at `64cd04e` with all four latest checks successful but conflicting against current main; PR #72 is merged docs-only; PR #67 is open/draft and green; PR #69 is open, green, and conflicting. No merge or deployment was performed by this checkpoint. No provider, database, customer, order, payment, migration, backup/import, or production state was changed.

@@ -562,3 +562,17 @@ does not mean production was changed or verified.
 ## 2026-10-11 — M5b diagnosis
 
 - Two-finger pinch landed on two resize handles; `scaleX` hit the 0.15 floor. Fix is PR #67 (draft, not merged, not verified in a browser). Needs Manus rerun on the preview and owner approval.
+
+
+## 2026-10-20 — current truth checkpoint
+
+- [x] Fetched source branches/tags without merging; `main` is `a6aff31`; recovery is `64cd04e`; no tags exist.
+- [x] PR #71 latest head `64cd04e` is open/draft; Active app verification, build-and-check, security-scan, and Cloudflare Pages checks are all SUCCESS.
+- [x] PR #72 is MERGED documentation-only; its N13 owner task is on current main, but older `1d8fb7b` release references are historical.
+- [x] PR #67 is open/draft with green checks and remains owner-gated; PR #69 is open/non-draft, green checks, conflicting, and remains a separate evidence record.
+- [x] Fresh read-only API observation: public and Render-origin liveness 200; readiness 503 with `db=false`/`catalog=false`; products 500.
+- [ ] PR #71 merge: NOT APPROVED and NOT DONE; current main already includes the PR #73 subset, so no blind merge.
+- [ ] Production recovery: owner must identify and restore the authoritative Neon production branch; exact Render target remains UNVERIFIED.
+- [ ] Backup refresh: named private backup repository was not resolvable; no substitute was created.
+- [ ] Preserve owner gates: R2 M1 before M2; Photopea evidence before candidate promotion; physical phone and 44px handle decision; exact `add the browser test` before dependencies; D1, D5/T9, N14; no live migration/order/payment/customer-data access.
+- [ ] No automatic Claude/Manus relay is verified; resume Claude explicitly after any pushed report.

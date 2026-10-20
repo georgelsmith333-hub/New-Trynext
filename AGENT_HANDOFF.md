@@ -4607,3 +4607,15 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Not ported: write-time masking (breaks rollback), backup export/import secret filtering (owner decision N14), mockup allowlist (no behavior change, next to the bottle hold).
 - Verification: API 34 files / 249 tests, API typecheck and bundle build pass; mobile 9 URL tests and typecheck pass. Not run: storefront (no storefront change), device/browser checks.
 - State: local until the PR below; not merged, not deployed. The live outage (database unreachable, N13) is unaffected by this code.
+
+
+## 2026-10-20 — current truth after PR and CI review
+
+- **Status:** read-only recovery review complete; documentation checkpoint prepared on `manus/current-truth-2026-10-20`.
+- **Last completed:** fetched all source refs/tags; confirmed `main` `a6aff31`, recovery `64cd04e`, no tags; inspected open PRs #67/#69/#71 and merged PR #72; checked latest PR checks and ran fresh read-only public/origin API probes.
+- **Stopped at:** PR #71 is green on its latest head but `DIRTY`/conflicting with current main. PR #73 already contains part of its hardening. No merge or source-code follow-up was started.
+- **Files/areas changed:** append-only status entries only in the report/queue/handoff files on this new branch; no application code or provider configuration.
+- **Remaining work:** owner N13 Neon target identification/restoration; Manus post-restoration read-only verification; conflict-aware review of remaining PR #71 safeguards; owner decisions for #67, browser testing, R2 M1, Photopea, phone, logs, D1, D5/T9, and N14.
+- **Blocker:** production readiness is 503 (`db=false`, `catalog=false`) and products are 500. The named backup repository is not resolvable, so backup refresh is blocked/unverified.
+- **Next safe action:** owner restores the authoritative Neon branch through the dashboard and reports only project/branch name plus time; then Manus reruns liveness/readiness/products. Claude must not claim an automatic relay or merge any PR.
+- **Verification:** latest PR #71 checks: Active app verification, build-and-check, security-scan, and Cloudflare Pages all SUCCESS. Fresh public and Render-origin probes: liveness 200, readiness 503, products 500. Nothing was merged, deployed, migrated, paid, ordered, or changed in production.

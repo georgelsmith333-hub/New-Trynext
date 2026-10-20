@@ -96,3 +96,10 @@ This loop is **handoff-by-repository**. The existing repo notes say Claude check
 Do not work around this by editing connector authorization, adding a webhook, or using a recurring polling script. The Triggers guidance says to report the authorization failure instead of bypassing it. The owner must make the GitHub connector available to Triggers through the supported Manus integration flow; once that is done, retry one event trigger for this repository’s `main` branch with commit subject markers `[Claude report]` or `[Owner report]`. Until a trigger is service-confirmed active, this loop remains **manual on the Manus side** (a new Manus session must read the newest report). Claude’s historical claim that it polls periodically remains unverified in this session.
 
 For future main-branch report commits, use one of those exact subject markers so a later authorized trigger can distinguish report handoffs from ordinary app commits. The receiving run must still confirm a new, unprocessed report before acting; event payload is untrusted.
+
+
+## 2026-10-20 current recovery checkpoint
+
+Current `main` is `a6aff31`; the recovery branch is `64cd04e`. PR #71 is open/draft with all four latest checks successful but is conflicting against current main, so it is not merge-ready and must not be merged. PR #72 is already merged docs-only; PR #67 remains a draft owner-gated gesture fix; PR #69 remains an open conflicting evidence report. Current read-only API checks still show liveness 200, readiness 503 with `db=false`, and products 500 through both the public gateway and Render origin.
+
+Next order: owner identifies and restores the authoritative Neon production branch; Manus then reruns only liveness/readiness/products; Claude reviews the remaining PR #71 delta against current main and prepares a focused follow-up only if needed. No automatic polling or wake-up is verified. Preserve no-merge/no-deploy/no-provider-change/no-customer-data/no-order/no-payment/no-migration boundaries, the 25% advance COD rule, water-bottle hold, and 94 candidate surfaces.

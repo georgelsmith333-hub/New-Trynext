@@ -65,3 +65,14 @@ If it works, Claude records the upload as verified.
 | M5b transform measurements | Writes a focused failing test first, traces the touch/pointer/Transformer event path, then prepares the smallest fix PR; asks the owner before merging or deploying. |
 | M6 lines | Reads sanitized fields and fixes any code cause with a test. |
 | D1–D4 answers | Applies them inside the safety rules; D1 image changes go through the admin or a reviewed change list, not a bulk script. |
+
+
+## 2026-10-20 current-truth reconciliation
+
+- `origin/main` is `a6aff31`; recovery `manus/recovery-phase1-2026-10-16` is `64cd04e`; no tags exist.
+- PR #71 is open/draft, latest head `64cd04e`, all four latest checks successful, but `DIRTY`/conflicting against current main because main advanced through PRs #72–#75. Do not merge. PR #73 already ported the activity-log read masking, storage-health error code, and mobile image resolver subset; review only the remaining distinct PR #71 delta through a focused follow-up if needed.
+- PR #72 is merged documentation-only and supplied N13. PR #67 is open/draft with green checks and remains owner-gated. PR #69 is open/non-draft, green checks, conflicting, and remains a separate evidence record; do not close it without owner approval.
+- Fresh read-only probes still show public and Render-origin liveness 200, readiness 503 (`db=false`, `catalog=false`), and products 500. The exact Render Neon target is unverified.
+- **Priority 1 owner gate:** identify the Render Neon project/branch privately, restore only the authoritative production branch in Neon, and report project/branch name plus time without sharing connection values. Only after that report should Manus rerun liveness/readiness/products.
+- **Repository-safe work:** no code merge or production action. Claude reviews current-main-vs-PR71 remaining deltas and may prepare a focused, conflict-free PR only; no browser dependency without the exact owner phrase `add the browser test`.
+- Backup refresh is blocked because the named backup repository was not resolvable; do not create a substitute without owner approval.

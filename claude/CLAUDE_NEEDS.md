@@ -229,3 +229,10 @@ The current highest-priority task is reproducing and fixing or classifying the l
   - **After it is restored:** Manus reruns L2/L3 (`/api/health/readiness` should be 200 with `db=true`, `/api/products` 200); Claude then records the site as healthy and moves on to the Manus recovery branch review.
 
 - 2026-10-19 (N14): **Decision needed on three Manus hardening changes Claude did NOT port** (from `manus/recovery-phase1-2026-10-16`). (a) Masking secrets when activity logs are written would break the rollback button: rollback writes the saved `before` values back, so a setting or customer rollback would overwrite real values with `[REDACTED]`. Claude ported masking on read only. (b) Dropping secret-like settings (keys containing token/secret/api key/password) from backup export and import means a restore will not bring back keys saved from the admin Secrets page. Answer `exclude secrets from backups` or `keep secrets in backups`. (c) The mockup "approved views" allowlist is identical to the current view list, so it changes nothing today and sits next to the water-bottle hold; skipped. Until you answer (b), backups behave as before.
+
+
+## 2026-10-20 current owner gate and repository status
+
+- **N13 remains open:** fresh read-only public and Render-origin probes still show liveness 200, readiness 503 (`db=false`, `catalog=false`), and `/api/products` 500. Owner must privately identify the Render-targeted Neon project/branch and restore only that authoritative branch; no connection values should be shared. Manus reruns only the three read-only API checks after the owner reports completion.
+- **PR reconciliation:** PR #71 is open/draft with green latest checks but conflicts with current `main` `a6aff31`; PR #73 already ported part of its hardening. PR #67 remains owner-gated; PR #69 remains separate open evidence; PR #72 is merged docs-only.
+- **Backup:** `georgelsmith333-hub/New-Trynext-backup-2026-10-16` was not resolvable by the authorized GitHub account during the current check. Backup refresh is blocked/unverified; no replacement repository was created.
