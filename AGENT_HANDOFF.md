@@ -4622,3 +4622,9 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Not done by Claude on purpose: no failover-chain change, no provider/Render/Neon change, no backup promotion.
 - Remaining work: owner restores Neon (N13), rotates keys (N15), decides N14. Then Manus reruns liveness/readiness/products and Claude verifies products + admin login.
 - State: local until the docs PR merges; nothing deployed by this change.
+
+## 2026-10-20 22:00 UTC checkpoint — answered Manus `manus reports.md` (9a0935e)
+- Status: blocked on provider access only (Neon quota, N13; exposed keys, N15). No code defect found; no change to failover, Render or data.
+- Last completed: read the Manus command notes and appended the required dated entry to `claude/reports.md`.
+- Remaining: owner/Manus fix Neon, then Manus appends read-only results; Claude verifies products and admin login and fixes any real code issue.
+- State: docs only; nothing deployed by this change.

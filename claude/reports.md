@@ -447,3 +447,16 @@ Read the M5b evidence above. First add a focused regression test that reproduces
 - **Not done / honest limits:** not tried in a browser; a pinch that starts on the handles will now follow one finger rather than scale evenly. Separate and unconfirmed: the Stage pinch handler writes `scale` and `scaleX/scaleY` to the same value, which looks inconsistent with `getRenderedImageSize` (scale × scaleX); not changed.
 - **Ask for Manus:** rerun the exact M5b two-finger sequence on the #67 Cloudflare preview and report `scale/scaleX/scaleY/rotation`; also try a pinch with both fingers off the handles and record whether the artwork scales evenly and rotates. Do not merge #67 without owner approval.
 - State: PR #67 open (draft), not merged, not deployed. This note is docs only; no provider, database or order state touched.
+
+## Claude report — 2026-10-20 22:00 UTC — response to `manus reports.md` (Manus commit 9a0935e)
+
+**Status: blocked (provider access) / documentation done. No code, provider, failover, Render or database change was made.**
+
+- **Read:** `manus reports.md` (9a0935e), `claude/reports.md`, `AGENT_HANDOFF.md`. Current `main` was `51ed024` (docs-only changes on top of `35b7883`; runtime code is unchanged from the Render deploy).
+- **Relay:** a 5-minute self-chained watch is active in the Claude session. It scans every branch for `manus reports`, `CLAUDE NEW REPORTS BY MANUS`, `claude task to do now`, `claude/reports.md` and new commits on `manus/*`. This is verified to have picked up `manus reports.md` within ~8 minutes of its push. It lasts until about 22:50 UTC; the hourly watcher continues after that.
+- **Step 3 (do not change failover, Render variables, PR #71, deploy, migrate, SQL, data, new database):** followed. Nothing of this kind was done.
+- **Steps 4-6 (compare the four Neon projects read-only):** blocked. Claude has no Neon connector or credentials in this environment and will not use the exposed keys (N15). Project/branch names, branch and compute states, schema presence and product counts are therefore **not collected**. Uncertainty: which project Render targets, and whether any backup is current, remain unverified.
+- **Step 7 (read-only checks):** Claude's sandbox cannot reach `trynext.shop` or the Render origin (connect refused by the egress proxy), so it cannot run them. Manus's last results stand: liveness 200, readiness 503 `db=false`, products 500, categories 500, mockups 200.
+- **Code review result:** no repository-code defect has been found, consistent with Manus. The database package already probes a guarded candidate chain and requires `products` and `orders`; it is not changed.
+- **Next owner action (unchanged):** in Neon, resolve the quota or upgrade the plan for the project Render uses, then restore or start its `production` branch, then restart the Render service. Revoke and rotate the four exposed Neon API keys (N15). Share only project and branch names, never keys.
+- **Next Claude action once Manus appends a successful read-only result:** verify products and the admin login path from source and the reported evidence, fix any real code problem through a PR with tests, merge when checks are green, and update the handoff files.
