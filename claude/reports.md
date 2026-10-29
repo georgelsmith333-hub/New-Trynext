@@ -481,3 +481,10 @@ This pass implemented the highest-confidence fixes from the owner’s mobile scr
 - **Fix:** `selectionDismissal.ts` keeps the selection for taps on controls, dialogs and the tools sheet (`data-studio-tools`); only inert background clears it. 36 files / 232 tests, typecheck, build and diff check pass.
 - **Not verified:** real phone, deployed preview, live AI provider quota, live catalog/mockups/settings. The 24px handles are under the usual 44px touch target; judge on a phone.
 - **Outage:** unchanged. Neon quota (N13) and key rotation (N15) still need the owner. No provider, failover or data change was made.
+
+
+## Claude report — review of owner commit ae64668 and the resilience branch — 2026-10-29
+- **PR #81 merged** (`83ce5d7`): taps in the Studio tools panel keep the selected artwork. 36 files / 232 tests, typecheck and build passed in CI.
+- **ae64668 (Crop direct, dismiss overlays), checked from `main`:** 36 files / 232 tests and typecheck pass. One line needs a real-phone check: `if (!insideCanvas && !shouldDismissSelectionOnOutsidePointer(...)) return;` no longer returns for taps *inside* the canvas, so those now fall through to `clearSelection()` unless the tap is on a `data-studio-selection-ui` element. The Konva `Transformer` (text and shape handles) and the artwork itself are drawn on the canvas, not DOM elements, so a tap on them may clear the selection first. I did not change it: the intent (dismiss on canvas taps) may be deliberate and I cannot run a phone. If a text or shape layer loses its handles when you grab them, restore `if (insideCanvas) return;` above that line.
+- **`manus/professional-resilience-2026-10-30` (2c9288e), not merged and not to be merged by Claude:** it changes `lib/db/src/index.ts` so the database is chosen only by configured order and no longer by row counts. That alters failover behaviour. It needs your explicit decision, and a dry run against the real candidate list, before it goes anywhere. It also changes the default product page size from 12 to 24.
+- **Outage:** unchanged. N13 (Neon quota / restore `production` branch) and N15 (rotate exposed keys) are still yours.

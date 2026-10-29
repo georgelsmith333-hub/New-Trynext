@@ -4636,3 +4636,8 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Not verified: real-phone gesture behaviour, deployed preview, live AI provider quota, live catalog/mockup/settings. The 24px handles are below the usual 44px touch target; judge on a real phone before changing.
 - Outage unchanged: Neon quota (N13) and key rotation (N15) are still owner/Manus items; no failover, provider or data change.
 - State: local until the PR below merges; nothing deployed by this change.
+
+## 2026-10-29 22:00 UTC checkpoint — reviewed ae64668 and the resilience branch
+- Status: PR #81 merged (`83ce5d7`). Owner commit `ae64668` (Crop direct, dismiss overlays) passes 232 tests and typecheck, but one line now clears selection on taps inside the canvas; flagged in `claude/reports.md` for a real-phone check (Konva Transformer handles).
+- `manus/professional-resilience-2026-10-30` changes database selection to configured order only (failover behaviour) plus a product page-size default; not merged, owner decision required.
+- Remaining: N13, N15, N14; real-phone Studio acceptance. State: docs only; nothing deployed by this change.
