@@ -76,12 +76,19 @@ describe("mobile Design Studio upload workflow", () => {
   it("uses one compositor authority and compact contextual artwork controls", () => {
     const canvas = readFileSync(new URL("./CanvasArea.tsx", import.meta.url), "utf8");
     const studio = readFileSync(new URL("./DesignStudioV2.tsx", import.meta.url), "utf8");
+    const imagePanel = readFileSync(new URL("./panels/ImagePanel.tsx", import.meta.url), "utf8");
 
     expect(canvas).toContain("{(!liveSurface || !liveEnabled) && mockup}");
     expect(canvas).toContain('className={`pointer-events-auto absolute h-6 w-6');
     expect(canvas).toContain('aria-label="Open artwork edit tools"');
     expect(canvas).toContain('aria-label="Open crop and extend tools"');
+    expect(canvas).toContain("onOpenCropTools?.()");
+    expect(canvas).toContain('data-studio-selection-ui="true"');
     expect(canvas).toContain("onDocumentPointerDown");
+    expect(studio).toContain('setDirectCropMode("crop")');
+    expect(studio).toContain("openCropMode={directCropMode}");
+    expect(studio).toContain("onCropModeOpened");
+    expect(imagePanel).toContain("setCropExtendMode(openCropMode)");
     expect(studio).toContain("configuredColorsByCategory");
     expect(studio).toContain("settings.studioLongsleeveColors");
     expect(studio).toContain("settings.studioHoodieColors");
