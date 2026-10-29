@@ -16,3 +16,22 @@
 - [ ] Verify the AI provider/API credentials and provider quota in the authorized production environment; no provider settings were changed here.
 - [ ] Verify the live database catalog, mockup asset coverage, and admin settings after deployment; no migration or production data write was performed here.
 - [ ] Owner approval is still required before merging, deploying, or changing Cloudflare, Render, Neon, GitHub, Photopea, or production settings.
+
+## Professional resilience follow-up
+
+- [x] Product API uses a bounded professional default of 24 items per page, while explicit requests remain capped and return pagination metadata.
+- [x] Database candidate selection follows configured authority order; independent database row counts no longer select the production write target.
+- [x] Admin Database Cluster copy distinguishes health/schema probes from safe transactional promotion and warns that independent Neon databases are not replicas.
+- [x] Add `docs/RESILIENCE_ARCHITECTURE.md` with the current Cloudflare → Render → Neon request flow, admin boundary, database roles, and quota policy.
+- [ ] Privately confirm the live Render database target is the approved `trynex-main-backup` / `main` source; do not paste the connection string into chat.
+- [ ] Identify and verify a genuinely synchronized transactional standby before enabling any write failover.
+- [ ] Configure Neon/Render quota alerts at 80% warning and 90% critical; repository code alone cannot obtain provider quota metrics.
+- [ ] If a second Render service is introduced, prove it as a stateless read-only origin before adding it to Cloudflare read routing.
+- [ ] Revoke and rotate the four Neon API keys previously exposed in chat history.
+
+## Studio correction pass
+
+- [x] Tapping or pressing outside the selected artwork's actual rotated frame clears the overlay even when the transparent Konva hitbox extends farther.
+- [x] A delayed tap after an outside long press cannot immediately reselect the artwork and restore the controls.
+- [x] Contextual Crop opens the crop dialog directly on mobile by keeping the ImagePanel mounted; Edit remains the separate full image-tools entry point.
+- [ ] Verify the final gesture timing, crop handles, apply/cancel behavior, and Edit/Crop transitions on a real phone after deployment.

@@ -95,4 +95,23 @@ describe("mobile Design Studio upload workflow", () => {
     expect(studio).toContain("settings.studioCapColors");
     expect(studio).toContain("settings.studioWaterbottleColors");
   });
+
+  it("dismisses outside the selected artwork frame without delayed long-press reselection", () => {
+    const canvas = readFileSync(new URL("./CanvasArea.tsx", import.meta.url), "utf8");
+
+    expect(canvas).toContain("isInsideSelectedArtwork");
+    expect(canvas).toContain("dismissIfOutsideSelectedArtwork");
+    expect(canvas).toContain("dismissedPointerUntilRef");
+    expect(canvas).toContain("Date.now() + 400");
+    expect(canvas).toContain("if (Date.now() < dismissedPointerUntilRef.current) return;");
+  });
+
+  it("keeps the direct Crop dialog mounted on mobile", () => {
+    const studio = readFileSync(new URL("./DesignStudioV2.tsx", import.meta.url), "utf8");
+    const cropCallback = studio.slice(studio.indexOf("onOpenCropTools"), studio.indexOf("overlay={", studio.indexOf("onOpenCropTools")));
+
+    expect(cropCallback).toContain('setDirectCropMode("crop")');
+    expect(cropCallback).toContain("if (isMobile) setMobileToolOpen(true)");
+    expect(cropCallback).not.toContain("setMobileToolOpen(false)");
+  });
 });

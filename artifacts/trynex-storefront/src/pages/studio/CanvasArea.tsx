@@ -152,6 +152,7 @@ export function CanvasArea({
   const drawingRef = useRef(false);
   const pinchRef = useRef<{ distance: number; angle: number; scale: number; rotation: number } | null>(null);
   const selectionGestureRef = useRef<SelectionGesture | null>(null);
+  const dismissedPointerUntilRef = useRef(0);
   const {
     layers,
     selectedIds,
@@ -256,6 +257,29 @@ export function CanvasArea({
 
   const getCanvasPoint = (event: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
     return getViewPoint(getClientPoint(event));
+  };
+
+  const isInsideSelectedArtwork = (point: CanvasPoint) => {
+    if (!selectedLayer || selectedIds.length !== 1 || (selectedLayer.face ?? "front") !== activeFace) return false;
+    const angle = (-selectedLayer.transform.rotation * Math.PI) / 180;
+    const dx = point.x - selectedCenter.x;
+    const dy = point.y - selectedCenter.y;
+    const localX = dx * Math.cos(angle) - dy * Math.sin(angle);
+    const localY = dx * Math.sin(angle) + dy * Math.cos(angle);
+    return Math.abs(localX) <= selectedArtworkDimensions.width / 2
+      && Math.abs(localY) <= selectedArtworkDimensions.height / 2;
+  };
+
+  const dismissIfOutsideSelectedArtwork = (point: CanvasPoint) => {
+    if (activeTool !== "select" || !selectedLayer || isInsideSelectedArtwork(point)) return false;
+    dismissedPointerUntilRef.current = Date.now() + 400;
+    clearSelection();
+    return true;
+  };
+
+  const handleLayerSelect = (layerId: string) => {
+    if (Date.now() < dismissedPointerUntilRef.current) return;
+    selectLayer(layerId);
   };
 
   const startSelectionGesture = (
@@ -429,6 +453,7 @@ export function CanvasArea({
           const stage = e.target.getStage();
           const point = getCanvasPoint(e);
           if (!stage || !point) return;
+          if (dismissIfOutsideSelectedArtwork(point)) return;
           const mapped = { x: Math.round((point.x - center.x) / scale), y: Math.round((point.y - center.y) / scale) };
 
           if (activeTool === "eyedrop") {
@@ -485,6 +510,7 @@ export function CanvasArea({
           }
           const point = getCanvasPoint(e);
           if (!stage || !point) return;
+          if (dismissIfOutsideSelectedArtwork(point)) return;
           const mapped = { x: Math.round((point.x - center.x) / scale), y: Math.round((point.y - center.y) / scale) };
           if (activeTool === "draw") {
             drawingRef.current = true;
@@ -542,7 +568,7 @@ export function CanvasArea({
               key={layer.id}
               layer={layer}
               isSelected={selectedIds.includes(layer.id)}
-              onSelect={() => selectLayer(layer.id)}
+              onSelect={() => handleLayerSelect(layer.id)}
               onOpenImageTools={layer.type === "image" ? onOpenImageTools : undefined}
               interactionOnly={interactionOnly}
               stageScale={scale}
