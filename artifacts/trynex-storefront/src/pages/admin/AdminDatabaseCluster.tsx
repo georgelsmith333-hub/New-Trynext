@@ -279,7 +279,7 @@ export default function AdminDatabaseCluster() {
               Database Cluster
             </h1>
             <p className="text-sm text-gray-400 mt-1">
-              Live failover chain status — automatic handoff when a Neon free-tier limit is reached.
+              Live database health and configured standby priority. Promotion is only safe when a standby is an approved, current transactional copy.
             </p>
           </div>
           <button
@@ -368,7 +368,7 @@ export default function AdminDatabaseCluster() {
                 </div>
                 <h2 className="text-sm font-bold text-white">Failover Chain</h2>
                 <span className="text-[10px] bg-gray-800 text-gray-400 px-2 py-0.5 rounded-full ml-1">
-                  Priority order — app switches to next when current fails
+                  Operator-approved priority — the app only considers healthy transactional candidates
                 </span>
               </div>
 
@@ -386,10 +386,11 @@ export default function AdminDatabaseCluster() {
               {/* Strategy note */}
               <div className="mt-5 p-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-[11px] text-gray-500 leading-relaxed">
                 <span className="text-orange-400 font-semibold">Strategy: </span>
-                When a Neon free-tier account hits its compute or connection limit, the
-                app automatically detects the failure at startup and promotes the next node
-                in this chain — serving traffic seamlessly from exactly where the previous
-                node left off (shared schema, same migrations).
+                The API probes configured candidates for connectivity and required
+                transactional schema. Candidate order is explicit; row counts do not
+                determine authority. Independent Neon databases are not automatically
+                migrated or synchronized, so a standby must be kept current and approved
+                before it can safely receive transactional traffic.
               </div>
             </div>
 
@@ -410,8 +411,9 @@ export default function AdminDatabaseCluster() {
 
               <div className="mt-5 p-3 bg-gray-800/50 border border-gray-700/50 rounded-xl text-[11px] text-gray-500 leading-relaxed">
                 <span className="text-blue-400 font-semibold">Note: </span>
-                Satellite databases hold independent data shards (products catalogue,
-                analytics events) and are not part of the transactional failover chain.
+                Satellite databases are observational or catalog-only stores. They are
+                not transactional failover targets and must not receive orders, payments,
+                admin mutations, or customer writes.
               </div>
             </div>
           </div>

@@ -16,7 +16,9 @@
  * database from silently becoming the live source of truth.
  *
  * The module probes all URLs at startup (non-blocking) and switches
- * transparently to the first reachable one. All callers use the same
+ * transparently to the first reachable configured candidate. Candidate order
+ * is the operator-approved authority order; row counts are telemetry only and
+ * must never decide which independent database receives production writes. All callers use the same
  * `db` and `pool` exports — no changes required elsewhere.
  */
 
@@ -160,17 +162,13 @@ async function probeCandidate(url: string): Promise<ProbeResult> {
   }
 }
 
-function dataScore(result: ProbeResult): number {
-  // Historical orders are the strongest signal for the operational database;
-  // products and mockups break ties between catalog mirrors.
-  return result.orders * 1_000_000 + result.products * 1_000 + result.mockups;
-}
-
 async function chooseBestCandidate(): Promise<{ url: string; result: ProbeResult; index: number } | null> {
   const probed = await Promise.all(urls.map(async (url, index) => ({ url, index, result: await probeCandidate(url) })));
   const healthy = probed.filter((item) => item.result.ok && item.result.pool);
   if (healthy.length === 0) return null;
-  healthy.sort((a, b) => dataScore(b.result) - dataScore(a.result) || a.index - b.index);
+  // A larger row count does not prove that a database is newer, complete, or
+  // safe for writes. The configured order is the only authority signal here.
+  healthy.sort((a, b) => a.index - b.index);
   const winner = healthy[0];
   for (const item of healthy.slice(1)) await item.result.pool!.end().catch(() => {});
   return winner;

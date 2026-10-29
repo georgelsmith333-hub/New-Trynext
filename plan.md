@@ -22,3 +22,19 @@ Make the active Design Studio behave like a professional mobile editor: realisti
 
 ## Boundaries
 No provider credentials, Cloudflare/Render/Neon setting changes, live migrations, customer-data access, Photopea activation, or production deployment are part of this repository change.
+
+## Professional resilience follow-up
+### Movement
+Operationally explicit, fail-closed commerce infrastructure: the storefront stays fast and public, while transactional authority remains singular and auditable.
+### Core principles
+- One authoritative write database; no row-count-based promotion.
+- Bounded, paginated catalog responses with explicit totals.
+- Primary-only writes and admin/AI operations.
+- Health probes are evidence, not proof of replica freshness.
+### Implementation scope
+1. Standardize the public product API default to 24 items per page while preserving explicit bounded limits and pagination metadata.
+2. Make database candidate selection honor configured authority order; row counts remain diagnostic telemetry only.
+3. Correct the admin database-cluster copy to distinguish connectivity/schema probes from safe transactional promotion.
+4. Add `docs/RESILIENCE_ARCHITECTURE.md` documenting the Cloudflare → Render → Neon flow, admin boundary, quota policy, and provider actions.
+### Infrastructure decisions not executable from the repository alone
+Automatic 80–90% quota-based migration requires provider quota metrics, synchronized transactional replication, freshness watermarks, promotion fencing, and a rollback plan. It must be configured and verified in Neon/Render/Cloudflare; this repository must not guess or silently switch to an independent database.
