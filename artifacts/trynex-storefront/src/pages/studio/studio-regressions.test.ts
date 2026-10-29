@@ -61,12 +61,12 @@ describe("Design Studio reliability contracts", () => {
 
   it("keeps image selection aligned to the printable area", () => {
     expect(canvasArea).toContain('aria-label="Printable area controls"');
-    expect(canvasArea).toContain("border-orange-400/70");
+    expect(canvasArea).toContain("border-orange-400/45");
     expect(canvasArea).toContain("Scale artwork from");
     expect(canvasArea).toContain("Rotate artwork");
     expect(canvasArea).toContain('borderEnabled={selectedLayer?.type !== "image"}');
     expect(canvasArea).toContain("selectedArtworkDimensions");
-    expect(canvasArea).toContain("h-11 w-11");
+    expect(canvasArea).toContain("h-6 w-6");
   });
 
   it("keeps the photoreal compositor and mobile purchase action available", () => {

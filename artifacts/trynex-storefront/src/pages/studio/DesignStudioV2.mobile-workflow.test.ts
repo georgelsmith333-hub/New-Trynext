@@ -72,4 +72,20 @@ describe("mobile Design Studio upload workflow", () => {
     expect(canvas).toContain('overscrollBehavior: "contain"');
     expect(canvas).toContain("e.evt.preventDefault()");
   });
+
+  it("uses one compositor authority and compact contextual artwork controls", () => {
+    const canvas = readFileSync(new URL("./CanvasArea.tsx", import.meta.url), "utf8");
+    const studio = readFileSync(new URL("./DesignStudioV2.tsx", import.meta.url), "utf8");
+
+    expect(canvas).toContain("{(!liveSurface || !liveEnabled) && mockup}");
+    expect(canvas).toContain('className={`pointer-events-auto absolute h-6 w-6');
+    expect(canvas).toContain('aria-label="Open artwork edit tools"');
+    expect(canvas).toContain('aria-label="Open crop and extend tools"');
+    expect(canvas).toContain("onDocumentPointerDown");
+    expect(studio).toContain("configuredColorsByCategory");
+    expect(studio).toContain("settings.studioLongsleeveColors");
+    expect(studio).toContain("settings.studioHoodieColors");
+    expect(studio).toContain("settings.studioCapColors");
+    expect(studio).toContain("settings.studioWaterbottleColors");
+  });
 });

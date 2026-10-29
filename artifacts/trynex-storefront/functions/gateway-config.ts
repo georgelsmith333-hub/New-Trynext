@@ -30,8 +30,14 @@ export const REQUEST_TIMEOUT_MS = 3_500;
 /** Expensive admin PSD preparation gets an explicit budget without weakening
  * the timeout used by ordinary API writes. */
 export const SMART_MOCKUP_BROWSER_PAYLOAD_TIMEOUT_MS = 30_000;
+/** AI image generation/reference preparation may legitimately take longer than
+ * an ordinary API request, but remains bounded so a provider cannot hang the
+ * Pages request indefinitely. */
+export const AI_PRIMARY_TIMEOUT_MS = 45_000;
 export const LONG_RUNNING_PRIMARY_PREFIXES = [
   "/admin/smart-mockups/browser-payload",
+  "/ai/generate",
+  "/ai/reference",
 ] as const;
 export const READ_TOTAL_BUDGET_MS = 7_000;
 export const RETRYABLE_STATUSES = new Set([502, 503, 504]);
@@ -147,7 +153,10 @@ export function isPrimaryOnlyRead(method: string, path: string): boolean {
 }
 
 export function primaryRequestTimeoutMs(path: string): number {
-  return LONG_RUNNING_PRIMARY_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`))
-    ? SMART_MOCKUP_BROWSER_PAYLOAD_TIMEOUT_MS
-    : REQUEST_TIMEOUT_MS;
+  if (path === "/ai/generate" || path.startsWith("/ai/generate/")) return AI_PRIMARY_TIMEOUT_MS;
+  if (path === "/ai/reference" || path.startsWith("/ai/reference/")) return AI_PRIMARY_TIMEOUT_MS;
+  if (path === "/admin/smart-mockups/browser-payload" || path.startsWith("/admin/smart-mockups/browser-payload/")) {
+    return SMART_MOCKUP_BROWSER_PAYLOAD_TIMEOUT_MS;
+  }
+  return REQUEST_TIMEOUT_MS;
 }
