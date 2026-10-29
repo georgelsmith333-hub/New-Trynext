@@ -1491,7 +1491,10 @@ export default function DesignStudioV2() {
                   onOpenCropTools={() => {
                     setActiveTab("upload");
                     setDirectCropMode("crop");
-                    if (isMobile) setMobileToolOpen(false);
+                    // Keep ImagePanel mounted so its controlled crop mode can
+                    // open immediately; the dialog itself is fixed above the
+                    // sheet and is the direct Crop action.
+                    if (isMobile) setMobileToolOpen(true);
                   }}
                   overlay={activePsdMaterialEffects.length > 0 && hasVisibleArtworkOnFace ? (
                     <div className="absolute inset-0 z-[5] pointer-events-none" style={{ clipPath: materialEffectClipPath }} aria-hidden="true">

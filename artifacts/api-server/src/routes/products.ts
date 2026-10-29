@@ -1,5 +1,12 @@
 import { Router, type IRouter } from "express";
 import { normalizePriceRange, parsePriceBound } from "../lib/priceRange";
+
+/**
+ * Keep anonymous catalog payloads useful without forcing every consumer to
+ * download the entire catalog. Storefront pages may request their own size
+ * explicitly; 24 is the stable API default for direct links and integrations.
+ */
+export const DEFAULT_PRODUCT_PAGE_SIZE = 24;
 import { z } from "zod";
 import { db, productsTable, categoriesTable } from "@workspace/db";
 import { eq, ilike, or, and, sql, desc, asc } from "drizzle-orm";
@@ -180,13 +187,13 @@ function mapProduct(p: any, categoryName?: string | null) {
 
 router.get("/products", async (req, res) => {
   try {
-    const { categoryId: rawCategoryId, category, search, featured, customizable, page = "1", limit = "12", sort } = req.query;
+    const { categoryId: rawCategoryId, category, search, featured, customizable, page = "1", limit = String(DEFAULT_PRODUCT_PAGE_SIZE), sort } = req.query;
     const includeTotal = req.query.includeTotal !== "false";
     const { min: minPrice, max: maxPrice } = normalizePriceRange(parsePriceBound(req.query.minPrice), parsePriceBound(req.query.maxPrice));
     // Accept both the canonical API name and the storefront-friendly alias.
     const categoryId = rawCategoryId ?? category;
     const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10) || 12));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10) || DEFAULT_PRODUCT_PAGE_SIZE));
     const offset = (pageNum - 1) * limitNum;
 
     // Check the local cache before consulting Redis. This keeps repeat visits
