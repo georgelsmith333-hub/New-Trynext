@@ -245,6 +245,7 @@ export default function DesignStudioV2() {
   const previewRef = useRef<HTMLDivElement>(null);
   const [canvasSize, setCanvasSize] = useState(600);
   const [imageAction, setImageAction] = useState<"remove-bg" | "upscale" | "auto-fix" | null>(null);
+  const [directCropMode, setDirectCropMode] = useState<"crop" | "extend" | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   // A failed Add to Cart must stay visible (and retryable) after the toast is gone.
   const [cartError, setCartError] = useState<string | null>(null);
@@ -1487,6 +1488,11 @@ export default function DesignStudioV2() {
                     setActiveTab("upload");
                     if (isMobile) setMobileToolOpen(true);
                   }}
+                  onOpenCropTools={() => {
+                    setActiveTab("upload");
+                    setDirectCropMode("crop");
+                    if (isMobile) setMobileToolOpen(false);
+                  }}
                   overlay={activePsdMaterialEffects.length > 0 && hasVisibleArtworkOnFace ? (
                     <div className="absolute inset-0 z-[5] pointer-events-none" style={{ clipPath: materialEffectClipPath }} aria-hidden="true">
                       {activePsdMaterialEffects.map((effect) => (
@@ -1576,6 +1582,8 @@ export default function DesignStudioV2() {
                               onUpscale={() => void handleUpscale()}
                               onAutoFix={() => void handleAutoFix()}
                               onOpenAiReference={() => setActiveTab("ai")}
+                              openCropMode={directCropMode}
+                              onCropModeOpened={() => setDirectCropMode(null)}
                               onApplyImage={(dataUrl) => replaceSelectedImage(dataUrl)}
                               busyAction={imageAction}
                             />

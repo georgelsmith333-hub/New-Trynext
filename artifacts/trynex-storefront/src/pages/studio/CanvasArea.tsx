@@ -70,6 +70,8 @@ interface Props {
   onPickColor?: (hex: string) => void;
   /** Opens the full image tools workflow for an image-layer double activation. */
   onOpenImageTools?: () => void;
+  /** Opens the crop/extend dialog directly without opening the tool sheet. */
+  onOpenCropTools?: () => void;
 }
 
 function getClientPoint(event: Konva.KonvaEventObject<MouseEvent | TouchEvent>) {
@@ -144,6 +146,7 @@ export function CanvasArea({
   onDrawEnd,
   onPickColor,
   onOpenImageTools,
+  onOpenCropTools,
 }: Props) {
   const trRef = useRef<Konva.Transformer>(null);
   const drawingRef = useRef(false);
@@ -234,7 +237,8 @@ export function CanvasArea({
     const onDocumentPointerDown = (event: PointerEvent) => {
       const target = event.target;
       const insideCanvas = target instanceof Node && !!rootRef.current?.contains(target);
-      if (!shouldDismissSelectionOnOutsidePointer(target, insideCanvas)) return;
+      if (target instanceof Element && target.closest("[data-studio-selection-ui='true']")) return;
+      if (!insideCanvas && !shouldDismissSelectionOnOutsidePointer(target, insideCanvas)) return;
       if (selectedLayer) clearSelection();
     };
     document.addEventListener("pointerdown", onDocumentPointerDown, true);
@@ -594,6 +598,7 @@ export function CanvasArea({
               Print area
             </span>
             <div
+              data-studio-selection-ui="true"
               className="pointer-events-none absolute border border-slate-700/80 shadow-[0_0_0_1px_rgba(255,255,255,0.8)]"
               style={{
                 left: selectedCenter.x,
@@ -640,6 +645,7 @@ export function CanvasArea({
         )}
         {imageToolbarPosition && selectedLayer && selectedLayer.type === "image" && (
           <div
+            data-studio-selection-ui="true"
             className="absolute z-30 flex items-center gap-1 rounded-2xl border border-slate-200/90 bg-white/95 p-1 shadow-[0_8px_24px_rgba(15,23,42,0.16)] backdrop-blur"
             style={{ left: imageToolbarPosition.left, top: imageToolbarPosition.top }}
             role="toolbar"
@@ -661,7 +667,7 @@ export function CanvasArea({
               className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[10px] font-black text-slate-700 transition hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
               aria-label="Open crop and extend tools"
               onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
-              onClick={(event) => { event.preventDefault(); event.stopPropagation(); onOpenImageTools?.(); }}
+              onClick={(event) => { event.preventDefault(); event.stopPropagation(); onOpenCropTools?.(); }}
             >
               <Crop className="h-3.5 w-3.5" aria-hidden="true" />
               Crop
@@ -670,6 +676,7 @@ export function CanvasArea({
         )}
         {deleteButtonPosition && (
           <button
+            data-studio-selection-ui="true"
             type="button"
             aria-label={`Delete ${selectedLayer?.name || "selected artwork"}`}
             title="Delete selected artwork"
