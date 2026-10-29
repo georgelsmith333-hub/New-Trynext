@@ -6,7 +6,7 @@ import { DesignLayer } from "./DesignLayer";
 import { Layer as LayerType, PrintZone } from "./types";
 import { LiveCompositorPreview } from "./LiveCompositorPreview";
 import type { ComposerLayer, UnifiedMockupSurface } from "../design-studio/composer";
-import { RotateCw, X } from "lucide-react";
+import { Crop, RotateCw, SlidersHorizontal, X } from "lucide-react";
 import { getRenderedImageSize } from "./transformGeometry";
 
 interface CanvasPoint {
@@ -190,15 +190,21 @@ export function CanvasArea({
   const deleteButtonPosition = (() => {
     if (!selectedLayer || selectedIds.length !== 1 || (selectedLayer.face ?? "front") !== activeFace) return null;
     const angle = (selectedLayer.transform.rotation * Math.PI) / 180;
-    const localX = selectedArtworkDimensions.width / 2 + 22;
-    const localY = -selectedArtworkDimensions.height / 2 - 22;
+    const localX = selectedArtworkDimensions.width / 2 + 18;
+    const localY = -selectedArtworkDimensions.height / 2 - 18;
     const x = selectedCenter.x + localX * Math.cos(angle) - localY * Math.sin(angle) - 22;
     const y = selectedCenter.y + localX * Math.sin(angle) + localY * Math.cos(angle) - 22;
     return {
-      left: Math.max(4, Math.min(width - 48, x)),
-      top: Math.max(4, Math.min(height - 48, y)),
+      left: Math.max(4, Math.min(width - 36, x)),
+      top: Math.max(4, Math.min(height - 36, y)),
     };
   })();
+  const imageToolbarPosition = selectedLayer && selectedLayer.type === "image"
+    ? {
+        left: Math.max(8, Math.min(width - 196, selectedCenter.x - 98)),
+        top: Math.max(8, selectedCenter.y - selectedArtworkDimensions.height / 2 - 48),
+      }
+    : null;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -221,6 +227,17 @@ export function CanvasArea({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [activeFace, clearSelection, deleteLayer, selectedLayer]);
+
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onDocumentPointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && rootRef.current?.contains(target)) return;
+      if (selectedLayer) clearSelection();
+    };
+    document.addEventListener("pointerdown", onDocumentPointerDown, true);
+    return () => document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+  }, [clearSelection, selectedLayer]);
 
   const getViewPoint = (source: { clientX: number; clientY: number }) => {
     const bounds = viewRef.current?.getBoundingClientRect();
@@ -351,6 +368,7 @@ export function CanvasArea({
 
   return (
     <div
+      ref={rootRef}
       className="relative rounded-3xl overflow-hidden select-none"
       style={{
         width,
@@ -373,7 +391,7 @@ export function CanvasArea({
           height,
         }}
       >
-        {mockup}
+        {(!liveSurface || !liveEnabled) && mockup}
         {liveSurface && liveGarmentColor && liveLayers && (
           <LiveCompositorPreview
             width={width}
@@ -567,14 +585,14 @@ export function CanvasArea({
             }}
           >
             <div
-              className="absolute border-2 border-dashed border-orange-400/70"
+              className="absolute border border-dashed border-orange-400/45"
               style={{ left: pz.x, top: pz.y, width: pz.w, height: pz.h }}
             />
-            <span className="absolute -top-6 left-0 rounded-full bg-orange-600 px-2 py-1 text-[9px] font-black uppercase tracking-[0.16em] text-white shadow-sm">
+            <span className="absolute -top-5 left-0 rounded-full bg-slate-900/85 px-2 py-1 text-[8px] font-black uppercase tracking-[0.14em] text-white shadow-sm">
               Print area
             </span>
             <div
-              className="pointer-events-none absolute border-2 border-orange-500 shadow-[0_0_0_1px_rgba(255,255,255,0.8)]"
+              className="pointer-events-none absolute border border-slate-700/80 shadow-[0_0_0_1px_rgba(255,255,255,0.8)]"
               style={{
                 left: selectedCenter.x,
                 top: selectedCenter.y,
@@ -585,20 +603,20 @@ export function CanvasArea({
               }}
             >
               {([
-                ["nw", "-left-6 -top-6 cursor-nwse-resize"],
-                ["n", "left-1/2 -top-6 -translate-x-1/2 cursor-ns-resize"],
-                ["ne", "-right-6 -top-6 cursor-nesw-resize"],
-                ["e", "-right-6 top-1/2 -translate-y-1/2 cursor-ew-resize"],
-                ["se", "-bottom-6 -right-6 cursor-nwse-resize"],
-                ["s", "-bottom-6 left-1/2 -translate-x-1/2 cursor-ns-resize"],
-                ["sw", "-bottom-6 -left-6 cursor-nesw-resize"],
-                ["w", "-left-6 top-1/2 -translate-y-1/2 cursor-ew-resize"],
+                    ["nw", "-left-3 -top-3 cursor-nwse-resize"],
+                    ["n", "left-1/2 -top-3 -translate-x-1/2 cursor-ns-resize"],
+                    ["ne", "-right-3 -top-3 cursor-nesw-resize"],
+                    ["e", "-right-3 top-1/2 -translate-y-1/2 cursor-ew-resize"],
+                    ["se", "-bottom-3 -right-3 cursor-nwse-resize"],
+                    ["s", "-bottom-3 left-1/2 -translate-x-1/2 cursor-ns-resize"],
+                    ["sw", "-bottom-3 -left-3 cursor-nesw-resize"],
+                    ["w", "-left-3 top-1/2 -translate-y-1/2 cursor-ew-resize"],
               ] as Array<[PrintFrameHandle, string]>).map(([handle, className]) => (
                 <button
                   key={handle}
                   type="button"
                   aria-label={`Scale artwork from ${handle}`}
-                  className={`pointer-events-auto absolute h-11 w-11 rounded-full border-2 border-white bg-orange-600 shadow-md transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 ${className}`}
+                  className={`pointer-events-auto absolute h-6 w-6 rounded-full border-2 border-white bg-slate-800 shadow-[0_2px_8px_rgba(15,23,42,0.28)] transition hover:bg-orange-500 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300 ${className}`}
                   style={{ touchAction: "none" }}
                   onPointerDown={(event) => startSelectionGesture(event, "scale", handle)}
                 />
@@ -606,16 +624,46 @@ export function CanvasArea({
               <button
                 type="button"
                 aria-label="Rotate artwork"
-                className="pointer-events-auto absolute left-1/2 -top-[4.5rem] flex h-11 w-11 -translate-x-1/2 items-center justify-center rounded-full border-2 border-white bg-slate-900 text-white shadow-md transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+                className="pointer-events-auto absolute left-1/2 -top-12 flex h-8 w-8 -translate-x-1/2 items-center justify-center rounded-full border-2 border-white bg-slate-900 text-white shadow-[0_3px_10px_rgba(15,23,42,0.3)] transition hover:bg-orange-500 hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
                 style={{ touchAction: "none" }}
                 onPointerDown={(event) => startSelectionGesture(event, "rotate")}
               >
                 <RotateCw className="h-4 w-4" aria-hidden="true" />
               </button>
-              <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white/95 px-2 py-1 text-[10px] font-bold text-slate-600 shadow-sm">
-                Drag artwork · handles resize
+              <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-slate-200 bg-white/95 px-2 py-1 text-[9px] font-bold text-slate-600 shadow-sm">
+                Drag · resize · rotate
               </span>
             </div>
+          </div>
+        )}
+        {imageToolbarPosition && selectedLayer && selectedLayer.type === "image" && (
+          <div
+            className="absolute z-30 flex items-center gap-1 rounded-2xl border border-slate-200/90 bg-white/95 p-1 shadow-[0_8px_24px_rgba(15,23,42,0.16)] backdrop-blur"
+            style={{ left: imageToolbarPosition.left, top: imageToolbarPosition.top }}
+            role="toolbar"
+            aria-label="Artwork tools"
+          >
+            <button
+              type="button"
+              className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[10px] font-black text-slate-700 transition hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+              aria-label="Open artwork edit tools"
+              onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
+              onClick={(event) => { event.preventDefault(); event.stopPropagation(); onOpenImageTools?.(); }}
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
+              Edit
+            </button>
+            <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
+            <button
+              type="button"
+              className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[10px] font-black text-slate-700 transition hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
+              aria-label="Open crop and extend tools"
+              onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
+              onClick={(event) => { event.preventDefault(); event.stopPropagation(); onOpenImageTools?.(); }}
+            >
+              <Crop className="h-3.5 w-3.5" aria-hidden="true" />
+              Crop
+            </button>
           </div>
         )}
         {deleteButtonPosition && (
@@ -639,7 +687,7 @@ export function CanvasArea({
                 if (selectedLayer) deleteLayer(selectedLayer.id);
               }
             }}
-            className="absolute z-30 flex h-11 w-11 items-center justify-center rounded-full border-2 border-white bg-red-600 text-white shadow-[0_4px_14px_rgba(185,28,28,0.4)] transition hover:bg-red-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-red-200 active:scale-95"
+            className="absolute z-30 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-red-600 text-white shadow-[0_3px_10px_rgba(185,28,28,0.35)] transition hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-200 active:scale-95"
             style={{
               left: deleteButtonPosition.left,
               top: deleteButtonPosition.top,
