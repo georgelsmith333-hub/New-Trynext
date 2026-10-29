@@ -8,6 +8,7 @@ import { LiveCompositorPreview } from "./LiveCompositorPreview";
 import type { ComposerLayer, UnifiedMockupSurface } from "../design-studio/composer";
 import { Crop, RotateCw, SlidersHorizontal, X } from "lucide-react";
 import { getRenderedImageSize } from "./transformGeometry";
+import { shouldDismissSelectionOnOutsidePointer } from "./selectionDismissal";
 
 interface CanvasPoint {
   x: number;
@@ -232,7 +233,8 @@ export function CanvasArea({
   useEffect(() => {
     const onDocumentPointerDown = (event: PointerEvent) => {
       const target = event.target;
-      if (target instanceof Node && rootRef.current?.contains(target)) return;
+      const insideCanvas = target instanceof Node && !!rootRef.current?.contains(target);
+      if (!shouldDismissSelectionOnOutsidePointer(target, insideCanvas)) return;
       if (selectedLayer) clearSelection();
     };
     document.addEventListener("pointerdown", onDocumentPointerDown, true);
