@@ -1,6 +1,6 @@
 import { Slider } from "@/components/ui/slider";
 import { Crop, Expand, FlipHorizontal, FlipVertical, Sun, Contrast, Droplets, Eraser, Maximize2, Loader2, Wand2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDesignStore, useSelectedLayer } from "@/hooks/useDesignStore";
 import { ImageCropExtendDialog } from "./ImageCropExtendDialog";
 
@@ -11,14 +11,22 @@ interface ImagePanelProps {
   onUpscale?: () => void;
   onAutoFix?: () => void;
   onOpenAiReference?: () => void;
+  openCropMode?: "crop" | "extend" | null;
+  onCropModeOpened?: () => void;
   onApplyImage?: (dataUrl: string) => Promise<void> | void;
   busyAction?: ImageAction;
 }
 
-export function ImagePanel({ onRemoveBackground, onUpscale, onAutoFix, onOpenAiReference, onApplyImage, busyAction = null }: ImagePanelProps) {
+export function ImagePanel({ onRemoveBackground, onUpscale, onAutoFix, onOpenAiReference, openCropMode = null, onCropModeOpened, onApplyImage, busyAction = null }: ImagePanelProps) {
   const layer = useSelectedLayer();
   const updateLayer = useDesignStore((s) => s.updateLayer);
   const [cropExtendMode, setCropExtendMode] = useState<"crop" | "extend" | null>(null);
+
+  useEffect(() => {
+    if (!openCropMode) return;
+    setCropExtendMode(openCropMode);
+    onCropModeOpened?.();
+  }, [onCropModeOpened, openCropMode]);
 
   if (!layer || layer.type !== "image") {
     return <div className="p-4 text-[11px] text-gray-400">Select an image layer to adjust.</div>;
