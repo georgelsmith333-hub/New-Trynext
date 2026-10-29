@@ -4628,3 +4628,11 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Last completed: read the Manus command notes and appended the required dated entry to `claude/reports.md`.
 - Remaining: owner/Manus fix Neon, then Manus appends read-only results; Claude verifies products and admin login and fixes any real code issue.
 - State: docs only; nothing deployed by this change.
+
+## 2026-10-29 checkpoint — Studio recovery review (owner commit c9d802f) and selection fix
+- Status: the owner pushed Manus's Studio recovery change straight to `main` (`c9d802f`; same 10 files as `manus/design-studio-recovery-2026-10-30`, which was reported as unmerged). Re-ran it from `main`: 35 files / 224 tests, typecheck and build pass, matching Manus.
+- Defect found by code review: the new document-level "tap outside clears selection" handler also fired for taps in the Studio tools panel (`ImagePanel`, text and colour controls), which sits outside the canvas root and only renders while a layer is selected. Tapping Remove background, Upscale, Auto-fix or a colour would clear the selection and unmount the panel.
+- Fix: `selectionDismissal.ts` decides the dismissal; taps on buttons, inputs, dialogs, sliders, tabs and anything inside the tools sheet (`data-studio-tools`) keep the selection, only inert background clears it. Eight new tests; storefront suite now 36 files / 232 tests; typecheck, build and `git diff --check` pass.
+- Not verified: real-phone gesture behaviour, deployed preview, live AI provider quota, live catalog/mockup/settings. The 24px handles are below the usual 44px touch target; judge on a real phone before changing.
+- Outage unchanged: Neon quota (N13) and key rotation (N15) are still owner/Manus items; no failover, provider or data change.
+- State: local until the PR below merges; nothing deployed by this change.

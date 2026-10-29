@@ -562,3 +562,11 @@ does not mean production was changed or verified.
 ## 2026-10-11 — M5b diagnosis
 
 - Two-finger pinch landed on two resize handles; `scaleX` hit the 0.15 floor. Fix is PR #67 (draft, not merged, not verified in a browser). Needs Manus rerun on the preview and owner approval.
+
+
+## 2026-10-29 — Studio recovery review and selection fix
+
+- [x] Verified owner commit `c9d802f` (Manus Studio recovery) from `main`: 35 files / 224 tests, typecheck and build pass.
+- [x] Found and fixed a regression: tapping the Studio tools panel cleared the selected artwork and unmounted the image tools. New `selectionDismissal.ts` plus tests (36 files / 232 tests).
+- [ ] Owner/Manus: run the real-phone sequence (upload, tap, drag/resize/rotate, double tap, Edit/Crop, then use Remove background or Auto-fix, tap outside). Also check the 24px handles feel usable.
+- [ ] Owner/Manus: live AI provider quota, catalog, mockup and settings checks after deploy. N13 and N15 are unchanged.

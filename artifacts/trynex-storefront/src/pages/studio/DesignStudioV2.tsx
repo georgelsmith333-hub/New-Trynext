@@ -1535,7 +1535,7 @@ export default function DesignStudioV2() {
           )}
 
           {/* ═══════ RIGHT PANEL / MOBILE BOTTOM SHEET ═══════ */}
-          <div className={`md:w-[320px] lg:w-[340px] shrink-0 flex flex-col gap-4 transition-all duration-300
+          <div data-studio-tools className={`md:w-[320px] lg:w-[340px] shrink-0 flex flex-col gap-4 transition-all duration-300
             ${isMobile ? `fixed bottom-0 left-0 right-0 z-[70] bg-[#faf9f6] rounded-t-[32px] shadow-2xl overflow-hidden transform ${mobileToolOpen ? 'translate-y-0' : 'translate-y-full'}` : 'relative'}`}
             style={isMobile ? { maxHeight: "85vh" } : {}}>
             

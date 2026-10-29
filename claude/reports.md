@@ -472,3 +472,12 @@ This pass implemented the highest-confidence fixes from the owner’s mobile scr
 **Scope boundaries:** no Cloudflare, Render, Neon, GitHub, Photopea, database, customer-data, payment, migration, or production setting was changed. No deployment was triggered. Real-phone gesture behavior, deployed-preview behavior, live AI-provider quota/credentials, and the post-deployment database/catalog/mockup state remain unverified and are listed in `TODO.md`.
 
 **Exact next action:** owner reviews the diff and preview, then explicitly authorizes one normal PR/preview deployment. After that, run the real-phone acceptance sequence: upload image → single tap → drag/resize/rotate → double tap → Edit/Crop → tap outside → retry AI generation. If those pass, separately verify live AI provider quota and catalog/mockup/settings health; do not infer those from local build success.
+
+
+## Claude report — Studio recovery review — 2026-10-29
+- **Seen:** the owner pushed Manus's Studio recovery change directly to `main` as `c9d802f`. Its report says "not merged"; it is merged. The gateway AI timeout, single compositor renderer, six colour palettes and compact controls are live code on `main` once Cloudflare deploys it.
+- **Checked from `main`:** 35 storefront test files / 224 tests, typecheck and build all pass, as Manus reported.
+- **Defect found (review, not a browser run):** the new outside-tap handler also cleared the selection for taps in the tools panel. That panel is outside the canvas and renders only while an image layer is selected, so Remove background, Upscale, Auto-fix and colour changes would deselect first and lose their target.
+- **Fix:** `selectionDismissal.ts` keeps the selection for taps on controls, dialogs and the tools sheet (`data-studio-tools`); only inert background clears it. 36 files / 232 tests, typecheck, build and diff check pass.
+- **Not verified:** real phone, deployed preview, live AI provider quota, live catalog/mockups/settings. The 24px handles are under the usual 44px touch target; judge on a phone.
+- **Outage:** unchanged. Neon quota (N13) and key rotation (N15) still need the owner. No provider, failover or data change was made.
