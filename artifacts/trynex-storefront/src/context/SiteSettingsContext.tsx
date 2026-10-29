@@ -41,7 +41,11 @@ interface SiteSettings {
   googleClientId: string;
   googleSiteVerification: string;
   studioTshirtColors: string;
+  studioLongsleeveColors: string;
+  studioHoodieColors: string;
   studioMugColors: string;
+  studioCapColors: string;
+  studioWaterbottleColors: string;
   studioTshirtPrice: number;
   studioMugPrice: number;
   studioHoodiePrice: number;
@@ -166,7 +170,11 @@ const defaults: SiteSettings = {
   googleClientId: c("googleClientId") || "",
   googleSiteVerification: c("googleSiteVerification") || "",
   studioTshirtColors: c("studioTshirtColors") || "",
+  studioLongsleeveColors: c("studioLongsleeveColors") || "",
+  studioHoodieColors: c("studioHoodieColors") || "",
   studioMugColors: c("studioMugColors") || "",
+  studioCapColors: c("studioCapColors") || "",
+  studioWaterbottleColors: c("studioWaterbottleColors") || "",
   // Published custom-design defaults: T-shirt ৳450 + ৳99; mug ৳449 + ৳99.
   studioTshirtPrice: Number(c("studioTshirtPrice")) || 450,
   studioMugPrice: Number(c("studioMugPrice")) || 449,

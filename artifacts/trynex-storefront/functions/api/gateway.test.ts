@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { onRequest, __resetGatewayState } from "./[[path]]";
+import { AI_PRIMARY_TIMEOUT_MS, primaryRequestTimeoutMs } from "../gateway-config";
 
 type GatewayContext = Parameters<typeof onRequest>[0];
 
@@ -185,6 +186,12 @@ describe("four-render multi-route Pages gateway", () => {
     expect(timeoutSignal).toBeDefined();
     expect(timeoutSignal?.aborted).toBe(false);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("gives AI generation and reference preparation their bounded long-running budget", () => {
+    expect(primaryRequestTimeoutMs("/ai/generate")).toBe(AI_PRIMARY_TIMEOUT_MS);
+    expect(primaryRequestTimeoutMs("/ai/reference")).toBe(AI_PRIMARY_TIMEOUT_MS);
+    expect(primaryRequestTimeoutMs("/orders")).toBeLessThan(AI_PRIMARY_TIMEOUT_MS);
   });
 
   it("pins admin and authenticated reads to the PRIMARY (no standby leak)", async () => {

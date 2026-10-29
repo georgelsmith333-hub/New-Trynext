@@ -1270,7 +1270,15 @@ export default function DesignStudioV2() {
 
   const studioColors = useMemo(() => {
     try {
-      const raw = isMug ? settings.studioMugColors : selectedProduct.category === "tshirt" ? settings.studioTshirtColors : null;
+      const configuredColorsByCategory: Record<DesignProduct["category"], string | undefined> = {
+        tshirt: settings.studioTshirtColors,
+        longsleeve: settings.studioLongsleeveColors,
+        hoodie: settings.studioHoodieColors,
+        mug: settings.studioMugColors,
+        cap: settings.studioCapColors,
+        waterbottle: settings.studioWaterbottleColors,
+      };
+      const raw = configuredColorsByCategory[selectedProduct.category];
       const arr = raw ? JSON.parse(raw) : null;
       if (Array.isArray(arr) && arr.length > 0) {
         const canonical = new Map(selectedProduct.colors.map(color => [color.hex.toLowerCase(), color]));
@@ -1282,7 +1290,15 @@ export default function DesignStudioV2() {
       }
     } catch {}
     return selectedProduct.colors;
-  }, [isMug, settings.studioMugColors, settings.studioTshirtColors, selectedProduct]);
+  }, [
+    selectedProduct,
+    settings.studioTshirtColors,
+    settings.studioLongsleeveColors,
+    settings.studioHoodieColors,
+    settings.studioMugColors,
+    settings.studioCapColors,
+    settings.studioWaterbottleColors,
+  ]);
 
   const currentFaceLayers = useMemo(() => layers.filter(l => (l.face ?? "front") === activeFace), [layers, activeFace]);
   const hasVisibleArtworkOnFace = currentFaceLayers.some((layer) => layer.visible);
