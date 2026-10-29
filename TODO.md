@@ -28,3 +28,10 @@
 - [ ] Configure Neon/Render quota alerts at 80% warning and 90% critical; repository code alone cannot obtain provider quota metrics.
 - [ ] If a second Render service is introduced, prove it as a stateless read-only origin before adding it to Cloudflare read routing.
 - [ ] Revoke and rotate the four Neon API keys previously exposed in chat history.
+
+## Studio correction pass
+
+- [x] Tapping or pressing outside the selected artwork's actual rotated frame clears the overlay even when the transparent Konva hitbox extends farther.
+- [x] A delayed tap after an outside long press cannot immediately reselect the artwork and restore the controls.
+- [x] Contextual Crop opens the crop dialog directly on mobile by keeping the ImagePanel mounted; Edit remains the separate full image-tools entry point.
+- [ ] Verify the final gesture timing, crop handles, apply/cancel behavior, and Edit/Crop transitions on a real phone after deployment.

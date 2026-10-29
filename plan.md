@@ -38,3 +38,9 @@ Operationally explicit, fail-closed commerce infrastructure: the storefront stay
 4. Add `docs/RESILIENCE_ARCHITECTURE.md` documenting the Cloudflare → Render → Neon flow, admin boundary, quota policy, and provider actions.
 ### Infrastructure decisions not executable from the repository alone
 Automatic 80–90% quota-based migration requires provider quota metrics, synchronized transactional replication, freshness watermarks, promotion fencing, and a rollback plan. It must be configured and verified in Neon/Render/Cloudflare; this repository must not guess or silently switch to an independent database.
+
+## Studio interaction correction pass
+- Treat the selected artwork's rotated frame as the interaction boundary, not the full transparent image hitbox.
+- A tap or press outside that frame clears the selection and suppresses the delayed Konva tap callback that can reselect it after a long press.
+- Keep selected-artwork controls available for handles and toolbar buttons only; inert mockup/background taps must not restore the overlay.
+- The contextual Crop action sets the upload panel to crop mode and keeps the mobile panel mounted so the fixed crop dialog opens directly.
