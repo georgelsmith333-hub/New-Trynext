@@ -18,4 +18,4 @@
 - Branch API: https://neon.com/docs/reference/api/branches/create-project-branch
 - Endpoint API: https://neon.com/docs/reference/api/endpoints/create-project-endpoint
 
-Current project verified through the owner-provided Neon API key: trynex-main-backup, project small-mouse-64402656, owner improvewithamit@gmail.com, free_v3 plan. Logical replication was enabled on 2026-10-30T21:08:10Z. A schema-only standby branch creation request was rejected with HTTP 400 and needs the exact Neon account feature/API response before retrying.
+Current project verified through the owner-provided Neon API key: trynex-main-backup, project small-mouse-64402656, owner improvewithamit@gmail.com, free_v3 plan. Logical replication was enabled on 2026-10-30T21:08:10Z. The schema-only standby branch `trynext-transactional-standby` was then created with a read-write endpoint, and its subscription was verified with matching LSNs and aggregate counts of 69 products, 73 orders, and 40 customers.
