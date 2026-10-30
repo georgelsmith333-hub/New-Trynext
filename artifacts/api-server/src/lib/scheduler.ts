@@ -4,6 +4,7 @@ import { logger } from "./logger";
 import { tgSend, tgIsConfigured } from "./telegram";
 import { runBackupSync, type TargetSyncResult } from "./dbBackupSync";
 import { getAutomationConfig, appendAutomationLog, markJobChecked, getLastCheckedMs, type AutomationJobId } from "./automationConfig";
+import { checkNeonUsage } from "./neonQuotaMonitor";
 
 const BST_OFFSET_MS = 6 * 60 * 60 * 1000;
 
@@ -440,6 +441,7 @@ export function startScheduler(): void {
     const m = bst.getUTCMinutes();
 
     await keepAlive().catch(() => {});
+    await checkNeonUsage().catch(() => {});
     if (h === 9 && m < 2) await sendDailySummary().catch(() => {});
     if ((h === 10 || h === 20) && m < 2) await checkAndAlertLowStock().catch(() => {});
     if (m < 2 && h % 2 === 0) await checkStalePendingOrders().catch(() => {});
@@ -447,10 +449,14 @@ export function startScheduler(): void {
   }, 60_000);
 
   tick.unref();
-  logger.info("[scheduler] Scheduler active (daily@9am, low-stock@10am&8pm, pending@every2h BST, backup-sync@30min, keep-alive@14min)");
+  logger.info("[scheduler] Scheduler active (daily@9am, low-stock@10am&8pm, pending@every2h BST, backup-sync@30min, keep-alive@14min, neon-monitor@15min)");
 
   // Run one backup sync shortly after boot so a fresh deploy is protected immediately.
   setTimeout(() => {
     runScheduledBackupSync().catch(() => {});
   }, 30_000).unref();
+
+  setTimeout(() => {
+    checkNeonUsage(true).catch(() => {});
+  }, 35_000).unref();
 }
