@@ -152,7 +152,7 @@ export function CanvasArea({
   const drawingRef = useRef(false);
   const pinchRef = useRef<{ distance: number; angle: number; scale: number; rotation: number } | null>(null);
   const selectionGestureRef = useRef<SelectionGesture | null>(null);
-  const dismissedPointerUntilRef = useRef(0);
+  const suppressLayerSelectRef = useRef(false);
   const {
     layers,
     selectedIds,
@@ -272,13 +272,16 @@ export function CanvasArea({
 
   const dismissIfOutsideSelectedArtwork = (point: CanvasPoint) => {
     if (activeTool !== "select" || !selectedLayer || isInsideSelectedArtwork(point)) return false;
-    dismissedPointerUntilRef.current = Date.now() + 400;
+    // Konva can emit a delayed tap after a long press. Keep suppression tied
+    // to the pointer sequence, not a short timer, so the overlay cannot
+    // reappear after a slow mobile touch release.
+    suppressLayerSelectRef.current = true;
     clearSelection();
     return true;
   };
 
   const handleLayerSelect = (layerId: string) => {
-    if (Date.now() < dismissedPointerUntilRef.current) return;
+    if (suppressLayerSelectRef.current) return;
     selectLayer(layerId);
   };
 
@@ -453,6 +456,7 @@ export function CanvasArea({
           const stage = e.target.getStage();
           const point = getCanvasPoint(e);
           if (!stage || !point) return;
+          if (!selectedLayer && suppressLayerSelectRef.current) suppressLayerSelectRef.current = false;
           if (dismissIfOutsideSelectedArtwork(point)) return;
           const mapped = { x: Math.round((point.x - center.x) / scale), y: Math.round((point.y - center.y) / scale) };
 
@@ -510,6 +514,7 @@ export function CanvasArea({
           }
           const point = getCanvasPoint(e);
           if (!stage || !point) return;
+          if (!selectedLayer && suppressLayerSelectRef.current) suppressLayerSelectRef.current = false;
           if (dismissIfOutsideSelectedArtwork(point)) return;
           const mapped = { x: Math.round((point.x - center.x) / scale), y: Math.round((point.y - center.y) / scale) };
           if (activeTool === "draw") {
@@ -681,7 +686,8 @@ export function CanvasArea({
               type="button"
               className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[10px] font-black text-slate-700 transition hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
               aria-label="Open artwork edit tools"
-              onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
+              style={{ touchAction: "manipulation" }}
+              onPointerDown={(event) => { event.stopPropagation(); }}
               onClick={(event) => { event.preventDefault(); event.stopPropagation(); onOpenImageTools?.(); }}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
@@ -692,7 +698,8 @@ export function CanvasArea({
               type="button"
               className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-[10px] font-black text-slate-700 transition hover:bg-orange-50 hover:text-orange-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-300"
               aria-label="Open crop and extend tools"
-              onPointerDown={(event) => { event.preventDefault(); event.stopPropagation(); }}
+              style={{ touchAction: "manipulation" }}
+              onPointerDown={(event) => { event.stopPropagation(); }}
               onClick={(event) => { event.preventDefault(); event.stopPropagation(); onOpenCropTools?.(); }}
             >
               <Crop className="h-3.5 w-3.5" aria-hidden="true" />

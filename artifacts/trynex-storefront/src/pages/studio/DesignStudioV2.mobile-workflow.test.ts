@@ -101,9 +101,19 @@ describe("mobile Design Studio upload workflow", () => {
 
     expect(canvas).toContain("isInsideSelectedArtwork");
     expect(canvas).toContain("dismissIfOutsideSelectedArtwork");
-    expect(canvas).toContain("dismissedPointerUntilRef");
-    expect(canvas).toContain("Date.now() + 400");
-    expect(canvas).toContain("if (Date.now() < dismissedPointerUntilRef.current) return;");
+    expect(canvas).toContain("suppressLayerSelectRef");
+    expect(canvas).toContain("Keep suppression tied");
+    expect(canvas).toContain("if (suppressLayerSelectRef.current) return;");
+    expect(canvas).toContain('if (!selectedLayer && suppressLayerSelectRef.current) suppressLayerSelectRef.current = false;');
+  });
+
+  it("keeps contextual Edit and Crop buttons clickable on touch browsers", () => {
+    const canvas = readFileSync(new URL("./CanvasArea.tsx", import.meta.url), "utf8");
+    const toolbar = canvas.slice(canvas.indexOf('aria-label="Artwork tools"'), canvas.indexOf("{deleteButtonPosition"));
+
+    expect(toolbar).toContain('style={{ touchAction: "manipulation" }}');
+    expect(toolbar).toContain("onPointerDown={(event) => { event.stopPropagation(); }}");
+    expect(toolbar).not.toContain("event.preventDefault(); event.stopPropagation(); }}");
   });
 
   it("keeps the direct Crop dialog mounted on mobile", () => {
