@@ -60,7 +60,17 @@ export function DesignLayer({
     commit();
   };
 
-  const startGesture = () => beginHistoryGroup();
+  const startGesture = (event?: Konva.KonvaEventObject<unknown>) => {
+    const nativeEvent = event?.evt as unknown as { pointerType?: string; touches?: TouchList } | undefined;
+    // A touch that starts on artwork must remain a page-scroll gesture. Touch
+    // manipulation is provided by explicit crop handles and the pinch path;
+    // dragging the Konva node here would hijack vertical scrolling on phones.
+    if (nativeEvent?.pointerType === "touch" || nativeEvent?.touches) {
+      event?.target.stopDrag();
+      return;
+    }
+    beginHistoryGroup();
+  };
 
   const editText = () => {
     if (layer.type !== "text" || layer.locked) return;
