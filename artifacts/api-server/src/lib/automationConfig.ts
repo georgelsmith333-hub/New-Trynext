@@ -18,7 +18,8 @@ export type AutomationJobId =
   | "lowStock"
   | "staleOrders"
   | "revenueMilestones"
-  | "keepAlive";
+  | "keepAlive"
+  | "neonQuota";
 
 export interface AutomationConfig {
   dailySummaryEnabled: boolean;

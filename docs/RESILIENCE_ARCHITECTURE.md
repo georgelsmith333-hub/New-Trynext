@@ -15,7 +15,7 @@ The safe operating model is:
 3. Public anonymous catalog reads may use a verified read origin only after that origin passes direct health, schema, and catalog checks.
 4. Render runs the Node/Express API. The API uses a configured candidate order for database connection, not inferred authority from row counts.
 5. Neon `trynex-main-backup` / `main` was the database selected during the October recovery and is the production database reported by the recovery work. The exact live Render environment variable value must still be confirmed privately in Render; this document does not copy connection strings.
-6. A secondary Neon project is a standby only if it is explicitly synchronized, schema-compatible, transactionally current, and approved for promotion. The repository's `DATABASE_FAILOVER`, `DATABASE_URL_TRYNEXT_DB`, and related slots are configuration slots, not proof that a healthy replica is currently installed.
+6. A secondary Neon project or branch is a standby only if it is explicitly synchronized, schema-compatible, transactionally current, and approved for promotion. The verified standby created during this recovery is Neon project `trynex-main-backup`, branch `trynext-transactional-standby` (`br-mute-sky-au9gjdy`), using logical subscription `trynext_standby_subscription`; it is not routed for production traffic or automatic promotion.
 
 ## Request flow
 
@@ -48,7 +48,7 @@ A secondary must be treated as one of these, never as a vague “backup”:
 - **Catalog snapshot:** useful for recovery and comparison; not safe for live traffic or transactional failover.
 - **Archive/export:** not a runtime database.
 
-The current source code probes `products` and `orders` (and records `mockups` telemetry), but schema presence alone does not prove data freshness. The candidate selection code now respects configured priority instead of allowing a larger row count to select an independent database.
+The current source code probes `products` and `orders` (and records `mockups` telemetry), but schema presence alone does not prove data freshness. The candidate selection code now respects configured priority instead of allowing a larger row count to select an independent database. The logical subscriber was verified at setup with 69 products, 73 orders, and 40 customers, and its `received_lsn` matched `latest_end_lsn` at the verification point.
 
 ## Quota and failure handling
 
@@ -58,7 +58,7 @@ A database provider quota is not the same thing as a normal application error. A
 2. **Read protection:** safe public reads may fail over only to a verified read origin/database. Stale catalog data must be labelled or rejected according to the business requirement.
 3. **Transactional promotion:** switching orders/admin writes requires an approved synchronized standby and a promotion record. It must not be triggered by a row-count comparison or by “the next configured URL” alone.
 
-Automatic “migration when usage reaches 80–90%” cannot be safely implemented solely inside the Node process. It requires provider quota metrics, a durable synchronization job, a freshness watermark, promotion fencing, secret management, and a rollback procedure. The application can alert and fail closed; it cannot invent a correct replica from an arbitrary Neon database at runtime.
+Automatic “migration when usage reaches 80–90%” cannot be safely implemented solely inside the Node process. It requires provider quota metrics, a durable synchronization job, a freshness watermark, promotion fencing, secret management, and a rollback procedure. The application can alert and fail closed; it cannot invent a correct replica from an arbitrary Neon database at runtime. Neon’s documented project quotas are hard suspension limits, not warning thresholds, so 80%/90% warning and critical notifications still need a separate monitor and an owner-approved alert destination.
 
 The owner should configure provider monitoring at 80% warning and 90% critical, but the actual promotion policy should be:
 
@@ -98,7 +98,7 @@ Creating a second Render API for admin without a shared authoritative database w
 - Readiness: `status=ok`, `db=true`, `catalog=true`, runtime role `primary`
 - Public catalog: 69 products, 7 categories
 - API default catalog page: 24 products; explicit requests remain bounded and paginated
-- Release containing Studio interaction fixes: merged to `main` at `ae64668`
+- Release containing Studio interaction fixes: merged to `main` at `4095236`
 - CI, build, typecheck/tests, Cloudflare Pages, and security scan: passed for that release
 
 ## Owner/provider actions still required
@@ -106,8 +106,8 @@ Creating a second Render API for admin without a shared authoritative database w
 These are not safely inferable from repository code and must be verified in the private provider consoles:
 
 1. Confirm Render's live API service and the private database target are the intended `trynex-main-backup` / `main` source.
-2. Identify which configured Neon project is a true synchronized standby; do not call an independent backup a replica without a freshness measurement.
-3. Set provider quota alerts at 80% and 90% and confirm the alert destination.
+2. Keep the logical subscriber healthy and define the promotion/fencing runbook; it remains a standby, not an automatic failover target.
+3. Configure 80% warning and 90% critical usage notifications through a separate monitor; Neon’s hard quota setting must not be used as the warning mechanism because hitting it suspends compute.
 4. If a second Render service is desired, configure it as a stateless read-only service first and prove direct health/catalog parity before routing reads to it.
 5. Rotate all Neon API keys that were pasted into chat history.
 6. Keep real-phone Studio touch verification as a separate acceptance check; repository tests cannot prove touch behavior.
