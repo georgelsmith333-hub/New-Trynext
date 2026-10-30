@@ -65,6 +65,7 @@ export function ImageCropExtendDialog({ layer, initialMode, onApply, onClose }: 
   const moveCropDrag = (event: React.PointerEvent) => {
     const drag = dragRef.current;
     if (!drag) return;
+    event.preventDefault();
     const point = getPoint(event);
     if (!point) return;
     const dx = point.x - drag.startX;
@@ -98,6 +99,7 @@ export function ImageCropExtendDialog({ layer, initialMode, onApply, onClose }: 
 
   const finishCropDrag = (event: React.PointerEvent) => {
     if (dragRef.current) {
+      event.preventDefault();
       dragRef.current = null;
       try {
         event.currentTarget.releasePointerCapture(event.pointerId);
@@ -198,7 +200,7 @@ export function ImageCropExtendDialog({ layer, initialMode, onApply, onClose }: 
           <div
             ref={previewRef}
             className="relative mx-auto w-full max-w-[460px] overflow-hidden rounded-2xl border border-gray-300 bg-[linear-gradient(45deg,#f1f1f1_25%,transparent_25%),linear-gradient(-45deg,#f1f1f1_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#f1f1f1_75%),linear-gradient(-45deg,transparent_75%,#f1f1f1_75%)] bg-[length:24px_24px] bg-[position:0_0,0_12px,12px_-12px,-12px_0px]"
-            style={{ aspectRatio: `${Math.max(1, layer.naturalW)} / ${Math.max(1, layer.naturalH)}` }}
+            style={{ aspectRatio: `${Math.max(1, layer.naturalW)} / ${Math.max(1, layer.naturalH)}`, touchAction: "none", userSelect: "none", WebkitUserSelect: "none" }}
             onPointerMove={moveCropDrag}
             onPointerUp={finishCropDrag}
             onPointerCancel={finishCropDrag}
@@ -216,9 +218,9 @@ export function ImageCropExtendDialog({ layer, initialMode, onApply, onClose }: 
                     key={id}
                     type="button"
                     aria-label={`Resize crop ${id}`}
-                    className={`absolute h-4 w-4 rounded-full border-2 border-white bg-orange-600 shadow ${className}`}
+                    className={`absolute flex h-11 w-11 items-center justify-center rounded-full touch-none ${className}`}
                     onPointerDown={(event) => startCropDrag(event, "resize", id)}
-                  />
+                  ><span aria-hidden="true" className="h-4 w-4 rounded-full border-2 border-white bg-orange-600 shadow" /></button>
                 ))}
               </div>
             ) : (

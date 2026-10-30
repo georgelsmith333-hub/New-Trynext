@@ -116,6 +116,31 @@ describe("mobile Design Studio upload workflow", () => {
     expect(toolbar).not.toContain("event.preventDefault(); event.stopPropagation(); }}");
   });
 
+  it("keeps vertical touch scrolling out of Konva artwork drag", () => {
+    const layer = readFileSync(new URL("./DesignLayer.tsx", import.meta.url), "utf8");
+    const canvas = readFileSync(new URL("./CanvasArea.tsx", import.meta.url), "utf8");
+
+    expect(layer).toContain('nativeEvent?.pointerType === "touch" || nativeEvent?.touches');
+    expect(layer).toContain("event?.target.stopDrag()");
+    expect(canvas).toContain('touchAction: activeTool === "select" ? "pan-y" : "none"');
+  });
+
+  it("gives crop preview and handles a touch-safe editing surface", () => {
+    const dialog = readFileSync(new URL("./panels/ImageCropExtendDialog.tsx", import.meta.url), "utf8");
+
+    expect(dialog).toContain('touchAction: "none"');
+    expect(dialog).toContain("h-11 w-11");
+    expect(dialog).toContain("event.preventDefault();");
+  });
+
+  it("marks horizontal Studio strips as intentional touch-pan regions", () => {
+    const studio = readFileSync(new URL("./DesignStudioV2.tsx", import.meta.url), "utf8");
+    const picker = readFileSync(new URL("./toolbar/ProductSwitcher.tsx", import.meta.url), "utf8");
+
+    expect(studio).toContain("touch-pan-x overscroll-x-contain");
+    expect(picker).toContain("touch-pan-x overscroll-x-contain");
+  });
+
   it("keeps the direct Crop dialog mounted on mobile", () => {
     const studio = readFileSync(new URL("./DesignStudioV2.tsx", import.meta.url), "utf8");
     const cropCallback = studio.slice(studio.indexOf("onOpenCropTools"), studio.indexOf("overlay={", studio.indexOf("onOpenCropTools")));

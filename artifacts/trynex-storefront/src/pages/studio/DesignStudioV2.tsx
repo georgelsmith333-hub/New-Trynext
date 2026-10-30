@@ -1387,7 +1387,7 @@ export default function DesignStudioV2() {
             <ProductSwitcher />
             <div className="mt-3 mb-3">
              <MainToolbar onExport={handleExportPNG} isExporting={isExporting} exportDisabled={activeSurfaceUnavailable} />
-              <div className="mb-3 flex items-center gap-2 overflow-x-auto rounded-2xl border border-orange-100 bg-orange-50/70 p-2 md:hidden no-scrollbar">
+              <div className="mb-3 flex touch-pan-x overscroll-x-contain items-center gap-2 overflow-x-auto rounded-2xl border border-orange-100 bg-orange-50/70 p-2 md:hidden no-scrollbar">
                  <button type="button" onClick={() => setShowProductPicker(true)} aria-label="Change product" className="flex shrink-0 items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-[11px] font-black text-gray-800 shadow-sm active:scale-95"><Package className="h-3.5 w-3.5 text-orange-500" /> Change product</button>
                 <button type="button" onClick={() => fileInputRef.current?.click()} aria-label="Upload design image" className="flex shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 px-3 py-2 text-[11px] font-black text-white shadow-sm active:scale-95"><Upload className="h-3.5 w-3.5" /> Upload</button>
                 <button type="button" onClick={addText} aria-label="Add text layer" className="flex shrink-0 items-center gap-1.5 rounded-xl bg-white px-3 py-2 text-[11px] font-black text-gray-800 shadow-sm active:scale-95"><Type className="h-3.5 w-3.5 text-blue-500" /> Text</button>
@@ -1405,7 +1405,7 @@ export default function DesignStudioV2() {
             />
 
             {isZoneTabs && (
-              <div className="flex gap-1.5 overflow-x-auto pb-1 mb-3 no-scrollbar">
+              <div className="flex touch-pan-x overscroll-x-contain gap-1.5 overflow-x-auto pb-1 mb-3 no-scrollbar">
                 {apparelZones.map(zone => {
                   const isActive = activeFace === zone.face;
                   const count = layers.filter(l => (l.face ?? "front") === zone.face).length;
@@ -1419,7 +1419,7 @@ export default function DesignStudioV2() {
               </div>
             )}
             {isMug && (
-              <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 no-scrollbar">
+              <div className="flex touch-pan-x overscroll-x-contain gap-1.5 mb-3 overflow-x-auto pb-1 no-scrollbar">
                 {(["side1", "side2", "wrap"] as const).map(v => (
                    <button key={v} onClick={() => setMugView(v)} className="shrink-0 px-4 py-2 rounded-xl text-xs font-black transition-all active:scale-95" style={{ background: mugMode === v ? "#1C1C1E" : "white", color: mugMode === v ? "white" : "#374151", border: mugMode === v ? "1.5px solid #3a3a3c" : "1.5px solid #e5e7eb", boxShadow: mugMode === v ? "0 4px 12px rgba(0,0,0,0.15)" : "none" }}>
                     {v === "side1" ? "Left Side" : v === "side2" ? "Right Side" : "Wrap"}
@@ -1428,7 +1428,7 @@ export default function DesignStudioV2() {
               </div>
             )}
             {(!isMug && !isZoneTabs && (isCap || isWaterBottle)) && (
-              <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 no-scrollbar" aria-label="Product view">
+              <div className="flex touch-pan-x overscroll-x-contain gap-1.5 mb-3 overflow-x-auto pb-1 no-scrollbar" aria-label="Product view">
                 {(["front", "back"] as const).map(view => (
                   <button key={view} onClick={() => setFace(view)} className="shrink-0 px-4 py-2 rounded-xl text-xs font-black transition-all active:scale-95" style={{ background: activeFace === view ? "#1C1C1E" : "white", color: activeFace === view ? "white" : "#374151", border: activeFace === view ? "1.5px solid #3a3a3c" : "1.5px solid #e5e7eb", boxShadow: activeFace === view ? "0 4px 12px rgba(0,0,0,0.15)" : "none" }}>
                     {view === "front" ? "Front" : "Back"}

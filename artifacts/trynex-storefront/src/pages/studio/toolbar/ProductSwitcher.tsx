@@ -167,7 +167,7 @@ export function ProductSwitcher() {
                     </p>
                   </div>
                   <div
-                    className="no-scrollbar flex gap-1.5 overflow-x-auto pb-1"
+                    className="no-scrollbar flex touch-pan-x overscroll-x-contain gap-1.5 overflow-x-auto pb-1"
                     role="group"
                     aria-label="Filter products by category"
                   >
