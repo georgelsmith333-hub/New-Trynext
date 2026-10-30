@@ -34,4 +34,6 @@
 - [x] Tapping or pressing outside the selected artwork's actual rotated frame clears the overlay even when the transparent Konva hitbox extends farther.
 - [x] A delayed tap after an outside long press cannot immediately reselect the artwork and restore the controls.
 - [x] Contextual Crop opens the crop dialog directly on mobile by keeping the ImagePanel mounted; Edit remains the separate full image-tools entry point.
+- [x] Touch swipes on artwork no longer start Konva artwork dragging; native vertical page scrolling remains available, while mouse/pen dragging remains supported.
+- [x] Horizontal Studio control strips explicitly use touch-pan behavior, and crop preview handles use a touch-safe editing surface with 44px hit targets.
 - [ ] Verify the final gesture timing, crop handles, apply/cancel behavior, and Edit/Crop transitions on a real phone after deployment.
