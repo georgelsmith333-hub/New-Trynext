@@ -155,15 +155,11 @@ export default function AdminFacebookGuide() {
               <p>To let customers log in with Facebook:</p>
               <ol className="list-decimal pl-5 space-y-2">
                 <li>In your Facebook App, go to <strong>Add Product → Facebook Login</strong></li>
-                <li>Set <strong>Valid OAuth Redirect URIs</strong> to your site URL:
-                  <CopyBlock text="https://trynext.shop/login" />
+                <li>In Facebook Login → Settings, add the production domains <strong>trynext.shop</strong> and <strong>www.trynext.shop</strong>. For the JavaScript SDK flow used by this site, also add the exact site URL under <strong>Valid OAuth Redirect URIs</strong> if Meta requests one:
+                  <CopyBlock text="https://trynext.shop/\nhttps://www.trynext.shop/" />
                 </li>
                 <li>Copy your <strong>App ID</strong></li>
-                <li>Add the Facebook SDK to your site's <code className="bg-gray-100 px-1.5 rounded">index.html</code>:
-                  <CopyBlock text={`<script async defer crossorigin="anonymous"\n  src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v19.0&appId=YOUR_APP_ID">\n</script>`} />
-                </li>
-                <li>Initialize FB in your code:
-                  <CopyBlock text={`window.fbAsyncInit = function() {\n  FB.init({\n    appId: 'YOUR_APP_ID',\n    cookie: true,\n    xfbml: true,\n    version: 'v19.0'\n  });\n};`} />
+                <li>In Trynext Admin → Settings → <strong>Authentication &amp; OAuth</strong>, paste the App ID into <strong>Facebook App ID</strong>. The production app loads and initializes the Facebook SDK automatically; no manual script edit is needed.
                 </li>
               </ol>
             </div>
@@ -183,11 +179,11 @@ export default function AdminFacebookGuide() {
                 <li>Create a new project or select existing one</li>
                 <li>Go to <strong>Credentials → Create Credentials → OAuth 2.0 Client ID</strong></li>
                 <li>Set type to <strong>Web application</strong></li>
-                <li>Add <strong>Authorized JavaScript origins</strong>: <code className="bg-gray-100 px-1.5 rounded">https://trynext.shop</code></li>
+                <li>Add both <strong>Authorized JavaScript origins</strong> (without a path):
+                  <CopyBlock text="https://trynext.shop\nhttps://www.trynext.shop" />
+                </li>
                 <li>Copy the <strong>Client ID</strong></li>
-                <li>Set the env variable: <code className="bg-gray-100 px-1.5 rounded">VITE_GOOGLE_CLIENT_ID=your_client_id</code></li>
-                <li>Add Google Sign-In script to <code className="bg-gray-100 px-1.5 rounded">index.html</code>:
-                  <CopyBlock text={`<script src="https://accounts.google.com/gsi/client" async defer></script>`} />
+                <li>In Trynext Admin → Settings → <strong>Authentication &amp; OAuth</strong>, paste the Client ID into <strong>Google Client ID</strong>. The production app loads the Google Identity Services script automatically; no manual environment or <code className="bg-gray-100 px-1.5 rounded">index.html</code> edit is needed.
                 </li>
               </ol>
             </div>
