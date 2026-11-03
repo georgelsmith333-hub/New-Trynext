@@ -71,6 +71,45 @@ const SIZE_CHART = [
 ];
 
 const QUICK_PRODUCT_IDS = ["tshirt", "hoodie", "mug", "cap"] as const;
+
+/**
+ * Cart state is persisted in localStorage for guest checkout. Keeping the
+ * generated mockup and print textures as base64 data URLs can exceed the
+ * browser's small storage quota and makes the eventual order request huge.
+ * Store these derived previews in the same private object store used for
+ * original uploads, and keep only compact API paths in the cart.
+ */
+async function persistStudioPreviewDataUrl(dataUrl: string, label: string): Promise<string> {
+  if (!dataUrl.startsWith("data:")) return dataUrl;
+  const blob = await (await fetch(dataUrl)).blob();
+  const mime = blob.type || "image/webp";
+  const extension = mime === "image/png" ? "png" : mime === "image/jpeg" ? "jpg" : "webp";
+  const safeLabel = label.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 60) || "studio-preview";
+  const request = await fetch(getApiUrl("/api/storage/uploads/request-url"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
+    body: JSON.stringify({
+      name: `${safeLabel}-${Date.now()}.${extension}`,
+      size: blob.size,
+      contentType: mime,
+    }),
+  });
+  const payload = await request.json().catch(() => ({} as Record<string, unknown>));
+  if (!request.ok || typeof payload.uploadURL !== "string" || typeof payload.objectPath !== "string") {
+    throw new Error(typeof payload.message === "string" ? payload.message : "The preview storage request failed.");
+  }
+  await uploadToStorage(
+    {
+      uploadURL: payload.uploadURL,
+      fallbackUploadURL: typeof payload.fallbackUploadURL === "string" ? payload.fallbackUploadURL : undefined,
+    },
+    blob,
+    mime,
+    { resolveApiUrl: getApiUrl },
+  );
+  const objectPath = payload.objectPath;
+  return objectPath.startsWith("/objects/") ? `/api/storage${objectPath}` : objectPath;
+}
 const LEGACY_ID_MAP: Record<string, string> = {
   "white-tshirt": "tshirt", "black-tshirt": "tshirt",
   "t-shirt": "tshirt", "t-shirts": "tshirt", "tshirts": "tshirt", "tee": "tshirt", "tees": "tshirt",
@@ -1182,6 +1221,28 @@ export default function DesignStudioV2() {
       }
     }
 
+    // Keep only compact object-storage paths in localStorage and in the later
+    // checkout request. A cart containing several base64 previews can exceed
+    // mobile browser storage limits and look "added" until navigation reloads.
+    const previewEntries = [
+      { key: "mockup", value: mockupUrl },
+      { key: "front-texture", value: frontTexUrl },
+      { key: "back-texture", value: backTexUrl },
+      { key: "left-sleeve-texture", value: leftSleeveTexUrl },
+      { key: "right-sleeve-texture", value: rightSleeveTexUrl },
+      { key: "neck-label-texture", value: neckLabelTexUrl },
+    ];
+    const persistedPreviews = await Promise.all(
+      previewEntries.map(async ({ key, value }) => value ? [key, await persistStudioPreviewDataUrl(value, `studio-${key}`)] as const : [key, undefined] as const),
+    );
+    const persistedPreviewByKey = new Map(persistedPreviews);
+    const persistedMockupUrl = persistedPreviewByKey.get("mockup") ?? mockupUrl;
+    const persistedFrontTexUrl = persistedPreviewByKey.get("front-texture") ?? frontTexUrl;
+    const persistedBackTexUrl = persistedPreviewByKey.get("back-texture");
+    const persistedLeftSleeveTexUrl = persistedPreviewByKey.get("left-sleeve-texture");
+    const persistedRightSleeveTexUrl = persistedPreviewByKey.get("right-sleeve-texture");
+    const persistedNeckLabelTexUrl = persistedPreviewByKey.get("neck-label-texture");
+
     // Admin-controlled custom-design pricing. A product launched from the
     // catalog keeps its authoritative linked product/variant price; a blank
     // studio product uses the configured base price plus one customization fee.
@@ -1206,14 +1267,17 @@ export default function DesignStudioV2() {
     } catch {}
 
     addToCart({
-      productId: linkedStoreProduct?.id ?? 0,
+      // Studio designs are priced and validated by the dedicated server-side
+      // Studio order path. Do not let a linked catalog launch turn this custom
+      // line into an ordinary stock item that can later fail as product_missing.
+      productId: 0,
       name: linkedStoreProduct?.name ?? `Custom ${selectedProduct.name}`,
       price: studioPrice,
       quantity,
       size: isMug || isCap || isWaterBottle ? undefined : selectedSize,
       color: selectedColor.name,
-      imageUrl: mockupUrl,
-      customImages: [frontTexUrl, ...(backTexUrl ? [backTexUrl] : []), ...(leftSleeveTexUrl ? [leftSleeveTexUrl] : []), ...(rightSleeveTexUrl ? [rightSleeveTexUrl] : []), ...(neckLabelTexUrl ? [neckLabelTexUrl] : [])],
+      imageUrl: persistedMockupUrl,
+      customImages: [persistedFrontTexUrl, ...(persistedBackTexUrl ? [persistedBackTexUrl] : []), ...(persistedLeftSleeveTexUrl ? [persistedLeftSleeveTexUrl] : []), ...(persistedRightSleeveTexUrl ? [persistedRightSleeveTexUrl] : []), ...(persistedNeckLabelTexUrl ? [persistedNeckLabelTexUrl] : [])],
       originalAssetUrls,
       originalAssets,
       customNote: JSON.stringify({ studioDesign: true, sessionId, mockupRelease, product: selectedProduct.name, category: selectedProduct.category, color: selectedColor.name, colorHex: selectedColor.hex, size: selectedSize, layerCount: layers.length, frontLayerCount: frontLayers.length, backLayerCount: backLayers.length, unrenderedArtworkFaces: unsupportedFaces, mockupSrc: garmentSrc, mockupSource: frontMockup.source, mockupPhotoSrc: frontMockup.photoSrc, mockupIsColorPhoto: frontMockup.isColorPhoto, mockupManifestRevision: frontMockup.manifestRevision, mockupSourceKitKey: frontMockup.sourceKitKey, mockupRuntimeStatus: frontMockup.runtimeStatus, printZone: frontPZ, printZoneBack: backPZ, originalAssets }),

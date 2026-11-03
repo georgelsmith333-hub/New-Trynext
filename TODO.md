@@ -37,3 +37,13 @@
 - [x] Touch swipes on artwork no longer start Konva artwork dragging; native vertical page scrolling remains available, while mouse/pen dragging remains supported.
 - [x] Horizontal Studio control strips explicitly use touch-pan behavior, and crop preview handles use a touch-safe editing surface with 44px hit targets.
 - [ ] Verify the final gesture timing, crop handles, apply/cancel behavior, and Edit/Crop transitions on a real phone after deployment.
+
+## Checkout and mockup reliability follow-up
+
+- [ ] A Design Studio item that reaches the cart retains its Studio marker, product identity, selected options, preview, print-ready original artwork references, and quantity when the checkout payload is serialized.
+- [ ] Studio items are accepted by the order route without being rejected as missing catalog products, while ordinary catalog items still receive product and stock validation.
+- [ ] A Studio order can be retried safely with the same checkout idempotency key and cannot create a duplicate order or show a false success state.
+- [ ] Checkout surfaces an immediate, actionable error for invalid artwork, unavailable mockup surfaces, storage failures, or transient API failures instead of silently leaving the customer in a broken route.
+- [ ] The customer-facing mockup path remains the approved compositor/runtime-role pipeline and is described honestly; a true browser-side PSD Smart Object is not claimed unless Photopea/provider setup is completed.
+- [ ] Facebook Login/Signup remains visible with an explicit setup state; Meta authorization and App ID/secret entry remain owner-controlled and are never committed to source.
+- [ ] Real order placement and payment submission remain unperformed during repository validation.

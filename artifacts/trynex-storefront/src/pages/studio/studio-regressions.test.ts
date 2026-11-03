@@ -23,6 +23,14 @@ describe("Design Studio reliability contracts", () => {
     expect(studio).toContain("Every uploaded artwork must be preserved before checkout");
   });
 
+  it("keeps Studio cart previews durable and on the dedicated order path", () => {
+    expect(studio).toContain("persistStudioPreviewDataUrl");
+    expect(studio).toContain("/api/storage/uploads/request-url");
+    expect(studio).toContain("const persistedMockupUrl");
+    expect(studio).toContain("productId: 0,");
+    expect(studio).toContain("dedicated server-side");
+  });
+
   it("marks the original-artwork upload request as an XMLHttpRequest", () => {
     const requestBlock = studio.slice(
       studio.indexOf('getApiUrl("/api/storage/uploads/request-url")'),
