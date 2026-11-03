@@ -44,3 +44,16 @@ Automatic 80–90% quota-based migration requires provider quota metrics, synchr
 - A tap or press outside that frame clears the selection and suppresses the delayed Konva tap callback that can reselect it after a long press.
 - Keep selected-artwork controls available for handles and toolbar buttons only; inert mockup/background taps must not restore the overlay.
 - The contextual Crop action sets the upload panel to crop mode and keeps the mobile panel mounted so the fixed crop dialog opens directly.
+
+## Checkout and mockup reliability follow-up
+### Goal
+Ensure a Design Studio item has a durable, orderable cart representation and that checkout reports actionable errors immediately. Preserve the 25% Bangladesh COD advance rule and never create a false success state.
+
+### Implementation scope
+1. Trace and validate the Studio cart payload from upload staging through cart persistence, checkout serialization, server order classification, pricing, and stock handling.
+2. Add regression coverage for Studio item order creation, idempotent retry behavior, missing/invalid artwork metadata, and checkout navigation/error mapping.
+3. Keep the approved runtime-role compositor as the customer-facing realistic preview/export path; do not claim that a browser-side PSD Smart Object is available when it is not.
+4. Keep Facebook provider configuration owner-controlled: the application may expose the provider state and exact setup guidance, but the owner must authorize Meta and provide the App ID/secret through the provider secret store.
+
+### Boundaries
+Do not place a real order or submit payment. Do not read customer records. Do not add provider credentials to source control or chat. Do not silently switch database or payment providers.
