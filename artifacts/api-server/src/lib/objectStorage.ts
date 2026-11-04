@@ -21,6 +21,7 @@ import {
   CopyObjectCommand,
   DeleteObjectCommand,
   HeadObjectCommand,
+  HeadBucketCommand,
   type GetObjectCommandOutput,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -219,6 +220,21 @@ export class ObjectStorageService {
 
   getBackendName(): Backend {
     return BACKEND;
+  }
+
+  /**
+   * Check that the configured backend can reach the selected bucket.
+   * Generating a presigned URL is local cryptographic work and does not
+   * validate credentials or bucket permissions, so it must not be reported as
+   * storage reachability in health endpoints.
+   */
+  async checkBackendAccess(): Promise<void> {
+    if (BACKEND === "local") {
+      ensureLocalDir(localUploadsDir());
+      return;
+    }
+    const { client, bucket } = ensureS3Client();
+    await client.send(new HeadBucketCommand({ Bucket: bucket }));
   }
 
   getPublicObjectSearchPaths(): Array<string> {
