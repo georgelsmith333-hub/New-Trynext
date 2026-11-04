@@ -67,19 +67,17 @@ router.get("/healthz", async (_req, res) => {
 });
 
 // Storage backend health. Reports the active backend, whether it is a
-// portable (production-ready) backend, and best-effort connectivity by
-// minting a presigned upload URL (which exercises the credentials without
-// writing any real data).
+// portable (production-ready) backend, and whether the configured bucket is
+// reachable with the current credentials. Presigning alone is not enough:
+// signing a URL is local work and can succeed even when the bucket rejects
+// every subsequent upload.
 router.get("/health/storage", async (_req, res) => {
   const svc = new ObjectStorageService();
   const backend = svc.getBackendName();
   let reachable = false;
   let error: string | null = null;
   try {
-    // For S3/R2 this signs a PutObject URL; for the Replit sidecar it
-    // signs a GET URL via the local sidecar. Either way, success means
-    // the backend is reachable with the configured credentials.
-    await svc.getObjectEntityUploadURL();
+    await svc.checkBackendAccess();
     reachable = true;
   } catch (err) {
     // Provider exceptions may include credentials or internal URLs; keep this
