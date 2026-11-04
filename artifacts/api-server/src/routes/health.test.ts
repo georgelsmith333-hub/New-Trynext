@@ -21,7 +21,7 @@ vi.mock("../lib/redis", () => ({
 vi.mock("../lib/objectStorage", () => ({
   ObjectStorageService: class {
     getBackendName() { return "local"; }
-    getObjectEntityUploadURL() { return getUploadUrlMock(); }
+    checkBackendAccess() { return getUploadUrlMock(); }
   },
   ObjectNotFoundError: class extends Error {},
 }));
