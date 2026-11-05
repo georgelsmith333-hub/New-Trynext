@@ -9,7 +9,6 @@ import {
   type RuntimeRole,
   type SmartMockupIngestionManifest,
 } from "../lib/mockupContract";
-import { applyServerPhotoLighting } from "../lib/photoLighting";
 
 /** Matches the browser compositor's own bound (composer.ts
  *  DISPLACEMENT_MAX_OFFSET_PX_AT_1024) so server and browser renders agree. */
@@ -197,25 +196,16 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
       .toBuffer();
     const maskedArtwork = await clipToMask(renderedArtwork, mask);
 
-    // Same pipeline as the browser compositor: place the design on a
-    // transparent canvas-sized layer, bend it with the fabric folds where a
-    // displacement map exists, relight only its pixels with the product
-    // photo's own light, then composite. The shadow/highlight role images
-    // are still required and checksum-verified as part of the asset
-    // contract, but are no longer multiplied over the whole frame: that
-    // darkened the bare garment (a visible rectangle / dull dark garments).
+    // Keep this synchronous cart/checkout endpoint bounded. The browser
+    // compositor still provides the full displacement and photo-lighting
+    // treatment in the Studio preview; repeating those per-pixel passes here
+    // exceeds the production edge timeout on the free Render instance.
     let artworkLayer: Buffer = await sharp({
       create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
     })
       .composite([{ input: maskedArtwork, left, top }])
       .png()
       .toBuffer();
-    if (roles.displacement) {
-      artworkLayer = await applyServerDisplacement(artworkLayer, roles.displacement, canvasW, canvasH);
-    }
-    artworkLayer = await applyServerPhotoLighting(artworkLayer, roles.base, canvasW, canvasH, {
-      x0: zoneX, y0: zoneY, x1: zoneX + zoneW, y1: zoneY + zoneH,
-    });
 
     const background = await sharp(roles.studioBackground)
       .resize(canvasW, canvasH, { fit: "fill" })
