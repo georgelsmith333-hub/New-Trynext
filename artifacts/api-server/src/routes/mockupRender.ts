@@ -1,5 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import sharp, { type OverlayOptions } from "sharp";
 import {
   OPTIONAL_RUNTIME_ROLES,
@@ -75,9 +77,15 @@ async function fetchApprovedRoleImages(
   const fetched = await Promise.all(roles.map(async (role) => {
     const asset = surface.runtimeRoles[role];
     if (!asset) throw new Error(`approved_runtime_role_missing:${role}`);
-    const response = await fetch(new URL(asset.path, `${origin}/`));
-    if (!response.ok) throw new Error(`approved_runtime_role_unavailable:${role}:${response.status}`);
-    const bytes = Buffer.from(await response.arrayBuffer());
+    let bytes: Buffer;
+    const localPath = path.resolve(process.cwd(), "../trynex-storefront/public", asset.path.replace(/^\/+/, ""));
+    try {
+      bytes = await readFile(localPath);
+    } catch {
+      const response = await fetch(new URL(asset.path, `${origin}/`));
+      if (!response.ok) throw new Error(`approved_runtime_role_unavailable:${role}:${response.status}`);
+      bytes = Buffer.from(await response.arrayBuffer());
+    }
     if (sha256(bytes) !== asset.sha256.toLowerCase()) throw new Error(`runtime_role_checksum_mismatch:${role}`);
     return [role, bytes] as const;
   }));
