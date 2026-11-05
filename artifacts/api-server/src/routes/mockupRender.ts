@@ -9,7 +9,6 @@ import {
   type RuntimeRole,
   type SmartMockupIngestionManifest,
 } from "../lib/mockupContract";
-import { applyServerPhotoLighting } from "../lib/photoLighting";
 
 /** Matches the browser compositor's own bound (composer.ts
  *  DISPLACEMENT_MAX_OFFSET_PX_AT_1024) so server and browser renders agree. */
@@ -18,6 +17,7 @@ const DISPLACEMENT_MAX_OFFSET_PX_AT_1024 = 4;
 const router = Router();
 const MAX_INPUT_BYTES = 12 * 1024 * 1024;
 const MAX_OUTPUT_PIXELS = 4096 * 4096;
+const MAX_RENDER_DIMENSION = 768;
 
 function decodeImage(value: unknown): Buffer {
   if (typeof value !== "string" || !value.startsWith("data:image/")) {
@@ -65,6 +65,23 @@ function ensureRoleImages(
     result[role] = buffer;
   }
   return result;
+}
+
+async function fetchApprovedRoleImages(
+  surface: SmartMockupIngestionManifest,
+): Promise<Record<RuntimeRole, Buffer> & Partial<Record<OptionalRuntimeRole, Buffer>>> {
+  const origin = (process.env.MOCKUP_ASSET_ORIGIN ?? "https://trynext.shop").replace(/\/$/, "");
+  const roles = [...REQUIRED_RUNTIME_ROLES, ...OPTIONAL_RUNTIME_ROLES.filter((role) => surface.runtimeRoles[role])];
+  const fetched = await Promise.all(roles.map(async (role) => {
+    const asset = surface.runtimeRoles[role];
+    if (!asset) throw new Error(`approved_runtime_role_missing:${role}`);
+    const response = await fetch(new URL(asset.path, `${origin}/`));
+    if (!response.ok) throw new Error(`approved_runtime_role_unavailable:${role}:${response.status}`);
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (sha256(bytes) !== asset.sha256.toLowerCase()) throw new Error(`runtime_role_checksum_mismatch:${role}`);
+    return [role, bytes] as const;
+  }));
+  return Object.fromEntries(fetched) as Record<RuntimeRole, Buffer> & Partial<Record<OptionalRuntimeRole, Buffer>>;
 }
 
 /**
@@ -137,7 +154,9 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
       throw new Error(`surface_contract_invalid:${validation.errors.join("|")}`);
     }
     const surface = validation.value;
-    const roles = ensureRoleImages(req.body?.runtimeRoleImages, surface);
+    const roles = req.body?.runtimeRoleImages
+      ? ensureRoleImages(req.body.runtimeRoleImages, surface)
+      : await fetchApprovedRoleImages(surface);
     const artwork = decodeImage(req.body?.artwork);
 
     const fit = req.body?.fit === "cover" ? "cover" : "contain";
@@ -148,8 +167,15 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
 
     const baseImage = sharp(roles.base, { limitInputPixels: MAX_OUTPUT_PIXELS });
     const baseMeta = await baseImage.metadata();
-    const canvasW = baseMeta.width ?? 1000;
-    const canvasH = baseMeta.height ?? 1000;
+    const sourceW = baseMeta.width ?? 1000;
+    const sourceH = baseMeta.height ?? 1000;
+    // Render through the synchronous storefront endpoint within the short
+    // edge/proxy timeout. The browser compositor remains full resolution; the
+    // server result is a cart/checkout preview, so a bounded canvas is safer
+    // than letting a CPU-heavy displacement/lighting pass get aborted.
+    const renderScale = Math.min(1, MAX_RENDER_DIMENSION / Math.max(sourceW, sourceH));
+    const canvasW = Math.max(1, Math.round(sourceW * renderScale));
+    const canvasH = Math.max(1, Math.round(sourceH * renderScale));
     const zoneW = Math.max(1, Math.min(canvasW, Math.round(surface.printZone.w * canvasW)));
     const zoneH = Math.max(1, Math.min(canvasH, Math.round(surface.printZone.h * canvasH)));
     const zoneX = Math.round(numberInRange(surface.printZone.x, 0, 1, 0) * canvasW);
@@ -177,40 +203,41 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
     const renderedArtwork = await applyOpacity(renderedArtworkBase, opacity);
 
     const mask = await sharp(roles.printMask)
-      .extract({ left: zoneX, top: zoneY, width: zoneW, height: zoneH })
+      .extract({
+        left: Math.round(zoneX / renderScale),
+        top: Math.round(zoneY / renderScale),
+        width: Math.max(1, Math.round(zoneW / renderScale)),
+        height: Math.max(1, Math.round(zoneH / renderScale)),
+      })
       .resize(resizedW, resizedH, { fit: "fill" })
       .greyscale()
       .png()
       .toBuffer();
     const maskedArtwork = await clipToMask(renderedArtwork, mask);
 
-    // Same pipeline as the browser compositor: place the design on a
-    // transparent canvas-sized layer, bend it with the fabric folds where a
-    // displacement map exists, relight only its pixels with the product
-    // photo's own light, then composite. The shadow/highlight role images
-    // are still required and checksum-verified as part of the asset
-    // contract, but are no longer multiplied over the whole frame: that
-    // darkened the bare garment (a visible rectangle / dull dark garments).
+    // Keep this synchronous cart/checkout endpoint bounded. The browser
+    // compositor still provides the full displacement and photo-lighting
+    // treatment in the Studio preview; repeating those per-pixel passes here
+    // exceeds the production edge timeout on the free Render instance.
     let artworkLayer: Buffer = await sharp({
       create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
     })
       .composite([{ input: maskedArtwork, left, top }])
       .png()
       .toBuffer();
-    if (roles.displacement) {
-      artworkLayer = await applyServerDisplacement(artworkLayer, roles.displacement, canvasW, canvasH);
-    }
-    artworkLayer = await applyServerPhotoLighting(artworkLayer, roles.base, canvasW, canvasH, {
-      x0: zoneX, y0: zoneY, x1: zoneX + zoneW, y1: zoneY + zoneH,
-    });
 
     const background = await sharp(roles.studioBackground)
       .resize(canvasW, canvasH, { fit: "fill" })
       .ensureAlpha()
       .png()
       .toBuffer();
+    const baseLayer = await sharp(roles.base)
+      .resize(canvasW, canvasH, { fit: "fill" })
+      .ensureAlpha()
+      .png()
+      .toBuffer();
     const composites: OverlayOptions[] = [
-      { input: roles.base, left: 0, top: 0 },
+      { input: baseLayer, left: 0, top: 0 },
       { input: artworkLayer, left: 0, top: 0 },
       { input: await sharp(roles.protected).resize(canvasW, canvasH, { fit: "fill" }).ensureAlpha().png().toBuffer(), left: 0, top: 0 },
     ];

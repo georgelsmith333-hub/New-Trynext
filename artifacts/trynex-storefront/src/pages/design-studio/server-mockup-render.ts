@@ -263,7 +263,6 @@ export async function renderApprovedMockupOnServer({
     headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest" },
     body: JSON.stringify({
       surface: serverSurface.manifest,
-      runtimeRoleImages: serverSurface.roleImages,
       artwork: cropArtworkToPrintZone(artworkCanvas, printZone),
     }),
   });
