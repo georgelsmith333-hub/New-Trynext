@@ -67,6 +67,23 @@ function ensureRoleImages(
   return result;
 }
 
+async function fetchApprovedRoleImages(
+  surface: SmartMockupIngestionManifest,
+): Promise<Record<RuntimeRole, Buffer> & Partial<Record<OptionalRuntimeRole, Buffer>>> {
+  const origin = (process.env.MOCKUP_ASSET_ORIGIN ?? "https://trynext.shop").replace(/\/$/, "");
+  const roles = [...REQUIRED_RUNTIME_ROLES, ...OPTIONAL_RUNTIME_ROLES.filter((role) => surface.runtimeRoles[role])];
+  const fetched = await Promise.all(roles.map(async (role) => {
+    const asset = surface.runtimeRoles[role];
+    if (!asset) throw new Error(`approved_runtime_role_missing:${role}`);
+    const response = await fetch(new URL(asset.path, `${origin}/`));
+    if (!response.ok) throw new Error(`approved_runtime_role_unavailable:${role}:${response.status}`);
+    const bytes = Buffer.from(await response.arrayBuffer());
+    if (sha256(bytes) !== asset.sha256.toLowerCase()) throw new Error(`runtime_role_checksum_mismatch:${role}`);
+    return [role, bytes] as const;
+  }));
+  return Object.fromEntries(fetched) as Record<RuntimeRole, Buffer> & Partial<Record<OptionalRuntimeRole, Buffer>>;
+}
+
 /**
  * Real per-pixel geometric displacement (the Photoshop "Displace" filter
  * mechanic), applied server-side against a raw RGBA buffer so it matches the
@@ -137,7 +154,9 @@ router.post("/mockup/render", async (req: Request, res: Response) => {
       throw new Error(`surface_contract_invalid:${validation.errors.join("|")}`);
     }
     const surface = validation.value;
-    const roles = ensureRoleImages(req.body?.runtimeRoleImages, surface);
+    const roles = req.body?.runtimeRoleImages
+      ? ensureRoleImages(req.body.runtimeRoleImages, surface)
+      : await fetchApprovedRoleImages(surface);
     const artwork = decodeImage(req.body?.artwork);
 
     const fit = req.body?.fit === "cover" ? "cover" : "contain";
