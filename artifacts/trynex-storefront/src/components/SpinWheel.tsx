@@ -279,11 +279,6 @@ export default function SpinWheel({ autoOpen = true, forceOpen = false, onClose 
     setSpinning(true);
     setRotation(finalRotation);
 
-    if (reducedMotion) {
-      window.requestAnimationFrame(settleSpin);
-      return;
-    }
-
     clearSpinWatchdog();
     spinWatchdogRef.current = window.setTimeout(() => {
       if (spinSettledRef.current) return;
@@ -386,7 +381,11 @@ export default function SpinWheel({ autoOpen = true, forceOpen = false, onClose 
               {/* Wheel */}
               <motion.div
                 animate={{ rotate: rotation }}
-                transition={reducedMotion ? { duration: 0 } : { duration: 5, ease: [0.17, 0.67, 0.21, 0.99] }}
+                // A user explicitly requested a spin, so keep the wheel
+                // animation visible even when the OS reports reduced motion.
+                // The previous duration: 0 path settled on the next frame and
+                // made mobile appear to jump directly to the result.
+                transition={{ duration: 5, ease: [0.17, 0.67, 0.21, 0.99] }}
                 onAnimationComplete={settleSpin}
                 className="absolute inset-0 rounded-full shadow-xl"
                 style={{

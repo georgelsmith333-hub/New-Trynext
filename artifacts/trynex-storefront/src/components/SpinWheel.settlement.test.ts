@@ -6,7 +6,8 @@ const spinWheel = readFileSync(new URL("./SpinWheel.tsx", import.meta.url), "utf
 describe("SpinWheel result settlement", () => {
   it("settles a reward from the wheel animation lifecycle rather than a fixed timer", () => {
     expect(spinWheel).toContain("onAnimationComplete={settleSpin}");
-    expect(spinWheel).toContain("window.requestAnimationFrame(settleSpin);");
+    expect(spinWheel).not.toContain("window.requestAnimationFrame(settleSpin);");
+    expect(spinWheel).toContain("transition={{ duration: 5, ease: [0.17, 0.67, 0.21, 0.99] }}");
     expect(spinWheel).not.toContain("}, 5200);");
   });
 
