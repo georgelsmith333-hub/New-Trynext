@@ -30,6 +30,8 @@ export default function AdminBackup() {
   const [exportingCsv, setExportingCsv] = useState(false);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<Record<string, number> | null>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importConfirm, setImportConfirm] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [syncNowLoading, setSyncNowLoading] = useState(false);
   const [repairLoading, setRepairLoading] = useState(false);
@@ -147,7 +149,7 @@ export default function AdminBackup() {
       a.download = `trynext-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
-      toast({ title: "Backup exported!", description: "Full database backup downloaded." });
+      toast({ title: "Logical export downloaded", description: "Orders, products, categories, settings, and blog posts were exported as JSON." });
     } catch {
       toast({ title: "Backup failed", description: "Please try again.", variant: "destructive" });
     } finally {
@@ -155,8 +157,18 @@ export default function AdminBackup() {
     }
   };
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (!file) return;
+    setImportFile(file);
+    setImportConfirm(true);
+    e.target.value = '';
+  };
+
+  const doImport = async () => {
+    const file = importFile;
+    setImportConfirm(false);
+    setImportFile(null);
     if (!file) return;
     setImporting(true);
     setImportResult(null);
@@ -178,7 +190,6 @@ export default function AdminBackup() {
       toast({ title: "Import failed", description: "Check the file format and try again.", variant: "destructive" });
     } finally {
       setImporting(false);
-      e.target.value = '';
     }
   };
 
@@ -331,8 +342,8 @@ export default function AdminBackup() {
                 <Database className="w-5 h-5 text-green-600" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">Full Database Backup</h3>
-                <p className="text-xs text-gray-500">Export everything — orders, products, categories, settings, blog posts as JSON.</p>
+                <h3 className="font-bold text-gray-900">Logical Data Export</h3>
+                <p className="text-xs text-gray-500">Export orders, products, categories, settings, and blog posts as JSON. This is not a provider-native snapshot.</p>
               </div>
             </div>
             <button
@@ -342,7 +353,7 @@ export default function AdminBackup() {
               style={{ background: 'linear-gradient(135deg, #16a34a, #22c55e)', boxShadow: '0 4px 12px rgba(22,163,74,0.3)' }}
             >
               {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <HardDrive className="w-4 h-4" />}
-              {exporting ? "Creating backup..." : "Export Full Backup"}
+              {exporting ? "Creating export..." : "Export JSON Data"}
             </button>
           </div>
 
@@ -398,6 +409,16 @@ export default function AdminBackup() {
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={importConfirm}
+        title="Import this data into production?"
+        description="This additive import skips duplicate records but can create products, orders, settings, and blog posts. Verify the file before continuing."
+        confirmText={importing ? "Importing…" : "Import data"}
+        variant="warning"
+        onConfirm={() => void doImport()}
+        onCancel={() => !importing && (setImportConfirm(false), setImportFile(null))}
+      />
 
       <ConfirmDialog
         open={repairConfirm}
