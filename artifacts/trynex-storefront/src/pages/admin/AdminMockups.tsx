@@ -276,7 +276,7 @@ export default function AdminMockups() {
           }),
         });
         toast({
-          title: masterFile ? (created.ingestionStatus === "ready" ? "Validated PSD/PSB master uploaded" : "PSD/PSB queued for validation") : target ? "Live override uploaded" : "Mockup uploaded",
+          title: masterFile ? (created.ingestionStatus === "ready" ? "Validated PSD/PSB master uploaded" : "PSD/PSB queued for validation") : target ? "Catalog override saved for review" : "Mockup uploaded for review",
           description: created.ingestionStatus === "failed" ? created.ingestionError : name,
           variant: created.ingestionStatus === "failed" ? "destructive" : "default",
         });
@@ -390,7 +390,7 @@ export default function AdminMockups() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-black text-gray-900">Mockup Gallery</h1>
-            <p className="text-sm text-gray-500 mt-0.5">{mockups.length} mockup{mockups.length !== 1 ? "s" : ""} · Manage product mockup images for the Design Studio</p>
+            <p className="text-sm text-gray-500 mt-0.5">{mockups.length} mockup{mockups.length !== 1 ? "s" : ""} · Manage catalog records and source-kit validation</p>
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -421,6 +421,13 @@ export default function AdminMockups() {
               {uploading ? "Uploading…" : "Upload Mockups"}
             </button>
           </div>
+        </div>
+
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="font-black">Customer runtime is release-pinned</p>
+          <p className="mt-1 text-xs leading-5 text-amber-800">
+            Uploaded records and overrides are stored for admin review and validation. They are not customer-live until the approved source-kit release is published through the deployment pipeline.
+          </p>
         </div>
 
         <SmartMockupBrowserValidator />
@@ -571,12 +578,12 @@ export default function AdminMockups() {
                         <button
                           onClick={e => { e.stopPropagation(); startUpload(m); }}
                           className="absolute top-1 right-1 p-1 rounded-lg bg-orange-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                          title="Upload editable live override"
+                          title="Upload editable catalog override for review"
                         >
                           <Pencil className="w-3 h-3" />
                         </button>
                         <span className="absolute bottom-2 left-2 text-[8px] font-black uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-white/90 text-orange-600 shadow-sm">
-                          Source kit · click pencil to override
+                          Source kit · override requires release
                         </span>
                       </>
                     )}

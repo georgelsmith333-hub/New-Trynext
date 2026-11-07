@@ -32,7 +32,7 @@ const CartLine = memo(function CartLine({ item, onChangeQuantity, onRemove, onCl
     if (!studioMeta?.sessionId) return;
     const sessionRaw = localStorage.getItem(`studio_session_${studioMeta.sessionId}`);
     if (sessionRaw) {
-      localStorage.setItem("trynext-design-draft-v1", sessionRaw);
+      localStorage.setItem("trynext-design-draft-v2", sessionRaw);
       removeFromCart(item.id);
       onCloseDrawer();
       setLocation("/design-studio?edit=1");

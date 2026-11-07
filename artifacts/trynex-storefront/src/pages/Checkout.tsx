@@ -589,7 +589,12 @@ export default function Checkout() {
         size: i.size,
         color: i.color,
       }));
-      clearCart();
+      // Keep the cart intact while the customer is on the wallet/bank gateway.
+      // The order already exists, but the payment evidence has not been submitted
+      // yet; clearing here made a gateway glitch or refresh look like the order/cart
+      // had vanished. COD and card flows can still clear immediately.
+      const requiresPaymentEvidence = paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'rocket' || paymentMethod === 'upay' || paymentMethod === 'bank';
+      if (!requiresPaymentEvidence) clearCart();
 
       // Wallet orders must stop at the gateway so the customer can send the
       // exact 25% amount and submit transaction evidence. Payment is only
@@ -731,6 +736,7 @@ export default function Checkout() {
       if (updatedOrder && typeof updatedOrder === 'object') {
         setCreatedOrder(prev => ({ ...(prev || {}), ...(updatedOrder as Record<string, unknown>) }));
       }
+      clearCart();
       setPaymentSubmitError(null);
       setCheckoutStatus('success');
     } catch (err: any) {
@@ -797,9 +803,14 @@ export default function Checkout() {
 
   const copyNumber = async () => {
     if (!effectivePaymentNumber) return;
-    await navigator.clipboard.writeText(effectivePaymentNumber);
-    setCopiedNumber(true);
-    setTimeout(() => setCopiedNumber(false), 3000);
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('Clipboard API unavailable');
+      await navigator.clipboard.writeText(effectivePaymentNumber);
+      setCopiedNumber(true);
+      setTimeout(() => setCopiedNumber(false), 3000);
+    } catch {
+      toast({ title: 'Copy unavailable', description: `Please select and copy the ${theme.name} number manually.`, variant: 'destructive' });
+    }
   };
 
   const gatewayTheme: Record<PaymentMethod, {

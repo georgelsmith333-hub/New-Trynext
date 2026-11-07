@@ -115,7 +115,7 @@ const CatalogCartLine = memo(function CatalogCartLine({ item, onChangeQuantity, 
     if (!studioMeta?.sessionId) return;
     const sessionRaw = localStorage.getItem(`studio_session_${studioMeta.sessionId}`);
     if (sessionRaw) {
-      localStorage.setItem("trynext-design-draft-v1", sessionRaw);
+      localStorage.setItem("trynext-design-draft-v2", sessionRaw);
       removeFromCart(item.id);
       setLocation("/design-studio?edit=1");
     }
