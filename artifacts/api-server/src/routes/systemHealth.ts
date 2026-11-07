@@ -130,7 +130,7 @@ function isR2Configured(): boolean {
 // Safe to call from the admin dashboard on every load.
 router.get("/admin/system/health", requireAdmin, async (_req, res) => {
   const [coreProbeResult, storageProbe] = await Promise.all([
-    getCoreProbesCached(),
+    runCoreProbes(),
     probe("storage", () => storageService.checkBackendAccess()),
   ]);
   const core = describeCoreServices(coreProbeResult);
