@@ -1032,13 +1032,16 @@ router.post("/admin/ai-execute", requireAdmin, async (req, res) => {
           const { sql: healthSql } = await import("drizzle-orm");
           const { redisCacheSet, redisCacheDel } = await import("../lib/redis");
           const { tgIsConfigured } = await import("../lib/telegram");
+          const { ObjectStorageService } = await import("../lib/objectStorage");
           const dbOk = await healthDb.execute(healthSql`SELECT 1`).then(() => true).catch(() => false);
           const redisConfigured = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
           const redisOk = redisConfigured
             ? await redisCacheSet("_health_exec", "1", 5).then(() => redisCacheDel("_health_exec")).then(() => true).catch(() => false)
             : false;
           const tgOk = tgIsConfigured();
-          const r2Ok = !!(process.env.R2_ACCOUNT_ID && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY);
+          const storage = new ObjectStorageService();
+          const r2Ok = await storage.checkBackendAccess().then(() => true).catch(() => false);
+          const overallOk = dbOk && (!redisConfigured || redisOk) && r2Ok;
           const lines = [
             `🗄️ Database: ${dbOk ? "✅ Online" : "❌ Error"}`,
             `⚡ Redis Cache: ${redisConfigured ? (redisOk ? "✅ Online" : "❌ Error") : "⚠️ Not configured"}`,
@@ -1046,19 +1049,22 @@ router.post("/admin/ai-execute", requireAdmin, async (req, res) => {
             `🤖 Telegram: ${tgOk ? "✅ Configured" : "⚠️ Not configured"}`,
           ];
           return res.json({
-            success: true,
+            success: overallOk,
             action: "check_health",
             description: lines.join("\n"),
             data: { db: dbOk, redis: redisOk, r2: r2Ok, telegram: tgOk },
           });
         } catch {
-          return res.json({ success: true, action: "check_health", description: "Health check complete." });
+          return res.status(503).json({ success: false, action: "check_health", description: "Health check could not complete." });
         }
       }
 
       case "test_telegram": {
         const { tgSend } = await import("../lib/telegram");
-        await tgSend("🔔 <b>Trynext Admin AI:</b> Test message successful!");
+        const sent = await tgSend("🔔 <b>Trynext Admin AI:</b> Test message successful!");
+        if (!sent) {
+          return res.status(502).json({ success: false, action: "test_telegram", description: "Telegram test message could not be delivered." });
+        }
         return res.json({
           success: true,
           action: "test_telegram",
