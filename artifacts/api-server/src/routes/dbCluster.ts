@@ -87,8 +87,8 @@ const NODE_DEFS = [
   },
   {
     id: "replit_primary",
-    label: "Replit Primary",
-    role: "Local development last resort",
+    label: "Legacy DATABASE_URL",
+    role: "Compatibility fallback — local development last resort",
     envKey: "DATABASE_URL",
     inFailoverChain: true,
     failoverPriority: 5,
@@ -110,10 +110,26 @@ function connectionKey(url: string): string {
   return (url.split("@")[1] ?? url).split("?")[0];
 }
 
+function firstMatchingNodeId(activeUrl: string): string | null {
+  return NODE_DEFS.find((def) => {
+    const url = process.env[def.envKey];
+    return Boolean(url && connectionKey(url) === connectionKey(activeUrl));
+  })?.id ?? null;
+}
+
+function isAliasOfEarlierCandidate(def: (typeof NODE_DEFS)[number], url: string): boolean {
+  const index = NODE_DEFS.findIndex((candidate) => candidate.id === def.id);
+  return NODE_DEFS.slice(0, index).some((candidate) => {
+    const candidateUrl = process.env[candidate.envKey];
+    return Boolean(candidateUrl && connectionKey(candidateUrl) === connectionKey(url));
+  });
+}
+
 /* ── Probe a single database ─────────────────────────────────────────────────── */
 async function probeNode(
   def: (typeof NODE_DEFS)[number],
-  activeUrl: string
+  activeUrl: string,
+  activeNodeId: string | null,
 ): Promise<DbNodeStatus> {
   const url = process.env[def.envKey];
 
@@ -133,7 +149,13 @@ async function probeNode(
   }
 
   const host = maskUrl(url);
-  const isActive = connectionKey(activeUrl) === connectionKey(url);
+  const alias = isAliasOfEarlierCandidate(def, url);
+  const isActive = !alias && def.id === activeNodeId;
+  const inFailoverChain = def.inFailoverChain && !alias;
+  const failoverPriority = alias ? null : def.failoverPriority;
+  const role = alias
+    ? "Compatibility alias — same database as a higher-priority candidate"
+    : def.role;
 
   const testPool = guardPool(new Pool({
     connectionString: url,
@@ -166,10 +188,10 @@ async function probeNode(
     return {
       id: def.id,
       label: def.label,
-      role: def.role,
+      role,
       host,
-      inFailoverChain: def.inFailoverChain,
-      failoverPriority: def.failoverPriority,
+      inFailoverChain,
+      failoverPriority,
       status: schemaError ? "error" : "ok",
       latencyMs,
       isActive,
@@ -184,10 +206,10 @@ async function probeNode(
     return {
       id: def.id,
       label: def.label,
-      role: def.role,
+      role,
       host,
-      inFailoverChain: def.inFailoverChain,
-      failoverPriority: def.failoverPriority,
+      inFailoverChain,
+      failoverPriority,
       status: isTimeout ? "timeout" : "error",
       latencyMs: null,
       isActive,
@@ -214,10 +236,11 @@ router.get(
     }
 
     const activeUrl = await getActiveDbUrl();
+    const activeNodeId = firstMatchingNodeId(activeUrl);
 
     // Probe all nodes in parallel — slow/dead nodes timeout independently
     const nodes = await Promise.all(
-      NODE_DEFS.map((def) => probeNode(def, activeUrl))
+      NODE_DEFS.map((def) => probeNode(def, activeUrl, activeNodeId))
     );
 
     const healthyNodes = nodes.filter((n) => n.status === "ok").length;
@@ -243,8 +266,9 @@ router.post(
     _cache = null;
 
     const activeUrl = await getActiveDbUrl();
+    const activeNodeId = firstMatchingNodeId(activeUrl);
     const nodes = await Promise.all(
-      NODE_DEFS.map((def) => probeNode(def, activeUrl))
+      NODE_DEFS.map((def) => probeNode(def, activeUrl, activeNodeId))
     );
 
     const healthyNodes = nodes.filter((n) => n.status === "ok").length;
