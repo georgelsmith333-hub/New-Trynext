@@ -20,6 +20,7 @@ export function DesignDraftReminder() {
 
   const isStudio = location.startsWith("/design-studio");
   const isInteractionRoute = /^\/(products|track|checkout|cart|wishlist|login|register|admin)(\/|$)/.test(location);
+  const showDelayMs = location === "/" ? 12000 : 6000;
 
   useEffect(() => {
     if (isStudio || isInteractionRoute) return;
