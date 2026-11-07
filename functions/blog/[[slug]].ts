@@ -84,9 +84,9 @@ function listingMarkup(posts: BlogPost[]): string {
 
 async function loadShell(env: BlogApiEnv, request: Request): Promise<Response> {
   if (env.ASSETS) {
-    return env.ASSETS.fetch(new Request(new URL("/index.html", request.url), request));
+    return env.ASSETS.fetch(new Request(new URL("/", request.url), request));
   }
-  return fetch(new URL("/index.html", request.url));
+  return fetch(new URL("/", request.url));
 }
 
 export const onRequest = async ({ request, env }: { request: Request; env: BlogApiEnv }) => {
