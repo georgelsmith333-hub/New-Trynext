@@ -16,9 +16,11 @@ const bottleSrc = WATER_BOTTLE_PHOTO_FRONT;
 
 const DEFAULT_PHRASES: string[] = [
   "T-Shirts.",
+  "Short Sleeve.",
+  "Long Sleeve.",
+  "Caps.",
   "Hoodies.",
   "Mugs.",
-  "Caps.",
   "Water Bottles.",
   "Custom Gifts.",
   "আপনার ডিজাইন.",
@@ -122,7 +124,11 @@ export function TypewriterHero() {
       .filter(Boolean);
     return custom.length > 0 ? custom : DEFAULT_PHRASES;
   }, [settings.heroTypewriterPhrases]);
-  const typed = useTypewriter(phrases, { enabled: !reduced });
+  // This typewriter is the product-family discovery control itself. Keep it
+  // running even when the OS reports reduced motion; the rest of the hero
+  // honors that preference, while a static first phrase made the headline
+  // appear broken on mobile and desktop.
+  const typed = useTypewriter(phrases, { enabled: true, typeSpeed: 68, deleteSpeed: 32, holdMs: 950 });
 
   // Lightweight scroll-driven parallax for the background blob layer.
   const bgRef = useRef<HTMLDivElement | null>(null);
@@ -268,7 +274,7 @@ export function TypewriterHero() {
                   verticalAlign: "baseline",
                 }}
               >
-                {reduced ? headlineFallback : typed}
+                {typed || headlineFallback}
                 <span
                   aria-hidden="true"
                   className="inline-block align-baseline ml-1"
