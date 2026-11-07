@@ -129,7 +129,11 @@ function isR2Configured(): boolean {
 // Returns live status of DB, Redis, R2/storage, Telegram, and env config.
 // Safe to call from the admin dashboard on every load.
 router.get("/admin/system/health", requireAdmin, async (_req, res) => {
-  const core = describeCoreServices(await runCoreProbes());
+  const [coreProbeResult, storageProbe] = await Promise.all([
+    getCoreProbesCached(),
+    probe("storage", () => storageService.checkBackendAccess()),
+  ]);
+  const core = describeCoreServices(coreProbeResult);
   const dbStatus = core.dbStatus;
 
   const storageBackend = storageService.getBackendName();
@@ -149,10 +153,12 @@ router.get("/admin/system/health", requireAdmin, async (_req, res) => {
       database: core.database,
       redis: core.redis,
       storage: {
-        status: "ok",
+        status: storageProbe.ok ? "ok" : "error",
         backend: storageBackend,
         configured: storageBackend === "r2" ? r2Configured : storageBackend === "s3" ? true : true,
         bucket: process.env.R2_BUCKET || null,
+        latencyMs: storageProbe.latencyMs,
+        ...(probeDetail(storageProbe) ? { detail: probeDetail(storageProbe) } : {}),
       },
       telegram: {
         status: telegramConfigured ? "ok" : "not_configured",

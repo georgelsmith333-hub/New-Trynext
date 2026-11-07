@@ -503,7 +503,7 @@ router.get("/orders/my", async (req, res) => {
 
 router.get("/orders", requireAdmin, async (req, res) => {
   try {
-    const { status, search, page = "1", limit = "20" } = req.query;
+    const { status, search, startDate, endDate, page = "1", limit = "20" } = req.query;
     const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
     const limitNum = Math.min(200, Math.max(1, parseInt(limit as string, 10) || 20));
     const offset = (pageNum - 1) * limitNum;
@@ -520,6 +520,22 @@ router.get("/orders", requireAdmin, async (req, res) => {
           ilike(ordersTable.customerEmail, q),
         )!
       );
+    }
+    if (startDate && typeof startDate === "string") {
+      const start = new Date(`${startDate}T00:00:00.000Z`);
+      if (Number.isNaN(start.getTime())) {
+        res.status(400).json({ error: "validation_error", message: "Invalid startDate; use YYYY-MM-DD" });
+        return;
+      }
+      conditions.push(gte(ordersTable.createdAt, start));
+    }
+    if (endDate && typeof endDate === "string") {
+      const end = new Date(`${endDate}T23:59:59.999Z`);
+      if (Number.isNaN(end.getTime())) {
+        res.status(400).json({ error: "validation_error", message: "Invalid endDate; use YYYY-MM-DD" });
+        return;
+      }
+      conditions.push(lte(ordersTable.createdAt, end));
     }
     const where = conditions.length > 0 ? and(...conditions) : undefined;
 

@@ -177,8 +177,10 @@ export default function AdminDeployment() {
     try {
       const body: Record<string, string> = { owner, repo, branch, authorName, authorEmail };
       if (token && !/^•+/.test(token)) body.token = token;
-      // Only send the hook if the user typed something (empty = clear it)
-      body.renderDeployHook = renderDeployHook.trim();
+      // The field is write-only and blank means "leave the saved hook alone".
+      // Clearing it is an explicit operation, not an accidental side effect of
+      // saving unrelated deployment settings.
+      if (renderDeployHook.trim()) body.renderDeployHook = renderDeployHook.trim();
       const r = await fetch(getApiUrl("/api/admin/deployment/config"), {
         method: "PUT",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
@@ -245,9 +247,13 @@ export default function AdminDeployment() {
     setClearTokenConfirm(false);
     setSaving(true);
     try {
-      await fetch(getApiUrl("/api/admin/deployment/token"), { method: "DELETE", headers: getAuthHeaders() });
+      const response = await fetch(getApiUrl("/api/admin/deployment/token"), { method: "DELETE", headers: getAuthHeaders() });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || `Could not remove token (HTTP ${response.status})`);
       setToken("");
       await fetchStatus();
+    } catch (e: any) {
+      setError(e?.message || "Could not remove token");
     } finally { setSaving(false); }
   };
 
