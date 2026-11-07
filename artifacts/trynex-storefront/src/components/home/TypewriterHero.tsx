@@ -16,9 +16,11 @@ const bottleSrc = WATER_BOTTLE_PHOTO_FRONT;
 
 const DEFAULT_PHRASES: string[] = [
   "T-Shirts.",
+  "Short Sleeve.",
+  "Long Sleeve.",
+  "Caps.",
   "Hoodies.",
   "Mugs.",
-  "Caps.",
   "Water Bottles.",
   "Custom Gifts.",
   "আপনার ডিজাইন.",
@@ -122,7 +124,11 @@ export function TypewriterHero() {
       .filter(Boolean);
     return custom.length > 0 ? custom : DEFAULT_PHRASES;
   }, [settings.heroTypewriterPhrases]);
-  const typed = useTypewriter(phrases, { enabled: !reduced });
+  // This typewriter is the product-family discovery control itself. Keep it
+  // running even when the OS reports reduced motion; the rest of the hero
+  // honors that preference, while a static first phrase made the headline
+  // appear broken on mobile and desktop.
+  const typed = useTypewriter(phrases, { enabled: true, typeSpeed: 96, deleteSpeed: 52, holdMs: 1800 });
 
   // Lightweight scroll-driven parallax for the background blob layer.
   const bgRef = useRef<HTMLDivElement | null>(null);
@@ -260,15 +266,22 @@ export function TypewriterHero() {
                 aria-hidden="true"
                 style={{
                   display: "inline-block",
-                  minWidth: "0.6em",
+                  minWidth: "8ch",
+                  minHeight: "1.05em",
                   maxWidth: "100%",
-                  color: "var(--color-primary)",
-                  overflowWrap: "anywhere",
-                  whiteSpace: "normal",
+                  background: "linear-gradient(100deg, var(--color-primary) 0%, #FB8500 48%, #F97316 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  fontStyle: "italic",
+                  letterSpacing: "-0.035em",
+                  filter: "drop-shadow(0 7px 16px rgba(232,93,4,0.16))",
+                  overflowWrap: "normal",
+                  whiteSpace: "nowrap",
                   verticalAlign: "baseline",
                 }}
               >
-                {reduced ? headlineFallback : typed}
+                {typed || headlineFallback}
                 <span
                   aria-hidden="true"
                   className="inline-block align-baseline ml-1"

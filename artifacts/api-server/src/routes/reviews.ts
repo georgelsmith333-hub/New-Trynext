@@ -22,8 +22,8 @@ async function recomputeProductRating(productId: number): Promise<void> {
   }).where(eq(productsTable.id, productId));
 }
 
-function withReviewText<T extends { body: string | null }>(review: T): T & { text: string | null } {
-  return { ...review, text: review.body };
+function withReviewText<T extends { body: string | null; orderId?: number | null }>(review: T): T & { text: string | null; verified: boolean } {
+  return { ...review, text: review.body, verified: Boolean(review.orderId) };
 }
 
 router.get("/reviews/:productId", async (req, res) => {
@@ -79,7 +79,7 @@ router.post("/reviews", async (req, res) => {
       return;
     }
 
-    let verified = false;
+    let verifiedOrderId: number | null = null;
     // Only orders that are delivered/completed confirm a genuine purchase.
     // Fetching only those rows keeps the query lean for busy buyers.
     const orders = await db.select().from(ordersTable)
@@ -92,7 +92,7 @@ router.post("/reviews", async (req, res) => {
       // Use Number() on both sides to handle string/number type mismatch in
       // JSON order items (e.g. productId stored as string "42" vs number 42).
       if (items?.some((item: any) => Number(item.productId) === Number(productId))) {
-        verified = true;
+        verifiedOrderId = order.id;
         break;
       }
     }
@@ -104,6 +104,7 @@ router.post("/reviews", async (req, res) => {
       rating,
       body: text || "",
       approved: false,
+      orderId: verifiedOrderId,
     }).returning();
 
     res.status(201).json({ ...review, message: "Review submitted! It will appear after approval." });

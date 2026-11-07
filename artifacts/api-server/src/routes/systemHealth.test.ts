@@ -29,6 +29,9 @@ vi.mock("../lib/objectStorage", () => ({
     getBackendName() {
       return "r2";
     }
+    checkBackendAccess() {
+      return Promise.resolve();
+    }
   },
 }));
 
