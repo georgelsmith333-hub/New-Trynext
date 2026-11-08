@@ -4641,3 +4641,9 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Status: PR #81 merged (`83ce5d7`). Owner commit `ae64668` (Crop direct, dismiss overlays) passes 232 tests and typecheck, but one line now clears selection on taps inside the canvas; flagged in `claude/reports.md` for a real-phone check (Konva Transformer handles).
 - `manus/professional-resilience-2026-10-30` changes database selection to configured order only (failover behaviour) plus a product page-size default; not merged, owner decision required.
 - Remaining: N13, N15, N14; real-phone Studio acceptance. State: docs only; nothing deployed by this change.
+
+## 2026-11-08 — Studio cart draft size guard (Claude)
+- Status: committed on claude/nice-carson-nxjq7q; PR pending.
+- Change: `DesignStudioV2.tsx` embeds `studioDraft` in the cart `customNote` only when it serializes to <=3000 chars (order API caps customNote at 10,000; image layers hold base64 data URLs). Full draft stays in localStorage. Regression test updated.
+- Verified: storefront vitest (commerce-recovery) + workspace typecheck. Not verified: real browser/device, live checkout.
+- Remaining: owner may prefer persisting draft via uploaded asset URLs for re-edit durability when localStorage is cleared.

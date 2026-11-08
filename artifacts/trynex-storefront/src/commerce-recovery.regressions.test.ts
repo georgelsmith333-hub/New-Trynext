@@ -18,7 +18,9 @@ describe("commerce recovery regressions", () => {
   it("stores a durable draft snapshot in new Design Studio cart lines", () => {
     const source = read("src/pages/studio/DesignStudioV2.tsx");
     expect(source).toContain("const studioDraft = { version: DRAFT_VERSION");
-    expect(source).toContain("sessionId, studioDraft, mockupRelease");
+    expect(source).toContain("embeddedStudioDraft ? { studioDraft: embeddedStudioDraft }");
+    // customNote is capped at 10,000 chars by the order API; image layers hold base64 data URLs.
+    expect(source).toContain("JSON.stringify(studioDraft).length <= 3000");
   });
 
   it("does not clear the cart before wallet or bank payment evidence is submitted", () => {
