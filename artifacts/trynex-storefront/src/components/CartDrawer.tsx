@@ -30,9 +30,14 @@ const CartLine = memo(function CartLine({ item, onChangeQuantity, onRemove, onCl
 
   const handleReedit = () => {
     if (!studioMeta?.sessionId) return;
-    const sessionRaw = localStorage.getItem(`studio_session_${studioMeta.sessionId}`);
+    const sessionRaw = localStorage.getItem(`studio_session_${studioMeta.sessionId}`) ??
+      (studioMeta.studioDraft ? JSON.stringify(studioMeta.studioDraft) : null);
     if (sessionRaw) {
-      localStorage.setItem("trynext-design-draft-v2", sessionRaw);
+      try {
+        localStorage.setItem("trynext-design-draft-v2", sessionRaw);
+      } catch {
+        return;
+      }
       removeFromCart(item.id);
       onCloseDrawer();
       setLocation("/design-studio?edit=1");

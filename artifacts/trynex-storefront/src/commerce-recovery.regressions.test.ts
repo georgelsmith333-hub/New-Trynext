@@ -10,8 +10,15 @@ describe("commerce recovery regressions", () => {
     for (const file of ["src/pages/Cart.tsx", "src/components/CartDrawer.tsx"]) {
       const source = read(file);
       expect(source).toContain('localStorage.setItem("trynext-design-draft-v2", sessionRaw)');
+      expect(source).toContain("studioMeta.studioDraft ? JSON.stringify(studioMeta.studioDraft)");
       expect(source).not.toContain("trynext-design-draft-v1");
     }
+  });
+
+  it("stores a durable draft snapshot in new Design Studio cart lines", () => {
+    const source = read("src/pages/studio/DesignStudioV2.tsx");
+    expect(source).toContain("const studioDraft = { version: DRAFT_VERSION");
+    expect(source).toContain("sessionId, studioDraft, mockupRelease");
   });
 
   it("does not clear the cart before wallet or bank payment evidence is submitted", () => {
