@@ -1262,8 +1262,9 @@ export default function DesignStudioV2() {
     const studioPrice = linkedStoreProduct?.price ?? configuredStudioPrice;
     const mockupRelease = getActiveMockupReleaseVersion();
     const sessionId = Date.now().toString(36);
+    const studioDraft = { version: DRAFT_VERSION, layers, productId: selectedProduct.id, color: selectedColor, size: selectedSize, mugMode, mockupRelease, savedAt: Date.now() };
     try {
-      localStorage.setItem(`studio_session_${sessionId}`, JSON.stringify({ version: DRAFT_VERSION, layers, productId: selectedProduct.id, color: selectedColor, size: selectedSize, mugMode, mockupRelease, savedAt: Date.now() }));
+      localStorage.setItem(`studio_session_${sessionId}`, JSON.stringify(studioDraft));
     } catch {}
 
     addToCart({
@@ -1280,7 +1281,7 @@ export default function DesignStudioV2() {
       customImages: [persistedFrontTexUrl, ...(persistedBackTexUrl ? [persistedBackTexUrl] : []), ...(persistedLeftSleeveTexUrl ? [persistedLeftSleeveTexUrl] : []), ...(persistedRightSleeveTexUrl ? [persistedRightSleeveTexUrl] : []), ...(persistedNeckLabelTexUrl ? [persistedNeckLabelTexUrl] : [])],
       originalAssetUrls,
       originalAssets,
-      customNote: JSON.stringify({ studioDesign: true, sessionId, mockupRelease, product: selectedProduct.name, category: selectedProduct.category, color: selectedColor.name, colorHex: selectedColor.hex, size: selectedSize, layerCount: layers.length, frontLayerCount: frontLayers.length, backLayerCount: backLayers.length, unrenderedArtworkFaces: unsupportedFaces, mockupSrc: garmentSrc, mockupSource: frontMockup.source, mockupPhotoSrc: frontMockup.photoSrc, mockupIsColorPhoto: frontMockup.isColorPhoto, mockupManifestRevision: frontMockup.manifestRevision, mockupSourceKitKey: frontMockup.sourceKitKey, mockupRuntimeStatus: frontMockup.runtimeStatus, printZone: frontPZ, printZoneBack: backPZ, originalAssets }),
+      customNote: JSON.stringify({ studioDesign: true, sessionId, studioDraft, mockupRelease, product: selectedProduct.name, category: selectedProduct.category, color: selectedColor.name, colorHex: selectedColor.hex, size: selectedSize, layerCount: layers.length, frontLayerCount: frontLayers.length, backLayerCount: backLayers.length, unrenderedArtworkFaces: unsupportedFaces, mockupSrc: garmentSrc, mockupSource: frontMockup.source, mockupPhotoSrc: frontMockup.photoSrc, mockupIsColorPhoto: frontMockup.isColorPhoto, mockupManifestRevision: frontMockup.manifestRevision, mockupSourceKitKey: frontMockup.sourceKitKey, mockupRuntimeStatus: frontMockup.runtimeStatus, printZone: frontPZ, printZoneBack: backPZ, originalAssets }),
     });
     toast({ title: "✓ Added to cart!", description: unsupportedFacesMessage ? `Custom ${selectedProduct.name} (${selectedColor.name}) is ready. Note: ${unsupportedFacesMessage}` : `Custom ${selectedProduct.name} (${selectedColor.name}) is ready.` });
     try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch {}
