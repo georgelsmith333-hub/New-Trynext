@@ -54,8 +54,8 @@
 - [x] Verify the live public commerce settings before writing page copy: ৳100 shipping, ৳1,500 free-shipping threshold, COD enabled, and current configured payment-method state recorded without exposing merchant numbers.
 - [ ] Confirm live mug and water-bottle image/mockup rendering on mobile and validate the Design Studio add-to-cart path without submitting payment.
 - [ ] Resolve the difference between catalog prices and Studio-configured custom-order prices before publishing price claims.
-- [ ] Build and validate the personalized mug category page with real products, crawler-visible copy, truthful Bangladesh payment/shipping rules, internal links, and structured data.
-- [ ] Build and validate the custom drinkware category page using only real orderable drinkware; do not advertise tumblers or bulk ordering until verified.
+- [x] Build and validate the personalized mug category page with real products, crawler-visible copy, truthful Bangladesh payment/shipping rules, internal links, and structured data. Live Googlebot verification passed for `/custom-mugs-bangladesh`.
+- [x] Build and validate the custom drinkware category page using only real orderable drinkware; do not advertise tumblers or bulk ordering until verified. Live Googlebot verification passed for `/custom-drinkware-bangladesh`.
 - [ ] Publish the first supporting mug/drinkware editorial pages and connect them to the category pages and product pages.
 - [ ] Verify raw HTML, metadata, canonical URLs, JSON-LD, sitemap, robots, mobile layout, product CTA, cart, Design Studio entry, and checkout navigation before release.
 - [ ] Publish the verified category expansion and recheck production responses, CI, and active-app verification.

@@ -35,7 +35,7 @@ Evidence collected from the live production endpoints on 2026-11-09:
 
 ## Next action queue — execute in order
 
-### Phase 2 — Build the personalized mug category page
+### Phase 2 — Build the personalized mug category page: COMPLETE
 
 - Add a public route using the approved slug after checking existing URL collisions.
 - Use real mug products and real product links.
@@ -44,7 +44,9 @@ Evidence collected from the live production endpoints on 2026-11-09:
 - Add internal links to relevant products, Design Studio, shipping/payment policy, and relevant blog content.
 - Add the route to the public sitemap only after the page returns a correct 200 response.
 
-### Phase 3 — Build the custom drinkware category page
+Production verification completed on 2026-11-09 for commit `5d984b4`: both `/custom-mugs-bangladesh` and `/custom-drinkware-bangladesh` return HTTP 200 to a Googlebot request, expose route-specific titles and canonicals, include crawler-visible category markup and JSON-LD, link to live products, and appear in the live sitemap. CI and active-app verification both passed.
+
+### Phase 3 — Build the custom drinkware category page: COMPLETE
 
 - Add a public route using the approved slug after checking existing URL collisions.
 - Include mugs, water bottles, and any other drinkware only when backed by live products.
@@ -52,7 +54,9 @@ Evidence collected from the live production endpoints on 2026-11-09:
 - Do not claim tumbler availability until a real orderable tumbler product is verified.
 - Add structured data, internal links, and sitemap coverage after validation.
 
-### Phase 4 — Supporting content and internal linking
+The drinkware page was released together with the mug page and passed the same live crawler verification. It intentionally does not claim tumbler availability or a separate bulk-order workflow because those were not confirmed in the production catalog.
+
+### Phase 4 — Supporting content and internal linking: NEXT
 
 - Publish the first three high-quality articles: custom photo mug design guide, custom mug ideas for couples, and custom drinkware gifts in Bangladesh.
 - Link each article to the relevant category page and real product pages.
