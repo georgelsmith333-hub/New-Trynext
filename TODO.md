@@ -47,3 +47,17 @@
 - [ ] The customer-facing mockup path remains the approved compositor/runtime-role pipeline and is described honestly; a true browser-side PSD Smart Object is not claimed unless Photopea/provider setup is completed.
 - [ ] Facebook Login/Signup remains visible with an explicit setup state; Meta authorization and App ID/secret entry remain owner-controlled and are never committed to source.
 - [ ] Real order placement and payment submission remain unperformed during repository validation.
+
+## SEO category expansion — personalized mugs and custom drinkware
+
+- [x] Verify the live catalog before creating SEO pages: 12 Mugs and 10 Water Bottles are present in production; all verified items are customizable and in stock; effective price ranges are recorded in `docs/SEO_CATEGORY_PHASES.md`.
+- [x] Verify the live public commerce settings before writing page copy: ৳100 shipping, ৳1,500 free-shipping threshold, COD enabled, and current configured payment-method state recorded without exposing merchant numbers.
+- [ ] Confirm live mug and water-bottle image/mockup rendering on mobile and validate the Design Studio add-to-cart path without submitting payment.
+- [ ] Resolve the difference between catalog prices and Studio-configured custom-order prices before publishing price claims.
+- [ ] Build and validate the personalized mug category page with real products, crawler-visible copy, truthful Bangladesh payment/shipping rules, internal links, and structured data.
+- [ ] Build and validate the custom drinkware category page using only real orderable drinkware; do not advertise tumblers or bulk ordering until verified.
+- [ ] Publish the first supporting mug/drinkware editorial pages and connect them to the category pages and product pages.
+- [ ] Verify raw HTML, metadata, canonical URLs, JSON-LD, sitemap, robots, mobile layout, product CTA, cart, Design Studio entry, and checkout navigation before release.
+- [ ] Publish the verified category expansion and recheck production responses, CI, and active-app verification.
+- [ ] Submit the new URLs for indexing through the verified Google Search Console property when URL inspection is available.
+- [ ] Re-measure Google Search Console and Peec AI visibility after data has accumulated; do not claim ranking or citation gains from publication alone.

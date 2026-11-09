@@ -69,6 +69,8 @@ router.get("/sitemap.xml", async (_req, res) => {
       { loc: "/custom-gift-bangladesh",    priority: "0.9", changefreq: "weekly" },
       { loc: "/corporate-gift-dhaka",      priority: "0.8", changefreq: "weekly" },
       { loc: "/custom-mug-bangladesh",     priority: "0.8", changefreq: "weekly" },
+      { loc: "/custom-mugs-bangladesh",    priority: "0.9", changefreq: "weekly" },
+      { loc: "/custom-drinkware-bangladesh", priority: "0.9", changefreq: "weekly" },
       { loc: "/birthday-gift-bangladesh",  priority: "0.8", changefreq: "weekly" },
     ];
 
