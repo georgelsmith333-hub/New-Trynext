@@ -27,6 +27,31 @@ const SITE_URL = "https://trynext.shop";
 const DEFAULT_OG = `${SITE_URL}/opengraph.jpg`;
 const API_TIMEOUT_MS = 4000;
 
+// Keep this aligned with App.tsx and public/manus-routes.json. Pages' catch-all
+// rewrite must not turn a typo into a successful homepage shell.
+const KNOWN_APP_PATHS = new Set([
+  "/", "/products", "/shop", "/cart", "/checkout", "/track", "/track-order", "/blog",
+  "/wishlist", "/shipping-policy", "/return-policy", "/privacy-policy", "/terms-of-service",
+  "/referral", "/design-studio", "/design-studio-v1", "/design-studio-v2", "/hampers",
+  "/hampers/build", "/sale", "/faq", "/about", "/contact", "/size-guide", "/seo-guide",
+  "/custom-tshirt-bangladesh", "/custom-hoodie-bangladesh", "/custom-gift-bangladesh",
+  "/corporate-gift-dhaka", "/custom-mug-bangladesh", "/custom-mugs-bangladesh",
+  "/custom-drinkware-bangladesh", "/birthday-gift-bangladesh", "/login", "/signup", "/account",
+  "/privacy", "/terms", "/shipping", "/returns", "/refund", "/customize", "/design",
+  "/gift-hampers", "/gift-hamper", "/admin", "/admin/login", "/admin/products", "/admin/categories",
+  "/admin/orders", "/admin/blog", "/admin/customers", "/admin/backup", "/admin/automation",
+  "/admin/settings", "/admin/facebook-import", "/admin/reviews", "/admin/tech-stack",
+  "/admin/facebook-guide", "/admin/designer", "/admin/deployment", "/admin/hampers", "/admin/logs",
+  "/admin/security", "/admin/seo", "/admin/promo-codes", "/admin/referrals", "/admin/newsletter",
+  "/admin/db-cluster", "/admin/live-health", "/admin/page-builder", "/admin/mockups",
+  "/admin/ai-developer", "/admin/roles", "/admin/secrets",
+]);
+
+const DESIGN_STUDIO_META = {
+  title: "Design Studio | Personalize Custom Apparel | Trynext Lifestyle",
+  description: "Create a custom apparel design with your own photo, text, and options in Trynext Lifestyle's Design Studio.",
+};
+
 /* ── Keyword landing page static meta ───────────────────────────────────── */
 const KEYWORD_PAGES: Record<string, { title: string; description: string; keywords: string }> = {
   "custom-tshirt-bangladesh": {
@@ -97,7 +122,7 @@ async function fetchTimeout(url: string): Promise<Response | null> {
   }
 }
 
-function injectMeta(html: string, opts: {
+export function injectMeta(html: string, opts: {
   title: string; description: string; canonical: string;
   ogType: string; ogImage: string; keywords?: string; jsonLd: unknown[];
 }): string {
@@ -105,24 +130,47 @@ function injectMeta(html: string, opts: {
   const t = esc(title); const d = esc(description);
   const c = esc(canonical); const img = esc(ogImage);
 
-  html = html.replace(/<title>[^<]*<\/title>/, `<title>${t}</title>`);
-  html = html.replace(/(<meta name="description" content=")[^"]*"/, `$1${d}"`);
-  html = html.replace(/(<link rel="canonical" href=")[^"]*"/, `$1${c}"`);
-  html = html.replace(/(<meta property="og:type" content=")[^"]*"/, `$1${esc(ogType)}"`);
-  html = html.replace(/(<meta property="og:title" content=")[^"]*"/, `$1${t}"`);
-  html = html.replace(/(<meta property="og:description" content=")[^"]*"/, `$1${d}"`);
-  html = html.replace(/(<meta property="og:image" content=")[^"]*"/, `$1${img}"`);
-  html = html.replace(/(<meta property="og:url" content=")[^"]*"/, `$1${c}"`);
-  html = html.replace(/(<meta name="twitter:title" content=")[^"]*"/, `$1${t}"`);
-  html = html.replace(/(<meta name="twitter:description" content=")[^"]*"/, `$1${d}"`);
-  html = html.replace(/(<meta name="twitter:image" content=")[^"]*"/, `$1${img}"`);
-  if (keywords) html = html.replace(/(<meta name="keywords" content=")[^"]*"/, `$1${esc(keywords)}"`);
+  html = html.replace(/<title>[^<]*<\/title>/i, `<title>${t}</title>`);
+  const replaceContent = (pattern: RegExp, value: string) => {
+    html = html.replace(pattern, (_match, prefix: string) => `${prefix}${value}"`);
+  };
+  replaceContent(/(<meta name="description"\s+content=")[^"]*"/i, d);
+  html = html.replace(/(<link rel="canonical"\s+href=")[^"]*"/i, `$1${c}"`);
+  replaceContent(/(<meta property="og:type"\s+content=")[^"]*"/i, esc(ogType));
+  replaceContent(/(<meta property="og:title"\s+content=")[^"]*"/i, t);
+  replaceContent(/(<meta property="og:description"\s+content=")[^"]*"/i, d);
+  replaceContent(/(<meta property="og:image"\s+content=")[^"]*"/i, img);
+  replaceContent(/(<meta property="og:url"\s+content=")[^"]*"/i, c);
+  replaceContent(/(<meta name="twitter:title"\s+content=")[^"]*"/i, t);
+  replaceContent(/(<meta name="twitter:description"\s+content=")[^"]*"/i, d);
+  replaceContent(/(<meta name="twitter:image"\s+content=")[^"]*"/i, img);
+  if (keywords) replaceContent(/(<meta name="keywords"\s+content=")[^"]*"/i, esc(keywords));
 
   const blocks = jsonLd
     .map((ld) => `  <script type="application/ld+json" data-cfasync="false">${escJson(ld)}</script>`)
     .join("\n");
   html = html.replace("</head>", `${blocks}\n</head>`);
   return html;
+}
+
+export function isKnownAppPath(path: string): boolean {
+  if (KNOWN_APP_PATHS.has(path)) return true;
+  return /^\/(product|blog|hampers)\/[^/]+$/.test(path);
+}
+
+function notFoundHtml(html: string, path: string): string {
+  const canonical = `${SITE_URL}${path || "/"}`;
+  return injectMeta(html, {
+    title: "Page not found | Trynext Lifestyle",
+    description: "The requested Trynext Lifestyle page could not be found.",
+    canonical,
+    ogType: "website",
+    ogImage: DEFAULT_OG,
+    jsonLd: [],
+  }).replace(
+    /<body([^>]*)>/i,
+    `<body$1><main><h1>Page not found</h1><p>The requested Trynext Lifestyle page could not be found.</p><a href="${SITE_URL}/">Return to the homepage</a></main>`,
+  );
 }
 
 function buildProductHtml(html: string, product: any, slug: string): string {
@@ -221,6 +269,21 @@ export const onRequest: PagesFunction<{ API_URL: string }> = async ({ request, e
   const ua = request.headers.get("user-agent") || "";
   const path = new URL(request.url).pathname;
 
+  // Do not let the Pages catch-all rewrite manufacture a 200 homepage for a
+  // typo. API requests and file-like paths have their own handlers.
+  if (!path.startsWith("/api/") && !path.includes(".") && !isKnownAppPath(path)) {
+    const baseRes = await env.ASSETS.fetch(new Request(new URL("/", request.url).toString()));
+    const baseHtml = await baseRes.text();
+    return new Response(notFoundHtml(baseHtml, path), {
+      status: 404,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=30",
+        "X-Robots-Tag": "noindex, nofollow",
+      },
+    });
+  }
+
   const productMatch = path.match(/^\/product\/([^/]+)$/);
   const blogMatch = path.match(/^\/blog\/([^/]+)$/);
   const keywordSlug = path.replace(/^\//, "");
@@ -228,6 +291,29 @@ export const onRequest: PagesFunction<{ API_URL: string }> = async ({ request, e
 
   // Pass through: not a bot, or not a dynamic page pattern
   if (!isBot(ua) || (!productMatch && !blogMatch && !keywordPage)) {
+    if (isBot(ua) && path === "/design-studio") {
+      const baseRes = await env.ASSETS.fetch(new Request(new URL("/", request.url).toString()));
+      const baseHtml = await baseRes.text();
+      const canonical = `${SITE_URL}/design-studio`;
+      return new Response(injectMeta(baseHtml, {
+        ...DESIGN_STUDIO_META,
+        canonical,
+        ogType: "website",
+        ogImage: DEFAULT_OG,
+        jsonLd: [{
+          "@context": "https://schema.org", "@type": "WebPage",
+          name: DESIGN_STUDIO_META.title, description: DESIGN_STUDIO_META.description,
+          url: canonical,
+        }],
+      }), {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "X-Robots-Tag": "noindex, follow",
+          "X-Prerendered": "1",
+        },
+      });
+    }
     return env.ASSETS.fetch(request);
   }
 
@@ -282,8 +368,22 @@ export const onRequest: PagesFunction<{ API_URL: string }> = async ({ request, e
     fetchTimeout(apiUrl),
   ]);
 
-  // Fallback if API failed or returned error
-  if (!apiRes || !apiRes.ok) return baseRes;
+  // A confirmed missing detail item is a real 404, not an indexable SPA shell.
+  // Other API failures retain the resilient homepage fallback for visitors.
+  if (!apiRes || !apiRes.ok) {
+    if (apiRes?.status === 404) {
+      const baseHtml = await baseRes.text();
+      return new Response(notFoundHtml(baseHtml, path), {
+        status: 404,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "public, max-age=30",
+          "X-Robots-Tag": "noindex, nofollow",
+        },
+      });
+    }
+    return baseRes;
+  }
 
   let data: any;
   try { data = await apiRes.json(); } catch { return baseRes; }
