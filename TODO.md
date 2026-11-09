@@ -1,3 +1,28 @@
+# Production truth audit and hardening — 2026-11-10
+
+## Confirmed live evidence
+
+- [x] GitHub `main` is the Render production branch for `https://github.com/georgelsmith333-hub/New-Trynext`; audited SHA `78c80370ff3cf2a973824db0b0d6365928ce895e`; the checkout was clean and matched `origin/main` before changes.
+- [x] Read-only production checks completed for storefront, public product API, sitemap, robots, blog index/article, category pages, Design Studio, cart, checkout entry, and an unknown route. No order, payment, payment evidence, customer record, inventory, or merchant setting was changed.
+- [x] Current public catalog evidence supersedes the historical category baseline: 24 products were returned across Mugs (5), Water Bottles (5), Caps (5), Hoodies (4), and Long Sleeves (5), with positive stock in the public response at audit time.
+- [x] Current public settings evidence confirmed ৳100 shipping, free shipping at ৳1,500, and COD enabled; merchant destinations and other secrets were not printed or recorded.
+- [x] Confirmed live SEO defects recorded: `/design-studio` served homepage metadata to Googlebot; `/not-a-real-route` served the homepage shell with HTTP 200; blog index and articles exposed homepage `og:url`. The live sitemap parsed as valid XML with 120 URL entries; an earlier grep-based duplicate-quote signal was a text-extraction artifact, not malformed XML.
+
+## Completed in this hardening pass
+
+- [x] Added an explicit public route manifest at `artifacts/trynex-storefront/public/manus-routes.json`.
+- [x] Added Pages middleware route classification and a real noindex 404 for unknown app-like paths, preventing the catch-all homepage rewrite from creating soft 404s.
+- [x] Added truthful noindex crawler metadata for the Design Studio editor route.
+- [x] Hardened canonical, description, Open Graph, and Twitter metadata replacement and added regression coverage.
+- [x] Focused and full storefront validation passed: 39 test files / 249 tests, storefront typecheck, repository typecheck, production build, manifest validation, and diff check.
+
+## Release gate and remaining verification
+
+- [ ] Commit and push only the scoped routing/SEO files after review; rebase safely onto the latest `origin/main` immediately before push.
+- [ ] Wait for GitHub CI and active-app verification for the exact release SHA, then repeat normal-user and Googlebot live checks for category pages, blog articles, Design Studio, missing routes, sitemap, and robots.
+- [ ] Compare the live sitemap URL set against the intended public route set and inspect image URL quality before declaring sitemap content fully clean.
+- [ ] Continue the open Design Studio, checkout, RBAC, mockup publication, automation delivery, backup, and provider-rotation outcomes below.
+
 # Design Studio recovery checklist
 
 ## Completed in this repository change

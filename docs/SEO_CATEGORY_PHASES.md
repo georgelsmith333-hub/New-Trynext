@@ -1,6 +1,14 @@
 # Trynext SEO Category Expansion — Execution Tracker
 
-Last updated: 2026-11-09
+Last updated: 2026-11-10
+
+## Production re-audit — 2026-11-10
+
+The historical Phase 1 numbers below are retained as dated evidence, but they are not the current catalog truth. A fresh read-only request to the public product API returned 24 products: 5 Mugs, 5 Water Bottles, 5 Caps, 4 Hoodies, and 5 Long Sleeves. All returned positive stock values at audit time. Current effective public price ranges were Mugs ৳349–৳449, Water Bottles ৳749–৳1,199, Caps ৳599–৳849, Hoodies ৳1,399–৳1,699, and Long Sleeves ৳749–৳899.
+
+The same audit confirmed public shipping cost ৳100, free shipping at ৳1,500, and COD enabled. Merchant destinations and secret configuration were intentionally not recorded. The Design Studio editor, cart, checkout entry, blog, category pages, sitemap, robots, public API, and unknown-route behavior were checked with read-only requests.
+
+Confirmed SEO defects requiring the next release were: homepage metadata on the crawler response for `/design-studio`, a homepage-shell HTTP 200 for an unknown route, and homepage `og:url` on the blog index and sampled articles. The current hardening change adds a route manifest, prevents unknown app paths from becoming soft 404s, gives Design Studio truthful noindex metadata, and strengthens metadata replacement with regression tests. These source changes are not considered live until the exact release SHA is active and the public responses are rechecked.
 
 ## Goal
 
