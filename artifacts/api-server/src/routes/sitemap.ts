@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, productsTable, categoriesTable, blogPostsTable } from "@workspace/db";
-import { desc, eq, max } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { getStorefrontUrl } from "../lib/storefrontUrl";
 
@@ -14,26 +14,34 @@ const SITE_URL = getStorefrontUrl();
 
 router.get("/sitemap.xml", async (_req, res) => {
   try {
-    const products = await db
-      .select({
-        slug: productsTable.slug,
-        updatedAt: productsTable.updatedAt,
-        imageUrl: productsTable.imageUrl,
-        name: productsTable.name,
-      })
-      .from(productsTable)
-      .orderBy(desc(productsTable.createdAt));
+    const products = await loadSitemapData(
+      "products",
+      () => db
+        .select({
+          slug: productsTable.slug,
+          updatedAt: productsTable.updatedAt,
+          imageUrl: productsTable.imageUrl,
+          name: productsTable.name,
+        })
+        .from(productsTable)
+        .orderBy(desc(productsTable.createdAt)),
+      [],
+    );
 
-    const categories = await db
-      .select({
-        slug: categoriesTable.slug,
-        name: categoriesTable.name,
-      })
-      .from(categoriesTable);
+    const categories = await loadSitemapData(
+      "categories",
+      () => db
+        .select({
+          slug: categoriesTable.slug,
+          name: categoriesTable.name,
+        })
+        .from(categoriesTable),
+      [],
+    );
 
-    let blogPosts: { slug: string; updatedAt: Date | null; imageUrl: string | null; title: string }[] = [];
-    try {
-      blogPosts = await db
+    const blogPosts = await loadSitemapData(
+      "published blog posts",
+      () => db
         .select({
           slug: blogPostsTable.slug,
           updatedAt: blogPostsTable.updatedAt,
@@ -42,10 +50,9 @@ router.get("/sitemap.xml", async (_req, res) => {
         })
         .from(blogPostsTable)
         .where(eq(blogPostsTable.published, true))
-        .orderBy(desc(blogPostsTable.updatedAt));
-    } catch (err) {
-      logger.warn({ err, route: "GET /sitemap.xml" }, "Failed to load blog posts for sitemap");
-    }
+        .orderBy(desc(blogPostsTable.updatedAt)),
+      [],
+    );
 
     const today = new Date().toISOString().split("T")[0];
 
@@ -53,6 +60,9 @@ router.get("/sitemap.xml", async (_req, res) => {
       { loc: "/", priority: "1.0", changefreq: "daily" },
       { loc: "/products", priority: "0.9", changefreq: "daily" },
       { loc: "/blog", priority: "0.7", changefreq: "weekly" },
+      { loc: "/blog/how-to-design-a-custom-photo-mug", priority: "0.7", changefreq: "monthly" },
+      { loc: "/blog/custom-mug-gift-ideas-for-couples", priority: "0.7", changefreq: "monthly" },
+      { loc: "/blog/custom-drinkware-gifts-in-bangladesh", priority: "0.7", changefreq: "monthly" },
       { loc: "/sale", priority: "0.8", changefreq: "daily" },
       { loc: "/design-studio", priority: "0.7", changefreq: "monthly" },
       { loc: "/about", priority: "0.6", changefreq: "monthly" },
@@ -79,13 +89,11 @@ router.get("/sitemap.xml", async (_req, res) => {
     xml += `        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"\n`;
     xml += `        xmlns:xhtml="http://www.w3.org/1999/xhtml">\n\n`;
 
-    const [latestProductRow] = await db.select({ updatedAt: max(productsTable.updatedAt) }).from(productsTable);
-    const latestProductLastmod = formatDate(latestProductRow?.updatedAt) ?? today;
+    const latestProductLastmod = latestLastmod(products, today);
 
     const latestCategoryLastmod = today;
 
-    const [latestBlogRow] = await db.select({ updatedAt: max(blogPostsTable.updatedAt) }).from(blogPostsTable).where(eq(blogPostsTable.published, true));
-    const latestBlogLastmod = formatDate(latestBlogRow?.updatedAt) ?? today;
+    const latestBlogLastmod = latestLastmod(blogPosts, today);
 
     for (const page of staticPages) {
       xml += `  <url>\n`;
@@ -124,6 +132,7 @@ router.get("/sitemap.xml", async (_req, res) => {
     }
 
     for (const post of blogPosts) {
+      if (staticPages.some((page) => page.loc === `/blog/${post.slug}`)) continue;
       const lastmod = formatDate(post.updatedAt) ?? latestBlogLastmod;
       xml += `  <url>\n`;
       xml += `    <loc>${SITE_URL}/blog/${post.slug}</loc>\n`;
@@ -175,6 +184,29 @@ router.get("/robots.txt", (_req, res) => {
   res.header("X-Robots-Tag", "index, follow");
   res.send(robotsTxt);
 });
+
+async function loadSitemapData<T>(
+  source: string,
+  query: () => PromiseLike<T>,
+  fallback: T,
+): Promise<T> {
+  try {
+    return await query();
+  } catch (err) {
+    logger.warn(
+      { err, route: "GET /sitemap.xml", source },
+      "Sitemap data unavailable; returning the remaining URLs",
+    );
+    return fallback;
+  }
+}
+
+function latestLastmod(items: Array<{ updatedAt: Date | string | null }>, fallback: string): string {
+  return items.reduce<string | null>((latest, item) => {
+    const date = formatDate(item.updatedAt);
+    return date && (!latest || date > latest) ? date : latest;
+  }, null) ?? fallback;
+}
 
 function escapeXml(str: string): string {
   return str

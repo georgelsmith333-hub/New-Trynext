@@ -4,10 +4,19 @@ import {
   getCustomerProductColors,
   getCustomerProductImage,
   getCustomerProductVariants,
+  hasVerifiedStock,
   isWaterBottleProduct,
 } from "./product-options";
 
 describe("customer product options", () => {
+  it("requires explicit finite positive inventory and fails closed for unknown or malformed values", () => {
+    expect(hasVerifiedStock(1)).toBe(true);
+    expect(hasVerifiedStock("2")).toBe(true);
+    for (const stock of [null, undefined, "", "   ", "unknown", "NaN", "Infinity", 0, -1, Number.NaN, Number.POSITIVE_INFINITY, true]) {
+      expect(hasVerifiedStock(stock)).toBe(false);
+    }
+  });
+
   const bottle = {
     name: "Custom Sports Water Bottle",
     slug: "custom-sports-water-bottle",

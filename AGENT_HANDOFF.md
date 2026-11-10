@@ -4647,3 +4647,51 @@ Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI c
 - Change: `DesignStudioV2.tsx` embeds `studioDraft` in the cart `customNote` only when it serializes to <=3000 chars (order API caps customNote at 10,000; image layers hold base64 data URLs). Full draft stays in localStorage. Regression test updated.
 - Verified: storefront vitest (commerce-recovery) + workspace typecheck. Not verified: real browser/device, live checkout.
 - Remaining: owner may prefer persisting draft via uploaded asset URLs for re-edit durability when localStorage is cleared.
+
+
+## 2026-11-10 checkpoint — category SEO and source-managed editorial guides
+
+Status: ready for review (local feature branch `manus/seo-category-guides-2026-11-10`; not pushed, merged, or deployed).
+
+Last completed:
+- Expanded the shared mug/drinkware content and both client/root Pages renderers with direct answers, current customizable catalog cards and detail links, current price/availability, conditional size/color facts, image normalization/alt text, design/order steps, photo tips, gift use cases, Bangladesh delivery and conditional 25%-advance/COD copy, visible FAQs, support and inquiry-only team/corporate language. Drinkware remains restricted to verified mug and water-bottle catalog groups; no tumbler or automatic bulk-order claims were added.
+- Added three source-managed editorial guides at `/blog/how-to-design-a-custom-photo-mug`, `/blog/custom-mug-gift-ideas-for-couples`, and `/blog/custom-drinkware-gifts-in-bangladesh`. Their content is independent of CMS blog records; root Pages adds read-only links to current customizable product detail pages when those products are available. React routes, blog index cards, route manifest, metadata, canonical URLs, BlogPosting/FAQPage/BreadcrumbList data, and the API sitemap were synchronized. Matching CMS slugs are not duplicated in the sitemap.
+- Updated TODO with the approved acceptance criteria; every live/release-dependent item remains open because production data and deployment were not verified.
+
+Stopped at: local implementation and validation are complete; awaiting owner review before any remote publication or deployment.
+
+Files/areas changed: `TODO.md`; `artifacts/api-server/src/routes/sitemap.ts`; `artifacts/trynex-storefront/public/manus-routes.json`; `artifacts/trynex-storefront/src/App.tsx`; `artifacts/trynex-storefront/src/content/commerceSeoContent.ts`; `artifacts/trynex-storefront/src/content/editorialGuides.ts`; `artifacts/trynex-storefront/src/content/simpleMarkdown.ts`; `artifacts/trynex-storefront/src/lib/legacy-mockup-url.ts`; `artifacts/trynex-storefront/src/lib/product-options.ts`; `artifacts/trynex-storefront/src/pages/Blog.tsx`; `artifacts/trynex-storefront/src/pages/CommerceCategoryLanding.tsx`; `artifacts/trynex-storefront/src/pages/EditorialGuide.tsx`; `artifacts/trynex-storefront/functions/seo-guides.test.ts`; root Pages handlers `functions/_commerce-category.ts`, `functions/custom-mugs-bangladesh.ts`, `functions/custom-drinkware-bangladesh.ts`, and `functions/blog/[[slug]].ts`.
+
+Remaining work: None for the approved local code-only implementation. Before release, an owner-approved deployment still needs read-only checks of the deployed category/article HTML and HTTP status, live catalog image/price/size/color/orderability, the merged sitemap, mobile layout, and product/Design Studio/cart/checkout navigation. Checkout must not complete a payment or create an order during verification; monitor Search Console/Peec only after publication and sufficient data accumulation.
+
+Blocker: Production verification was intentionally not attempted. The latest earlier durable handoff recorded API readiness failing with `db=false`/Neon outage; that state was not freshly checked in this task. No production settings/data, orders, payment, or hosting were changed.
+
+Next safe action: Owner reviews the local feature branch. If publication is desired, separately authorize the remote PR/deployment path; after the production API is restored, run only the planned read-only smoke checks first.
+
+Verification: `pnpm run typecheck` passed; storefront Vitest passed 40 files / 257 tests; storefront production Vite/PWA build passed (existing non-blocking large-chunk warning over 500 KB); `node build.mjs` in `artifacts/api-server` passed after the sitemap source update (bundle-size warning only); `git diff --check` passed. API bundle was built but no API dev service was running to restart; no browser, live database, or deployment was used.
+
+
+## 2026-11-11 checkpoint — preview-first publication requested; production database gate
+
+Status: in progress (owner explicitly requested that this scope be pushed and made live; code is still on local feature branch `manus/seo-category-guides-2026-11-10`, not yet committed or pushed).
+
+Last completed:
+- Reconciled the new request with the older code-only plan and updated `TODO.md`: push an isolated preview first, pass CI and verify it, then publish through the existing `main` → Cloudflare Pages/Render integration. Do not create an order, payment, production data/settings mutation, or restore/repoint a production DB branch without the owner selecting the exact source.
+- Rechecked production read-only. `/api/health/readiness` reports `db=false` and `catalog=false`; `/api/products?limit=1` returns `internal_error`; both category routes show the stale “Products are loading” state; `/api/sitemap.xml` returns “Sitemap generation failed”; the new guide URL currently renders only “Loading”.
+- Confirmed Cloudflare Pages project `trynext-shop-new` is connected to `georgelsmith333-hub/New-Trynext` on `main`, with preview deployments enabled for all branches. `render.yaml` has `autoDeploy: true` and uses `/api/health/readiness` as its health check, so a main merge deploys the API as well as Pages.
+- Read-only Neon inventory found two possible backup projects with archived production branches (`Trynex-backup-secondary` and `Trynex-backup-2`); no recoverable project was listed. No branch was resumed, no DATABASE_URL read or changed, and no provider, data, order, payment, or hosting state was modified. The owner must choose the authoritative DB source before restoration.
+- Implemented per-dataset fallback in the API sitemap: core/category/source-managed article URLs remain available if DB reads fail; dynamic catalog/CMS URLs are retained when those reads work; duplicate static CMS slugs remain deduplicated. Added API route regression tests for database outage and healthy dynamic data.
+- Independent read-only review caught a fail-open stock rule in the client and root category renderers. Added shared `hasVerifiedStock`, now requiring an explicit finite positive quantity; malformed/unknown variants are not used to claim in-stock size availability. Added unit and crawler-output/schema regression tests for missing, empty, malformed, zero, and negative stock.
+- Local verification after that fix: `pnpm run typecheck` passed; storefront tests passed 40 files / 259 tests; storefront Vite/PWA production build passed with the existing non-blocking >500 KB chunk warning; API tests passed 35 files / 251 tests after restoring one tracked PSD fixture omitted by sparse checkout; API typecheck and `node build.mjs` from `artifacts/api-server` passed; staged `git diff --check` passed.
+
+Stopped at: staged review and local checks are complete; before creating the feature-branch commit and push. Next, commit only the listed source/docs/tests, push it, open a PR, then inspect GitHub checks and the Cloudflare preview without merging. Do not merge to `main` until the production DB source has been selected/restored and readiness/products are verified, because the automatic Render deployment is gated by readiness and the live catalog currently fails.
+
+Files/areas changed: `TODO.md`; `AGENT_HANDOFF.md`; `artifacts/api-server/src/routes/sitemap.ts`; `artifacts/api-server/src/routes/sitemap.test.ts`; `artifacts/trynex-storefront/public/manus-routes.json`; `artifacts/trynex-storefront/src/App.tsx`; `artifacts/trynex-storefront/src/content/commerceSeoContent.ts`; `artifacts/trynex-storefront/src/content/editorialGuides.ts`; `artifacts/trynex-storefront/src/content/simpleMarkdown.ts`; `artifacts/trynex-storefront/src/lib/legacy-mockup-url.ts`; `artifacts/trynex-storefront/src/lib/product-options.ts`; `artifacts/trynex-storefront/src/lib/product-options.test.ts`; `artifacts/trynex-storefront/src/pages/Blog.tsx`; `artifacts/trynex-storefront/src/pages/CommerceCategoryLanding.tsx`; `artifacts/trynex-storefront/src/pages/EditorialGuide.tsx`; `artifacts/trynex-storefront/functions/seo-guides.test.ts`; root Pages handlers `functions/_commerce-category.ts`, `functions/custom-mugs-bangladesh.ts`, `functions/custom-drinkware-bangladesh.ts`, and `functions/blog/[[slug]].ts`.
+
+Remaining work: create the feature-branch commit and push; create the PR; wait for GitHub CI and the Cloudflare preview; verify deployed static article/category HTML, metadata/canonicals, sitemap behavior, and unaffected product/Studio/cart/checkout navigation. Production release and live smoke checks remain after the database is recovered.
+
+Blocker: live DB/catalog is down. Two accessible Neon backup projects both expose archived `production` branches; selecting/restoring one is an owner data decision. Merging now would auto-deploy both Pages and Render, while Render readiness currently fails.
+
+Next safe action: push the isolated feature branch and open a preview PR. Ask the owner to choose the exact Neon backup branch (or provide the authoritative database restoration path) before any restoration or production merge.
+
+Verification: all local checks above passed; public production and provider inventories were read-only. No remote GitHub write, merge, deployment, database mutation/restoration, real order, or payment has occurred. Full live audit details are saved at `/tmp/trynext-live-audit-2026-11-11.md`.
