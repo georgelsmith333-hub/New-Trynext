@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BlogCardSkeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { TopPostsWidget } from "@/components/blog/TopPostsWidget";
+import { EDITORIAL_GUIDES } from "@/content/editorialGuides";
 
 interface BlogPost {
   id: number;
@@ -247,16 +248,16 @@ export default function Blog() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <SEOHead
-        title="Blog | Custom Apparel Tips & Fashion Guides — Trynext Lifestyle"
-        description="Read the latest tips, trends & guides from Trynext Lifestyle — Bangladesh's #1 custom apparel brand. Garment care, design inspiration & gift ideas."
+        title="Trynext Blog | Custom Gift & Design Guides in Bangladesh"
+        description="Read practical guides to custom mug design, personalized gifts and drinkware from Trynext Lifestyle in Bangladesh."
         canonical="/blog"
-        keywords="trynext blog, custom apparel tips bangladesh, bangladesh fashion blog, t-shirt care guide, custom gift ideas bd, কাস্টম পোশাক টিপস"
+        keywords="trynext blog, custom mug design Bangladesh, personalized gift ideas, custom drinkware Bangladesh, photo mug guide"
         jsonLd={[
           {
             "@context": "https://schema.org",
             "@type": "Blog",
             "name": "Trynext Lifestyle Blog",
-            "description": "Premium custom apparel tips, fashion trends, and lifestyle content from Bangladesh.",
+            "description": "Practical custom gift, mug design and drinkware guides from Trynext Lifestyle in Bangladesh.",
             "publisher": { "@type": "Organization", "name": "Trynext Lifestyle" },
           },
           {
@@ -289,6 +290,26 @@ export default function Blog() {
               Style tips, brand stories, and custom apparel inspiration from Bangladesh.
             </p>
           </motion.div>
+
+          <section className="mb-10 rounded-3xl border border-orange-100 bg-gradient-to-br from-orange-50 to-white p-5 sm:p-8" aria-labelledby="editorial-guides-heading">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-orange-700">Trynext buying guides</p>
+                <h2 id="editorial-guides-heading" className="mt-2 text-2xl font-black tracking-tight text-gray-900">Design and gift guides</h2>
+              </div>
+              <span className="text-sm font-medium text-gray-500">Source-managed · No account required</span>
+            </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              {EDITORIAL_GUIDES.map(guide => (
+                <Link key={guide.slug} href={`/blog/${guide.slug}`} className="group rounded-2xl border border-gray-200 bg-white p-5 transition hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md">
+                  <p className="text-[11px] font-black uppercase tracking-widest text-orange-700">{guide.category}</p>
+                  <h3 className="mt-2 text-lg font-black leading-snug text-gray-900 group-hover:text-orange-700">{guide.title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-gray-600">{guide.excerpt}</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-orange-700">Read guide <ArrowRight className="h-4 w-4" /></span>
+                </Link>
+              ))}
+            </div>
+          </section>
 
           {/* Filters */}
           <div className="flex flex-col sm:flex-row gap-4 mb-10 items-start sm:items-center">
