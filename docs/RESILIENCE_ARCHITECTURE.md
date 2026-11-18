@@ -48,7 +48,7 @@ A secondary must be treated as one of these, never as a vague “backup”:
 - **Catalog snapshot:** useful for recovery and comparison; not safe for live traffic or transactional failover.
 - **Archive/export:** not a runtime database.
 
-The current source code probes `products` and `orders` (and records `mockups` telemetry), but schema presence alone does not prove data freshness. The candidate selection code now respects configured priority instead of allowing a larger row count to select an independent database. The logical subscriber was verified at setup with 69 products, 73 orders, and 40 customers, and its `received_lsn` matched `latest_end_lsn` at the verification point.
+The current source code probes candidate databases sequentially in configured authority order and stops at the first database with both `products` and `orders`. It does not scan table row counts to select a target. Schema presence alone does not prove data freshness. A healthy primary is not periodically re-probed; recovery probes are triggered by pool connection errors and use bounded backoff. When a lower-priority candidate is active, a higher-priority candidate is checked only on a slow backoff. Admin cluster health probes are manual and may wake free-tier databases. None of these connectivity checks proves data synchronization or authorizes a new write target. The logical subscriber was verified at setup with 69 products, 73 orders, and 40 customers, and its `received_lsn` matched `latest_end_lsn` at the verification point.
 
 ## Quota and failure handling
 

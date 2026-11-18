@@ -4697,3 +4697,213 @@ Blocker: live DB/catalog is down. Two accessible Neon backup projects both expos
 Next safe action: ask the owner to select the authoritative Neon backup project/production branch (`Trynex-backup-secondary` or `Trynex-backup-2`) or provide the correct database source. Do not resume, restore, repoint `DATABASE_URL`, or merge until that source is confirmed and API/product health is restored.
 
 Verification: local checks passed; GitHub Active app verification, CI/security-scan and Cloudflare preview passed; five preview routes returned HTTP 200 with expected metadata/schema/visible FAQ, and the browser confirmed the category guide content. Production API/database is still unhealthy and therefore live product/checkout/sitemap behavior is not fully verified. The feature branch/PR was pushed/opened; no merge or production deployment, database mutation/restoration, real order, or payment has occurred. Full live audit details are saved at `/tmp/trynext-live-audit-2026-11-11.md`.
+
+## 2026-11-12 — Read-only Render/Neon outage refresh
+
+Status: blocked on authoritative database source selection and Neon account scope; PR #103 remains behind the production health gate.
+
+Last completed:
+- Fresh read-only public checks: `https://trynext.shop/` returned 200; `/api/health/readiness` returned 503 with `db=false` and `catalog=false`; `/api/products?limit=1` returned 500 `internal_error`; `/api/sitemap.xml` returned 500. The site shell is reachable, but catalog-backed and sitemap functionality remains down.
+- Render API inventory confirmed the primary service `trynex-lifestyle-main-render` is active and not suspended, uses `georgelsmith333-hub/New-Trynext` branch `main`, and has commit-triggered auto-deploy enabled. Its latest live deploy remains `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78`, which completed successfully on 2026-11-09. Recent Render events show successful builds/deploys and no recorded server-failure event in the queried page.
+- Render reports `healthCheckPath` empty on the live service even though the repository configuration is expected to use `/api/health/readiness`. This is configuration drift; it was not changed because the API currently fails readiness and changing provider health behavior before recovery could disrupt deployment.
+- The Render workspace has no Render-managed Postgres. The service is on the Free plan. A sanitized read of service environment metadata confirmed `DATABASE_URL_MAIN` and `DATABASE_URL` both target `ep-falling-tooth-aubsig3i-pooler.c-10.us-east-1.aws.neon.tech` / database `neondb`; `NEON_API_KEY` is present and no `DATABASE_URL_STANDBY` variable was found. Secret values and the full connection URL were not recorded.
+- The current Neon connector sees organization `itmedofficial2@gmail.com`, not the organization recorded in the earlier primary-project audit. The current organization lists `Trynex-backup-2`, `Trynex-backup-secondary`, and `Aibay`; an exact search for the previously reported primary project ID `small-mouse-64402656` returned no result. This indicates current Neon account/scope mismatch or changed access; it does not prove the primary project was deleted.
+- The visible archived `production` branches are `Trynex-backup-2` / `br-late-brook-aprg159n` (archived 2026-11-09 07:44:45Z; logical size 51,150,848 bytes) and `Trynex-backup-secondary` / `br-holy-shadow-az6alfwa` (archived 2026-11-05 20:55:55Z; logical size 52,707,328 bytes). Their names, timestamps, and sizes do not establish which is authoritative or transactionally current. No branch was resumed, restored, or modified.
+
+Stopped at: read-only infrastructure and public health checks are complete. No new SQL connection test was run, and no database contents were read or changed in this pass.
+
+Files/areas changed: this local handoff note only. No application source, GitHub ref, deployment, Cloudflare setting, Render service setting, Neon project/branch, order, payment, or production data was changed. The PR was not merged.
+
+Remaining work: obtain access to the Neon organization/project currently targeted by Render, or have the owner choose the exact backup branch to recover; verify its data before any restoration; restore/reconnect only after the source is confirmed and no overwrite/data-loss risk is indicated; rerun readiness, products, and sitemap; merge PR #103 only after API health is restored; then verify live SEO routes and the product-to-cart/checkout path without creating an order or payment.
+
+Blocker: database/catalog outage remains confirmed. Current Neon access cannot see the previously reported primary project, and the owner has not selected either archived backup as the authoritative source. The live Render health-check configuration also differs from the repository declaration and is intentionally untouched.
+
+Next safe action: owner selects `Trynex-backup-2` / `production` (`br-late-brook-aprg159n`), `Trynex-backup-secondary` / `production` (`br-holy-shadow-az6alfwa`), or provides the correct primary Neon organization/project/branch. Until then, do not resume, restore, repoint `DATABASE_URL_MAIN`, change Render health settings, or merge PR #103.
+
+Verification: public health/products/sitemap responses were freshly checked; Render service/workspace/deploy/event/environment metadata were read-only; Neon project/organization/branch metadata was read-only; secret values were suppressed. Production remains unhealthy and no recovery or deployment is claimed.
+
+## 2026-11-12 — Owner-selected backup activation blocked by Neon quota
+
+Status: owner selected `Trynex-backup-secondary` / `production` for recovery and Render reconnection; activation is blocked by the selected Neon project's Free-plan quota.
+
+Last completed:
+- The owner explicitly selected project `bold-math-43930059`, branch `production` (`br-holy-shadow-az6alfwa`). The branch was confirmed as the project's primary/default branch, archived since 2026-11-05 20:55:55Z, with logical size 52,707,328 bytes. The project has no listed snapshots.
+- Neon documentation says archived branches unarchive automatically on first access; snapshot restoration is not needed to reactivate this existing branch. Snapshot restore/finalize can create and swap branches, move computes, and rename the target, so that path was not used.
+- The branch has existing read-write endpoint `ep-jolly-sunset-azyhesuf` in `aws-ap-southeast-1`, idle/suspended since 2026-11-04. An authorized start request returned HTTP 423 `quota exceeded`. A subsequent read-only endpoint check showed it remained idle/suspended, and a read-only branch check still showed `current_state=archived`. No branch data or connection setting changed.
+- `describe_project` reports organization `itmedofficial2@gmail.com`, plan `free_v3`, and consumption period 2026-11-01 through 2026-12-01 UTC. Neon Free quotas include 100 CU-hours and 5 GB public network transfer per project per month; exceeding compute or transfer suspends compute until the next billing period or upgrade, without deleting data. The provider error did not identify which quota was exhausted.
+- Official Neon Launch pricing is usage-based with no monthly minimum: $0.106/CU-hour, $0.35/GB-month storage, and 500 GB public egress per project included before $0.10/GB. No plan change, payment, or billing action was attempted.
+
+Stopped at: branch activation is blocked by provider quota. No schema/data query was possible while the compute remained suspended; no connection string was retrieved, and Render was not repointed.
+
+Files/areas changed: this local handoff note only. No Neon branch/snapshot, Render environment variable or plan, Cloudflare setting, GitHub ref, production data, order, payment, or deployment was changed. PR #103 remains unmerged.
+
+Remaining work: the owner can either upgrade the selected Neon organization to a paid plan through Neon Console (separate billing decision) or keep Free and wait for the 2026-12-01 UTC quota reset. After quota becomes available, retry starting only endpoint `ep-jolly-sunset-azyhesuf`; then inspect schema and relevant product/order records with read-only checks. If checks pass, use the already-authorized reconnection scope to update only the correct Render database variables, preserve all unrelated settings, and rerun readiness/products/sitemap. Do not merge PR #103 until backend health is restored and verified.
+
+Blocker: Neon Free-plan quota denial (HTTP 423) prevents the selected branch from being accessed or the production API from being reconnected. No paid upgrade is authorized; no data-loss or overwrite operation has occurred.
+
+Next safe action: owner upgrades `itmedofficial2@gmail.com` / organization `org-noisy-dew-07535119` in Neon Console and informs the agent, or waits until the period resets on 2026-12-01 UTC. Do not retry repeatedly, change plans, choose a different backup, restore a snapshot, or modify Render until quota is available and the selected branch passes read-only integrity checks.
+
+Verification: Neon project and branch metadata were re-read after the failed start; the endpoint remains idle/suspended, branch remains archived, snapshots list is empty, and no database query or connection-string retrieval occurred. Official sources reviewed: [Branch archiving](https://neon.com/docs/guides/branch-archiving), [Free-plan limits and quotas](https://neon.com/faqs/free-plan-limits-and-quotas), and [Neon pricing](https://neon.com/pricing). Production health was last freshly observed at readiness 503, products 500, and sitemap 500; no production configuration changed afterward.
+
+### Final live check — 2026-11-12 04:05 +06
+
+- `GET /` returned 200.
+- `GET /api/health/readiness` returned 503 with `status=error`, `db=false`, `catalog=false`.
+- `GET /api/products?limit=1` returned 500.
+- Both `GET /api/sitemap.xml` and `GET /sitemap.xml` returned 500.
+- These checks were read-only. No branch, Render, Cloudflare, GitHub, or billing configuration changed; the site is not restored yet.
+
+## 2026-11-15 — Neon re-auth and project inventory
+
+Status: the requested Neon login as `itmedofficial@gmail.com` is not verifiable from the available tool response; the accessible organization scope still contains only the organization named `itmedofficial2@gmail.com` (`org-noisy-dew-07535119`). Do not assume the account switch succeeded.
+
+Last completed:
+- The user requested a fresh Neon sign-in for `itmedofficial@gmail.com`. After the sign-in flow, Neon auth status reported `unknown` with a stored token. `list_organizations` returned only `org-noisy-dew-07535119` named `itmedofficial2@gmail.com`. The Neon tool does not expose the authenticated principal email, so the identity cannot be independently verified.
+- Read-only project inventory for that organization returned exactly three projects: `Trynex-backup-secondary` (`bold-math-43930059`, `aws-ap-southeast-1`), `Trynex-backup-2` (`curly-flower-85463650`, `aws-us-east-1`), and `Aibay` (`calm-brook-97346927`, `aws-us-east-1`). The previously identified primary `trynex-main-backup` (`small-mouse-64402656`) is still not visible.
+- Read-only branch inventory found one `production` branch per visible project. The Trynex backup branches remain archived: `br-holy-shadow-az6alfwa` (52,707,328 bytes; state changed 2026-11-05 20:55:55Z) and `br-late-brook-aprg159n` (51,150,848 bytes; state changed 2026-11-09 07:44:45Z). Aibay's `br-sparkling-bonus-amsg01w3` is also archived (32,374,784 bytes; state changed 2026-11-03 04:09:21Z).
+
+Stopped at: the requested primary project was not accessible in the organization scope returned by Neon. No compute was started, no SQL/schema inspection or migration was performed, and no database, Render, Cloudflare, GitHub, billing, or production setting was changed.
+
+Next safe action: confirm the Neon authorization card was completed with the exact account `itmedofficial@gmail.com`. If that account is confirmed and `small-mouse-64402656` remains absent, verify the project ID in Neon Console or grant the correct account access to the project/organization. Only after the primary source is accessible should its branches and data be compared; preserve the source and stop before any overwrite or production cutover without verified integrity.
+
+### `itmedofficial2@gmail.com` project search follow-up — 2026-11-15 04:30 +06
+
+Within the only visible organization `org-noisy-dew-07535119`, a project search for `Trynex` returned the two backup projects; searches for `main` and `small-mouse-64402656` returned no results. The recoverable-project inventory also returned empty. This only establishes what is visible/recoverable in this organization; it does not prove whether the primary exists in another Neon organization or was deleted outside Neon’s recovery window. No project was restored or changed.
+
+## 2026-11-15 — Supplied Neon key identifies the primary project
+
+The owner explicitly authorized using the supplied Neon API key only for `GET /api/v2/users/me/organizations` and `GET /api/v2/projects` scoped to returned organization IDs. Neon’s official API documentation was checked first; the key was entered through hidden terminal input and was not printed or written to a file.
+
+The GET requests returned one organization: `improvewithamit@gmail.com` (`org-green-bread-59152632`, Free plan). Its project inventory contains exactly one project: `trynex-main-backup` (`small-mouse-64402656`), region `aws-us-east-1`, PostgreSQL 17. This is the primary project previously missing from the Neon MCP account scope.
+
+Stopped at the user-approved scope: no branch or compute endpoint was inspected, no SQL/schema/data was read, no connection string was retrieved, and no Neon, Render, Cloudflare, GitHub, billing, or production setting was changed. The key itself is not recorded here.
+
+Next safe step: obtain separate authorization for read-only branch and endpoint metadata on `small-mouse-64402656`; any compute start, migration, or production reconnection requires its own safety assessment and approval before execution.
+
+## 2026-11-17 — Primary Neon branch and compute inventory (read-only)
+
+The owner authorized only GET requests for branch metadata and compute-endpoint status on project `small-mouse-64402656` (`trynex-main-backup`). Official Neon API references were checked for both list endpoints before querying. No database contents or connection strings were accessed.
+
+The project has three branches, all archived:
+- `main` (`br-nameless-scene-au75xw42`) is primary/default; state changed 2026-11-11 20:38:32Z; logical size 57,417,728 bytes.
+- `trynext-transactional-standby` (`br-mute-sky-au9gjdyg`) is non-primary; state changed 2026-11-13 21:13:33Z; logical size 56,885,248 bytes.
+- `pre-merge-backup-20261028203216` (`br-summer-wind-au3dxfz7`) is a child of `main`; state changed 2026-11-11 20:33:33Z; logical size 33,529,856 bytes.
+
+The project has three read-write compute endpoints, all reported `idle` and not disabled:
+- `ep-falling-tooth-aubsig3i` on `main`, suspended 2026-11-10 03:28:32Z.
+- `ep-lucky-wave-auxoem19` on the standby branch, suspended 2026-11-10 03:28:31Z.
+- `ep-sweet-leaf-aumzpqx3` on the pre-merge backup, suspended 2026-10-28 21:05:34Z.
+
+Stopped at the approved read-only scope. No quota/consumption endpoint was queried, no compute was started, no branch was restored, and no Neon, Render, Cloudflare, GitHub, billing, or production setting was changed. The key is not recorded. Next safe action: obtain separate approval before any additional API query outside this metadata scope; any compute start, migration, or production reconnection requires its own safety assessment and explicit authorization.
+
+
+## 2026-11-17 — Cross-account Neon quota and live-health recheck (read-only)
+
+Using the owner-supplied Neon API keys through hidden input, only GET requests were made for organizations, projects, project usage details, branch metadata, and endpoint metadata. No SQL, customer/order contents, connection strings, billing changes, branch/compute changes, or production settings were touched. All four relevant Neon organizations report Free plan. Neon’s current Free limits and suspension behavior are documented at https://neon.com/docs/introduction/plans; Free usage fields are described at https://neon.com/docs/introduction/usage-calculations.
+
+The current Render database target remains `trynex-main-backup` (`small-mouse-64402656`, AWS us-east-1, PG17), matched in the prior Render audit. For the period beginning 2026-11-01T00:00:00Z, its project-detail GET reports 397,164 compute CU-seconds (110.3233 CU-hours) against the Free 100-CU-hour limit, an overage of 10.3233 CU-hours. Transfer is 0.366752 GB against 5 GB. The three branch logical sizes total 147,832,832 bytes (0.1478 GB), with three branches. The primary/default `main` branch and its endpoint remain archived/idle; endpoint min/max compute is 0.25/2 CU. This confirms a compute-quota exceedance, not a transfer overage for the current Render target.
+
+The separate `georgelsmith333@gmail.com` Free organization contains `trynex` (`misty-dust-70559510`, 0.5644 CU-hours, 0.121694 GB transfer; production and active branches archived) and `trynex-db` (`proud-dew-38401180`, 0.3656 CU-hours, 0.000611 GB transfer; production branch archived). Both are below this period’s compute/transfer caps but have idle/suspended endpoints, and neither is verified as equivalent or authoritative for live orders/catalog.
+
+The `itmedofficial2@gmail.com` Free organization contains `Trynex-backup-secondary` (`bold-math-43930059`, ap-southeast-1, PG18; 8.4392 CU-hours, 5.556398 GB transfer) and `Trynex-backup-2` (`curly-flower-85463650`, us-east-1, PG17; 28.5869 CU-hours, 5.506838 GB transfer). Both exceed the 5-GB transfer cap; their production branches are archived and endpoints idle. The `itmedofficial3@gmail.com` Free organization contains `Trynex-Third-Final-Backup` (`snowy-rice-17379291`, us-east-2, PG18; 70.8142 CU-hours, 5.543637 GB transfer), also above the 5-GB transfer cap with archived production branch and idle endpoint. No discovered project is currently an active drop-in fallback. Do not promote another project without read-only data comparison and owner approval.
+
+Fresh public GET checks on 2026-11-17: storefront `/` returned 200; `/api/health/readiness` returned 503 with `db=false` and `catalog=false`; `/api/products?limit=1` returned 500 (`internal_error`); `/api/sitemap.xml` returned 500. PR #103 remains unmerged. A read-only paid-provider comparison/masterplan is in progress. No Neon upgrade, compute start, branch restore, migration, Render/Cloudflare change, or merge/deploy has occurred.
+
+
+## 2026-11-17 — Read-only provider comparison complete; release still blocked
+
+Created `RECOVERY_AND_DATABASE_OPTIONS_2026-11-17.md`, a source-backed comparison of Neon Launch, Render Postgres, Supabase Pro, Railway Pro, DigitalOcean Managed PostgreSQL, and Amazon RDS, with the verified cross-account Neon usage inventory, fresh public outage evidence, costs/limits, and a staged no-data-loss migration/rollback plan. The immediate low-risk recommendation is to seek explicit billing authorization for the existing Render-connected Neon production project (`small-mouse-64402656`) and recover that same primary branch, rather than promote any unverified backup. The report’s opening diagnosis was corrected to reflect the fresh 2026-11-17 live check.
+
+The user explicitly confirmed this phase is limited to read-only audit and masterplan. No Neon plan upgrade, endpoint start, branch restore, SQL/data inspection, migration, Render/Cloudflare settings change, repository code change, PR merge, or deployment was performed. PR #103 remains unmerged until production backend health is restored and verified.
+
+### Required handoff state
+
+- **Status:** Read-only audit and provider masterplan complete; production remains unhealthy.
+- **Last completed:** GET-only inventory of all four supplied Neon accounts/projects/usage/branch/endpoint metadata; fresh public HTTP health checks; five-provider comparison and recovery report; documentation-only handoff update.
+- **Stopped at:** Waiting for owner decision on paid recovery/migration. All listed Neon compute endpoints remain idle/suspended and branches archived.
+- **Files/areas changed:** `AGENT_HANDOFF.md` documentation; added `RECOVERY_AND_DATABASE_OPTIONS_2026-11-17.md`. No application code or provider configuration changed.
+- **Remaining work:** If authorized, upgrade the existing production Neon org/project to Launch and activate the same branch, then perform read-only DB/API/product/sitemap verification; if the owner declines, select a paid destination and budget before planning a staged migration. After backend health, re-run release verification for PR #103 and only then ask/act on merge and deployment authorization.
+- **Blocker:** Production database compute quota exceeded; readiness is 503, product endpoint 500, and sitemap endpoint 500. The user-approved current scope is read-only only; paid billing and resource changes are not authorized by that scope.
+- **Next safe action:** Obtain explicit owner approval for the specific paid plan and recovery action or a different target/budget. Do not start compute, upgrade, migrate, repoint, merge, or deploy before that approval.
+- **Verification:** Fresh GET results on 2026-11-17: `/` 200; `/api/health/readiness` 503 (`db=false`, `catalog=false`); `/api/products?limit=1` 500; `/api/sitemap.xml` 500. `git diff --check` passed for the documentation changes; the saved handoff diff was checked for credential-shaped strings and none were found.
+
+
+## 2026-11-17 — Expanded database options review; production release remains blocked
+
+Status: read-only research complete; production remains unhealthy; no provider or deployment change is authorized in the current scope.
+
+Last completed:
+- Expanded the source-backed comparison with seven additional candidates: AWS Lightsail managed PostgreSQL, Google Cloud SQL, Aiven, Crunchy Bridge, Fly.io Managed Postgres, Heroku Postgres, and self-managed PostgreSQL on Hetzner Cloud.
+- Added `EXPANDED_DATABASE_PLATFORM_REVIEW_2026-11-17.md`, with separate immediate recovery and long-term architecture recommendations, provider-specific costs/limits, availability/backup behavior, network/security fit, and a staged migration/rollback plan.
+- The long-term shortlist is conditional: Crunchy Bridge Standard HA in AWS us-west-2 plus Render PrivateLink is the strongest documented private managed route, with an indicative baseline around $170/month plus storage and any Render Pro workspace cost if not already paid; RDS PostgreSQL 17 Multi-AZ in Oregon is a lower-cost managed HA alternative requiring a carefully secured cross-provider connection. Render Postgres remains the simpler same-provider private-network option but has weaker reviewed SLA/HA terms.
+- Corrected Heroku and Render networking citations and recorded that Render PrivateLink requires a Pro workspace or higher; its link fee alone is not the full workspace/network cost.
+
+Stopped at: the owner must decide whether to authorize recurring paid recovery on the existing authoritative Neon project or approve a different destination and budget. The last public checks on 2026-11-17 still showed storefront `/` 200, API readiness 503 (`db=false`, `catalog=false`), product API 500, and sitemap 500. PR #103 remains unmerged.
+
+Files/areas changed: Added `EXPANDED_DATABASE_PLATFORM_REVIEW_2026-11-17.md`; appended this handoff note. No application code, database contents, Neon plans/compute/branches, Render/Cloudflare settings, billing, PR, or deployment was changed.
+
+Remaining work: Await owner decision. If paid recovery is authorized, recover only the identified existing Neon production source first and verify readiness/products/sitemap before considering migration. If a new provider is selected, obtain a region-specific total-cost quote and explicit approval, then plan an isolated rehearsal and controlled cutover while retaining the Neon source.
+
+Blocker: Production database compute-quota suspension; storefront APIs and sitemap remain unhealthy. The current authorization remains read-only research and planning only.
+
+Next safe action: Present the expanded report and ask for the owner’s budget/recovery authorization before any billing, compute, migration, Render/Cloudflare setting, merge, or deployment change.
+
+Verification: The expanded report was reviewed after generation; its recommended Crunchy Bridge path now explicitly includes the Render Pro-workspace prerequisite and associated possible cost. Heroku and Render networking citations were corrected. No live production endpoint or provider configuration was modified or represented as recovered.
+
+
+## 2026-11-17 — Free-only multi-route plan and live quota-driver evidence
+
+Owner requirement for this phase: keep ongoing spend at $0, evaluate multi-routing across legitimate free tiers, and do not assume multiple independent databases are safe failovers. The current work remains research/read-only only; no production code, provider settings, billing, branches, database data, PR, or deployment were changed.
+
+### Completed findings
+
+- Added `FREE_ONLY_MULTI_ROUTE_PLAN_2026-11-17.md`, a source-backed comparison of Neon Free, Render Free, Supabase Free, CockroachDB, Cloudflare Workers/D1/KV, Google Cloud Run, and OCI Always Free. It distinguishes static/stale public reads from transactional failover, and documents the $0 recovery/monitoring plan.
+- Read-only Render service inspection at 2026-11-17 03:02 UTC confirmed the active API service is on Render Free, on `main`, auto-deploy enabled, one instance reported, not suspended, and with no live health-check path. Its latest live deploy is `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78` (`fix: harden public route and crawler responses`). This differs from checked-in `render.yaml`, which declares Starter and a health-check path/interval; do not treat the Blueprint as the live configuration.
+- Recent Render application logs show `[scheduler] Keep-alive ping sent` with HTTP 200 at 2026-11-17 02:37:36Z and 02:51:36Z, about 14 minutes apart. This confirms the deployed scheduler keep-alive job ran. No environment-variable values were read or recorded.
+- Inspected the exact live commit in the local Git object database. It contains a database candidate re-probe every 60 seconds; each candidate probe checks `information_schema` and counts `orders`, `products`, and `mockups`. The same commit runs the scheduler every 60 seconds; each tick calls `keepAlive()`, which reads `automation_config` from PostgreSQL. The config cache TTL is 30 seconds, so the minute tick can query the database every minute. Keep-alive defaults to enabled and also calls `/api/healthz` every 14 minutes; that endpoint runs `SELECT 1`.
+- This is the strongest current explanation for the Neon Free compute overage: while the Render process is running, repeated database activity is much more frequent than Neon’s five-minute idle suspension. At 0.25 CU, 100 CU-hours allows 400 active hours (about 16.7 days continuous); the audited 110.3233 CU-hours for the period beginning 2026-11-01 is consistent with persistent low-size compute use. Treat polling as the leading supported cause, not proven to be the only contributor; Render Free can sleep and other traffic may add activity.
+- The safe architecture remains: keep static storefront/SEO available and optionally show a clearly labelled stale public catalog; route orders, payments, accounts, and admin writes only to one approved, current PostgreSQL authority; fail closed when it is unavailable. Do not dual-write or promote any unverified Neon/Supabase/D1/Cockroach database.
+
+### Required handoff state
+
+Status: Free-only provider comparison and read-only Render/source audit complete; production backend remains unhealthy.
+Last completed: Verified Render’s live plan/deploy/logs, matched the deployed commit to the 60-second database-probe and scheduler code, and created `FREE_ONLY_MULTI_ROUTE_PLAN_2026-11-17.md`.
+Stopped at: No code-level quota fix or routing change was authorized in this phase; PR #103 remains unmerged pending backend health.
+Files/areas changed: Documentation only: added the free-only plan report and this handoff entry. No application code or provider configuration changed.
+Remaining work: If the owner authorizes code work, design and test a focused change that removes unnecessary minute-level deep DB probes and scheduler config polling while preserving recovery/authority fencing; then verify the current Neon quota/status read-only and re-test API readiness, products, and sitemap only after compute quota is available. Do not deploy or merge until the backend is healthy.
+Blocker: The last known Neon production project exceeded the Free compute allowance and its branch/endpoint were reported archived/idle. Latest previously recorded public checks (2026-11-17) showed `/` 200, readiness 503 (`db=false`, `catalog=false`), products 500, and sitemap 500; this pass did not rerun public DB-backed checks.
+Next safe action: Ask the owner to authorize the code-only quota-polling fix, or continue read-only verification after the monthly Neon quota reset. Do not change providers, database routing, billing, production settings, merge, or deploy without explicit approval.
+Verification: Render read-only service/deploy/event/log calls completed; deployed SHA was checked against source code; the report has official provider references and contains no credentials. No SQL, connection string retrieval, or production write was performed.
+
+
+## 2026-11-18/19 — Code-only free-tier database polling fix
+
+Owner authorized a code-only polling fix and related safeguards. The implementation is complete and validated locally; production database/provider state was not changed. PR #103 remains open and unmerged, and no production deployment was performed.
+
+### Implemented
+
+- Replaced parallel full-chain row-count scans and the 60-second recurring DB re-probe with configured-priority sequential schema checks (`products` + `orders` only), stopping at the first reachable candidate.
+- Added error-triggered recovery for failed promise/callback `Pool.connect` acquisition and pool/client errors. Recovery uses a separate probe (it never replays the failed customer query), waits 5 seconds after a connection error, retries failures from 30 minutes up to a 6-hour cap, and checks only higher-priority candidates for failback at 6 hours up to a 24-hour cap.
+- Disabled scheduler-driven keep-alive pings; retained the admin's explicit Run Now action and labeled its database/compute impact. Automation settings cache for 6 hours on success (admin refresh/save remains immediate) and 5 minutes after a failed read.
+- Removed the Database Cluster page's 30-second auto-refresh, retained explicit Refresh Now, and set GET results to a five-minute cache with a visible warning that a fresh probe can wake configured free-tier databases.
+- Stopped writing a database automation-log record on every scheduled Neon usage-monitor API failure; process logging remains, and threshold/alert behavior is retained.
+- Updated resilience documentation and marked the approved polling-fix outcomes complete in `TODO.md`.
+
+### Verification and release boundary
+
+- `pnpm run typecheck` passed workspace TypeScript checks.
+- API server tests passed: 38 files, 261 tests (including sequential probe/backoff, pool connection error, and scheduler manual-only regressions).
+- Storefront tests passed: 40 files, 259 tests.
+- API server and storefront production builds passed. The storefront build retained its existing bundle-size warning for chunks above 500 kB.
+- `git diff --check` passed; a credential-pattern scan of the changed tracked diff found no matches.
+- Current branch is `manus/seo-category-guides-2026-11-10`; PR #103 was open, based on `main`, and its remote head matched the local head before this implementation. The code changes are prepared for that PR branch only. Do not merge or deploy until the production backend is restored and re-verified.
+- No live readiness/product/sitemap check was run in this code-only pass. The latest recorded public checks (2026-11-17) were `/` 200, readiness 503 (`db=false`, `catalog=false`), product API 500, and sitemap 500; production remains presumed unhealthy until a fresh check proves otherwise.
+
+Status: Code-only polling fix implemented and locally verified; production remains blocked by the Neon Free quota outage.
+Last completed: The complete test/typecheck/build suite above passed; local branch and PR #103 were inspected.
+Stopped at: Updating the existing PR branch is allowed, but merge/deployment remains prohibited until backend health is restored. No production resource, database connection, or data was changed.
+Files/areas changed: DB pool recovery/probe policy; API scheduler/config/monitor and cluster route; admin automation/cluster UI; Vitest configuration and regression tests; resilience docs, TODO, and this handoff.
+Remaining work: Push the verified changes to the existing feature PR, inspect its CI/preview checks, then wait for an authorized database recovery and verify live readiness/products/sitemap before any separate merge/deploy decision.
+Blocker: Production DB was last verified unhealthy (2026-11-17); this pass did not restore or test production.
+Next safe action: Update PR #103's feature branch only, confirm checks/previews, and keep main/production unchanged until the production database is healthy and the owner separately authorizes release.
+Verification: Workspace typecheck, API/storefront test suites, both production builds, whitespace check, and credential-pattern scan passed; no production deployment or DB write was performed.

@@ -38,7 +38,7 @@ router.put("/admin/automation/config", requireAdmin, async (req, res) => {
     const body = req.body ?? {};
     const allowedKeys: (keyof typeof DEFAULT_AUTOMATION_CONFIG)[] = [
       "dailySummaryEnabled", "lowStockEnabled", "lowStockThreshold",
-      "staleOrdersEnabled", "staleOrdersHours", "revenueMilestonesEnabled", "keepAliveEnabled",
+      "staleOrdersEnabled", "staleOrdersHours", "revenueMilestonesEnabled",
     ];
     const partial: Record<string, unknown> = {};
     for (const key of allowedKeys) {

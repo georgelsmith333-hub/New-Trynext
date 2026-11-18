@@ -259,20 +259,11 @@ export async function checkRevenueMilestone(manual = false): Promise<void> {
   }
 }
 
-// ── Keep-Alive Ping ──────────────────────────────────────────────────────────
-// Self-ping the healthz endpoint every 14 minutes to prevent cold starts
-// on services that sleep after inactivity (e.g. free-tier hosting).
-// Set API_PUBLIC_URL in your environment to enable this feature.
-let lastPingMs = 0;
-const PING_INTERVAL_MS = 14 * 60 * 1000;
-
-async function keepAlive(manual = false): Promise<void> {
+// ── Manual Keep-Alive Ping ────────────────────────────────────────────────────
+// Automatic self-pings are deliberately disabled: they keep a free-tier API
+// and its Neon database active. Keep the explicit admin action for diagnostics.
+async function keepAlive(): Promise<void> {
   markJobChecked("keepAlive");
-  const config = await getAutomationConfig();
-  if (!config.keepAliveEnabled && !manual) return;
-  const now = Date.now();
-  if (!manual && now - lastPingMs < PING_INTERVAL_MS) return;
-  lastPingMs = now;
 
   // Prefer self-ping via localhost (always works regardless of external URL).
   // Fall back to configured external URL if localhost ping fails.
@@ -284,18 +275,16 @@ async function keepAlive(manual = false): Promise<void> {
     logger.info({ status: res.status }, "[scheduler] Keep-alive ping sent");
     await appendAutomationLog({
       job: "keepAlive",
-      triggeredBy: manual ? "manual" : "schedule",
+      triggeredBy: "manual",
       summary: `Ping to ${localUrl} responded ${res.status}`,
     });
   } catch (err) {
     logger.warn({ err }, "[scheduler] Keep-alive ping failed (non-critical)");
-    if (manual) {
-      await appendAutomationLog({
-        job: "keepAlive",
-        triggeredBy: "manual",
-        summary: `Ping failed: ${err instanceof Error ? err.message : String(err)}`,
-      });
-    }
+    await appendAutomationLog({
+      job: "keepAlive",
+      triggeredBy: "manual",
+      summary: `Ping failed: ${err instanceof Error ? err.message : String(err)}`,
+    });
   }
 }
 
@@ -418,7 +407,7 @@ export async function runAutomationJobNow(job: AutomationJobId): Promise<void> {
     case "revenueMilestones":
       return checkRevenueMilestone(true);
     case "keepAlive":
-      return keepAlive(true);
+      return keepAlive();
   }
 }
 
@@ -440,7 +429,6 @@ export function startScheduler(): void {
     const h = bst.getUTCHours();
     const m = bst.getUTCMinutes();
 
-    await keepAlive().catch(() => {});
     await checkNeonUsage().catch(() => {});
     if (h === 9 && m < 2) await sendDailySummary().catch(() => {});
     if ((h === 10 || h === 20) && m < 2) await checkAndAlertLowStock().catch(() => {});
@@ -449,7 +437,7 @@ export function startScheduler(): void {
   }, 60_000);
 
   tick.unref();
-  logger.info("[scheduler] Scheduler active (daily@9am, low-stock@10am&8pm, pending@every2h BST, backup-sync@30min, keep-alive@14min, neon-monitor@15min)");
+  logger.info("[scheduler] Scheduler active (daily@9am, low-stock@10am&8pm, pending@every2h BST, backup-sync@30min, neon-monitor@15min; keep-alive is manual only)");
 
   // Run one backup sync shortly after boot so a fresh deploy is protected immediately.
   setTimeout(() => {

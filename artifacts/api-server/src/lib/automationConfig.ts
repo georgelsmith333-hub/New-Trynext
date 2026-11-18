@@ -28,7 +28,6 @@ export interface AutomationConfig {
   staleOrdersEnabled: boolean;
   staleOrdersHours: number;
   revenueMilestonesEnabled: boolean;
-  keepAliveEnabled: boolean;
 }
 
 export const DEFAULT_AUTOMATION_CONFIG: AutomationConfig = {
@@ -38,7 +37,6 @@ export const DEFAULT_AUTOMATION_CONFIG: AutomationConfig = {
   staleOrdersEnabled: true,
   staleOrdersHours: 24,
   revenueMilestonesEnabled: true,
-  keepAliveEnabled: true,
 };
 
 const CONFIG_KEY = "automation_config";
@@ -55,7 +53,11 @@ export interface AutomationLogEntry {
 
 let cachedConfig: AutomationConfig | null = null;
 let cachedConfigAtMs = 0;
-const CONFIG_CACHE_TTL_MS = 30_000;
+// Scheduled business jobs are infrequent. Cache their options for six hours;
+// admin status explicitly uses forceFresh and saves update this cache in-process.
+const CONFIG_CACHE_TTL_MS = 6 * 60 * 60 * 1_000;
+const CONFIG_FAILURE_CACHE_TTL_MS = 5 * 60 * 1_000;
+let cachedConfigTtlMs = CONFIG_CACHE_TTL_MS;
 
 function clampInt(value: unknown, min: number, max: number, fallback: number): number {
   const n = typeof value === "number" ? value : Number(value);
@@ -71,24 +73,24 @@ function coerceConfig(raw: unknown): AutomationConfig {
     staleOrdersEnabled: r.staleOrdersEnabled !== false,
     staleOrdersHours: clampInt(r.staleOrdersHours, 1, 240, DEFAULT_AUTOMATION_CONFIG.staleOrdersHours),
     revenueMilestonesEnabled: r.revenueMilestonesEnabled !== false,
-    keepAliveEnabled: r.keepAliveEnabled !== false,
   };
 }
 
-/** Cached for 30s so the once-a-minute scheduler tick doesn't hit the DB on
- *  every single job check; the admin UI calls getAutomationConfig(true) to
- *  always read fresh after a save. */
+/** Cached for six hours for infrequent scheduled checks; the admin UI can
+ *  explicitly refresh, and setAutomationConfig updates this process cache. */
 export async function getAutomationConfig(forceFresh = false): Promise<AutomationConfig> {
-  if (!forceFresh && cachedConfig && Date.now() - cachedConfigAtMs < CONFIG_CACHE_TTL_MS) {
+  if (!forceFresh && cachedConfig && Date.now() - cachedConfigAtMs < cachedConfigTtlMs) {
     return cachedConfig;
   }
   try {
     const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, CONFIG_KEY)).limit(1);
     const parsed = row?.value ? JSON.parse(row.value) : {};
     cachedConfig = coerceConfig(parsed);
+    cachedConfigTtlMs = CONFIG_CACHE_TTL_MS;
   } catch (err) {
     logger.warn({ err }, "[automation] Failed to load config, using defaults");
     cachedConfig = { ...DEFAULT_AUTOMATION_CONFIG };
+    cachedConfigTtlMs = CONFIG_FAILURE_CACHE_TTL_MS;
   }
   cachedConfigAtMs = Date.now();
   return cachedConfig;
@@ -101,6 +103,7 @@ export async function setAutomationConfig(partial: Partial<AutomationConfig>): P
     .onConflictDoUpdate({ target: settingsTable.key, set: { value: JSON.stringify(next), updatedAt: new Date() } });
   cachedConfig = next;
   cachedConfigAtMs = Date.now();
+  cachedConfigTtlMs = CONFIG_CACHE_TTL_MS;
   return next;
 }
 
