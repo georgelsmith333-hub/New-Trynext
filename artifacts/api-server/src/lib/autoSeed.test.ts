@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shouldRunAutoSeed } from "./autoSeed";
+import { shouldRunAutoSeed } from "./autoSeedPolicy";
 
 describe("automatic demo seeding policy", () => {
   it("does not run demo seeding in production", () => {

@@ -1,14 +1,12 @@
 import { db, categoriesTable, productsTable, settingsTable, blogPostsTable } from "@workspace/db";
 import { sql, eq } from "drizzle-orm";
 import { logger } from "./logger";
+import { shouldRunAutoSeed } from "./autoSeedPolicy";
 
 // Re-export the migration runner under its historical name so callers
 // (artifacts/api-server/src/index.ts) keep working unchanged.
 export { runMigrations } from "./migrationRunner";
-
-export function shouldRunAutoSeed(nodeEnv: string | undefined = process.env.NODE_ENV): boolean {
-  return nodeEnv !== "production";
-}
+export { shouldRunAutoSeed };
 
 // Ensures core brand settings (siteName, tagline) are populated when auto-seeding is enabled.
 // Production skips this routine to avoid introducing defaults into recovered data.
