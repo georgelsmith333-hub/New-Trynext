@@ -5146,3 +5146,12 @@ Remaining work: Confirm the PR branch checks after the review update. Keep produ
 Blocker: The Render-linked Neon source is over its Free compute quota with archived branches; the new Free Neon organization is empty; no verified current full export is available.
 Next safe action: Push only reviewed code/docs to the existing PR branch for CI review; leave it open and unmerged until database health and data completeness are restored and verified. Keep all database/Render production settings unchanged.
 Verification: Focused queue tests 5/5; API tests 39 files / 266 tests; API typecheck and production bundle build; repository typecheck; `git diff --check`. No production database or provider mutation occurred.
+
+## 2026-11-20 — Claude Code watch: main sync after PR #102 and #103
+
+Status: local, committed and pushed to the review branch only; nothing deployed by me.
+Last completed: Merged `origin/main` (`a8eea92`) into `claude/nice-carson-nxjq7q` with a normal merge. PR #102 (Studio cart `customNote` cap) is merged as `149afaa`. PR #103 (SEO guides plus the `lib/db` pool-recovery and probe-policy changes from Manus commit `422abb3`) was merged to `main` by the owner as `a8eea92`; I did not merge it.
+Verification: storefront `functions/seo-guides.test.ts` and `product-options.test.ts` 12/12; `lib/db` pool-recovery and probe-policy tests 8/8. Not run: full suite, typecheck and build, any live-site or real-database check.
+Remaining work: Manus branch `manus/seo-category-guides-2026-11-10` has a newer unmerged commit (`d25d66d`, mockup-queue retry hardening, touching `mockupQueue.ts`, its test, `TODO.md` and this handoff). It is not merged and I have not reviewed it for `main`. Owner/Manus-blocked items N1, N2/N3/N8, N4 and N13-N15 are unchanged.
+Blocker: none for this change. Live cache, SEO routes and Pages Functions behavior still need a check on the deployed site; the DB failover change from #103 is not live-verified.
+Next safe action: Keep watching `claude/reports.md`, root `reports.md` and `ANSWER:` lines; do not merge `manus/*` branches.
