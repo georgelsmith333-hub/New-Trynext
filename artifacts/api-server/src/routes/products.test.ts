@@ -3,6 +3,8 @@ import express from "express";
 import productsRouter from "./products";
 import request from "supertest";
 
+import { getProductOrderSpec } from "./products";
+
 const mockRedisDel = vi.fn();
 const mockRedisSet = vi.fn();
 const mockRedisGet = vi.fn().mockResolvedValue(null);
@@ -96,6 +98,21 @@ app.use((req, _res, next) => {
   next();
 });
 app.use("/api", productsRouter);
+
+describe("Product ordering", () => {
+  it("uses a unique ascending ID as the final key for every sort mode", () => {
+    for (const sort of [undefined, "newest", "oldest", "price_asc", "price_desc", "name_asc", "name_desc", "featured"]) {
+      expect(getProductOrderSpec(sort).at(-1)).toEqual({ column: "id", direction: "asc" });
+    }
+  });
+
+  it("preserves newest ordering before the stable ID tie-break", () => {
+    expect(getProductOrderSpec("newest")).toEqual([
+      { column: "createdAt", direction: "desc" },
+      { column: "id", direction: "asc" },
+    ]);
+  });
+});
 
 describe("Products API", () => {
   beforeEach(() => {
