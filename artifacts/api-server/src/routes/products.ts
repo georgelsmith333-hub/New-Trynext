@@ -136,18 +136,40 @@ function localProductCacheKey(params: Record<string, string | undefined>): strin
   ]);
 }
 
-// Map sort param to Drizzle orderBy expression
+// Map sort param to a stable Drizzle orderBy expression.
+type ProductOrderColumn = "price" | "name" | "createdAt" | "featured" | "id";
+type ProductOrderSpec = { column: ProductOrderColumn; direction: "asc" | "desc" };
+
+const productOrderColumns = {
+  price: productsTable.price,
+  name: productsTable.name,
+  createdAt: productsTable.createdAt,
+  featured: productsTable.featured,
+  id: productsTable.id,
+};
+
+export function getProductOrderSpec(sort: string | undefined): ProductOrderSpec[] {
+  const order: ProductOrderSpec[] = (() => {
+    switch (sort) {
+      case "price_asc":    return [{ column: "price", direction: "asc" }, { column: "createdAt", direction: "desc" }];
+      case "price_desc":   return [{ column: "price", direction: "desc" }, { column: "createdAt", direction: "desc" }];
+      case "name_asc":     return [{ column: "name", direction: "asc" }, { column: "createdAt", direction: "desc" }];
+      case "name_desc":    return [{ column: "name", direction: "desc" }, { column: "createdAt", direction: "desc" }];
+      case "oldest":       return [{ column: "createdAt", direction: "asc" }];
+      case "featured":     return [{ column: "featured", direction: "desc" }, { column: "createdAt", direction: "desc" }];
+      case "newest":
+      default:              return [{ column: "createdAt", direction: "desc" }];
+    }
+  })();
+
+  // A unique final key makes offset pagination stable when primary sort values tie.
+  return [...order, { column: "id", direction: "asc" }];
+}
+
 function buildProductOrder(sort: string | undefined) {
-  switch (sort) {
-    case "price_asc":    return [asc(productsTable.price),     desc(productsTable.createdAt)];
-    case "price_desc":   return [desc(productsTable.price),    desc(productsTable.createdAt)];
-    case "name_asc":     return [asc(productsTable.name),      desc(productsTable.createdAt)];
-    case "name_desc":    return [desc(productsTable.name),     desc(productsTable.createdAt)];
-    case "oldest":       return [asc(productsTable.createdAt)];
-    case "featured":     return [desc(productsTable.featured), desc(productsTable.createdAt)];
-    case "newest":
-    default:             return [desc(productsTable.createdAt)];
-  }
+  return getProductOrderSpec(sort).map(({ column, direction }) =>
+    direction === "asc" ? asc(productOrderColumns[column]) : desc(productOrderColumns[column]),
+  );
 }
 
 // Invalidate all product list cache entries when any product is mutated.
