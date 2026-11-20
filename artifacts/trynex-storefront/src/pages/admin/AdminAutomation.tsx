@@ -14,7 +14,6 @@ interface AutomationConfig {
   staleOrdersEnabled: boolean;
   staleOrdersHours: number;
   revenueMilestonesEnabled: boolean;
-  keepAliveEnabled: boolean;
 }
 
 interface AutomationLogEntry {
@@ -41,12 +40,22 @@ interface AutomationStatusResponse {
 
 type JobId = "dailySummary" | "lowStock" | "staleOrders" | "revenueMilestones" | "keepAlive";
 
-const JOBS: { id: JobId; name: string; description: string; icon: typeof Zap; schedule: string }[] = [
-  { id: "dailySummary", name: "Daily Summary", description: "Orders, revenue and pending count sent every morning.", icon: Sunrise, schedule: "9:00 AM BST" },
-  { id: "lowStock", name: "Low Stock Alert", description: "Warns when product stock drops at or below the threshold.", icon: PackageX, schedule: "10 AM & 8 PM BST" },
-  { id: "staleOrders", name: "Stale Pending Orders", description: "Flags pending orders older than the configured window for follow-up.", icon: Clock3, schedule: "Every 2h BST" },
-  { id: "revenueMilestones", name: "Revenue Milestones", description: "Celebrates when today's revenue crosses a threshold (৳10k–৳1M).", icon: TrendingUp, schedule: "Checked after every order" },
-  { id: "keepAlive", name: "Keep-Alive Ping", description: "Self-pings the API so it doesn't cold-start on free-tier hosting.", icon: HeartPulse, schedule: "Every 14 min" },
+type JobDescriptor = {
+  id: JobId;
+  name: string;
+  description: string;
+  icon: typeof Zap;
+  schedule: string;
+  enabledKey?: keyof AutomationConfig;
+  manualOnly?: boolean;
+};
+
+const JOBS: JobDescriptor[] = [
+  { id: "dailySummary", name: "Daily Summary", description: "Orders, revenue and pending count sent every morning.", icon: Sunrise, schedule: "9:00 AM BST", enabledKey: "dailySummaryEnabled" },
+  { id: "lowStock", name: "Low Stock Alert", description: "Warns when product stock drops at or below the threshold.", icon: PackageX, schedule: "10 AM & 8 PM BST", enabledKey: "lowStockEnabled" },
+  { id: "staleOrders", name: "Stale Pending Orders", description: "Flags pending orders older than the configured window for follow-up.", icon: Clock3, schedule: "Every 2h BST", enabledKey: "staleOrdersEnabled" },
+  { id: "revenueMilestones", name: "Revenue Milestones", description: "Celebrates when today's revenue crosses a threshold (৳10k–৳1M).", icon: TrendingUp, schedule: "Checked after every order", enabledKey: "revenueMilestonesEnabled" },
+  { id: "keepAlive", name: "Keep-Alive Ping", description: "Manual health ping only; automatic pings are disabled to avoid consuming free-tier database compute.", icon: HeartPulse, schedule: "Manual only", manualOnly: true },
 ];
 
 function timeAgo(ms: number): string {
@@ -133,6 +142,10 @@ export default function AdminAutomation() {
           </div>
         </div>
 
+        <div className="mb-6 p-4 rounded-2xl text-xs text-amber-800" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
+          Automatic keep-alive pings are disabled to avoid waking Neon compute. A manual Run Now health ping can still wake the database and consume quota.
+        </div>
+
         {!status?.telegramConfigured && status && (
           <div className="mb-6 flex items-start gap-3 p-4 rounded-2xl" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
             <MessageCircleWarning className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
@@ -159,8 +172,8 @@ export default function AdminAutomation() {
         ) : (
           <div className="space-y-4">
             {JOBS.map((job) => {
-              const enabledKey = `${job.id}Enabled` as keyof AutomationConfig;
-              const enabled = Boolean(status.config[enabledKey]);
+              const enabledKey = job.enabledKey;
+              const enabled = enabledKey ? Boolean(status.config[enabledKey]) : false;
               const lastChecked = status.lastCheckedMs[job.id];
               const Icon = job.icon;
               return (
@@ -194,22 +207,30 @@ export default function AdminAutomation() {
                         {runningJob === job.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
                         Run Now
                       </button>
-                      <button
-                        type="button"
-                        role="switch"
-                        aria-checked={enabled}
-                        onClick={() => void patchConfig({ [enabledKey]: !enabled } as Partial<AutomationConfig>, enabledKey)}
-                        disabled={savingKey === enabledKey}
-                        className="relative w-11 h-6 rounded-full transition-colors disabled:opacity-50"
-                        style={{ background: enabled ? "#16a34a" : "#d1d5db" }}
-                      >
-                        <span
-                          className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
-                          style={{ transform: enabled ? "translateX(20px)" : "translateX(0)" }}
-                        />
-                      </button>
+                      {enabledKey && (
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={enabled}
+                          onClick={() => void patchConfig({ [enabledKey]: !enabled } as Partial<AutomationConfig>, enabledKey)}
+                          disabled={savingKey === enabledKey}
+                          className="relative w-11 h-6 rounded-full transition-colors disabled:opacity-50"
+                          style={{ background: enabled ? "#16a34a" : "#d1d5db" }}
+                        >
+                          <span
+                            className="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform"
+                            style={{ transform: enabled ? "translateX(20px)" : "translateX(0)" }}
+                          />
+                        </button>
+                      )}
                     </div>
                   </div>
+
+                  {job.manualOnly && (
+                    <p className="mt-3 text-[11px] text-amber-700">
+                      Manual diagnostic only. This request touches the API health endpoint and may wake the database; use sparingly.
+                    </p>
+                  )}
 
                   {job.id === "lowStock" && (
                     <div className="mt-4 flex items-center gap-3">

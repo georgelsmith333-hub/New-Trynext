@@ -95,10 +95,5 @@ export async function checkNeonUsage(force = false): Promise<void> {
     }
   } catch (err) {
     logger.error({ err }, "[neon-monitor] usage check failed");
-    await appendAutomationLog({
-      job: "neonQuota",
-      triggeredBy: "schedule",
-      summary: `Monitor failed: ${err instanceof Error ? err.message : String(err)}`,
-    });
   }
 }

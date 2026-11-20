@@ -1,5 +1,5 @@
-import { SMART_V10_COLORS, SMART_V10_RUNTIME_ROOT, SMART_V10_VIEWS } from "@/pages/design-studio/smart-v10-runtime";
-import type { SmartMockupCategory, SmartMockupFace } from "@/pages/design-studio/smart-mockup-manifest";
+import { SMART_V10_COLORS, SMART_V10_RUNTIME_ROOT, SMART_V10_VIEWS } from "../pages/design-studio/smart-v10-runtime";
+import type { SmartMockupCategory, SmartMockupFace } from "../pages/design-studio/smart-mockup-manifest";
 
 /**
  * Production answers 410 Gone for every /mockups/ URL outside the reviewed

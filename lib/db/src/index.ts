@@ -15,16 +15,28 @@
  * transactional schema (`products` and `orders`). This prevents a catalog-only
  * database from silently becoming the live source of truth.
  *
- * The module probes all URLs at startup (non-blocking) and switches
- * transparently to the first reachable configured candidate. Candidate order
- * is the operator-approved authority order; row counts are telemetry only and
- * must never decide which independent database receives production writes. All callers use the same
- * `db` and `pool` exports — no changes required elsewhere.
+ * Startup probes candidates sequentially and stops at the first reachable
+ * transactional schema. Recovery probes are connection-error-driven with
+ * bounded backoff; a healthy primary is not periodically scanned. Candidate
+ * order is the operator-approved authority order. Schema reachability alone
+ * does not prove that independent databases are synchronized or safe to write.
+ * All callers use the same `db` and `pool` exports.
  */
 
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "./schema";
+import { watchPoolConnectionErrors } from "./poolRecovery";
+import {
+  CONNECTION_ERROR_PROBE_DELAY_MS,
+  FAILBACK_RETRY_INITIAL_MS,
+  FAILBACK_RETRY_MAX_MS,
+  RECOVERY_RETRY_INITIAL_MS,
+  RECOVERY_RETRY_MAX_MS,
+  findFirstReachable,
+  higherPriorityCandidateIndexes,
+  nextBackoffDelayMs,
+} from "./probePolicy";
 
 const { Pool } = pg;
 
@@ -76,6 +88,7 @@ let _activePool: pg.Pool = guardPool(new Pool({
 
 let _activeDb: NodePgDatabase<typeof schema> = drizzle(_activePool, { schema });
 let _activeUrl = primaryUrl;
+watchActivePool(_activePool);
 
 /* ─── Transparent proxies (callers see a stable reference) ──────────────── */
 export const pool = new Proxy({} as pg.Pool, {
@@ -92,29 +105,24 @@ export const db = new Proxy({} as NodePgDatabase<typeof schema>, {
 
 /* ─── Schema validation helper ───────────────────────────────────────────── */
 /**
- * Returns true if this pool can connect AND the database has the expected
- * schema (products table exists). This prevents falling back to an empty
- * local database when Neon is reachable but the local DB has no tables.
+ * Returns true if this pool can connect AND the database has both tables
+ * required for transactional operation: products and orders.
  */
 type ProbeResult = {
   ok: boolean;
   pool?: pg.Pool;
   error?: string;
-  orders: number;
-  products: number;
-  mockups: number;
 };
 
-async function hasSchema(testPool: pg.Pool): Promise<{ products: boolean; orders: boolean; mockups: boolean }> {
+async function hasSchema(testPool: pg.Pool): Promise<{ products: boolean; orders: boolean }> {
   const client = await testPool.connect();
   try {
     const result = await client.query(
       `SELECT
          EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='products') AS products,
-         EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='orders') AS orders,
-         EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='mockups') AS mockups`
+         EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='orders') AS orders`
     );
-    return result.rows[0] ?? { products: false, orders: false, mockups: false };
+    return result.rows[0] ?? { products: false, orders: false };
   } finally {
     client.release();
   }
@@ -129,49 +137,28 @@ async function probeCandidate(url: string): Promise<ProbeResult> {
     if (!schema.products || !schema.orders) {
       await testPool.end().catch(() => {});
       const missing = [!schema.products ? "products" : null, !schema.orders ? "orders" : null].filter(Boolean).join(", ");
-      return { ok: false, error: `missing transactional schema: ${missing}`, orders: 0, products: 0, mockups: 0 };
+      return { ok: false, error: `missing transactional schema: ${missing}` };
     }
-    const client = await testPool.connect();
-    try {
-      const result = await client.query(
-        `SELECT
-           ${schema.orders ? "(SELECT count(*)::int FROM orders)" : "0"} AS orders,
-           ${schema.products ? "(SELECT count(*)::int FROM products)" : "0"} AS products,
-           ${schema.mockups ? "(SELECT count(*)::int FROM mockups)" : "0"} AS mockups`
-      );
-      const row = result.rows[0] ?? {};
-      return {
-        ok: true,
-        pool: testPool,
-        orders: Number(row.orders ?? 0),
-        products: Number(row.products ?? 0),
-        mockups: Number(row.mockups ?? 0),
-      };
-    } finally {
-      client.release();
-    }
+    return { ok: true, pool: testPool };
   } catch (err) {
     await testPool.end().catch(() => {});
     return {
       ok: false,
       error: err instanceof Error ? err.message : String(err),
-      orders: 0,
-      products: 0,
-      mockups: 0,
     };
   }
 }
 
-async function chooseBestCandidate(): Promise<{ url: string; result: ProbeResult; index: number } | null> {
-  const probed = await Promise.all(urls.map(async (url, index) => ({ url, index, result: await probeCandidate(url) })));
-  const healthy = probed.filter((item) => item.result.ok && item.result.pool);
-  if (healthy.length === 0) return null;
-  // A larger row count does not prove that a database is newer, complete, or
-  // safe for writes. The configured order is the only authority signal here.
-  healthy.sort((a, b) => a.index - b.index);
-  const winner = healthy[0];
-  for (const item of healthy.slice(1)) await item.result.pool!.end().catch(() => {});
-  return winner;
+type Candidate = { url: string; result: ProbeResult; index: number };
+
+async function chooseBestCandidate(candidateIndexes = urls.map((_, index) => index)): Promise<Candidate | null> {
+  const selected = await findFirstReachable(candidateIndexes, async (index) => {
+    const url = urls[index];
+    if (!url) return null;
+    const result = await probeCandidate(url);
+    return result.ok && result.pool ? { url, result, index } : null;
+  });
+  return selected?.value ?? null;
 }
 
 function hostOf(url: string): string {
@@ -184,55 +171,128 @@ async function switchTo(url: string, pool: pg.Pool): Promise<void> {
   _activePool = pool;
   _activeDb = drizzle(_activePool, { schema });
   _activeUrl = url;
+  watchActivePool(_activePool);
   await prev.end().catch(() => {});
 }
 
 /* ─── Non-blocking startup probe + failover ─────────────────────────────── */
-async function probeAndFailover(): Promise<void> {
+async function probeAndFailover(): Promise<boolean> {
   const winner = await chooseBestCandidate();
   if (!winner) {
     console.error(
       "[DB] WARNING: All database connection candidates failed at probe time. " +
-      "The server will still start — queries will fail until a DB becomes reachable.",
+      "The server will still start — recovery will retry with bounded backoff.",
     );
-    return;
+    return false;
   }
   await switchTo(winner.url, winner.result.pool!);
   const label = winner.index === 0 ? "primary" : `candidate #${winner.index + 1}`;
-  console.info(
-    `[DB] Connected to ${label} (${hostOf(winner.url)}; orders=${winner.result.orders}, products=${winner.result.products}, mockups=${winner.result.mockups})`,
-  );
+  console.info(`[DB] Connected to ${label} (${hostOf(winner.url)}; transactional schema verified)`);
+  return true;
 }
 
-/* ─── Periodic re-probe: auto-recover to primary, failover if active dies ─ */
-let _reprobeTimer: NodeJS.Timeout | null = null;
-let _reprobeIntervalMs = 60_000; // re-evaluate every 60 seconds
+/* ─── Error-triggered recovery; no recurring probe while the primary is healthy ─ */
+type RecoveryScope = "all" | "higher-priority";
+let recoveryTimer: NodeJS.Timeout | null = null;
+let recoveryScope: RecoveryScope = "all";
+let recoveryProbeInFlight = false;
+let recoveryRetryDelayMs = 0;
+let failbackRetryDelayMs = 0;
 
-async function reprobe(): Promise<void> {
+function scheduleRecoveryProbe(scope: RecoveryScope, delayMs: number, replace = false): void {
+  if (recoveryTimer) {
+    if (!replace) return;
+    clearTimeout(recoveryTimer);
+    recoveryTimer = null;
+  }
+  recoveryScope = scope;
+  recoveryTimer = setTimeout(() => {
+    recoveryTimer = null;
+    void runRecoveryProbe(recoveryScope);
+  }, delayMs);
+  recoveryTimer.unref();
+}
+
+function requestRecoveryProbe(): void {
+  if (recoveryProbeInFlight) return;
+  // Coalesce bursts and do not let repeated errors defeat a failed-probe backoff.
+  // An actual active-pool error can, however, accelerate a scheduled failback check.
+  if (recoveryTimer && recoveryScope === "all") return;
+  scheduleRecoveryProbe("all", CONNECTION_ERROR_PROBE_DELAY_MS, true);
+}
+
+function watchActivePool(activePool: pg.Pool): void {
+  const onConnectionError = () => {
+    if (activePool === _activePool) requestRecoveryProbe();
+  };
+  watchPoolConnectionErrors(activePool, onConnectionError);
+}
+
+function scheduleFailbackProbe(): void {
+  const activeIndex = urls.indexOf(_activeUrl);
+  if (higherPriorityCandidateIndexes(activeIndex).length === 0) return;
+  failbackRetryDelayMs = failbackRetryDelayMs || FAILBACK_RETRY_INITIAL_MS;
+  scheduleRecoveryProbe("higher-priority", failbackRetryDelayMs);
+}
+
+async function runRecoveryProbe(scope: RecoveryScope): Promise<void> {
+  if (recoveryProbeInFlight) return;
+  const activeIndex = urls.indexOf(_activeUrl);
+  const candidateIndexes = scope === "higher-priority"
+    ? higherPriorityCandidateIndexes(activeIndex)
+    : urls.map((_, index) => index);
+  if (candidateIndexes.length === 0) return;
+
+  recoveryProbeInFlight = true;
   try {
-    const winner = await chooseBestCandidate();
-    if (!winner) return;
-    if (winner.url !== _activeUrl) {
-      const prevHost = hostOf(_activeUrl);
-      const label = winner.index === 0 ? "primary" : `candidate #${winner.index + 1}`;
-      await switchTo(winner.url, winner.result.pool!);
-      console.warn(
-        `[DB] Re-probe: switched from ${prevHost} to ${label} (${hostOf(winner.url)}; orders=${winner.result.orders}, products=${winner.result.products}, mockups=${winner.result.mockups})`,
-      );
-    } else {
+    const winner = await chooseBestCandidate(candidateIndexes);
+    if (!winner) {
+      if (scope === "higher-priority") {
+        failbackRetryDelayMs = nextBackoffDelayMs(
+          failbackRetryDelayMs,
+          FAILBACK_RETRY_INITIAL_MS,
+          FAILBACK_RETRY_MAX_MS,
+        );
+        scheduleRecoveryProbe(scope, failbackRetryDelayMs);
+      } else {
+        recoveryRetryDelayMs = nextBackoffDelayMs(
+          recoveryRetryDelayMs,
+          RECOVERY_RETRY_INITIAL_MS,
+          RECOVERY_RETRY_MAX_MS,
+        );
+        scheduleRecoveryProbe(scope, recoveryRetryDelayMs);
+      }
+      return;
+    }
+
+    if (winner.url === _activeUrl) {
       await winner.result.pool!.end().catch(() => {});
+    } else {
+      const previousHost = hostOf(_activeUrl);
+      await switchTo(winner.url, winner.result.pool!);
+      const label = winner.index === 0 ? "primary" : `candidate #${winner.index + 1}`;
+      console.warn(`[DB] Recovery probe switched from ${previousHost} to ${label} (${hostOf(winner.url)})`);
+    }
+
+    recoveryRetryDelayMs = 0;
+    if (urls.indexOf(_activeUrl) === 0) {
+      failbackRetryDelayMs = 0;
+    } else {
+      failbackRetryDelayMs = FAILBACK_RETRY_INITIAL_MS;
     }
   } catch {
-    // Ignore individual probe errors — the next tick will retry.
+    console.warn("[DB] Recovery probe failed; retrying with bounded backoff");
+    if (scope === "higher-priority") {
+      failbackRetryDelayMs = nextBackoffDelayMs(failbackRetryDelayMs, FAILBACK_RETRY_INITIAL_MS, FAILBACK_RETRY_MAX_MS);
+      scheduleRecoveryProbe(scope, failbackRetryDelayMs);
+    } else {
+      recoveryRetryDelayMs = nextBackoffDelayMs(recoveryRetryDelayMs, RECOVERY_RETRY_INITIAL_MS, RECOVERY_RETRY_MAX_MS);
+      scheduleRecoveryProbe(scope, recoveryRetryDelayMs);
+    }
+  } finally {
+    recoveryProbeInFlight = false;
+    if (!recoveryTimer && urls.indexOf(_activeUrl) > 0) scheduleFailbackProbe();
   }
-}
-
-function startReprobeTimer(): void {
-  if (_reprobeTimer) return;
-  _reprobeTimer = setInterval(() => {
-    reprobe().catch(() => {});
-  }, _reprobeIntervalMs);
-  _reprobeTimer.unref();
 }
 
 /**
@@ -240,19 +300,28 @@ function startReprobeTimer(): void {
  * and admin endpoints that want to force a failover check.
  */
 export async function probeDatabaseChain(): Promise<{ activeUrl: string; index: number }> {
-  await reprobe();
+  if (recoveryTimer) {
+    clearTimeout(recoveryTimer);
+    recoveryTimer = null;
+  }
+  await runRecoveryProbe("all");
   return { activeUrl: _activeUrl, index: urls.indexOf(_activeUrl) };
 }
 
 // Exported promise — await this before running migrations or seeding
 // so the correct database is active before any schema queries run.
 export const dbReady: Promise<void> = probeAndFailover()
-  .then(() => {
-    startReprobeTimer();
+  .then((connected) => {
+    if (connected) {
+      scheduleFailbackProbe();
+    } else {
+      recoveryRetryDelayMs = RECOVERY_RETRY_INITIAL_MS;
+      scheduleRecoveryProbe("all", recoveryRetryDelayMs);
+    }
   })
   .catch(() => {
-    // Even if the initial probe fails, start the timer so we recover later.
-    startReprobeTimer();
+    recoveryRetryDelayMs = RECOVERY_RETRY_INITIAL_MS;
+    scheduleRecoveryProbe("all", recoveryRetryDelayMs);
   });
 
 /* ─── DB health helper (used by /api/health/auth) ───────────────────────── */
