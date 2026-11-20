@@ -1,13 +1,15 @@
 import { db, categoriesTable, productsTable, settingsTable, blogPostsTable } from "@workspace/db";
 import { sql, eq } from "drizzle-orm";
 import { logger } from "./logger";
+import { shouldRunAutoSeed } from "./autoSeedPolicy";
 
 // Re-export the migration runner under its historical name so callers
 // (artifacts/api-server/src/index.ts) keep working unchanged.
 export { runMigrations } from "./migrationRunner";
+export { shouldRunAutoSeed };
 
-// Ensures core brand settings (siteName, tagline) always have non-empty values in DB.
-// Runs every startup so a wiped/blank value gets re-seeded automatically.
+// Ensures core brand settings (siteName, tagline) are populated when auto-seeding is enabled.
+// Production skips this routine to avoid introducing defaults into recovered data.
 async function seedCoreBrandSettings(): Promise<void> {
   const defaults: Record<string, string> = {
     siteName: "Trynext Lifestyle",
@@ -785,11 +787,20 @@ async function seedBlogPostsIfEmpty(): Promise<void> {
 
 export async function autoSeedIfEmpty(): Promise<void> {
   try {
+    const existingProducts = await db.select().from(productsTable).limit(1);
+    if (!shouldRunAutoSeed()) {
+      if (existingProducts.length === 0) {
+        logger.error("Production catalog is empty; refusing to insert demo catalog, promotions, blog posts, or hampers");
+      } else {
+        logger.info("Skipping demo auto-seed in production; preserving imported production data");
+      }
+      return;
+    }
+
     await seedCoreBrandSettings();
     await seedHampersIfEmpty();
     await seedBlogPostsIfEmpty();
 
-    const existingProducts = await db.select().from(productsTable).limit(1);
     if (existingProducts.length > 0) {
       return;
     }
