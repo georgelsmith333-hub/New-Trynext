@@ -4907,3 +4907,242 @@ Remaining work: Push the verified changes to the existing feature PR, inspect it
 Blocker: Production DB was last verified unhealthy (2026-11-17); this pass did not restore or test production.
 Next safe action: Update PR #103's feature branch only, confirm checks/previews, and keep main/production unchanged until the production database is healthy and the owner separately authorizes release.
 Verification: Workspace typecheck, API/storefront test suites, both production builds, whitespace check, and credential-pattern scan passed; no production deployment or DB write was performed.
+
+
+## 2026-11-20 — Read-only production, quota-driver, and backup sweep
+
+Owner's active scope for this checkpoint: read-only inspection to find a current, complete production database source. No database writes, compute/branch restores, billing changes, Render/Cloudflare setting changes, PR merge, or deployment were authorized or performed. The only file change in this checkpoint is documentation.
+
+### Verified findings
+
+- Fresh authenticated Neon GETs using the existing owner-provided credential confirm the Render-connected Free project remains `trynex-main-backup` (`small-mouse-64402656`, PG17, us-east-1). For the usage period beginning 2026-11-01T00:00:00Z, it reports 397,164 compute-seconds (about 110.32 CU-hours) against the 100-CU-hour Free limit; transfer is about 0.367 GB, below its 5-GB limit. Its primary `main` (about 57.4 MB), transactional standby (about 56.9 MB), and pre-merge branch (about 33.5 MB) are archived, with endpoints idle. The credential authenticates; the blocker is quota, not missing access. No SQL or connection URI was requested.
+- The newly connected destination organization has zero projects. No empty destination was created. Previously inspected alternatives remain unsuitable: `trynex` has 10 products and 73 orders with the latest order dated July 10; `trynex-db` has 11 products and 5 orders through April 7 and is missing production tables. Neither is proven authoritative for the current 80+ product claim or all transactional data.
+- Fresh public GETs: `/` returned 200; `/api/health/readiness` returned 503 (`db=false`, `catalog=false`); `/api/products?limit=1` returned 500; `/api/sitemap.xml` returned 500. The storefront shell is reachable, but commerce/API and sitemap are not healthy.
+- The Render service is still a Free web service on `main`, not suspended, and auto-deploy is enabled. The returned 100-record log page (2026-11-19 18:50:16–18:54:58 UTC) contained 95 repeated `[mockupQueue] Failed to claim job` errors with PostgreSQL quota code `53000` and five automation-config read failures. This is consistent with the deployed queue's 3-second interval poll. An explicit backup-only Render log query returned provider error 503, so backup-sync success across the full date range could not be established from that query.
+- Read-only source inspection confirms `mockupQueue.ts` polls every 3 seconds and retries a failed claim on each interval. PR #103's 35 changed files do not include `mockupQueue.ts`; therefore the committed database-probe/scheduler fix does not by itself eliminate this separate background database-polling path. Do not describe PR #103 as a complete quota fix until this gap is addressed and tested.
+- A read-only scan of all 34 GitHub branches (33 unique trees; no failed or truncated trees), releases, and workflow artifacts found no full SQL/custom-format database dump or backup archive, no release assets, and no matching workflow backup artifact. Available product-only evidence includes a 70-row public catalog snapshot dated 2026-10-10 and a separate 50-row missing-product restore payload dated 2026-08-17. These are different snapshots, may overlap, and do not contain a complete current database or orders/customers; do not sum or restore them as authoritative production state.
+- Earlier read-only inventory of Cloudflare storage found image objects only in the `trynex` R2 bucket and zero tables in the available D1 database; no portable database export was found there.
+- PR #103 remains open and unmerged; its four reported checks passed on 2026-11-18. Production has not received the SEO guides or the polling fix.
+
+### Required handoff state
+
+Status: Blocked pending an accessible, current, complete production data source.
+Last completed: Refreshed Neon usage/branch metadata, public site health, Render service/log evidence, GitHub backup/artifact inventory, and PR #103 coverage.
+Stopped at: No current authoritative full database source is readable; the active Neon source is over its Free compute quota and alternate copies are stale/incomplete.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No application code, database contents, provider configuration, PR state, or deployment changed.
+Remaining work: Obtain a recent full PostgreSQL dump or identify a currently readable, authoritative project containing the complete catalog and transactional tables; separately address the 3-second mockup queue database poll before relying on the code fix for $0-tier resilience. After a safe source is available, preserve it, rehearse a schema-and-data copy, verify row counts/freshness, and only then consider a controlled connection cutover.
+Blocker: No verified complete current backup or under-quota authoritative source; production API and sitemap remain unhealthy. The existing `improvewithamit` Neon key is sufficient for metadata and does not bypass the exhausted quota.
+Next safe action: Ask the owner for either (a) a current full PostgreSQL dump (schema plus all data, exported after the latest production changes), or (b) the project ID/branch and authorized access path for another currently readable source. If neither exists and the strict $0 limit remains, wait for the current source's expected 2026-12-01 quota reset; do not use stale copies or an empty destination. Separately request authorization for a code-only mockup-queue polling/backoff fix; do not merge/deploy until backend health is restored and release is separately authorized.
+Verification: Public GETs returned 200/503/500/500 as recorded above; Neon usage and branch state were GET-only; GitHub covered all 34 branches with no tree errors/truncation; Render service metadata was read-only. No production resource, database, credential, PR, or deployment was changed.
+
+## 2026-11-20 — Refreshed inventory of the three Neon keys re-supplied by owner
+
+The owner asked to identify the correct Neon source and migrate without data loss or spend. I re-read the repository operating/architecture notes, current TODO, latest handoff, credential handling guidance, deep-research guidance, and the existing sanitized Neon audit helper. Using the existing private credential file, I made only Neon REST GET requests for organization, project, usage, branch, and endpoint metadata. No credentials were printed by the audit; no SQL, connection URI, compute activation, branch restore, project creation, migration, Render setting change, PR merge, or deployment was performed.
+
+### Account-to-project mapping
+
+- `georgelsmith333@gmail.com` / key labeled by owner as “Trynex-Main-Database”: the organization contains two Free projects, not a project named `Trynex-Main-Database`: `trynex` (`misty-dust-70559510`, PG17, us-east-1) and `trynex-db` (`proud-dew-38401180`, PG17, us-east-1). Both endpoints are idle. Usage for the period beginning 2026-11-01 is 2,402 seconds (0.667 compute-hours) / 149,192,875 bytes transfer for `trynex`, and 1,337 seconds (0.371 compute-hours) / 614,174 bytes transfer for `trynex-db`. `trynex` production branch is 90,775,552 bytes and `trynex-db` production branch is 31,645,696 bytes. Prior approved read-only database inspections found `trynex` had 10 products and 73 orders through July 10, while `trynex-db` had 11 products and 5 orders through April 7 and lacked production tables. They are not complete/current production sources for the claimed 80+ product store.
+- `improvewithamit@gmail.com` / key labeled “Trynex-main-backup”: exactly one Free project is visible, `trynex-main-backup` (`small-mouse-64402656`, PG17, us-east-1). This remains the Render-linked source. Usage for the period beginning 2026-11-01 is 397,164 seconds (110.323 compute-hours), above the 100-CU-hour Free quota. Its primary `main`, `trynext-transactional-standby`, and `pre-merge-backup-20261028203216` branches are all archived; all corresponding endpoints are idle. Logical sizes are 57,417,728 bytes, 56,885,248 bytes, and 33,529,856 bytes. Current read-only metadata access succeeds, but these calls cannot inspect table contents or re-enable an over-quota production source.
+- `itmedofficial@gmail.com` / key labeled “Trynex-backup-secondary”: the organization `Trynext-Lifestyle-Main=New` is Free and currently has zero projects. It has no database to migrate from; no empty destination was created.
+- The previously inventoried fourth account `itmedofficial3@gmail.com` (`Trynex-Third-Final-Backup`) was also above its Free transfer allowance and had archived/idle production state. It was not part of this three-key refresh.
+
+### Decision and stop state
+
+The credentials are working; the correct current production source is identified as `improvewithamit` / `small-mouse-64402656`, but it is over quota and archived. The other accessible current candidates are proven stale/incomplete. The `itmedofficial` account is empty. Therefore no no-data-loss, strictly-$0 migration can be performed from the present accessible metadata and snapshots. Do not repoint production at the 10/73 or 11/5 candidate databases, do not create or use the empty organization as though it held production data, and do not claim that a migration is underway.
+
+Status: Blocked pending a current complete database source or the original source becoming runnable under its Free quota.
+Last completed: Read-only inventory across all three newly re-supplied Neon credentials, matching project IDs, usage and branch/endpoint status against previous source freshness checks and Render linkage.
+Stopped at: Source identified, but its Free compute quota is exhausted; alternatives are stale/incomplete or empty.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No data, provider configuration, source code, PR, or deployment changed.
+Remaining work: Obtain a recent full PostgreSQL dump (schema plus all production data including orders/customers) or wait until the expected 2026-12-01 Neon usage reset and verify the same source safely before export. Maintain the original source and restore to a separate destination only after a full dump is available. Separately, the 3-second mockup queue polling fix is not part of PR #103 and needs its own authorized code change and tests.
+Blocker: No current complete source can be read under the required $0 constraint; Render remains unable to connect to its quota-exhausted Neon source.
+Next safe action: Ask the owner to provide a recent full source dump from the production database, or confirm they want to wait for the original Neon usage reset. After source availability, perform read-only freshness/schema/count checks and a rehearsed non-destructive copy before requesting a separately confirmed production cutover.
+Verification: All three re-supplied credentials successfully returned account metadata. Project/usage/branch/endpoint values above came from GET requests only. No SQL, connection URI, resource mutation, migration, Render edit, merge, or deployment occurred.
+
+
+## 2026-11-20 — Full five-key Neon account sweep and source decision
+
+At the owner's request to check every Neon key already shared, a read-only sweep deduplicated five unique Neon API keys found across the current and prior conversation plus the private scratch file. Only Neon REST GETs were used for organization-scoped project lists, project quota metadata, branches, and endpoints. No credential value, connection URI, or SQL was emitted. No project/branch/compute change or migration occurred.
+
+### Additional account findings
+
+- `itmedofficial2@gmail.com` (`org-noisy-dew-07535119`, Free) contains three projects. `Trynex-backup-secondary` (`bold-math-43930059`, PG18, ap-southeast-1) has an archived production branch last metadata-updated 2026-11-05, logical size about 52.7 MB, and idle endpoint; transfer is 5.556 GB in the current usage period, above the 5-GB Free limit. `Trynex-backup-2` (`curly-flower-85463650`, PG17, us-east-1) has an archived production branch last metadata-updated 2026-11-09, logical size about 51.2 MB, and idle endpoint; transfer is 5.507 GB, above the 5-GB Free limit. The third project, `Aibay` (`calm-brook-97346927`, PG17, us-east-1), has an archived 32.4-MB production branch last metadata-updated 2026-11-03 and an idle endpoint; it is not identified as a Trynext production backup and is not a supported candidate.
+- `itmedofficial3@gmail.com` / organization `it` (`org-curly-tooth-30854079`, Free) contains `Trynex-Third-Final-Backup` (`snowy-rice-17379291`, PG18, us-east-2). Its production branch is archived and its endpoint idle. Branch metadata was last updated 2026-11-16, the newest branch timestamp among the discovered backup projects, with logical size 50 MB. Project transfer is 5.544 GB, above the 5-GB Free limit; compute use is about 70.8 CU-hours. The timestamp is metadata only and does not prove that the product catalog, orders, customers, or schema are the newest or complete.
+- The five unique credentials in the combined sweep map to: (1) `itmedofficial@gmail.com` empty organization, (2) `georgelsmith333@gmail.com` with `trynex` and `trynex-db`, (3) `improvewithamit@gmail.com` with the Render-linked `trynex-main-backup`, (4) `itmedofficial2@gmail.com` with `Trynex-backup-secondary`, `Trynex-backup-2`, and `Aibay`, and (5) `itmedofficial3@gmail.com` with `Trynex-Third-Final-Backup`.
+- The authenticated browser switch completed to My Browser, but navigation to Neon and subsequent page inspection each timed out. No browser state, account setting, or Neon data was changed; the API keys supplied by the owner already provide the account/metadata coverage above.
+
+### Source decision
+
+The only production source positively tied to the live Render service remains `improvewithamit@gmail.com` / `small-mouse-64402656`. It exceeds the Free compute limit and its branches/endpoints are archived/idle. `Trynex-Third-Final-Backup` is the newest branch by metadata timestamp among backup candidates, but it is archived, over the Free transfer quota, and has not been verified at the table/data level. The other named backup projects are also archived and over transfer, while `trynex`/`trynex-db` were previously inspected as stale/incomplete. There is therefore still no verified, under-quota, current and complete source from which to perform a no-loss $0 migration. Do not select a backup solely by size, project name, or metadata timestamp, and do not repoint Render to any unverified copy.
+
+Status: Blocked; full five-key account/project metadata inventory complete, but no safe migration source is data-verified and available within Free limits.
+Last completed: Enumerated five unique shared keys and all organization-scoped projects, usages, branches, and endpoint states; selected the actual Render-linked project as the only proven production authority.
+Stopped at: Candidate data contents for archived backups cannot be verified within Free quota; logged-in browser inspection timed out.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No application source, database, Neon resource, Render setting, PR, or deployment changed.
+Remaining work: Preserve all current branches; obtain a full current export, or wait for the Render-linked Neon project's expected reset around 2026-12-01 and verify its source before copy. Do not use the highest-timestamp backup as authority until its contents are proven.
+Blocker: All other plausible named backups have archived/idle branches and exceed the Free data-transfer quota; the original production source exceeds the Free compute quota. No current complete export was found.
+Next safe action: Use the original production source after its quota reset for a read-only schema/count/freshness check, or ingest a full owner-supplied PostgreSQL dump into a separate confirmed destination and verify it before any cutover.
+Verification: Five distinct keys authenticated to organization metadata; all project listings were retried with the exact organization ID, resolving an earlier unscoped HTTP 400. The API inventory was GET-only. Browser page navigation/view timed out. No migration or production setting change occurred.
+
+
+## 2026-11-20 — Final browser retry and public health verification
+
+The owner explicitly requested use of their My Browser (not the sandbox browser). The browser routing was set to My Browser and Neon dashboard navigation was retried; three total dashboard navigation/page-view attempts timed out. No Neon browser control or mutation succeeded, and no account/project settings were changed.
+
+A fresh public GET check at 2026-11-19 12:04 Pacific returned `/` 200, `/api/health/readiness` 503 with `db=false` and `catalog=false`, `/api/products?limit=1` 500, and `/api/sitemap.xml` 500. The storefront is not restored to healthy/live API status.
+
+Status: The five-key audit is complete, but no safe source is verified and usable under the strict Free-only constraint. No data migration, destination creation, code edit, PR merge, or deployment was performed in response to this check.
+Last completed: Retried the user-requested My Browser Neon dashboard access and refreshed the public health endpoints.
+Stopped at: Browser operations timed out; primary production database remains over quota and archived; backup content is not verified.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only.
+Remaining work: After the original source quota resets (expected around 2026-12-01), safely restore/check the Render-linked production source, verify schema/table counts/freshness, and only then export/copy to a confirmed destination. A full recent PostgreSQL dump supplied by the owner is an alternative. Address the separate 3-second mockup queue polling before leaving the database online on Free resources.
+Blocker: The primary Neon source is over Free compute quota, alternate backups are archived/over transfer allowance, and no complete current dump is available.
+Next safe action: Preserve all sources; do not cut over to any unverified backup. Recheck original production source after reset or use a verified full dump, then test health/product/sitemap before separately authorizing any merge or deployment.
+Verification: Public GET results recorded above; browser route was explicitly My Browser. No database, provider, source-code, PR, or deployment state changed.
+
+
+## 2026-11-20 — User-requested comprehensive live/readiness recheck
+
+Owner asked for fresh proof that the entire site is live and ready. I performed public HTTP GET checks against the Cloudflare custom domain, the Render API service host, and exact guide/category routes; read-only Render service/deploy queries; and read-only GitHub PR metadata. No infrastructure, code, PR, database, or deployment setting was changed.
+
+### Public results at 2026-11-19 12:05–12:08 Pacific
+
+- Cloudflare storefront root `/`: HTTP 200, HTML, title `Trynext Lifestyle | Premium Custom Apparel Bangladesh`.
+- Public `/api/health/readiness`: HTTP 503, JSON status `error`, `db=false`, `catalog=false`. `/api/health` and `/api/health/live` are not registered (404); readiness is the available health endpoint.
+- `/api/products?limit=5`: HTTP 500; no products returned. `/api/sitemap.xml`: HTTP 500. `/sitemap.xml` routes to `/api/sitemap.xml` and also returns 500. `/robots.txt` returns 200 and points crawlers at the sitemap, but the sitemap target is failing.
+- Direct Render API host `trynex-lifestyle-main-render.onrender.com` independently returns readiness 503 (`db=false`, `catalog=false`), products 500, and sitemap 500. This confirms the failure is in API/database health, not only Cloudflare routing.
+- `/custom-mugs-bangladesh` returns HTTP 200 with a page title `Personalized Photo Mugs in Bangladesh | Trynext Lifestyle`, an H1, and 4 JSON-LD blocks. `/custom-drinkware-bangladesh` returns HTTP 200 with title `Custom Drinkware in Bangladesh | Bottles, Mugs & More | Trynext`, an H1, and 4 JSON-LD blocks. These two category routes serve crawlable HTML, but live product inventory cannot be verified while the product API is failing.
+- The three intended editorial guide URLs `/blog/how-to-design-a-custom-photo-mug`, `/blog/custom-mug-gift-ideas-for-couples`, and `/blog/custom-drinkware-gifts-in-bangladesh` each return HTTP 500. The response falls back to the existing blog title and does not contain the expected guide title/content. The guides are not live in production.
+- General `/category` and `/guides` return HTTP 200, but those paths do not prove that the intended production catalog/guides are live; the specific route checks above are authoritative.
+
+### Hosting and release metadata
+
+- Render service `trynex-lifestyle-main-render` (`srv-da9pl91f2nfc7388d150`) is Free, not suspended, configured to track `main`, and auto-deploy is enabled. The latest Render deploy returned by the provider has status `live`, but it is from 2026-11-09 on commit `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78`; an older live deploy does not mean the currently failing database-backed API works.
+- PR #103 is still `OPEN` (head branch `manus/seo-category-guides-2026-11-10`, head `422abb317d93463c55191a4766734544e2b48b9e`). Its CI/typecheck, security scan, and Cloudflare preview checks are successful, but it has not been merged/deployed to production. The PR does not restore the current Neon database.
+
+Status: Partially serving static storefront/category content, but NOT fully live/ready. Database-backed API, product reads, sitemap, and all three intended new guide routes fail in production.
+Last completed: Fresh public GETs on both custom domain and direct Render host, exact SEO route checks, Render service/deploy status, and PR #103 metadata.
+Stopped at: Production remains unhealthy due to the Neon database outage; no complete, quota-available source has been verified.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No application files, data, Neon/Render/Cloudflare setting, PR state, or deployment changed.
+Remaining work: Restore/verifiably connect a complete production database within the $0 constraint; then recheck readiness/products/sitemap and guide pages, and only separately approve release. Also address the independent mockup-queue DB polling issue before relying on the restored Free-tier database.
+Blocker: Original Render-linked Neon project is over Free compute quota and archived; alternatives remain archived, over Free transfer limits, or stale/incomplete.
+Next safe action: Do not claim readiness or merge PR #103 while the production database is unavailable. Restore/check the original source after quota reset or use a verified full database dump, then repeat these checks.
+Verification: Results above are read-only HTTP, Render, and GitHub checks. No production mutation or deployment occurred.
+
+
+## 2026-11-19 12:24–12:30 Pacific — Owner requested full recovery and deployment; attempt blocked by account inspection
+
+The owner explicitly requested full recovery, migration, deployment, and post-deploy audit using the newly added Neon account in their My Browser session. Repository instructions, architecture, current handoff/TODO, credential workflow, browser workflow, GitHub workflow, and commit attribution guidance were refreshed. The planned recovery is to inspect the user's authenticated Neon account, identify a complete current data source, preserve it, copy full schema/data to a verified destination, update production only after validation, then deploy and check health/routes. No destructive action is permitted on source branches.
+
+### Current attempt findings
+
+- Switched routing to the user's My Browser and navigated to `https://console.neon.tech/app/projects`; the action again timed out after 25 seconds. The following browser view also timed out. No page contents were read and no browser setting/project was changed.
+- Neon MCP authentication is now reported as authenticated, but its organization list returns only `itmedofficial2@gmail.com` (`org-noisy-dew-07535119`), not an additional newly selected organization. Its project list returns the known `Trynex-backup-secondary`, `Trynex-backup-2`, and `Aibay` projects.
+- Neon MCP project/branch detail calls for the exact listed IDs return `project not found` (HTTP 404); project searches on the IDs return no results. No branch content or table data was read. This is a connector lookup inconsistency, not evidence the projects are empty or complete. Existing REST metadata says the two named backup branches are archived, endpoints idle, and project transfer exceeds the 5-GB Free cap.
+- Fresh public GETs at 2026-11-19 12:29 Pacific: `/` 200; `/api/health/readiness` 503 (`db=false`, `catalog=false`); `/api/products?limit=1` 500; `/api/sitemap.xml` 500; both category routes 200; all three editorial guide routes 500.
+- Render service remains Free and not suspended, auto-deploying `main`; latest live deploy remains 2026-11-09 commit `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78`. PR #103 remains open at `422abb317d93463c55191a4766734544e2b48b9e`; its checks pass, but it has not been deployed.
+
+### Stop state
+
+Status: Recovery and production deployment are blocked until the newly selected Neon account can be read and an authoritative, complete source is verified. Site is not healthy/live for database-backed commerce or guides.
+Last completed: Re-read startup rules and project state; attempted My Browser Neon access; checked available Neon MCP organization/projects; refreshed public site, Render, and PR status.
+Stopped at: My Browser dashboard action timed out; Neon MCP lists projects but cannot resolve their branch/project details; no source data can be verified from this access path.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No DB, Neon branch/project, Render setting, Cloudflare setting, code, PR, or deployment changed.
+Remaining work: Regain inspectable access to the user's new Neon account (My Browser reconnect/takeover or a working authorized Neon connection), inspect project and branch contents without altering the source, and select a source only after verifying the actual current data. Then preserve source, migrate to the confirmed free destination, verify completeness, update Render and deploy only after checks can pass.
+Blocker: Browser requests time out and the current authenticated Neon MCP account does not resolve the listed project/branch details. Current production source remains over quota; alternatives have archived branches/transfer-limit issues or stale data.
+Next safe action: Have the owner reconnect My Browser to Neon through the current task's browser extension/takeover flow, or supply a current full PostgreSQL dump/working account authorization. Once available, resume source verification, migration, and controlled production cutover; do not repoint Render now.
+Verification: Current public GET and Render/GitHub metadata are recorded above; all were read-only. No source data or production configuration changed.
+
+
+## 2026-11-20 — Owner-requested four-account Neon audit and recovery stop
+The owner asked me to inspect all four Neon API keys supplied in the current message, identify the database containing the latest complete Trynext production data, and restore/deploy the site while preserving a strictly free-tier and no-data-loss outcome. I extracted the keys only into a private mode-0600 scratch file for authenticated Neon API use, removed the scratch files after the audit, and never printed or recorded any key or connection URI.
+
+### Current account/project findings
+- `georgelsmith333@gmail.com` / organization `org-silent-math-41227084` (Free) has `trynex` (`misty-dust-70559510`, PG17, us-east-1) and `trynex-db` (`proud-dew-38401180`, PG17, us-east-1). `trynex` is within current-period usage (0.7131 CU-hours, 0.158677 GB transfer); its ready production branch is about 90.8 MB. A read-only SQL probe confirms all 22 application tables exist but only 10 products and 73 orders, with latest product update 2026-06-15, latest order creation 2026-07-10, and empty mockup tables. It is not current enough to replace the newer production catalog. `trynex-db` is within usage but has only 7 public tables, 11 products and 5 orders through 2026-04-07, and is missing 16 application tables. It is not a valid migration source.
+- `improvewithamit@gmail.com` / organization `org-green-bread-59152632` (Free) has the Render-linked `trynex-main-backup` project (`small-mouse-64402656`, PG17, us-east-1). Current-period compute is 110.3233 CU-hours, above the 100-CU-hour Free cap. Its `main` branch is archived at about 57.4 MB; the archived `trynext-transactional-standby` branch is about 56.9 MB and has the newest branch metadata update in this project (2026-11-13). The pre-merge branch is about 33.5 MB. Read-only connection attempts to `main`, `trynext-transactional-standby`, and the pre-merge branch each failed with a PostgreSQL operational connection error; all three endpoints remained idle. No row counts or data freshness can be verified from them while the project is over quota.
+- `itmedofficial@gmail.com` / organization displayed as `itmedofficial2@gmail.com` (`org-noisy-dew-07535119`, Free) has `Trynex-backup-secondary` (PG18, ap-southeast-1; archived production branch ~52.7 MB) and `Trynex-backup-2` (PG17, us-east-1; archived production branch ~51.2 MB). Both exceed the 5-GB Free transfer allowance (5.556398 GB and 5.506838 GB respectively). Read-only connection attempts to both failed with PostgreSQL operational connection errors; endpoints remained idle. The same account also contains `Aibay`, which is unrelated to Trynext and was not treated as a source.
+- `itmedofficial3@gmail.com` / organization `org-curly-tooth-30854079` (Free) has `Trynex-Third-Final-Backup` (PG18, us-east-2). It has 70.8142 CU-hours, 5.543637 GB transfer (above the 5-GB Free allowance), and one archived ~50-MB production branch with the latest metadata timestamp of all named backup branches, 2026-11-16. The read-only connection attempt failed with a PostgreSQL operational error and the endpoint remained idle. The newer metadata timestamp is not proof of newest or complete business data.
+
+### Recovery decision and live verification
+The production-authoritative source remains the Render-linked `trynex-main-backup` project, but its compute quota is exhausted. The branch with the newest metadata timestamp is `Trynex-Third-Final-Backup`, but its data could not be queried and it exceeds Free transfer quota. The currently queryable `trynex` branch is stale by business timestamps and catalog count. No source therefore passes both data-freshness/completeness verification and current Free-tier availability; choosing one for migration would risk losing the user's newer products, orders, or customer records. No new destination was created because there is no source that can be safely copied and verified.
+
+Fresh public GET checks at 2026-11-20 19:22 UTC returned `/` 200, `/api/health/readiness` 503, `/api/products?limit=2` 500, `/api/sitemap.xml` 500, and `/blog/how-to-design-a-custom-photo-mug` 500. The site is not fully live/ready. No Render setting was updated, no Neon project/branch/data was changed, and PR #103 was not merged or deployed. A GitHub CLI read attempt for PR #103 failed to produce JSON in this environment; do not infer its current state from that failed call. The previous handoff checkpoint recorded PR #103 open with successful checks, but that state was not refreshed here.
+
+Status: Blocked — four supplied Neon accounts and every listed Trynext project were re-inventoried, but there is no queryable current complete source available under the Free limits.
+Last completed: Read-only account/project/branch/endpoint/quota sweep; read-only aggregate schema/count/freshness checks on both under-quota branches; connection attempts against all archived named backup branches; fresh public health checks; removed all temporary Neon key JSON files from `/tmp`.
+Stopped at: Before any migration, destination creation, Render database-URL change, PR merge, or deploy, because all sources that were queryable are stale/incomplete and the plausible recent backups are unavailable under current quotas.
+Files/areas changed: `AGENT_HANDOFF.md` only. No application code, database, Neon resource, Render setting, Cloudflare setting, GitHub PR, or deployment changed.
+Remaining work: Obtain a current full PostgreSQL export or regain queryable access to the Render-linked production database after its quota reset; verify full schema and business freshness; create/confirm a Free destination only after a valid source is proven; copy without altering the source; validate counts and application health; then conduct a separately controlled Render cutover and release.
+Blocker: Render-linked Neon compute is 110.3233 CU-hours against the 100-CU-hour Free cap; other archived named backup projects exceed Free transfer or cannot be queried; current `trynex` data is old (10 products/73 orders) and `trynex-db` is incomplete (7 tables/11 products/5 orders). Production API readiness remains 503.
+Next safe action: Supply a current full database dump or wait until the source's Free quota resets (expected around 2026-12-01) and repeat read-only verification. Do not migrate from `trynex`, `trynex-db`, or a metadata-newer archived branch based only on name, size, or timestamp.
+Verification: Neon REST inventory used GET requests; database probes used read-only transactions and returned only aggregate counts/latest timestamps; all archived candidate connection failures left endpoints idle; public GET status results recorded above; temporary key files were removed. `AGENT_HANDOFF.md` diff-check and secret scan remain to be run.
+
+
+## 2026-11-20 — Fresh Neon destination, Render target, and source-data verification
+
+The owner supplied a new Neon API key and authorized full recovery/deployment. I refreshed the Neon account/project inventory using the owner-provided API keys, confirmed the live Render database host through the documented Render environment-variable GET endpoint (printing hostnames only), ran a read-only SQL inventory against the only low-usage ready candidate, and rechecked production health. No Neon project/branch/endpoint, database contents, Render environment, PR, or deployment was changed.
+
+### Verified findings
+
+- The Render workspace in use is `Azim's workspace` (workspace `tea-d5uiuknfte5s73c3b0f0`). The production service is `trynex-lifestyle-main-render` (`srv-da9pl91f2nfc7388d150`), on Render Free, not suspended, tracking `main` with auto-deploy enabled. Its latest live deploy remains commit `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78` from 2026-11-09. A fresh read-only environment lookup confirmed both `DATABASE_URL` and `DATABASE_URL_MAIN` still use the Neon pooler hostname previously mapped to `trynex-main-backup` (`small-mouse-64402656`). No credential or complete URL was recorded. Render returned no recent service events in the queried range.
+- The supplied new Neon key resolves to the Free organization `Trynext-Lifestyle-Main=New` (`org-proud-water-47768651`), which currently has zero projects. The account API did not expose a login email. No destination project was created.
+- The Render-linked source remains under the organization named `improvewithamit@gmail.com`. For the usage period starting 2026-11-01, it reports 397,164 compute-seconds (about 110.32 CU-hours) against the 100-CU-hour Free limit. Its `main`, transactional-standby, and pre-merge branches are archived and their endpoints idle. Do not repoint production to an unverified standby or restore it while the quota constraint remains unresolved.
+- The newest metadata-dated named backup remains `Trynex-Third-Final-Backup` (`snowy-rice-17379291`), production branch `br-blue-wave-axm7ussu`, last metadata-updated 2026-11-16 and about 50 MB. It is archived/idle; project transfer is 5,543,637,375 bytes (about 5.54 GB), above the 5-GB Free allowance. The timestamp is not proof of latest business data or completeness; this branch was not queried in this pass because it is over the Free transfer limit.
+- The only under-quota, ready Trynext candidate queried was `trynex` (`misty-dust-70559510`), production branch `br-red-voice-am6pnr32`. A read-only SQL inventory found 23 public tables including `_migrations`, 10 products, 73 orders, 40 customers, 3 reviews, and 0 mockups. The latest product update was 2026-06-15; the latest order creation was 2026-07-10 (last update 2026-07-12). This candidate is stale/incomplete for the owner's stated current catalog and must not be used as a production replacement. The separate `trynex-db` project remains known to be incomplete from earlier read-only checks.
+- Fresh public checks on 2026-11-20: storefront root 200; custom-domain and direct Render-origin readiness 503 (`db=false`, `catalog=false`); product API 500; sitemap 500. The site shell is reachable, but database-backed service is not restored.
+
+### Required handoff state
+
+Status: Blocked — no verified, current, complete source is available within the strict Free-tier constraint.
+Last completed: Refreshed Neon key/account/project metadata; confirmed the live Render DB host still maps to the production source; ran a read-only aggregate inventory on the under-quota candidate; rechecked public and direct-origin health.
+Stopped at: Before destination creation, copy, production connection change, merge, or deploy because the accessible candidate is stale and the metadata-newest backup is archived/over the Free transfer allowance.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No production application/data/provider setting, PR, or deployment changed.
+Remaining work: Obtain a current full PostgreSQL dump or wait for the Render-linked source's expected 2026-12-01 Free quota reset, then re-verify full schema/data freshness and copy to the confirmed empty Free organization without altering the original. Cut over Render only after validation, then rerun readiness/products/sitemap/guide checks. Keep PR #103 and production deploy held until database health is restored.
+Blocker: Source compute quota exhausted; the metadata-newest backup is archived and over transfer allowance; the only queried under-quota candidate is stale. No full export is available in the audited locations.
+Next safe action: Ask the owner for a recent full PostgreSQL export (schema and all production rows) or wait until the source quota reset and re-check the original. Do not restore from the stale candidate or select a backup solely by name, size, or timestamp.
+Verification: Render/Neon metadata came from read-only GETs; aggregate SQL ran in a read-only transaction and returned no customer records; public HTTP checks were GET-only. No data, compute/branch state, settings, PR, or deployment was changed.
+
+
+Provider API references used for this checkpoint: Render service environment-variable listing (`GET /v1/services/{serviceId}/env-vars`): https://api-docs.render.com/reference/get-env-vars-for-service. Neon connection-URI retrieval (`GET /projects/{project_id}/connection_uri`): https://neon.com/docs/reference/api/projects/get-connection-uri. Both were used only to inspect the existing target/source; no provider mutation was made.
+
+
+## 2026-11-20 — Event-driven mockup queue and Dec 1 read-only source recheck
+
+The owner asked to proceed now and revisit the original Neon source around Dec 1 if its Free quota has reset, with the goal of restoring the full site without data loss or spend. I preserved the existing recovery decision: Render still points to the authoritative `trynex-main-backup` project under the `improvewithamit@gmail.com` organization, but that source was over the Free compute limit with archived branches; the newly selected Free destination organization was empty; all checked alternatives were stale, incomplete, or over Free usage. No safe production copy/cutover is possible until a complete source is queryable.
+
+### Completed safely
+
+- Created an active one-shot ScheduleTask titled `Trynext Neon source recheck — read-only`, due Dec 1, 2026 at about 09:00 Asia/Dhaka. It carries the enabled Neon and Render connectors and is in `ask_user` run mode. Its instructions restrict it to GET/read-only checks, prohibit starting/restoring branches or compute, resource creation, copying, Render/Cloudflare edits, PR merge, and deploy, and require stopping on cost risk. It will report availability/freshness only; it does not perform a migration or cutover.
+- Replaced `artifacts/api-server/src/lib/mockupQueue.ts`'s unconditional 3-second polling with one startup drain, a wake after job insertion/completion, and bounded per-job exponential one-shot retry timers (30 seconds to 5 minutes). Deferred retries are excluded from immediate claims so other queued jobs can run. No database schema change was made.
+- Added `artifacts/api-server/src/lib/mockupQueue.polling.test.ts` covering no idle polling, event-triggered wakeup, and retry-delay bounds.
+- Updated `TODO.md` with the code-only result and the unchanged production release gate.
+
+### Required handoff state
+
+Status: blocked for production recovery; code-only queue change verified locally
+Last completed: Scheduled the Dec 1 read-only recheck and replaced the mockup worker's 3-second idle poll; focused tests, full API suite, typecheck, build, and diff check passed.
+Stopped at: Before any database restore/query requiring compute activation, destination creation, export/copy, Render connection change, PR merge, or deployment. The production data source remains unavailable under current Free limits.
+Files/areas changed: `artifacts/api-server/src/lib/mockupQueue.ts`, new `artifacts/api-server/src/lib/mockupQueue.polling.test.ts`, `TODO.md`, and this handoff append. Existing untracked database-review documents were preserved. No commit or push was made.
+Remaining work: On/after Dec 1, run the scheduled read-only source/usage/branch check. If the primary source is accessible within Free limits, verify full schema and aggregate business-data freshness before any copy; then validate a separate destination and controlled production cutover, followed by live readiness/products/sitemap/guide checks. Keep release blocked if the source remains archived/unavailable or if checks imply cost risk.
+Blocker: Original Render-linked Neon compute was over its Free quota and branches archived; the new Free organization has zero projects; no current complete export has been found. Production readiness/products/sitemap were previously 503/500/500. The code-only queue change is not deployed.
+Next safe action: Wait for the scheduled Dec 1 read-only recheck to request approval/run, preserve all database sources, and do not point Render to an empty or stale database.
+Verification: Focused worker test passed (3/3); full API suite passed (39 files, 264 tests); API typecheck and bundle build passed; `git diff --check` passed. The schedule service reported an active one-shot in Asia/Dhaka `ask_user` mode with Neon and Render connectors. No production database, provider setting, PR, or deployment was changed.
+
+
+## 2026-11-20 — Queue claim recovery and retry-budget hardening (review branch only)
+
+The owner asked me to proceed with safe updates while preserving a Free-only, no-data-loss recovery plan. An independent read-only review found that a failed startup queue claim could leave existing queued work idle until another event, and noted the pre-existing max-attempt off-by-one. I corrected both without schema changes and added a delayed one-shot retry path for claim-query errors. The worker remains event-driven when healthy; no short recurring database poll was reintroduced.
+
+- Added bounded exponential one-shot recovery after claim-query failures (30 seconds to 5 minutes), clearing the retry timer after any successful claim query.
+- Added regression coverage for idle startup, durable enqueue-triggered wake, two consecutive claim failures with backoff, no recurring idle retry after recovery, capped render retry delays, and the maximum-attempt boundary.
+- Documented that enqueue notifications are process-local. The current Render production service was read-only verified as one instance; horizontal scaling would require a cross-process wake mechanism. Per-job retry timers are also in-memory and do not persist across process restart; no schema change was made.
+- Preserved the existing production database target and all order/customer/catalog data. No Neon/Render settings, branch state, destination, PR merge, or production deployment were changed.
+
+Status: ready for review on the existing branch; production recovery remains blocked and the code is not merged/deployed.
+Last completed: Independent code review; added claim-error backoff and corrected max-attempt accounting; focused worker tests passed (5/5), full API suite passed (39 files / 266 tests), API typecheck/build, repository typecheck, and diff check passed.
+Stopped at: Before any production database cutover, PR merge, or deployment. The source remains quota-blocked/archived and the destination organization remains empty.
+Files/areas changed: `artifacts/api-server/src/lib/mockupQueue.ts`, `artifacts/api-server/src/lib/mockupQueue.polling.test.ts`, `TODO.md`, and this handoff. Existing untracked platform-review documents are preserved and excluded from the release change.
+Remaining work: Confirm the PR branch checks after the review update. Keep production release blocked until a current complete source is queryable within Free limits or a full verified dump is supplied; then validate a separate destination before any cutover. If scaling beyond one API instance or needing retry delays to survive restarts, design cross-process/durable scheduling separately.
+Blocker: The Render-linked Neon source is over its Free compute quota with archived branches; the new Free Neon organization is empty; no verified current full export is available.
+Next safe action: Push only reviewed code/docs to the existing PR branch for CI review; leave it open and unmerged until database health and data completeness are restored and verified. Keep all database/Render production settings unchanged.
+Verification: Focused queue tests 5/5; API tests 39 files / 266 tests; API typecheck and production bundle build; repository typecheck; `git diff --check`. No production database or provider mutation occurred.

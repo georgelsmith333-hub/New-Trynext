@@ -106,3 +106,13 @@
 - [x] Change Database Cluster dashboard polling so it does not automatically probe all configured database endpoints every 30 seconds. Retain an explicit manual refresh, a useful cached result, and visible notice that probing may wake free-tier computes.
 - [x] Preserve opt-in scheduled business automations, backups, usage-monitoring semantics, single-authority/write safety, schema checks, and existing admin access controls. Add regression coverage for sequential/limited recovery policy and manual-only keep-alive.
 - [x] Run focused tests, API build/typecheck, relevant storefront typecheck/tests, workspace checks as feasible, and `git diff --check`. Do not merge or deploy until production backend health is restored and separately authorized.
+
+
+## 2026-11-20 event-driven mockup queue free-tier hardening
+
+- [x] Replace the worker's unconditional 3-second database interval with one startup drain and event-driven drains after durable enqueue/completion; schedule bounded one-shot exponential retries after claim-query failures, without recurring idle polling.
+- [x] Preserve the database-backed durable queue without schema migration; defer failed-job retries with bounded 30-second-to-5-minute timers, exclude deferred jobs from immediate claims, and respect the configured maximum total attempt count.
+- [x] Add regression coverage for idle behavior, the durable enqueue wake-up, transient claim-query retry/backoff, retry-delay bounds, and the maximum-attempt boundary; focused worker tests pass (5/5), full API tests pass (39 files / 266 tests), API typecheck/build, repository typecheck, and diff check pass locally.
+- [x] Document that event notifications and retry delays are process-local; the current Render production service is configured for one instance. Any horizontal scaling or restart-durable retry schedule needs a separate cross-process design that does not reintroduce frequent idle queries.
+- [ ] Keep production release blocked until the original database source is available and data-verified; this code change is for review only and has not been merged or deployed.
+- [ ] If API horizontal scaling or restart-durable retry timing is introduced, add cross-process wake-ups / durable retry scheduling without restoring frequent database polling.
