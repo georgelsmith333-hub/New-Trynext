@@ -1,6 +1,14 @@
-import { WATER_BOTTLE_PHOTO_FRONT, modernizeLegacyMockupUrl } from "@/lib/legacy-mockup-url";
+import { WATER_BOTTLE_PHOTO_FRONT, modernizeLegacyMockupUrl } from "./legacy-mockup-url";
 
 const WATER_BOTTLE_IMAGE = WATER_BOTTLE_PHOTO_FRONT;
+
+export function hasVerifiedStock(stock: unknown): boolean {
+  if (typeof stock !== "number" && typeof stock !== "string") return false;
+  const value = typeof stock === "string" ? stock.trim() : stock;
+  if (value === "") return false;
+  const quantity = Number(value);
+  return Number.isFinite(quantity) && quantity > 0;
+}
 
 export function isWaterBottleProduct(product: any): boolean {
   const identity = [

@@ -86,3 +86,33 @@
 - [ ] Publish the verified category expansion and recheck production responses, CI, and active-app verification.
 - [ ] Submit the new URLs for indexing through the verified Google Search Console property when URL inspection is available.
 - [ ] Re-measure Google Search Console and Peec AI visibility after data has accumulated; do not claim ranking or citation gains from publication alone.
+
+
+## Approved 2026-11-10 code-only continuation — category guides and editorial pages
+
+- [ ] Keep `/custom-mugs-bangladesh` and `/custom-drinkware-bangladesh` as authoritative, useful, crawler-visible buying experiences rather than thin product grids. Each page must expose its H1, Bangladesh-specific introduction and direct answer, genuine available products with current catalog prices and accurate image alt text, clear product and Design Studio links, useful customization/order steps, locally relevant gift uses, current delivery/payment language without unsupported fixed time or price claims, visible FAQs, internal links and unique title/description/canonical/Open Graph/Twitter metadata.
+- [ ] The mug page must help shoppers choose and prepare a photo, explain product-specific personalization and order review without promising controls or previews that a selected item does not show, and link to the current mug catalog, Design Studio, shipping information and related guides.
+- [ ] The drinkware page must use only currently verified, orderable customizable mugs and water bottles; provide crawlable links and a comparison/use-case guide for those real product groups; do not advertise tumblers, unsupported specifications, or automatic bulk/corporate ordering. Any larger business request is only an inquiry until Trynext confirms availability, quantity, price and lead time.
+- [ ] Add source-managed static guides at `/blog/how-to-design-a-custom-photo-mug`, `/blog/custom-mug-gift-ideas-for-couples`, and `/blog/custom-drinkware-gifts-in-bangladesh`. Each guide must be useful and original, link to the relevant category in its opening paragraphs, include related live product/catalog, Design Studio and shipping/policy links, and show all FAQ answers visibly when `FAQPage` JSON-LD is emitted.
+- [ ] The active root Cloudflare Pages handlers and React routes must expose matching crawlable category/article content, unique metadata/canonicals and accurate CollectionPage/ItemList/BreadcrumbList or BlogPosting/FAQPage structured data. Update `/manus-routes.json`, the blog index and the sitemap (one canonical URL per source-managed guide); the sitemap must still return core/static URLs if catalog or CMS database reads fail, while including dynamic URLs whenever those reads work. Preserve existing API-backed CMS articles and admin editing; source-managed guides must not require or write blog database records.
+- [ ] Preserve existing product, cart, Design Studio, checkout, COD/25%-advance and payment behavior. The owner subsequently requested a live push: use an isolated preview first, pass CI and verify it, then publish through the existing `main` → Cloudflare Pages/Render integration. Do not create a real order, submit a payment, mutate production data/settings, or restore/repoint a production database branch without the owner selecting the exact source. Keep live/mobile/release verification open until performed against the approved environment.
+
+
+## Approved 2026-11-18 code-only free-tier database polling fix
+
+- [x] Database candidate selection must retain configured authority order, probe sequentially, stop at the first candidate with the transactional `products` + `orders` schema, and avoid table row-count scans or probing lower-priority databases once a higher-priority target succeeds.
+- [x] Remove the 60-second deep database-chain re-probe while the primary is healthy. Preserve recovery without retrying or replaying the failed customer query: trigger a separate bounded recovery probe on connection-level errors, back off after failures, and limit failback probes to higher-priority candidates while a standby is active.
+- [x] Remove scheduled keep-alive database pings as a default recurring task; retain an explicit manual health-ping action only and explain its compute impact in the admin UI. Automation configuration polling must be cached long enough not to generate minute-level database reads; explicit admin refresh/save remains immediate.
+- [x] Change Database Cluster dashboard polling so it does not automatically probe all configured database endpoints every 30 seconds. Retain an explicit manual refresh, a useful cached result, and visible notice that probing may wake free-tier computes.
+- [x] Preserve opt-in scheduled business automations, backups, usage-monitoring semantics, single-authority/write safety, schema checks, and existing admin access controls. Add regression coverage for sequential/limited recovery policy and manual-only keep-alive.
+- [x] Run focused tests, API build/typecheck, relevant storefront typecheck/tests, workspace checks as feasible, and `git diff --check`. Do not merge or deploy until production backend health is restored and separately authorized.
+
+
+## 2026-11-20 event-driven mockup queue free-tier hardening
+
+- [x] Replace the worker's unconditional 3-second database interval with one startup drain and event-driven drains after durable enqueue/completion; schedule bounded one-shot exponential retries after claim-query failures, without recurring idle polling.
+- [x] Preserve the database-backed durable queue without schema migration; defer failed-job retries with bounded 30-second-to-5-minute timers, exclude deferred jobs from immediate claims, and respect the configured maximum total attempt count.
+- [x] Add regression coverage for idle behavior, the durable enqueue wake-up, transient claim-query retry/backoff, retry-delay bounds, and the maximum-attempt boundary; focused worker tests pass (5/5), full API tests pass (39 files / 266 tests), API typecheck/build, repository typecheck, and diff check pass locally.
+- [x] Document that event notifications and retry delays are process-local; the current Render production service is configured for one instance. Any horizontal scaling or restart-durable retry schedule needs a separate cross-process design that does not reintroduce frequent idle queries.
+- [ ] Keep production release blocked until the original database source is available and data-verified; this code change is for review only and has not been merged or deployed.
+- [ ] If API horizontal scaling or restart-durable retry timing is introduced, add cross-process wake-ups / durable retry scheduling without restoring frequent database polling.

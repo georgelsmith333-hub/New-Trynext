@@ -69,6 +69,7 @@ const Checkout       = lazyWithRetry(() => import("./pages/Checkout"));
 const TrackOrder     = lazyWithRetry(() => import("./pages/TrackOrder"));
 const Blog           = lazyWithRetry(() => import("./pages/Blog"));
 const BlogPost       = lazyWithRetry(() => import("./pages/BlogPost"));
+const EditorialGuide = lazyWithRetry(() => import("./pages/EditorialGuide"));
 const Wishlist       = lazyWithRetry(() => import("./pages/Wishlist"));
 const ShippingPolicy = lazyWithRetry(() => import("./pages/ShippingPolicy"));
 const ReturnPolicy   = lazyWithRetry(() => import("./pages/ReturnPolicy"));
@@ -171,6 +172,9 @@ function Router() {
             <Route path="/track" component={TrackOrder} />
             <Route path="/track-order" component={TrackOrder} />
             <Route path="/blog" component={Blog} />
+            <Route path="/blog/how-to-design-a-custom-photo-mug" component={() => <EditorialGuide slug="how-to-design-a-custom-photo-mug" />} />
+            <Route path="/blog/custom-mug-gift-ideas-for-couples" component={() => <EditorialGuide slug="custom-mug-gift-ideas-for-couples" />} />
+            <Route path="/blog/custom-drinkware-gifts-in-bangladesh" component={() => <EditorialGuide slug="custom-drinkware-gifts-in-bangladesh" />} />
             <Route path="/blog/:slug" component={BlogPost} />
             <Route path="/wishlist" component={Wishlist} />
             <Route path="/shipping-policy" component={ShippingPolicy} />

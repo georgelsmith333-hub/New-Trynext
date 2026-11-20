@@ -3,7 +3,7 @@ import { AdminLayout } from "@/components/layout/AdminLayout";
 import { getAuthHeaders, getApiUrl } from "@/lib/utils";
 import {
   Database, RefreshCw, CheckCircle2, XCircle, Clock,
-  AlertTriangle, Zap, Shield, Link2, Activity,
+  AlertTriangle, Zap, Shield, Link2,
 } from "lucide-react";
 
 /* ── Types (mirror backend) ──────────────────────────────────────────────── */
@@ -225,7 +225,6 @@ export default function AdminDatabaseCluster() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(30);
 
   const fetchStatus = useCallback(async (bust = false) => {
     try {
@@ -241,7 +240,6 @@ export default function AdminDatabaseCluster() {
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const json: ClusterResponse = await resp.json();
       setData(json);
-      setCountdown(30);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to fetch cluster status");
     } finally {
@@ -252,17 +250,6 @@ export default function AdminDatabaseCluster() {
 
   // Initial load
   useEffect(() => { fetchStatus(); }, [fetchStatus]);
-
-  // Auto-refresh every 30s
-  useEffect(() => {
-    const tick = setInterval(() => {
-      setCountdown((c) => {
-        if (c <= 1) { fetchStatus(); return 30; }
-        return c - 1;
-      });
-    }, 1000);
-    return () => clearInterval(tick);
-  }, [fetchStatus]);
 
   const chainNodes = data?.nodes.filter((n) => n.inFailoverChain) ?? [];
   const satelliteNodes = data?.nodes.filter((n) => !n.inFailoverChain) ?? [];
@@ -279,7 +266,7 @@ export default function AdminDatabaseCluster() {
               Database Cluster
             </h1>
             <p className="text-sm text-gray-400 mt-1">
-              Live database health and configured standby priority. Promotion is only safe when a standby is an approved, current transactional copy.
+              On-demand database health and configured standby priority. Promotion is only safe when a standby is an approved, current transactional copy.
             </p>
           </div>
           <button
@@ -292,10 +279,12 @@ export default function AdminDatabaseCluster() {
           </button>
         </div>
 
-        {/* Auto-refresh indicator */}
+        {/* Manual health-probe guidance */}
+        <div className="p-3 rounded-lg border border-amber-500/20 bg-amber-500/5 text-xs text-amber-300">
+          This page does not auto-refresh. If the five-minute status cache has expired, opening the page or choosing Refresh Now probes configured endpoints and may wake free-tier database compute.
+        </div>
         {data && (
           <div className="flex items-center gap-3 text-xs text-gray-500">
-            <Activity className="w-3.5 h-3.5" />
             <span>
               Last checked:{" "}
               {new Date(data.checkedAt).toLocaleTimeString([], {
@@ -304,8 +293,6 @@ export default function AdminDatabaseCluster() {
                 second: "2-digit",
               })}
             </span>
-            <span className="text-gray-700">·</span>
-            <span>Auto-refresh in <span className="text-orange-400 font-mono font-bold">{countdown}s</span></span>
           </div>
         )}
 

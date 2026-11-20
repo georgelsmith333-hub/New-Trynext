@@ -2,9 +2,10 @@
  * GET /api/admin/db-cluster
  *
  * Probes all configured Neon (and Replit) databases independently and returns
- * live connection status, latency, and failover chain priority for each node.
+ * on-demand connection status, latency, and failover-chain priority per node.
  *
- * Results are cached for 12 seconds to avoid hammering free-tier pools.
+ * GET results are cached for five minutes. The protected POST refresh explicitly
+ * probes each configured node and can wake free-tier database compute.
  * Each probe opens a disposable pool (max:1) with a strict 4-second timeout
  * so a dead node never blocks the whole response.
  */
@@ -221,9 +222,9 @@ async function probeNode(
   }
 }
 
-/* ── Simple 12-second in-process cache ─────────────────────────────────────── */
+/* ── Five-minute in-process cache; POST refresh remains an explicit probe ──── */
 let _cache: { ts: number; data: ClusterResponse } | null = null;
-const CACHE_TTL_MS = 12_000;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 /* ── Route ──────────────────────────────────────────────────────────────────── */
 router.get(
