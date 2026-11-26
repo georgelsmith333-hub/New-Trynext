@@ -9,12 +9,14 @@ import { logger } from "../lib/logger";
 import { isOrderStatus, ORDER_STATUS_MESSAGE, canMoveOrderStatus, invalidTransitionMessage } from "../lib/orderStatus";
 import { restoreOrderStock, type RestockResult } from "../lib/orderStock";
 import { orderIdempotency } from "../lib/idempotency";
+import { durableOrderIdempotency } from "../lib/durableIdempotency";
 import { getVirtualPromo, calcVirtualDiscount } from "../lib/spinPromos";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { z } from "zod";
 import { tgSend, getEffectiveChatId } from "../lib/telegram";
 import { checkRevenueMilestone } from "../lib/scheduler";
 import { sendOrderConfirmationEmail, sendStatusUpdateEmail } from "../lib/email";
+import { invalidateProductCache } from "./products";
 
 // ---------------------------------------------------------------------------
 // Zod schemas for order creation
@@ -221,8 +223,9 @@ async function sendTelegramNotification(orderData: any) {
     .join("\n");
   const moreItems = (orderData.items || []).length > 5 ? `\n  + ${(orderData.items || []).length - 5} more` : "";
   const total = Number(orderData.total) || 0;
-  const isFullPayment = String(orderData.notes ?? "").includes("Payment plan: full payment");
-  const amountDueNow = isFullPayment ? total : Math.ceil(total * 0.25);
+  const isCardOnDelivery = String(orderData.paymentMethod ?? "").toLowerCase() === "card";
+  const isFullPayment = !isCardOnDelivery && String(orderData.notes ?? "").includes("Payment plan: full payment");
+  const amountDueNow = isCardOnDelivery ? 0 : isFullPayment ? total : Math.ceil(total * 0.25);
   const remaining = Math.max(0, total - amountDueNow);
 
   const message = [
@@ -289,8 +292,9 @@ async function sendWhatsAppNotification(orderData: any) {
     .join(", ");
 
   const total = Number(orderData.total) || 0;
-  const isFullPayment = String(orderData.notes ?? "").includes("Payment plan: full payment");
-  const amountDueNow = isFullPayment ? total : Math.ceil(total * 0.25);
+  const isCardOnDelivery = String(orderData.paymentMethod ?? "").toLowerCase() === "card";
+  const isFullPayment = !isCardOnDelivery && String(orderData.notes ?? "").includes("Payment plan: full payment");
+  const amountDueNow = isCardOnDelivery ? 0 : isFullPayment ? total : Math.ceil(total * 0.25);
   const remaining = Math.max(0, total - amountDueNow);
   const message = [
     `🛒 *NEW ORDER!* #${orderData.orderNumber}`,
@@ -632,13 +636,16 @@ async function sendAutoConfirmationMessage(order: {
   try {
     const firstName = order.customerName.split(" ")[0] || order.customerName;
     const total = Number(order.total) || 0;
-    const isFullPayment = String(order.notes ?? "").includes("Payment plan: full payment");
-    const dueNow = isFullPayment ? total : Math.ceil(total * 0.25);
+    const isCardOnDelivery = String(order.paymentMethod ?? "").toLowerCase() === "card";
+    const isFullPayment = !isCardOnDelivery && String(order.notes ?? "").includes("Payment plan: full payment");
+    const dueNow = isCardOnDelivery ? 0 : isFullPayment ? total : Math.ceil(total * 0.25);
     const remaining = Math.max(0, total - dueNow);
     const method = String(order.paymentMethod || "cod").toUpperCase();
-    const paymentSummary = isFullPayment
-      ? `${method}: full payment ৳${dueNow.toLocaleString("en-BD")}`
-      : `${method}: 25% advance ৳${dueNow.toLocaleString("en-BD")}, remaining ৳${remaining.toLocaleString("en-BD")} on delivery`;
+    const paymentSummary = isCardOnDelivery
+      ? `${method}: full amount ৳${remaining.toLocaleString("en-BD")} due on delivery`
+      : isFullPayment
+        ? `${method}: full payment ৳${dueNow.toLocaleString("en-BD")}`
+        : `${method}: 25% advance ৳${dueNow.toLocaleString("en-BD")}, remaining ৳${remaining.toLocaleString("en-BD")} on delivery`;
     const message = `🎉 ধন্যবাদ ${firstName}! আপনার অর্ডার #${order.orderNumber} সফলভাবে গ্রহণ করা হয়েছে।\n\nপেমেন্ট: ${paymentSummary}\nমোট: ৳${total.toLocaleString("en-BD")}\n\nআমরা শীঘ্রই আপনার অর্ডার প্রসেস করা শুরু করব। যেকোনো প্রশ্ন বা আপডেটের জন্য এখানে মেসেজ করুন। 🙏\n\n────────────────────\nThank you ${firstName}! Trynext Lifestyle received order #${order.orderNumber}.\nPayment: ${paymentSummary}\nOrder total: ৳${total.toLocaleString("en-BD")}\nWe will start processing it shortly. Feel free to message us here for any queries. 🛍️`;
     await db.execute(
       sql`INSERT INTO order_messages (order_id, sender_type, sender_name, message, read_by_admin)
@@ -650,7 +657,11 @@ async function sendAutoConfirmationMessage(order: {
   }
 }
 
-router.post("/orders", orderIdempotency.middleware, async (req, res) => {
+const orderIdempotencyMiddleware = process.env.DURABLE_ORDER_IDEMPOTENCY === "true"
+  ? durableOrderIdempotency.middleware
+  : orderIdempotency.middleware;
+
+router.post("/orders", orderIdempotencyMiddleware, async (req, res) => {
   try {
     // Zod validation — structured 400 with field-level error messages.
     const zodResult = OrderCreateSchema.safeParse(req.body ?? {});
@@ -1225,7 +1236,7 @@ router.post("/orders", orderIdempotency.middleware, async (req, res) => {
            paymentMethod: normalizedPaymentMethod,
         items: orderItems,
         subtotal: subtotal.toString(),
-        shippingCost: shippingCost.toString(),
+        shippingCost: effectiveShipping.toString(),
         promoCode: validatedPromoCode,
         promoDiscount: validatedPromoDiscount > 0 ? validatedPromoDiscount.toString() : null,
         total: total.toString(),
@@ -1236,6 +1247,9 @@ router.post("/orders", orderIdempotency.middleware, async (req, res) => {
     });
 
     const mapped = mapOrder(order);
+    // Stock was decremented inside the committed transaction above. Invalidate
+    // catalog caches only after commit so readers cannot retain stale stock.
+    await invalidateProductCache();
     res.status(201).json(mapped);
 
     sendWhatsAppNotification(mapped).catch((err) => logger.warn({ err }, "WhatsApp notification failed (fire-and-forget)"));

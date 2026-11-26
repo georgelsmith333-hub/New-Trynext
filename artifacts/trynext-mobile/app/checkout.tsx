@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { router } from "expo-router";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -133,6 +133,7 @@ export default function CheckoutScreen() {
   const [retryingPaymentSubmission, setRetryingPaymentSubmission] = useState(false);
   const [invoiceBusy, setInvoiceBusy] = useState(false);
   const [invoiceError, setInvoiceError] = useState<string | null>(null);
+  const checkoutIdempotencyKeyRef = useRef<string | null>(null);
 
   const [createdOrder, setCreatedOrder] = useState<{
     orderNumber: string;
@@ -168,7 +169,7 @@ export default function CheckoutScreen() {
   });
 
   const freeShippingThreshold = Number(siteSettings?.freeShippingThreshold ?? 1500);
-  const shippingFee = Number(siteSettings?.shippingCost ?? 60);
+  const shippingFee = Number(siteSettings?.shippingCost ?? 100);
   const paymentOptions = useMemo(() => PAYMENT_METHODS(siteSettings), [siteSettings]);
   const hasWalletOrBankMethod = paymentOptions.some((method) =>
     method.value === "bkash" || method.value === "nagad" || method.value === "rocket" || method.value === "upay" || method.value === "bank",
@@ -295,9 +296,11 @@ export default function CheckoutScreen() {
 
       const orderNotes = [
         notes.trim(),
-        paymentMode === "full" ? "Payment plan: full payment" : "Payment plan: 25% advance + cash on delivery",
+        paymentMethod === "card" ? "Payment plan: card on delivery" : paymentMode === "full" ? "Payment plan: full payment" : "Payment plan: 25% advance + cash on delivery",
       ].filter(Boolean).join(" | ");
-      const order = await api.createOrder({
+      const idempotencyKey = checkoutIdempotencyKeyRef.current ?? (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `mobile-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+      checkoutIdempotencyKeyRef.current = idempotencyKey;
+      const payload = {
         customerName: name.trim(),
         customerPhone: phone.trim(),
         customerEmail: email.trim() || undefined,
@@ -313,7 +316,22 @@ export default function CheckoutScreen() {
         total,
         promoDiscount: promoDiscount > 0 ? promoDiscount : undefined,
         source: "mobile",
-      });
+        idempotencyKey,
+      };
+      let order: Awaited<ReturnType<typeof api.createOrder>> | undefined;
+      let lastError: unknown;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          order = await api.createOrder(payload);
+          break;
+        } catch (error) {
+          lastError = error;
+          const status = (error as { status?: number })?.status;
+          if (attempt === 2 || (status && status >= 400 && status < 500)) throw error;
+          await new Promise((resolve) => setTimeout(resolve, [0, 1000, 2500][attempt]));
+        }
+      }
+      if (!order) throw lastError ?? new Error("Order could not be created");
 
       const serverTotal = Number(order.total);
       const serverAdvance = Math.ceil(serverTotal * 0.25);
@@ -437,15 +455,17 @@ export default function CheckoutScreen() {
               <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>
                 {createdOrder.paymentSubmitted
                   ? "Submitted — awaiting verification"
-                  : createdOrder.paymentMode === "full"
-                    ? "Full amount due"
-                    : "25% advance due"}
+                  : createdOrder.paymentMethod === "card"
+                    ? "Full amount due on delivery"
+                    : createdOrder.paymentMode === "full"
+                      ? "Full amount due"
+                      : "25% advance due"}
               </Text>
               <Text style={[styles.summaryValue, { color: colors.primary }]}>
-                {formatPrice(createdOrder.paymentMode === "full" ? createdOrder.total : createdOrder.advance)}
+                {formatPrice(createdOrder.paymentMethod === "card" ? createdOrder.total : createdOrder.paymentMode === "full" ? createdOrder.total : createdOrder.advance)}
               </Text>
             </View>
-            {createdOrder.paymentMode !== "full" && (
+            {createdOrder.paymentMode !== "full" && createdOrder.paymentMethod !== "card" && (
               <View style={styles.summaryRow}>
                 <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Remaining on delivery</Text>
                 <Text style={[styles.summaryValue, { color: colors.foreground }]}>
@@ -902,7 +922,7 @@ export default function CheckoutScreen() {
                   <Text style={[styles.summaryLabel, { color: colors.mutedForeground }]}>Payment</Text>
                   <Text style={[styles.summaryValue, { color: colors.foreground, textAlign: "right" }]}>
                     {paymentOptions.find(m => m.value === paymentMethod)?.label}
-                    {paymentMode !== "full" ? `\n${paymentMode === "cod" ? "25% advance" : "25% advance"} ${formatPrice(Math.ceil(total * 0.25))}` : ""}
+                    {paymentMethod === "card" ? "\nFull amount due on delivery" : paymentMode !== "full" ? `\n25% advance ${formatPrice(Math.ceil(total * 0.25))}` : ""}
                   </Text>
                 </View>
               </View>

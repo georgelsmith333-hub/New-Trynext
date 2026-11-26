@@ -66,6 +66,19 @@ const ROLE_NAMES: RuntimeRole[] = ["studioBackground", "base", "shadow", "protec
 let releaseManifestPromise: Promise<ReleaseManifest> | undefined;
 const roleDataUrlCache = new Map<string, Promise<string>>();
 
+/** Keep browser preview, cart textures, and server exports on the same warp contract. */
+export function getCategoryCurvature(category: string): number {
+  switch (category.trim().toLowerCase()) {
+    case "mug":
+    case "waterbottle":
+      return 0.16;
+    case "cap":
+      return 0.1;
+    default:
+      return 0;
+  }
+}
+
 function toSurfaceKey(sourceKitKey: string): string {
   const key = sourceKitKey.includes("/") ? sourceKitKey : sourceKitKey.replaceAll(":", "/");
   if (key.split("/").length !== 3) throw new Error("This mockup surface is not an approved Smart v10.3 source.");
@@ -232,7 +245,7 @@ export async function renderApprovedMockupOnServer({
   surface,
   printZone,
   layers,
-  curvature = 0,
+  curvature = getCategoryCurvature(surface.sourceKitKey.split(/[/:]/)[0]),
   fabricTexture = false,
 }: {
   surface: ServerRenderableSurface;

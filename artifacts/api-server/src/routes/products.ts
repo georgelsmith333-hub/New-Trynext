@@ -94,6 +94,10 @@ function catalogCacheControl(req: { headers: { authorization?: string } }): stri
     : "public, max-age=15, s-maxage=60, stale-while-revalidate=300";
 }
 
+function isAdminCatalogRequest(req: { headers: { authorization?: string } }): boolean {
+  return /^Bearer\s+\S+/i.test(req.headers.authorization ?? "");
+}
+
 // ── Product list cache ────────────────────────────────────────────────────────
 // Cache simple (no-search) paginated product listings for 60 s.
 // A generation prefix lets mutations invalidate the whole product cache with
@@ -173,7 +177,7 @@ function buildProductOrder(sort: string | undefined) {
 }
 
 // Invalidate all product list cache entries when any product is mutated.
-async function invalidateProductCache(): Promise<void> {
+export async function invalidateProductCache(): Promise<void> {
   localProductCache.clear();
   // Old generation keys expire naturally; the version write is replicated to
   // every configured backend and also updates the process-local fallback.
@@ -217,9 +221,12 @@ router.get("/products", async (req, res) => {
     const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit as string, 10) || DEFAULT_PRODUCT_PAGE_SIZE));
     const offset = (pageNum - 1) * limitNum;
+    const adminRequest = isAdminCatalogRequest(req);
+    if (adminRequest) res.set("Cache-Control", "no-store");
 
     // Check the local cache before consulting Redis. This keeps repeat visits
-    // on a warm API instance below a database/Redis round trip.
+    // on a warm API instance below a database/Redis round trip. Admin reads
+    // deliberately bypass both public cache layers.
     const localKey = !search
       ? localProductCacheKey({
           categoryId: (rawCategoryId ?? category) as string | undefined,
@@ -233,7 +240,7 @@ router.get("/products", async (req, res) => {
           includeTotal: String(includeTotal),
         })
       : null;
-    if (localKey) {
+    if (localKey && !adminRequest) {
       const local = localProductCache.get(localKey);
       if (local && local.expiresAt > Date.now()) {
         res.set({
@@ -259,7 +266,7 @@ router.get("/products", async (req, res) => {
       maxPrice: maxPrice === undefined ? undefined : String(maxPrice),
       includeTotal: String(includeTotal),
     });
-    if (cacheKey) {
+    if (cacheKey && !adminRequest) {
       const cached = await redisCacheGet<Record<string, unknown>>(cacheKey);
       if (cached) {
         if (localKey) localProductCache.set(localKey, { payload: cached, expiresAt: Date.now() + PROD_TTL_S * 1000 });
@@ -332,12 +339,12 @@ router.get("/products", async (req, res) => {
       limit: limitNum,
     };
 
-    if (cacheKey) {
+    if (cacheKey && !adminRequest) {
       await redisCacheSet(cacheKey, payload, PROD_TTL_S);
       if (localKey) localProductCache.set(localKey, { payload, expiresAt: Date.now() + PROD_TTL_S * 1000 });
       res.set("X-Cache-Status", "MISS");
     }
-    if (!search) res.set("Cache-Control", catalogCacheControl(req));
+    if (!search && !adminRequest) res.set("Cache-Control", catalogCacheControl(req));
     res.json(payload);
   } catch (err) {
     req.log.error({ err }, "Failed to list products");
@@ -348,10 +355,12 @@ router.get("/products", async (req, res) => {
 /** GET /api/products/featured — shortcut for ?featured=true&sort=featured */
 router.get("/products/featured", async (req, res) => {
   try {
+    const adminRequest = isAdminCatalogRequest(req);
+    res.set("Cache-Control", adminRequest ? "no-store" : "public, max-age=15, s-maxage=60, stale-while-revalidate=300");
     const limit = Math.min(50, Math.max(1, parseInt(req.query.limit as string || "12", 10)));
     const version = await getProductCacheVersion();
     const cacheKey = `trynext:products:featured:${version}:${limit}`;
-    const cached = await redisCacheGet<Record<string, unknown>>(cacheKey);
+    const cached = adminRequest ? null : await redisCacheGet<Record<string, unknown>>(cacheKey);
     if (cached) { res.set("X-Cache-Status", "HIT"); res.json(cached); return; }
 
     const products = await db.select().from(productsTable)

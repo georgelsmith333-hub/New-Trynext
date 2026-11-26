@@ -2,9 +2,10 @@ import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { validateAdminSession, verifyCustomerToken } = vi.hoisted(() => ({
+const { validateAdminSession, verifyCustomerToken, deleteStagingObject } = vi.hoisted(() => ({
   validateAdminSession: vi.fn(),
   verifyCustomerToken: vi.fn(),
+  deleteStagingObject: vi.fn(),
 }));
 
 vi.mock("../lib/adminSessions", () => ({ validateAdminSession }));
@@ -26,6 +27,7 @@ vi.mock("../lib/objectStorage", () => ({
     streamPrivateObject() { return Promise.resolve(); }
     saveLocalUpload() { return Promise.resolve(); }
     getObjectBuffer() { return Promise.resolve(Buffer.from("")); }
+    deleteStagingObject(...args: unknown[]) { return deleteStagingObject(...args); }
   },
 }));
 
@@ -43,6 +45,7 @@ describe("Private storage authorization", () => {
   beforeEach(() => {
     validateAdminSession.mockReset();
     verifyCustomerToken.mockReset();
+    deleteStagingObject.mockReset();
     validateAdminSession.mockResolvedValue(null);
     verifyCustomerToken.mockReturnValue(null);
   });
@@ -54,5 +57,31 @@ describe("Private storage authorization", () => {
       error: "unauthorized",
       message: "Authentication required for private object access",
     });
+  });
+
+  it("allows an authenticated caller to delete only a direct staging object", async () => {
+    validateAdminSession.mockResolvedValue(true);
+    deleteStagingObject.mockResolvedValue(true);
+
+    const response = await request(app)
+      .delete("/api/storage/objects/123e4567-e89b-42d3-a456-426614174000")
+      .set("Authorization", "Bearer admin-session")
+      .set("X-Requested-With", "XMLHttpRequest");
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ deleted: true });
+    expect(deleteStagingObject).toHaveBeenCalledWith("123e4567-e89b-42d3-a456-426614174000");
+  });
+
+  it("rejects order-prefixed cleanup targets before storage access", async () => {
+    validateAdminSession.mockResolvedValue(true);
+
+    const response = await request(app)
+      .delete("/api/storage/objects/orders/TRY-1/0/design.png")
+      .set("Authorization", "Bearer admin-session")
+      .set("X-Requested-With", "XMLHttpRequest");
+
+    expect(response.status).toBe(400);
+    expect(deleteStagingObject).not.toHaveBeenCalled();
   });
 });

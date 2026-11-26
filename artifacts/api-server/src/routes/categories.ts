@@ -6,6 +6,7 @@ import { requireAdmin } from "../middlewares/adminAuth";
 import { logActivity, getAdminId } from "../lib/activityLog";
 import { redisCacheGet, redisCacheSet, redisCacheDel } from "../lib/redis";
 import { isUniqueViolation } from "../lib/dbErrors";
+import { invalidateProductCache } from "./products";
 
 // ── Zod validation schemas ────────────────────────────────────────────────
 const CategoryCreateSchema = z.object({
@@ -26,7 +27,9 @@ const CATS_TTL_S = 300;
 
 router.get("/categories", async (req, res) => {
   try {
-    const cached = await redisCacheGet<{ categories: unknown[] }>(CATS_CACHE_KEY);
+    const adminRequest = /^Bearer\s+\S+/i.test(req.headers.authorization ?? "");
+    res.set("Cache-Control", adminRequest ? "no-store" : "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
+    const cached = adminRequest ? null : await redisCacheGet<{ categories: unknown[] }>(CATS_CACHE_KEY);
     if (cached) {
       res.set("X-Cache-Status", "HIT");
       res.json(cached);
@@ -87,6 +90,7 @@ router.post("/categories", requireAdmin, async (req, res) => {
     const [category] = await db.insert(categoriesTable).values({ name, slug, description, imageUrl }).returning();
     logActivity({ action: "create", entity: "category", entityId: category.id, entityName: category.name, after: category as unknown as Record<string, unknown>, adminId: getAdminId(req) });
     await redisCacheDel(CATS_CACHE_KEY);
+    await invalidateProductCache();
     res.status(201).json(mapCategory(category));
   } catch (err) {
     if (isUniqueViolation(err)) {
@@ -132,6 +136,7 @@ router.put("/categories/:id", requireAdmin, async (req, res) => {
     }
     logActivity({ action: "update", entity: "category", entityId: id, entityName: category.name, before: (beforeSnapshot ?? null) as unknown as Record<string, unknown>, after: category as unknown as Record<string, unknown>, adminId: getAdminId(req) });
     await redisCacheDel(CATS_CACHE_KEY);
+    await invalidateProductCache();
     res.json(mapCategory(category));
   } catch (err) {
     if (isUniqueViolation(err)) {
@@ -170,6 +175,7 @@ router.delete("/categories/:id", requireAdmin, async (req, res) => {
     }
     logActivity({ action: "delete", entity: "category", entityId: id, entityName: category.name, before: (beforeSnap ?? category) as unknown as Record<string, unknown>, adminId: getAdminId(req) });
     await redisCacheDel(CATS_CACHE_KEY);
+    await invalidateProductCache();
     res.status(204).send();
   } catch (err) {
     req.log.error({ err }, "Failed to delete category");

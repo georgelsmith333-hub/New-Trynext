@@ -128,8 +128,9 @@ export async function sendOrderConfirmationEmail(order: OrderEmailData): Promise
   const isCOD      = !order.paymentMethod || order.paymentMethod.toLowerCase() === "cod";
   const totalNum   = Number(order.total);
   const advance    = Math.ceil(totalNum * 0.25);
-  const isFullPayment = String(order.notes ?? "").includes("Payment plan: full payment");
-  const amountDueNow = isFullPayment ? totalNum : advance;
+  const isCardOnDelivery = (order.paymentMethod ?? "").toLowerCase() === "card";
+  const isFullPayment = !isCardOnDelivery && String(order.notes ?? "").includes("Payment plan: full payment");
+  const amountDueNow = isCardOnDelivery ? 0 : isFullPayment ? totalNum : advance;
   const remaining = Math.max(0, totalNum - amountDueNow);
   const itemsHtml  = order.items.map(itemRow).join("");
   const shippingN  = Number(order.shippingCost ?? 0);
@@ -138,9 +139,9 @@ export async function sendOrderConfirmationEmail(order: OrderEmailData): Promise
 
   const paymentSection = `<div style="background:#FFF8F3;border:1px solid #FFD0A8;border-radius:10px;padding:16px;margin-top:20px;">
        <div style="font-size:13px;font-weight:700;color:${BRAND_ORANGE};margin-bottom:8px;">💳 Payment: ${payLabel}</div>
-       <p style="margin:0 0 6px;font-size:13px;color:#475569;">${isFullPayment ? "Full payment due now:" : "25% advance due now:"} <b>৳${amountDueNow.toLocaleString()}</b>.</p>
-       ${!isFullPayment ? `<p style="margin:0 0 6px;font-size:13px;color:#475569;">Remaining on delivery: <b>৳${remaining.toLocaleString()}</b>.</p>` : ""}
-       <p style="margin:0;font-size:13px;color:#475569;">${isCOD ? `Our team will contact you on <b>${order.customerPhone}</b> with the advance instructions.` : `Please use the selected ${payLabel} method and keep your payment reference.`}</p>
+       <p style="margin:0 0 6px;font-size:13px;color:#475569;">${isCardOnDelivery ? "Full amount due on delivery:" : isFullPayment ? "Full payment due now:" : "25% advance due now:"} <b>৳${(isCardOnDelivery ? totalNum : amountDueNow).toLocaleString()}</b>.</p>
+       ${!isFullPayment && !isCardOnDelivery ? `<p style="margin:0 0 6px;font-size:13px;color:#475569;">Remaining on delivery: <b>৳${remaining.toLocaleString()}</b>.</p>` : ""}
+       <p style="margin:0;font-size:13px;color:#475569;">${isCardOnDelivery ? `The full amount is due when your order is delivered; card payment is not collected now.` : isCOD ? `Our team will contact you on <b>${order.customerPhone}</b> with the advance instructions.` : `Please use the selected ${payLabel} method and keep your payment reference.`}</p>
      </div>`;
 
   const body = `

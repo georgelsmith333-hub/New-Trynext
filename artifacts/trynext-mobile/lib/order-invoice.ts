@@ -67,10 +67,11 @@ const money = (value: unknown): string =>
 function getPaymentSummary(order: MobileInvoiceOrder) {
   const total = asAmount(order.total);
   const status = asText(order.paymentStatus).toLowerCase();
-  const isFullPayment = order.paymentMode === "full" ||
-    /payment plan:\s*full payment/i.test(asText(order.notes));
+  const isCardOnDelivery = asText(order.paymentMethod).toLowerCase() === "card";
+  const isFullPayment = !isCardOnDelivery && (order.paymentMode === "full" ||
+    /payment plan:\s*full payment/i.test(asText(order.notes)));
   const isRefunded = status === "refunded";
-  const expectedNow = isFullPayment ? total : Math.ceil(total * 0.25);
+  const expectedNow = isCardOnDelivery ? 0 : isFullPayment ? total : Math.ceil(total * 0.25);
   const verifiedPaid = isRefunded ? 0 : status === "paid" ? total : status === "verified" ? expectedNow : 0;
   const submittedAmount = status === "submitted" ? expectedNow : 0;
   const amountDueNow = !isRefunded && !["submitted", "verified", "paid"].includes(status) ? expectedNow : 0;
@@ -94,6 +95,7 @@ function getPaymentSummary(order: MobileInvoiceOrder) {
     submittedAmount,
     amountDueNow,
     deliveryBalance,
+    isCardOnDelivery,
     totalDue: isRefunded ? 0 : Math.max(0, total - verifiedPaid),
   };
 }
@@ -131,7 +133,7 @@ export function buildMobileOrderInvoiceHtml(
     `<tr class="grand"><td>Order total</td><td class="money">${money(order.total)}</td></tr>`,
     `<tr><td>Verified payment</td><td class="money">${money(payment.verifiedPaid)}</td></tr>`,
     ...(payment.submittedAmount > 0 ? [`<tr><td>Submitted - awaiting verification</td><td class="money">${money(payment.submittedAmount)}</td></tr>`] : []),
-    ...(payment.amountDueNow > 0 ? [`<tr><td>${payment.isFullPayment ? "Amount due now" : "Advance due to confirm"}</td><td class="money">${money(payment.amountDueNow)}</td></tr>`] : []),
+    ...(payment.amountDueNow > 0 ? [`<tr><td>${payment.isCardOnDelivery ? "Full amount due on delivery" : payment.isFullPayment ? "Amount due now" : "Advance due to confirm"}</td><td class="money">${money(payment.amountDueNow)}</td></tr>`] : []),
     ...(payment.deliveryBalance > 0 ? [`<tr><td>Balance due on delivery</td><td class="money">${money(payment.deliveryBalance)}</td></tr>`] : []),
     `<tr class="grand due"><td>Total currently due</td><td class="money">${money(payment.totalDue)}</td></tr>`,
   ].join("");

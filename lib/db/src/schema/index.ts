@@ -34,6 +34,19 @@ export const settingsTable = pgTable("settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const orderIdempotencyKeysTable = pgTable("order_idempotency_keys", {
+  key: text("key").primaryKey(),
+  fingerprint: text("fingerprint").notNull(),
+  state: text("state").notNull().default("pending"),
+  responseStatus: integer("response_status"),
+  responseBody: jsonb("response_body"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+}, (table) => ({
+  expiresAtIdx: index("order_idempotency_keys_expires_at_idx").on(table.expiresAt),
+  stateCheck: check("order_idempotency_keys_state_check", sql`${table.state} IN ('pending', 'done')`),
+}));
+
 export const categoriesTable = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),

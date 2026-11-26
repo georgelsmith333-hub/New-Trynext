@@ -26,7 +26,7 @@ import {
   composeMockupSurface, composeMockupSurfaceTexture, autoFixImage,
   type ComposerLayer, type UnifiedMockupSurface,
 } from "../design-studio/composer";
-import { renderApprovedMockupOnServer } from "../design-studio/server-mockup-render";
+import { getCategoryCurvature, renderApprovedMockupOnServer } from "../design-studio/server-mockup-render";
 
 import { useDesignStore } from "@/hooks/useDesignStore";
 import { LayerPanel } from "./panels/LayerPanel";
@@ -41,7 +41,7 @@ import { fitImageTransform } from "./autoFit";
 import { ClipArtBrowser } from "./ClipArtBrowser";
 import { QRCodePanel } from "./QRCodePanel";
 import { planDraftRestore, pickNewestDraft } from "./draftRestore";
-import { uploadToStorage } from "@/lib/storageUpload";
+import { cleanupStagingObjects, uploadToStorage } from "@/lib/storageUpload";
 import { OriginalAssetCache } from "./originalAssetCache";
 import { planProductSwitch } from "./productSwitch";
 import { unsupportedArtworkFaces, unsupportedArtworkMessage } from "./artworkFaces";
@@ -312,6 +312,7 @@ export default function DesignStudioV2() {
   const isMug = selectedProduct.category === "mug";
   const isCap = selectedProduct.category === "cap";
   const isWaterBottle = selectedProduct.category === "waterbottle";
+  const productCurvature = getCategoryCurvature(selectedProduct.category);
   const isPsdTshirtStaging = useMemo(() => {
     const colorSlug = PSD_TSHIRT_STAGE_COLOR_SLUGS[selectedColor.hex.toLowerCase()];
     return psdTshirtStageRequested
@@ -1084,6 +1085,8 @@ export default function DesignStudioV2() {
     if (isAddingToCart) return;
     setIsAddingToCart(true);
     setCartError(null);
+    const createdStagingObjects: string[] = [];
+    let handoffCompleted = false;
     const reportCartFailure = (title: string, description: string) => {
       toast({ title, description, variant: "destructive" });
       setCartError(`${title}. ${description}`);
@@ -1137,6 +1140,7 @@ export default function DesignStudioV2() {
         } catch (uploadError) {
           throw new Error(`Original artwork could not be uploaded. ${uploadError instanceof Error ? uploadError.message : ""} Your design was not added to cart; please retry.`);
         }
+        createdStagingObjects.push(objectPath);
         uploadedOriginals.current.set(src, { objectPath, filename, mime, bytes: blob.size });
         originalAssets.push({ objectPath, filename, mime, bytes: blob.size, width: (layer as ImageLayer).naturalW, height: (layer as ImageLayer).naturalH });
         originalAssetUrls.push(objectPath);
@@ -1169,6 +1173,7 @@ export default function DesignStudioV2() {
         surface: frontMockup,
         printZone: frontPZ,
         layers: frontLayers,
+        curvature: productCurvature,
         fabricTexture,
       });
     } catch (err) {
@@ -1181,9 +1186,9 @@ export default function DesignStudioV2() {
     try {
       const frontTexCanvas = document.createElement("canvas");
       if (isMug) {
-         await composeMockupSurfaceTexture({ canvas: frontTexCanvas, surface: { ...frontMockup, printZone: frontPZ }, layers: frontLayers, outSize: 2048, imageCache, clipToPrintZone: true, curvature: 0.16, fabricTexture });
+         await composeMockupSurfaceTexture({ canvas: frontTexCanvas, surface: { ...frontMockup, printZone: frontPZ }, layers: frontLayers, outSize: 2048, imageCache, clipToPrintZone: true, curvature: productCurvature, fabricTexture });
       } else {
-         await composeMockupSurfaceTexture({ canvas: frontTexCanvas, surface: { ...frontMockup, printZone: frontPZ }, layers: frontLayers, outSize: 1024, imageCache, curvature: isWaterBottle ? 0.16 : isCap ? 0.1 : 0, fabricTexture });
+         await composeMockupSurfaceTexture({ canvas: frontTexCanvas, surface: { ...frontMockup, printZone: frontPZ }, layers: frontLayers, outSize: 1024, imageCache, curvature: productCurvature, fabricTexture });
       }
       frontTexUrl = frontTexCanvas.toDataURL("image/webp", 0.85);
     } catch (err) {
@@ -1232,10 +1237,15 @@ export default function DesignStudioV2() {
       { key: "right-sleeve-texture", value: rightSleeveTexUrl },
       { key: "neck-label-texture", value: neckLabelTexUrl },
     ];
-    const persistedPreviews = await Promise.all(
+    const persistedPreviews = await Promise.allSettled(
       previewEntries.map(async ({ key, value }) => value ? [key, await persistStudioPreviewDataUrl(value, `studio-${key}`)] as const : [key, undefined] as const),
     );
-    const persistedPreviewByKey = new Map(persistedPreviews);
+    const failedPreview = persistedPreviews.find((result) => result.status === "rejected");
+    for (const result of persistedPreviews) {
+      if (result.status === "fulfilled" && result.value[1]) createdStagingObjects.push(result.value[1]);
+    }
+    if (failedPreview?.status === "rejected") throw failedPreview.reason;
+    const persistedPreviewByKey = new Map(persistedPreviews.filter((result): result is PromiseFulfilledResult<readonly [string, string | undefined]> => result.status === "fulfilled").map((result) => result.value));
     const persistedMockupUrl = persistedPreviewByKey.get("mockup") ?? mockupUrl;
     const persistedFrontTexUrl = persistedPreviewByKey.get("front-texture") ?? frontTexUrl;
     const persistedBackTexUrl = persistedPreviewByKey.get("back-texture");
@@ -1286,12 +1296,16 @@ export default function DesignStudioV2() {
       originalAssets,
       customNote: JSON.stringify({ studioDesign: true, sessionId, ...(embeddedStudioDraft ? { studioDraft: embeddedStudioDraft } : {}), mockupRelease, product: selectedProduct.name, category: selectedProduct.category, color: selectedColor.name, colorHex: selectedColor.hex, size: selectedSize, layerCount: layers.length, frontLayerCount: frontLayers.length, backLayerCount: backLayers.length, unrenderedArtworkFaces: unsupportedFaces, mockupSrc: garmentSrc, mockupSource: frontMockup.source, mockupPhotoSrc: frontMockup.photoSrc, mockupIsColorPhoto: frontMockup.isColorPhoto, mockupManifestRevision: frontMockup.manifestRevision, mockupSourceKitKey: frontMockup.sourceKitKey, mockupRuntimeStatus: frontMockup.runtimeStatus, printZone: frontPZ, printZoneBack: backPZ, originalAssets }),
     });
+    handoffCompleted = true;
     toast({ title: "✓ Added to cart!", description: unsupportedFacesMessage ? `Custom ${selectedProduct.name} (${selectedColor.name}) is ready. Note: ${unsupportedFacesMessage}` : `Custom ${selectedProduct.name} (${selectedColor.name}) is ready.` });
     try { localStorage.removeItem(DRAFT_STORAGE_KEY); } catch {}
     setHasDraft(false);
     setSaveStatus("idle");
     setTimeout(() => navigate("/cart"), 800);
     } catch (error) {
+      if (!handoffCompleted && createdStagingObjects.length > 0) {
+        await cleanupStagingObjects(createdStagingObjects, { resolveApiUrl: getApiUrl });
+      }
       console.error("[studio] add to cart failed", error);
       reportCartFailure("Couldn’t add design to cart", error instanceof Error ? error.message : "Your design was not added. Please retry.");
     } finally {
@@ -1325,6 +1339,7 @@ export default function DesignStudioV2() {
          surface: exportMockup,
          printZone: exportPrintZone,
          layers: activeLayers,
+         curvature: getCategoryCurvature(selectedProduct.category),
          fabricTexture,
        });
        const a = document.createElement("a"); a.href = serverImage; a.download = `trynext-${selectedProduct.id}-${activeFace}-design.png`; a.click();
@@ -1543,7 +1558,7 @@ export default function DesignStudioV2() {
                    liveSurface={liveSurface}
                    liveGarmentColor={selectedColor.hex}
                    liveLayers={currentFaceLayers as unknown as ComposerLayer[]}
-                   liveCurvature={isMug ? 0.16 : isWaterBottle ? 0.16 : isCap ? 0.1 : 0}
+                   liveCurvature={productCurvature}
                    liveFabricTexture={fabricTexture}
                    liveEnabled={!isPsdTshirtStaging && !activeSurfaceUnavailable}
                    interactionOnly={!isPsdTshirtStaging && !activeSurfaceUnavailable}

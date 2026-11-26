@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
+import { useCallback, useRef } from "react";
 import { AlertTriangle, X } from "lucide-react";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -23,6 +25,10 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const handleCancel = useCallback(() => onCancel(), [onCancel]);
+  useFocusTrap(open, dialogRef, { onEscape: handleCancel });
+
   const colors = variant === "danger"
     ? { bg: "#fef2f2", border: "#fecaca", icon: "#ef4444", btn: "linear-gradient(135deg, #ef4444, #dc2626)" }
     : { bg: "#fffbeb", border: "#fde68a", icon: "#d97706", btn: "linear-gradient(135deg, #d97706, #b45309)" };
@@ -38,9 +44,11 @@ export function ConfirmDialog({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[60] flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.5)" }}
-          onClick={e => { if (e.target === e.currentTarget) onCancel(); }}
+          onClick={e => { if (e.target === e.currentTarget) handleCancel(); }}
         >
           <motion.div
+            ref={dialogRef}
+            tabIndex={-1}
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
@@ -58,14 +66,14 @@ export function ConfirmDialog({
                     <p className="text-xs text-gray-500 mt-1 leading-relaxed">{description}</p>
                   )}
                 </div>
-                <button onClick={onCancel} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0">
+                <button onClick={handleCancel} aria-label="Close dialog" className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors shrink-0">
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
             <div className="flex gap-3 px-6 pb-6">
               <button
-                onClick={onCancel}
+                onClick={handleCancel}
                 className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 {cancelText}

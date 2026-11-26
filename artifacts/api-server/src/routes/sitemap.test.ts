@@ -86,6 +86,8 @@ describe("sitemap route", () => {
     expect(response.headers["content-type"]).toContain("application/xml");
     expect(response.text).toContain("https://trynext.shop/custom-mugs-bangladesh");
     expect(response.text).toContain("https://trynext.shop/custom-drinkware-bangladesh");
+    expect(response.text).toContain("https://trynext.shop/contact");
+    expect(response.text).toContain("https://trynext.shop/hampers");
     expect(response.text).toContain("https://trynext.shop/blog/how-to-design-a-custom-photo-mug");
     expect(response.text).toContain("https://trynext.shop/blog/custom-mug-gift-ideas-for-couples");
     expect(response.text).toContain("https://trynext.shop/blog/custom-drinkware-gifts-in-bangladesh");

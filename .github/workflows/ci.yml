@@ -61,6 +61,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Check deployment source parity and retired mobile host
+        run: pnpm run check:deployment-source-parity
+
       - name: Mobile product image URL regression test
         run: pnpm --filter @workspace/trynext-mobile run test:image-url
 

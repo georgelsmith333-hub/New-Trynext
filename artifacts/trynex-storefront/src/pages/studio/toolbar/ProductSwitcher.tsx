@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { Check, ChevronDown, Package, Search, Sparkles, X } from "lucide-react";
 import {
   getProductPickerFallbackSrc, getProductPickerPreviewSrc, getZonePZ,
@@ -6,6 +6,7 @@ import {
   PRODUCTS, type DesignProduct,
 } from "@/pages/design-studio/mockups";
 import { useDesignStore } from "@/hooks/useDesignStore";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { planProductSwitch } from "../productSwitch";
 
 const CATEGORY_LABELS: Array<{ id: "all" | DesignProduct["category"]; label: string }> = [
@@ -76,6 +77,10 @@ export function ProductSwitcher() {
   const setProductSearch = useDesignStore((s) => s.setProductSearch);
   const setProductPickerCategory = useDesignStore((s) => s.setProductPickerCategory);
   const safeCategory = productPickerCategory === "waterbottle" ? "all" : productPickerCategory;
+  const pickerRef = useRef<HTMLDivElement>(null);
+  const closeProductPicker = useCallback(() => setShowProductPicker(false), [setShowProductPicker]);
+
+  useFocusTrap(showProductPicker, pickerRef, { onEscape: closeProductPicker });
 
   const filteredProducts = useMemo(() => {
     const search = productSearch.trim().toLowerCase();
@@ -126,7 +131,7 @@ export function ProductSwitcher() {
           aria-modal="true"
           aria-labelledby="product-picker-title"
         >
-          <div className="flex max-h-[min(94svh,860px)] w-full max-w-5xl flex-col overflow-hidden rounded-t-[30px] bg-[#f8f7f4] shadow-[0_24px_80px_rgba(28,25,23,0.28)] sm:max-h-[88svh] sm:rounded-[30px]">
+          <div ref={pickerRef} tabIndex={-1} className="flex max-h-[min(94svh,860px)] w-full max-w-5xl flex-col overflow-hidden rounded-t-[30px] bg-[#f8f7f4] shadow-[0_24px_80px_rgba(28,25,23,0.28)] sm:max-h-[88svh] sm:rounded-[30px]">
             <div className="shrink-0 border-b border-stone-200/80 bg-white/95 px-4 py-4 sm:px-7 sm:py-5">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
@@ -140,7 +145,7 @@ export function ProductSwitcher() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowProductPicker(false)}
+                  onClick={closeProductPicker}
                   aria-label="Close product picker"
                   className="shrink-0 rounded-xl p-2 text-stone-400 transition hover:bg-stone-100 hover:text-stone-700 active:scale-95"
                 >
