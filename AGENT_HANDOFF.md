@@ -5344,3 +5344,19 @@ Remaining work: Commit/push the parity-gate correction; wait for refreshed Cloud
 Blocker: PR #111 is not mergeable until refreshed CI and active-app checks pass. Local Vite build remains blocked by the known sandbox ARM64 optional Tailwind Oxide binding; do not add temporary native packages to tracked manifests.
 Next safe action: Push the corrective commit to PR #111, wait for all checks, then perform only GET/read-only live verification before browser checkout inspection. Keep migration 008 unapplied and durable order idempotency disabled.
 Verification: `pnpm run check:deployment-source-parity` passed; focused Pages gateway/middleware/SEO/cache tests passed 39/39; `git diff --check` passed. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.
+
+
+## 2026-11-27 — Pages stale-build-output follow-up
+
+The duplicate-route PR #111 merged normally as `c77015c5fb16a53be8cb853ddd3a166244af19ea`. Pages deployment `20fe6d19-7c6a-4209-8df1-095e01a8c33c` eventually became active, and its build log confirmed the root Functions directory was uploaded. However, GET-only probes still returned SPA HTML for `/api/*` and `/sitemap.xml` on both the deployment URL and `trynext.shop`.
+
+Diagnosis: the deployed build artifact still contained `artifacts/trynex-storefront/dist/_redirects` with the old `/* /index.html 200` rule, even though the tracked source `public/_redirects` now contains only the sitemap redirect. This is consistent with stale Pages/build-cache output because Vite does not remove arbitrary old files from an existing `dist` directory before copying `public/`. No provider setting or production data was changed.
+
+Status: in progress — clean-build follow-up ready for PR
+Last completed: Created branch `fix/pages-clean-build` from merged `origin/main` and changed the storefront build script to run `rm -rf dist` before Vite build, preventing stale redirect artifacts from surviving a cached build directory.
+Stopped at: Before local validation, commit, PR, deployment, and final live JSON verification.
+Files/areas changed: `artifacts/trynex-storefront/package.json`, plus this handoff.
+Remaining work: Verify the clean-build behavior and focused tests; commit/push/open a controlled follow-up PR; wait for Pages/CI/active-app/security checks; then verify the new deployment URL and custom domain for JSON API, sitemap, robots, catalog, readiness, and storage before any checkout browser inspection.
+Blocker: Current merged deployment still serves SPA HTML for API paths until the clean-build follow-up deploys. Local Vite build remains blocked by the known sandbox ARM64 optional Tailwind Oxide binding; do not add temporary native packages to tracked manifests.
+Next safe action: Complete the clean-build follow-up through normal PR review and perform GET-only live verification. Do not submit an order/payment, apply migration 008, or enable durable idempotency.
+Verification: Cloudflare deployment logs show `Found Functions directory at /functions. Uploading.` and successful deployment, while direct GET probes show `/api/*` and `/sitemap.xml` still rewritten to `index.html`. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.
