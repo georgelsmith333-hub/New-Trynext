@@ -1,4 +1,5290 @@
+# Trynext Lifestyle — Agent Handoff
 
+This is the durable, shareable context for the Trynext Lifestyle project. Read it
+after `AGENTS.md` and before planning or editing. Keep it updated after meaningful
+work. Never put secret values in this file.
+
+For a consolidated Claude handoff, including the latest checkpoint, immediate
+open work, project-wide audit checklist, and stale-tracker warnings, also read
+`CLAUDE_HANDOFF_CHECKLIST.md`. The newest dated section in this file remains the
+primary checkpoint; the checklist does not authorize production changes.
+
+## Project identity
+
+Trynext Lifestyle is a Bangladesh-focused print-on-demand commerce platform for
+custom T-shirts, hoodies, mugs, caps, long sleeves, and water bottles. It includes
+a customer storefront, browser Design Studio, admin back office, API server,
+mobile app, promotional experience, and brand-system artifact.
+
+## Read-first files
+
+1. `AGENTS.md` — mandatory Agent operating rules
+2. `AGENT_HANDOFF.md` — this durable project context
+3. `replit.md` — architecture, workflows, product behavior, and gotchas
+4. The relevant current source files and tests for the user's request
+
+## Current product surfaces
+
+- Customer storefront and admin panel: `artifacts/trynex-storefront`
+- API server: `artifacts/api-server`
+- Mobile app: `artifacts/trynext-mobile`
+- Promo experience: `artifacts/trynext-promo`
+- Brand system: `artifacts/trynext-brand-system`
+- Shared API contract and generated clients: `lib/api-spec`, `lib/api-client-react`,
+  and `lib/api-zod`
+- Database schema and migrations: `lib/db`
+
+## Existing work to preserve
+
+- The storefront is the public Trynext Lifestyle commerce experience.
+- The Design Studio supports precise 2D editing and realistic 3D/final rendering.
+- Curved products use the 3D preview by default while flat apparel uses the 2D
+  view by default.
+- Product switching re-fits artwork to the target product's print zone.
+- Shipping, payment, customer contact, admin settings, and other customer-facing
+  values are settings-driven where documented in `replit.md` and memory.
+- The API server is compiled before restart; editing API source alone does not
+  hot-reload the running server.
+- Existing authentication, admin session, database failover, backup, storage,
+  rate limiting, and security behavior must be preserved unless the user
+  explicitly requests a change.
+
+## Working protocol for every new request
+
+1. Read the current user request and identify the exact requested outcome.
+2. Read the first-priority files listed above.
+3. Inspect the relevant current implementation; do not rely only on this summary.
+4. In the first response, confirm the three required files were read and clearly
+   report completed work, the previous stopping point, remaining work, blockers,
+   the proposed plan, preserved behavior, verification, and safe parallel work.
+5. Submit a plan before editing.
+6. Identify all related paths, including API/client, desktop/mobile, admin/customer,
+   persisted/runtime, and old/new or before/after behavior.
+7. Implement only the approved scope.
+8. If independent work is parallelized, reconcile it before completion.
+9. Run the relevant verification, rebuilding/restarting services when required.
+10. Update this file with durable results, decisions, and remaining work.
+11. Submit a completion note before closing or a status handoff when pausing,
+    blocking, or transferring the work.
+
+## Current open work
+
+### Admin panel wiring pass (2026-09-24)
+
+```text
+Status: ready for review — local only, uncommitted, not deployed
+Last completed: Drove every admin page in Playwright (desktop + 390px touch
+  for Page Builder / AI Developer), fixed wiring bugs, re-drove the fixed pages,
+  cleaned up all test records in the local sandbox DB.
+Stopped at: After storefront + API typecheck/tests and final re-drive.
+Files/areas changed:
+  - Page Builder now actually drives the homepage: new shared contract
+    src/lib/homepageLayout.ts (stored as {"version":2,"sections":[...]} in the
+    homepage_layout setting); Home.tsx renders sections in that order with
+    visibility/title/background/padding overrides (index.css .home-section-*).
+    Legacy bare-array values (never rendered before) are ignored so a deploy
+    cannot strip a live homepage; no saved v2 layout = previous default order.
+    AdminPageBuilder rewritten on the contract (reorder via drag or up/down
+    buttons on all sizes, hide/remove/add, reset, unsaved indicator).
+  - Designer: hero "Shop" CTA text/link now wired (TypewriterHero; API/public
+    defaults changed from "Shop Now"//shop to "" = built-in button); heroTitle
+    is not rendered by the animated hero — Designer/Settings now say so.
+  - Settings saves refresh the browser's cached /api/settings (cache:"reload")
+    so the storefront reflects admin saves immediately (lib/api-client-react).
+  - getListProductsQueryKey()/getListOrdersQueryKey() with no params returned
+    [path, undefined], which never matched, so admin product create/edit/delete
+    did not refresh the list. Admin (Bearer) catalogue reads are now no-store.
+  - AI Developer: tool calls lacked Content-Type (every tool/audit failed);
+    /api/ai/developer/* exempted from the 10-per-5-min public AI limiter;
+    context/get_settings no longer return credential rows; explicit
+    unconfigured provider returns a clear error instead of silent fallback;
+    network errors are friendly; feature toggles persist; auto-audit works;
+    streaming toggle hidden; mobile layout usable.
+  - Blog: blank/relative image URLs rejected every post without an absolute
+    image URL (fixed); drafts no longer publicly readable by slug/id; save
+    button/toast reflect draft vs published.
+  - Reviews: API now also returns `text` (stored as body; admin + product page
+    read text); deleting an approved review recomputes product rating/count.
+  - Secrets page fetched /admin/secrets without /api (always empty).
+  - Storefront announcement ticker no longer overlays admin pages; admin
+    headings no longer inherit the storefront display h1–h4 sizes.
+  - Roles shows "admin" role; Dashboard action errors show server message.
+Remaining work: Commit/deploy after review. Not wired (needs external keys or
+  network): external AI providers, Telegram test, Google ping/GSC submit.
+Blocker: None for local. src/pages/studio/DesignStudioV2.mobile-workflow.test.ts
+  fails (other engineer's in-progress studio work, not touched here).
+Next safe action: Review the diff, run the API build + storefront tests, then
+  commit on a branch.
+Verification: storefront tsc OK, vitest 68/69 (studio test above); API tsc OK,
+  vitest 38/38; Playwright re-drives of page builder, designer, AI developer,
+  products, categories, promo codes, orders, customers, hampers, blog,
+  reviews, newsletter, referrals, security, logs rollback, backup, roles,
+  secrets, deployment, settings passed.
+```
+
+### Storefront performance checkpoint (2026-09-16)
+
+```text
+Status: ready for review — local performance release verified
+Last completed: Reduced home catalog work to a bounded no-count request, added a
+process-local product cache, extended safe catalog edge caching with stale-while-
+revalidate, prioritized the first home product image, and generated 90 small WebP
+product thumbnails from the large PNG masters.
+Stopped at: After rebuilding/restarting both managed workflows, measuring cold and
+warm API responses, checking thumbnail responses, running the storefront tests,
+and capturing a clean desktop preview.
+Files/areas changed: API product list route and client hook, storefront image URL
+resolution and home product loading, Cloudflare Pages API cache headers, and
+public/assets/products/optimized/*.webp.
+Remaining work: Publish the verified source and optimized assets only after a
+valid GitHub remote credential/repository URL is available. Cloudflare provider
+verification remains separate and was not mutated.
+Blocker: This checkout has no configured git origin; the newly available GitHub
+credential returned repository-not-found when tested against the historical
+repository path. Do not force-push or guess a repository URL.
+Next safe action: Confirm the canonical GitHub repository through secure workspace
+integration/configuration, then fetch main, merge normally, run the release checks,
+and publish through the connected Pages workflow.
+Verification: API and storefront typechecks passed; storefront production build
+passed; API build passed; all 19 storefront test files and 69 tests passed; 33 of
+36 API tests passed, with the 3 failures limited to absent excluded PSD/PSB fixture
+files; API products returned 200 with includeTotal=false in about 0.55s cold and
+about 0.003s from the local cache; generated WebP thumbnails returned 200 at
+35–80KB; both workflows are running; desktop preview rendered without browser
+console errors; git diff checks passed.
+```
+
+## Critical-flow smoke verification checkpoint (2026-09-17)
+
+```text
+Status: local and live smoke verification complete; newest verifier commit
+  is ready but GitHub publication remains blocked by remote authentication.
+Added: scripts/verify-critical-flows.mjs and the root
+  verify:critical-flows package command. The check is deliberately
+  non-mutating: it does not create orders, payments, uploads, reviews,
+  sessions, or admin changes.
+Verification: 30/30 passed locally and 30/30 passed against
+  https://trynext.shop. Customer pages passed: home, shop, products,
+  Design Studio, cart, checkout, account, login, signup, tracking, and
+  hampers. Admin page delivery passed for login, dashboard, products,
+  orders, customers, settings, mockups, deployment, and roles. Public
+  readiness/products/categories/settings APIs passed. Protected order/admin
+  APIs returned the expected unauthenticated boundary. The guest-safe
+  unread-message endpoint returned its documented 200/count contract.
+Mask audit: all 188 surfaces passed runtime role validation. No protected
+  role was empty or suspiciously full-canvas, no product base was nearly
+  empty, and all print masks had valid non-zero coverage.
+Current blocker: the local verified branch is ahead of github/main, but the
+  HTTPS Git push still returns invalid username/token after the GitHub App
+  connection was accepted. Do not use credentials pasted into chat.
+Next action: publish the newest local commit through a working authorized
+  GitHub Git/API path, then confirm the Cloudflare Pages build reflects it.
+```
+
+## Local release-audit tooling checkpoint (2026-09-17)
+
+```text
+Status: local verification complete; publication of the new audit/workflow
+  changes is pending an authorized GitHub connection
+Completed: Replaced the PSD audit command's unavailable Python psd_tools
+  dependency with a Node/ag-psd audit that matches the API parser contract.
+  The audit now parses all 188 staged PSD/PSB masters without native canvas,
+  verifies one artwork Smart Object and a non-empty embedded payload per
+  document, verifies the composite section, and emits the structural-audit
+  shape consumed by the release gate.
+  Added active runtime validation, storefront tests, and API bundle build
+  steps to .github/workflows/active-app-verification.yml. Private generated
+  staging remains ignored by Git and outside public/.
+Verification: 188/188 PSD/PSB masters openable; 188/188 Smart Object gates
+  passed; 188/188 staging matrix passed; 1,128/1,128 public runtime roles
+  passed; storefront tests 19 files/69 tests passed; API tests 10 files/36
+  tests passed; API bundle build passed; workspace typecheck passed;
+  storefront production build passed. Desktop and mobile previews rendered
+  without browser-console errors. Live trynext.shop homepage, Design Studio,
+  readiness, products, and runtime PNG checks returned 200.
+Current limitation: the local workflow/audit changes are not yet on
+  github/main, so the public Cloudflare Pages deployment cannot reflect
+  those new CI/audit-tooling changes. The GitHub App integration was accepted
+  and attached, but this environment's HTTPS Git remote still rejected the
+  push, the conversation API client could not resolve the attached connection,
+  and the SSH fallback had no public key. The already-live accepted
+  188-surface runtime remains healthy.
+Next action: retry publication only when the attached GitHub integration
+  exposes a working Git or API auth path, then confirm the Cloudflare Pages
+  build and repeat the live checks. Do not use credentials pasted into chat.
+```
+
+### GitHub restore checkpoint (2026-09-16)
+
+```text
+Status: complete — verified functional application restore pushed
+Last completed: Preserved the previous remote main in
+  backup-before-local-restore-5c1b07d93, then published the verified local
+  application checkpoint to the canonical GitHub main as a clean restore commit.
+Stopped at: After restarting both managed workflows and confirming local API,
+  storefront, Design Studio, products, and GitHub ref smoke checks.
+Files/areas changed: GitHub main ref, the restore handoff, and the functional
+  source/runtime tree. The local-only dist-mockups masters/archives/packages,
+  attached_assets inputs, agent/tool caches, screenshots, audit evidence, and
+  verification reports were intentionally excluded from the GitHub restore tree
+  because they expanded the local tree to about 4.8 GB and are not runtime
+  application inputs.
+Remaining work: None for the functional source restore. Cloudflare provider
+  verification remains a separate task because the stored provider token was
+  previously rejected with HTTP 401.
+Blocker: None for GitHub restore or local operation. Redis is unavailable in the
+  local environment, but DB-backed API readiness is healthy and the documented
+  fallback is active.
+Next safe action: If the excluded editable masters or source inputs must be
+  published, place them in reviewed object storage or a separately approved
+  artifact release rather than force-pushing the multi-gigabyte workspace tree.
+Verification: GitHub main points to db5d13e2 and the backup branch points to the
+  prior remote main; local API liveness/readiness and products returned 200;
+  storefront and Design Studio returned 200; both workflows are running; and
+  git diff checks passed. No database, order, payment, or Cloudflare data changed.
+```
+
+### Full Trynext rename local-validation checkpoint (2026-09-08)
+
+```text
+Status: locally complete — approved rename validated without provider mutation
+Last completed: Corrected the remaining gateway read-origin rename, reconciled the
+  workspace lockfile/package links, rebuilt the API and storefront, restarted both
+  managed workflows, and completed local API/storefront smoke verification.
+Stopped at: After confirming the renamed storefront renders, the API is DB-ready,
+  and all local validation gates pass. Cloudflare was intentionally not touched.
+Files/areas changed: gateway-config.ts copies, approved rename documentation
+  whitespace, workspace lockfile reconciliation, and this handoff.
+Remaining work: Provider-side Cloudflare verification or mutation is still separate
+  and should only happen after the secure Cloudflare token is corrected. Historical
+  attachments/backups were intentionally not rewritten.
+Blocker: The stored CLOUDFLARE_API_TOKEN previously returned HTTP 401 "Invalid API
+  Token", so account/Pages verification and any Cloudflare change remain blocked.
+Next safe action: Replace the Cloudflare token through secure secret management,
+  verify token/account access, then perform only the approved non-destructive
+  Cloudflare inspection before considering a provider rollout.
+Verification: storefront typecheck/build passed; API typecheck/build passed; root
+  workspace typecheck passed; storefront tests passed (19 files, 67 tests); API
+  tests passed (10 files, 36 tests); Smart matrix validation passed (188 surfaces
+  and 1,128 runtime roles); Smart Object release validation passed; frozen
+  lockfile install passed; API liveness/readiness and products smoke checks
+  returned 200; storefront root and Design Studio routes returned 200; both
+  managed workflows are running; desktop preview rendered without browser-console
+  errors; malformed-token scan and git diff checks passed. No Cloudflare, order,
+  payment, or production data changed.
+```
+
+### Latest Cloudflare credential and configuration checkpoint (2026-09-08)
+
+```text
+Status: partially complete — repository configuration fixed; provider API blocked
+Last completed: Verified the securely stored CLOUDFLARE_API_TOKEN against the
+  Cloudflare token-verification and account endpoints, then corrected wrangler.toml
+  from an obsolete Workers-style configuration to the active Cloudflare Pages
+  configuration used by trynext-lifestyle-shop.
+Stopped at: Cloudflare returned HTTP 401 "Invalid API Token" before permissions
+  could be evaluated, so no direct Cloudflare account, Pages, or Workers mutation
+  was attempted.
+Files/areas changed: wrangler.toml and this handoff only.
+Remaining work: Re-run Cloudflare API verification after the secure secret contains
+  a valid account token, then inspect or repair the separate legacy Workers Build
+  project if it is still required. GitHub-connected Pages remains the verified
+  deployment path.
+Blocker: The current stored Cloudflare token is rejected at authentication time.
+Next safe action: Update the CLOUDFLARE_API_TOKEN secret through secure secret
+  management, then verify `user/tokens/verify` and account access before any
+  provider mutation.
+Verification: storefront typecheck/build, API typecheck, 188-surface mockup
+  validation, 1,128-role validation, and git diff checks passed after the
+  configuration correction. No production data changed.
+```
+
+### Latest GitHub and Cloudflare rollout checkpoint (2026-09-08)
+
+```text
+Status: complete — verified source push and Cloudflare Pages rollout
+Last completed: Merged GitHub main normally without force-pushing, corrected the
+  Smart Object release validator to default to the active smart-v10-v3 staging tree,
+  pushed the verified continuation, and waited for the connected Pages build.
+Stopped at: The public Pages deployment is serving the pushed Smart v10.3 runtime
+  and the lazy Design Studio chunk with the new upload/image-tools implementation.
+Files/areas changed: tools/validate-smartobject-release.mjs and this handoff only
+  after the reviewed merge; no order, payment, or production data changed.
+Remaining work: None for the requested storefront, Design Studio, mockup matrix,
+  GitHub publication, or Cloudflare Pages rollout.
+Blocker: Direct Cloudflare API management remains unavailable because the configured
+  provider token returns 401. A separate legacy Cloudflare Workers Builds check
+  reported failure, while the requested Cloudflare Pages check completed successfully;
+  investigate that separate workflow before relying on it for future releases.
+Next safe action: If provider automation is needed, replace the Cloudflare API secret
+  with an Account → Cloudflare Pages → Edit token and separately inspect the failed
+  Workers check. Do not reuse the exposed historical R2 credentials.
+Verification: `node tools/validate-smartobject-release.mjs` passed structurally
+  verified 188/188; active matrix and runtime-role validation passed 188/188 and
+  1,128/1,128; storefront typecheck, 19 test files/67 tests, production build, and
+  API typecheck passed; the real Playwright flow passed product/cart/checkout/Studio
+  checks plus upload → visible artwork → image tools → crop/extend on desktop and
+  mobile; the mobile sticky purchase dock remained visible. Live `/api/mockups`
+  returned 188 Smart v10.3 rows, all 188 API-derived runtime PNG URLs returned
+  200, representative retired paths returned 410, the deployed Studio chunk
+  contained `smart-v10.3`, `Crop image`, `Extend canvas`, and `Quick image tools`,
+  `/api/sitemap.xml` contained 118 URLs, and robots exposed the sitemap directive.
+  GitHub build/typecheck and security checks passed; the separate Workers check did
+  not. The browser flow saw one external certificate warning from a remote resource,
+  but no application exception.
+```
+
+### Current Design Studio correction pass (2026-09-07)
+
+```text
+Status: complete — approved customer-facing correction pass implemented
+Last completed: Established a single visible photoreal preview path, made uploads
+  paint before auto-fix, aligned image controls to artwork bounds, tightened
+  touch targets and pointer capture, compacted mobile guidance, added the
+  safe-area sticky purchase dock, and shortened server background-removal waits.
+Files/areas changed: customer Design Studio preview, upload/processing flow,
+  CanvasArea interaction controls, mobile guidance/layout, sticky purchase bar,
+  regression coverage, and approved design spec under docs/superpowers/specs.
+Remaining work: None within the approved customer-facing scope.
+Blocker: None. Redis is unavailable in development, but the documented in-process
+  cache fallback is active and API/database health is still serving normally.
+Next safe action: If desired, publish this verified storefront build; admin
+  mockup screens and the separate mobile app remain outside this pass.
+Verification: storefront typecheck passed; storefront production build passed;
+  all 19 storefront test files and 67 tests passed; API typecheck/build passed;
+  API health/products/settings smoke checks passed; desktop and 402px mobile
+  preview captures show the canonical photoreal surface; runtime asset audit
+  found 188 complete surfaces across all six mockup families.
+```
+
+The approved Design Studio V2 reliability pass is complete and has been pushed
+through the GitHub-connected external rollout. The public `/design-studio` route is
+the active V2 implementation; `/design-studio-v1` and `/design-studio-v2`
+are compatibility aliases to that route. The source-kit/runtime mockup audit
+now validates the editable manifest as well as public assets.
+
+The genuine six-family PSD/PSB Smart Mockup workstream has passed its quarantine
+structural and visual gates. The complete Smart v10.3 runtime package is active
+in the local customer runtime and is published to GitHub; Smart v9 remains a
+separate protected migration contract. The public hosting rollout remains a
+separate provider step; do not describe local promotion as a production deploy.
+
+### Current live audit checkpoint (2026-09-06, latest)
+
+```text
+Status: complete — provider rollout independently verified
+Last completed: Rechecked the connected Cloudflare Pages deployment at
+  `https://trynext.pages.dev` after the Smart v10.3 release. The
+  deployed gateway returns the current primary Render origin and exposes the
+  reviewed canonical runtime package.
+Stopped at: Non-mutating live API, asset, retired-path, bundle, sitemap, and
+  robots checks all passed. The public rollout is certified for the requested
+  Smart v10.3 serving contract; Smart v9 remains a separate fail-closed contract.
+Files/areas changed: this handoff only. No application, mockup, order, payment,
+  or production data was changed.
+Remaining work: Keep the live smoke checks repeatable after future provider
+  deployments; no blocker remains for this rollout verification.
+Blocker: None for the verified Cloudflare Pages + Render serving contract.
+Next safe action: Add a scheduled or deployment-triggered equivalent of the
+  non-mutating live mockup smoke check so edge regressions are caught promptly.
+Verification: The deployed `/api/mockups` response contains exactly 188 rows,
+  all canonical and all `smart-v10.3`; all 188 unique API-derived canonical
+  runtime-role PNG URLs returned 200 `image/png`; representative retired
+  `/mockups/*` namespaces returned 410; the deployed JavaScript bundle loaded
+  by the HTML contains `smart-v10.3` and `runtime-roles`; `/sitemap.xml`
+  redirects to the healthy 200 `/api/sitemap.xml` (118 URLs); and
+  `/robots.txt` returned 200 with a sitemap directive. No order, payment, or
+  production data changed.
+```
+
+## PSD/PSB server ingestion and Design Studio diagnostics checkpoint (2026-09-07)
+
+```text
+Status: complete — local server-side ingestion and studio UX verified
+Last completed: Added a real ag-psd-backed PSD/PSB parser that reads private
+  object-storage bytes, verifies Photoshop magic/version, extension/MIME,
+  dimensions, exactly one named Smart Object layer, placement metadata, and
+  SHA-256. Admin mockup creation/update now fails closed on parser or source-kit
+  contract errors and persists the server-derived file metadata and normalized
+  manifest. Editable masters remain private /objects paths; previews remain
+  public image URLs.
+Stopped at: After rebuilding/restarting the API and confirming the public API,
+  readiness, workflows, Design Studio preview, focused parser/contract tests,
+  full API tests, storefront typecheck/build, and git diff validation.
+Files/areas changed: artifacts/api-server/src/lib/psdMasterParser.ts and its
+  tests, mockupContract.ts, routes/mockups.ts, api-server package/lock metadata,
+  AdminMockups.tsx, the active Smart v10-v3 manifest test path, and the
+  DesignStudioV2 Smart Object status card.
+Remaining work: Authenticated admin visual review of real upload success/failure
+  states and owner-controlled hosting/GitHub publication remain separate release
+  gates. The browser continues to render approved PNG runtime roles; private
+  editable masters are diagnostics/provenance only.
+Blocker: None for the local implementation. The running API reports the existing
+  optional Redis degradation while DB-backed readiness remains healthy.
+Next safe action: Exercise one authenticated canonical PSD override and one PSB
+  override in Admin Mockups, then repeat the non-mutating public Smart v10.3
+  runtime smoke checks before any provider rollout.
+Verification: Real PSD and PSB parser fixtures passed; invalid bytes and
+  signature/extension/MIME mismatch tests passed; API typecheck/build passed;
+  full API suite passed (10 files, 36 tests); storefront typecheck/build passed;
+  focused storefront manifest/product/composer tests passed; both managed
+  workflows restarted cleanly; /api/mockups and /api/health/readiness returned
+  200; Design Studio screenshot rendered without browser-console errors; and
+  git diff --check passed. No order, payment, or production data changed.
+```
+
+## Latest Smart v10.3 API ingestion boundary checkpoint (2026-09-07)
+
+```text
+Status: complete — local Option A ingestion and server-render contract implemented
+Last completed: Added fail-closed Smart v10.3 manifest validation for admin PSD/PSB
+  records, including source-kit identity, PSD/PSB metadata, SHA-256 binding,
+  Smart Object provenance, print geometry, and all six runtime role paths,
+  provenance labels, and checksums. Invalid or incomplete master records are
+  persisted as failed with actionable ingestion errors instead of being marked
+  ready from a preview alone. The admin upload flow now derives the reviewed
+  runtime manifest for canonical overrides and displays the server result/error.
+  `/api/mockup/render` now accepts only the validated surface contract and six
+  checksum-matching role images; the previous arbitrary base/mask/texture shape
+  is rejected.
+Stopped at: After rebuilding/restarting the API, passing route-level render
+  tests, confirming `/api/healthz` and `/api/mockups` through the running service,
+  confirming the renderer rejects the legacy payload at `/api/mockup/render`, and
+  capturing a clean storefront preview.
+Files/areas changed: `artifacts/api-server/src/lib/mockupContract.ts`,
+  `artifacts/api-server/src/lib/mockupContract.test.ts`,
+  `artifacts/api-server/src/routes/mockups.ts`,
+  `artifacts/api-server/src/routes/mockupRender.ts`,
+  `artifacts/api-server/src/routes/mockupRender.test.ts`, and
+  `artifacts/trynex-storefront/src/pages/admin/AdminMockups.tsx`.
+Remaining work: Owner-controlled GitHub/hosting promotion remains separate from
+  this local implementation. Authenticated admin visual review of the upload
+  error/ready states and visual approval of all 188 surfaces are still release
+  gates; this checkpoint does not claim either one.
+Blocker: None for local implementation. Health reports the existing optional
+  Upstash Redis degradation while DB-backed readiness remains healthy.
+Next safe action: Review the authenticated admin mockup upload state, then
+  publish the verified local source through the owner-controlled rollout if
+  desired. Do not bypass the manifest gate for arbitrary PSD/PSB uploads.
+Verification: API typecheck passed; API build passed; API tests passed (9 files,
+  33 tests); focused Smart v10.3 contract/render tests passed (3 files, 7
+  tests); storefront typecheck passed; storefront tests passed (19 files,
+  64 tests); storefront production build passed before the final manifest-form
+  wiring and focused typecheck passed after it; active runtime matrix passed
+  (188 surfaces, 1,128 roles); correct v10-v3 release gate passed
+  structurally-verified 188/188; both managed workflows restarted cleanly;
+  health/mockups/root routes returned 200; legacy renderer payload returned
+  400; storefront screenshot had no browser-console errors; `git diff --check`
+  passed. No order, payment, or production data was changed.
+```
+
+## Latest studio correction checkpoint (2026-09-06)
+
+```text
+Status: locally verified; GitHub publication of this continuation is still pending
+Last completed: Added deterministic selection-aware undo/redo coverage, grouped
+  drag/resize/rotate history transactions, the shared red 44px delete control,
+  grouped product and mug-view switching, and removed the redundant post-switch
+  transform loop. Fixed the compositor canvas-reset regression so artwork no
+  longer erases the already-drawn studio background/base. Runtime shadow and
+  highlight roles now use the reviewed grayscale print mask, and 3D artwork
+  textures receive the same protected/detail role pass as the 2D compositor.
+  Updated the asset audit script to inspect the active v10.3 runtime tree.
+Stopped at: Local storefront/API workflows are running cleanly. Storefront
+  typecheck, 18 test files/59 tests, production build, API typecheck, 188-surface
+  matrix validation, 1,128-role validation, route/API smoke checks, and desktop
+  plus mobile Design Studio previews passed. The water-bottle preview visibly
+  retains the cap key-ring loop from the reviewed base asset.
+Files/areas changed: Design Studio history/store, CanvasArea/DesignLayer controls,
+  product and mug routing, shared 2D/3D compositor role handling, focused store
+  tests, and the active mockup audit script.
+Remaining work: Commit and push only these verified source changes, then recheck
+  the GitHub-connected Cloudflare Pages rollout independently. The current public
+  Pages host returns healthy 200 responses, but its current HTML bundle has not
+  exposed a new Smart v10.3 marker and the edge rollout must not be called
+  complete without checking canonical and retired mockup URLs.
+Blocker: Replit publishing is not configured for this workspace. Cloudflare
+  management API access is provider-managed; public Pages health is available,
+  but rollout freshness is separate from the local/GitHub result.
+Next safe action: Commit/push the verified continuation, re-run the public
+  Pages API/asset/sitemap/robots and retired-path checks, then record the result
+  without changing the Smart v9 fail-closed contract.
+Verification: storefront typecheck/build/tests passed; API typecheck passed;
+  both managed workflows restarted cleanly; local route/API checks returned 200;
+  protected admin probes returned 401; active matrix validators passed 188/188
+  and 1,128/1,128; desktop and mobile previews showed no browser console errors;
+  Cloudflare Pages root, Design Studio, liveness, sitemap, and robots returned
+  200; no order, payment, or production data was mutated.
+```
+
+### Current image-tools continuation checkpoint (2026-09-07)
+
+```text
+Status: GitHub feature commit published; Cloudflare edge propagation pending
+Last completed: Implemented the selected Tools-first image interaction. A successful
+  upload selects the image and opens the Upload image-tools panel immediately;
+  one click on an image only selects it; double-click/double-tap opens the same
+  full tools surface; and the panel now provides functional crop-frame handles
+  plus transparent canvas extension controls for desktop and mobile.
+Stopped at: The storefront and API workflows are running cleanly after the final
+  build and proxied smoke checks.
+Files/areas changed: DesignStudioV2 upload/tool routing, ImagePanel controls, and
+  the new ImageCropExtendDialog editor.
+Remaining work: Let the connected Cloudflare Pages rollout finish, then verify
+  the live bundle and exercise upload → tools → crop/extend in a browser.
+Blocker: The browser-use helper is not installed in this checkout, so direct
+  file-chooser automation was unavailable; static preview, build, tests, and
+  route/API checks all passed.
+Next safe action: Check the GitHub CI/active-app runs and the public Pages bundle;
+  do not call live rollout complete until the new tools strings are present.
+Verification: Storefront typecheck passed; storefront tests passed (19 files/64
+  tests); storefront production build passed; both managed workflows are running;
+  `/design-studio`, `/api/healthz`, and `/api/products` returned 200; and
+  `git diff --check` passed; GitHub main now points to commit
+  7874b96caa1219117234e951ef19b55f92fc7b46; the public Pages root, Design Studio,
+  and API health endpoints returned 200 but still served the previous bundle at
+  the last check; Replit deployment metadata reports no published Replit app.
+  No order, payment, or production data changed.
+```
+
+## Current studio correction plan (2026-09-06)
+
+```text
+Goal: make the Design Studio trustworthy for real customer editing and photoreal
+  product previews, using the reviewed Smart v10.3 runtime without overlapping
+  controls, duplicate garment passes, or silent fallback assets.
+
+Stage 1 — Selection and editing controls
+  - Add a clearly visible red circular remove button at the selected artwork
+    bounds, positioned outside the top-right edge and kept above the artwork.
+  - Make the remove control a 44px minimum touch target with an accessible label,
+    keyboard activation, pointer capture isolation, and a delete action that
+    records exactly one undo frame.
+  - Make selection hit areas transparent and reliable for mouse, touch, and
+    stylus; prevent the rotate/resize/delete controls from starting a drag.
+  - Verify the control on desktop and mobile, including rotated artwork and
+    artwork near the canvas edge.
+
+Stage 2 — History correctness
+  - Audit every meaningful mutation path: add, delete, drag, resize, rotate,
+    text edits, visibility/lock changes, reorder, product/color/face changes.
+  - Group pointer gestures into one history entry on pointer-up rather than one
+    entry per movement; preserve redo only until a new edit occurs.
+  - Preserve selection state and product/face context across undo/redo without
+    restoring stale runtime asset URLs.
+  - Add focused store tests for one-step delete undo/redo, grouped transforms,
+    redo invalidation, product/face restoration, and empty-stack no-ops.
+
+Stage 3 — Photoreal composition and protected details
+  - Trace the v10.3 print mask/role order so artwork is clipped to the real print
+    area and garment details remain above it.
+  - Ensure hoodie drawstrings, collar, pocket seam, sleeve seams, mug handles,
+    cap brim/panel seams, and bottle cap/key-ring hardware are protected details,
+    never painted over by artwork.
+  - Remove any remaining full-frame duplicate base/shadow pass; keep one base
+    silhouette plus intentional role layers only.
+  - Compare browser SVG, canvas export, cart preview, and 3D preview for the
+    same surface and artwork placement.
+
+Stage 4 — Product-specific surface routing
+  - Fix mug side1/side2/front/back mapping so the visible handle orientation,
+    print zone, and runtime surface agree; keep Wrap explicit and wider.
+  - Verify long sleeve/hoodie sleeve faces route to the corresponding canonical
+    v10.3 role files rather than reusing the front.
+  - Repair the water-bottle front/back source/role composition and restore the
+    cap key-ring detail from reviewed source assets or a reviewed runtime role;
+    fail closed if the required detail source is absent rather than inventing it.
+  - Add route/asset contract tests for all curved-product faces and representative
+    apparel protected details.
+
+Stage 5 — Runtime/source audit and rollout
+  - Audit the source manifests, role PNG alpha bounds, protected/detail layers,
+    and representative photoreal composites for all six product families.
+  - Keep editable PSD/PSB masters outside public/ and expose only reviewed v10.3
+    runtime derivatives.
+  - Run storefront/API typechecks, focused/full tests, production build, local
+    proxy checks, desktop/mobile browser previews, and no-legacy-path checks.
+  - Commit/push the verified source, wait for Cloudflare Pages deployment, then
+    verify public API=188 canonical rows, canonical assets=200, retired paths=410,
+    sitemap/robots, and deployed bundle markers.
+
+Acceptance gates:
+  - No selection control overlaps artwork or is swallowed by the canvas edge.
+  - Delete/undo/redo works deterministically for mouse and touch gestures.
+  - No hoodie strings, collars, seams, handles, or bottle hardware are painted
+    over by artwork in browser, cart, export, or 3D previews.
+  - Mug side routing and water-bottle detail are visually and structurally
+    verified; missing source data fails loudly.
+  - Public rollout is not called complete until the Pages checks pass.
+```
+
+## Latest studio correction checkpoint (2026-09-06)
+
+```text
+Status: locally verified; GitHub publication of this continuation is still pending
+Last completed: Added deterministic selection-aware undo/redo coverage, grouped
+  drag/resize/rotate history transactions, the shared red 44px delete control,
+  grouped product and mug-view switching, and removed the redundant post-switch
+  transform loop. Fixed the compositor canvas-reset regression so artwork no
+  longer erases the already-drawn studio background/base. Runtime shadow and
+  highlight roles now use the reviewed grayscale print mask, and 3D artwork
+  textures receive the same protected/detail role pass as the 2D compositor.
+  Updated the asset audit script to inspect the active v10.3 runtime tree.
+Stopped at: Local storefront/API workflows are running cleanly. Storefront
+  typecheck, 18 test files/59 tests, production build, API typecheck, 188-surface
+  matrix validation, 1,128-role validation, route/API smoke checks, and desktop
+  plus mobile Design Studio previews passed. The water-bottle preview visibly
+  retains the cap key-ring loop from the reviewed base asset.
+Files/areas changed: Design Studio history/store, CanvasArea/DesignLayer controls,
+  product and mug routing, shared 2D/3D compositor role handling, focused store
+  tests, and the active mockup audit script.
+Remaining work: Commit and push only these verified source changes, then recheck
+  the GitHub-connected Cloudflare Pages rollout independently. The current public
+  Pages host returns healthy 200 responses, but its current HTML bundle has not
+  exposed a new Smart v10.3 marker and the edge rollout must not be called
+  complete without checking canonical and retired mockup URLs.
+Blocker: Replit publishing is not configured for this workspace. Cloudflare
+  management API access is provider-managed; public Pages health is available,
+  but rollout freshness is separate from the local/GitHub result.
+Next safe action: Commit/push the verified continuation, re-run the public
+  Pages API/asset/sitemap/robots and retired-path checks, then record the result
+  without changing the Smart v9 fail-closed contract.
+Verification: storefront typecheck/build/tests passed; API typecheck passed;
+  both managed workflows restarted cleanly; local route/API checks returned 200;
+  protected admin probes returned 401; active matrix validators passed 188/188
+  and 1,128/1,128; desktop and mobile previews showed no browser console errors;
+  Cloudflare Pages root, Design Studio, liveness, sitemap, and robots returned
+  200; no order, payment, or production data was mutated.
+```
+
+## Current studio correction plan (2026-09-06)
+
+```text
+Goal: make the Design Studio trustworthy for real customer editing and photoreal
+  product previews, using the reviewed Smart v10.3 runtime without overlapping
+  controls, duplicate garment passes, or silent fallback assets.
+
+Stage 1 — Selection and editing controls
+  - Add a clearly visible red circular remove button at the selected artwork
+    bounds, positioned outside the top-right edge and kept above the artwork.
+  - Make the remove control a 44px minimum touch target with an accessible label,
+    keyboard activation, pointer capture isolation, and a delete action that
+    records exactly one undo frame.
+  - Make selection hit areas transparent and reliable for mouse, touch, and
+    stylus; prevent the rotate/resize/delete controls from starting a drag.
+  - Verify the control on desktop and mobile, including rotated artwork and
+    artwork near the canvas edge.
+
+Stage 2 — History correctness
+  - Audit every meaningful mutation path: add, delete, drag, resize, rotate,
+    text edits, visibility/lock changes, reorder, product/color/face changes.
+  - Group pointer gestures into one history entry on pointer-up rather than one
+    entry per movement; preserve redo only until a new edit occurs.
+  - Preserve selection state and product/face context across undo/redo without
+    restoring stale runtime asset URLs.
+  - Add focused store tests for one-step delete undo/redo, grouped transforms,
+    redo invalidation, product/face restoration, and empty-stack no-ops.
+
+Stage 3 — Photoreal composition and protected details
+  - Trace the v10.3 print mask/role order so artwork is clipped to the real print
+    area and garment details remain above it.
+  - Ensure hoodie drawstrings, collar, pocket seam, sleeve seams, mug handles,
+    cap brim/panel seams, and bottle cap/key-ring hardware are protected details,
+    never painted over by artwork.
+  - Remove any remaining full-frame duplicate base/shadow pass; keep one base
+    silhouette plus intentional role layers only.
+  - Compare browser SVG, canvas export, cart preview, and 3D preview for the
+    same surface and artwork placement.
+
+Stage 4 — Product-specific surface routing
+  - Fix mug side1/side2/front/back mapping so the visible handle orientation,
+    print zone, and runtime surface agree; keep Wrap explicit and wider.
+  - Verify long sleeve/hoodie sleeve faces route to the corresponding canonical
+    v10.3 role files rather than reusing the front.
+  - Repair the water-bottle front/back source/role composition and restore the
+    cap key-ring detail from reviewed source assets or a reviewed runtime role;
+    fail closed if the required detail source is absent rather than inventing it.
+  - Add route/asset contract tests for all curved-product faces and representative
+    apparel protected details.
+
+Stage 5 — Runtime/source audit and rollout
+  - Audit the source manifests, role PNG alpha bounds, protected/detail layers,
+    and representative photoreal composites for all six product families.
+  - Keep editable PSD/PSB masters outside public/ and expose only reviewed v10.3
+    runtime derivatives.
+  - Run storefront/API typechecks, focused/full tests, production build, local
+    proxy checks, desktop/mobile browser previews, and no-legacy-path checks.
+  - Commit/push the verified source, wait for Cloudflare Pages deployment, then
+    verify public API=188 canonical rows, canonical assets=200, retired paths=410,
+    sitemap/robots, and deployed bundle markers.
+
+Acceptance gates:
+  - No selection control overlaps artwork or is swallowed by the canvas edge.
+  - Delete/undo/redo works deterministically for mouse and touch gestures.
+  - No hoodie strings, collars, seams, handles, or bottle hardware are painted
+    over by artwork in browser, cart, export, or 3D previews.
+  - Mug side routing and water-bottle detail are visually and structurally
+    verified; missing source data fails loudly.
+  - Public rollout is not called complete until the Pages checks pass.
+```
+
+### Current Smart v9 acceptance checkpoint (2026-09-06)
+
+```text
+Status: in progress — Smart v9 remains fail-closed while visual acceptance is
+  incomplete.
+Last completed: Fixed curved-product 3D billboard framing for mug, cap, and
+  water bottle; restarted the storefront; captured fresh real uploaded-artwork
+  Studio/3D evidence for all six product families; and confirmed the bottle
+  now fits from cap to base while the cap visor no longer clips.
+Compatibility rule: exact catalog-color matches may use Smart v9 only after the
+  full evidence gate is accepted. Ambiguous shades such as Charcoal, Royal
+  Blue, and Sand remain on reviewed color-specific assets.
+Verification: canonical matrix and Smart Object structural gates remain
+  188/188; storefront typecheck passed; storefront workflow is running; fresh
+  uploaded-artwork evidence has no browser console errors; API healthz and
+  mockups/settings/products/readiness routes returned 200; storefront tests
+  passed (25 files/85 tests); storefront production build passed; root
+  workspace typecheck passed; git diff --check passed. No orders, payments, or
+  production data were created or changed.
+Remaining work: Run the full storefront test/build/validator pass; capture and
+  review all required color/face evidence plus transparent-upload, cart, and
+  export outputs; only then consider Smart v9 activation and production
+  promotion.
+Next safe action: complete the non-mutating release verification and keep
+  SMART_V9_PROMOTION_ALLOWED=false until every required evidence category is
+  recorded and accepted.
+```
+
+### Current v10 implementation checkpoint (2026-09-06)
+
+```text
+Status: verified and pushed v10.3 release — hosting rollout remains separate
+Last completed: Replaced the weak/inconsistent v10 source inputs with a reviewed,
+  consistent photoreal six-family source set; rebuilt the complete 188-surface
+  matrix with genuine embedded Smart Objects and 1,128 browser-safe role PNGs;
+  archived the superseded runtime; promoted the verified replacement into the
+  active v10 path; and confirmed the customer Design Studio renders it.
+Stopped at: GitHub `main` update after final local verification; the connected
+  hosting rollout can now proceed independently.
+Files/areas changed: `attached_assets/generated_images/v10-sources-v3`,
+  `tools/build-smartobject-mockups.mjs`, `tools/validate-smartobject-release.mjs`,
+  `dist-mockups/staging/smart-v10`, archived prior v10 staging assets,
+  `artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles`,
+  visual evidence, and this handoff.
+Remaining work: Confirm the connected hosting deployment serves the new runtime
+  when its normal GitHub rollout completes. Keep the separate Smart v9
+  production contract fail-closed.
+Blocker: No local or GitHub implementation blocker. Live rollout depends on the
+  connected hosting deployment completing normally.
+Next safe action: Run non-mutating live asset/health checks after the hosting
+  provider reports the pushed `main` revision is deployed.
+Verification: v10.3 structural gate passed 188/188; every master reopened at
+  1024×1024, 8-bit RGB with one non-empty embedded Smart Object; 1,128 runtime
+  roles were exported; representative runtime assets returned HTTP 200;
+  storefront tests passed (25 files/85 tests); storefront and root typechecks
+  passed; storefront production build passed; managed workflows restarted
+  cleanly; and the Design Studio preview showed the photoreal T-shirt runtime
+  without browser console errors. Redis remains an optional degraded fallback.
+```
+
+### Current session checkpoint (2026-09-05)
+
+```text
+Status: implementation complete locally — production promotion remains blocked on visual acceptance
+Last completed: Repaired the typed fail-closed source-kit contract, routed Studio,
+  3D, cart, export, and order metadata through the shared surface compositor,
+  preserved reviewed PSD/source-matrix/Water Bottle releases, and added explicit
+  disabled-surface UI blocking plus focused manifest/compositor failure tests.
+Stopped at: Final local verification after restarting the managed application.
+Files/areas changed: design-studio manifest/resolver/compositor integration,
+  DesignStudioV2 surface blocking, MainToolbar export guard, focused contract tests,
+  and this handoff.
+Remaining work: Generate and review real uploaded-artwork diagnostic-grid and
+  transparent-upload evidence across the six product families and required faces,
+  then compare Studio, 3D, cart, and export output before any Smart v9 promotion.
+Blocker: Production promotion remains blocked until real visual evidence is
+  reviewed. This checkout is not registered in the artifact preview registry,
+  and its external development proxy is unavailable, so screenshot/browser
+  verification could not be completed here.
+Next safe action: Obtain an authenticated browser/runtime review or equivalent
+  visual evidence without creating test orders, and record per-surface approval
+  or rejection before promoting Smart v9.
+Verification: Storefront typecheck passed; storefront Vitest passed with 24 files
+  and 82 tests; storefront production build passed; managed workflow restarted
+  cleanly; local Design Studio route returned 200; local API liveness returned
+  200; representative source-matrix asset returned successfully; git diff check
+  passed. Artifact screenshot failed because `trynext-storefront` is absent from
+  the artifact registry.
+```
+
+### Current session checkpoint (2026-09-06)
+
+```text
+Status: verified local release merged with GitHub main; Smart v9 production promotion remains blocked
+Last completed: Reconnected GitHub, confirmed the remote main ancestry, merged the five
+  remote-only commits without force-pushing, and retained the newer local Design Studio
+  surface guards, compositor path, mug-aware product switching, and export state.
+  Completed full workspace typecheck, API/storefront tests, storefront build, design-system
+  typecheck/build, and both 188-surface mockup validators.
+Stopped at: Post-merge verification and normal push of the merge result.
+Files/areas changed: merge reconciliation, design-system native theme support, and
+  release cleanup removing the attached transcript and local node_modules symlink from git.
+Remaining work: Run post-merge tests and non-mutating route/API checks, push the merge
+  result to GitHub, then confirm GitHub Actions and the live Cloudflare Pages/Render
+  surfaces. Do not promote Smart v9 without real visual acceptance.
+Blocker: The design-system artifact files are complete and buildable, but the platform
+  artifact registry still returns ARTIFACT_NOT_FOUND, so it cannot be presented through
+  the artifact preview or screenshot path. Redis remains optional and is using fallback.
+Next safe action: Finish post-merge non-mutating verification and publish the verified
+  application history through the connected GitHub integration.
+Verification: API tests passed (6 files/26 tests); storefront tests passed (24 files/82
+  tests); full workspace typecheck passed; storefront production build passed; design-system
+  build passed with its required PORT and BASE_PATH; mockup validators passed 188/188 and
+  checksum validation; managed application workflow is running cleanly.
+```
+
+### Current visual review checkpoint (2026-09-06)
+
+```text
+Status: local storefront/API visual review complete; Smart v9 production promotion remains blocked
+Last completed: Reviewed the public storefront across desktop and mobile, including
+  homepage, shop, product detail, Design Studio, cart, empty checkout, FAQ, size guide,
+  tracking, contact, about, blog, terms, and privacy. Fixed the product viewer heartbeat
+  browser error by preserving the CSRF marker in the client and allowing known local
+  preview origins in development even when ALLOWED_ORIGINS is set. The public viewer
+  endpoint remains explicitly non-sensitive and works for cached clients with customer
+  cookies.
+Stopped at: Final product/mobile screenshot and non-mutating API/browser verification.
+Files/areas changed: API CORS development-origin handling, public viewer-heartbeat
+  handling, and the current visual-review evidence.
+Remaining work: Review authenticated customer/admin surfaces with a real browser if
+  required, and complete visual/runtime acceptance of all 188 Smart v9 surfaces before
+  any production mockup promotion.
+Blocker: Smart v9 visual approval is still intentionally unavailable; Redis credentials
+  remain rejected locally while the documented fallback is healthy. The legacy
+  Start application workflow was removed because it conflicted with the artifact-owned
+  storefront/API workflows; both managed artifact workflows are running.
+Next safe action: Use the artifact-owned storefront and API workflows for future local
+  verification, then publish only after the owner reviews the remaining gated surfaces.
+Verification: Product viewer PUT returned 200 with and without the client CSRF header
+  when a customer cookie and local preview Origin were present; CORS preflight returned
+  204; protected admin mutation returned 401; all sampled public SPA routes returned
+  200; shop cards loaded real product images; storefront typecheck and API build passed;
+  git diff --check passed; no order, payment, or production data was mutated.
+```
+
+
+## Controlled review checkpoint (2026-09-03)
+
+```text
+Status: blocked — controlled review completed without authenticated browser evidence
+Last completed: Restarted the managed application, checked non-mutating customer/admin
+  route and API behavior, validated the complete 188-surface candidate, and compared
+  staged previews with the public Smart v9 tree.
+Stopped at: Owner visual approval could not be recorded because browser-use is not
+  installed and the artifact preview registry cannot resolve this checkout.
+Files/areas changed: verification/task-1-controlled-review-2026-09-03.md and this
+  handoff only; no runtime or release manifest approval flag changed.
+Remaining work: Review authenticated Checkout, Account/messages, admin Orders/Settings/
+  messages, and representative Design Studio views in a real browser; then record
+  per-surface approval or rejection for all 188 surfaces.
+Blocker: No authenticated customer/admin browser session, no browser-use CLI, and no
+  artifact screenshot target. Smart v9 remains staged and visualApproval=false.
+Next safe action: Obtain a real authenticated browser review without creating an order
+  or payment record. Resolve the two water-bottle staged/public hash discrepancies
+  during that review before any promotion decision.
+Verification: Workflow restarted cleanly; SPA route GETs returned 200; invalid order
+  and message probes were rejected without mutation; admin session returned 401;
+  canonical validator reported 188/188; staged previews matched their manifest
+  checksums 188/188; public Smart v9 matched staged previews 186/188; git diff
+  remains limited to the review record and handoff.
+```
+
+## Latest local commerce and mockup reliability checkpoint (2026-09-03)
+
+```text
+Status: complete for the verified local commerce/dependency scope; Smart v9 production promotion remains fail-closed
+Last completed: Aligned web/mobile/API payment contracts, made payment evidence contact-authorized and retry-safe, added server-side bank evidence validation, normalized payment methods and direct tracking responses, normalized persisted legacy site-name values at the public settings boundary, upgraded the vulnerable Orval/Tiptap dependency chains, and reconciled the obsolete 202-surface validator to the active 188-surface Smart v9 gate.
+Stopped at: After rebuilding and restarting the API workflow, running the full test/typecheck/build suite, completing non-mutating proxied smoke checks, rendering and visually inspecting all 12 audit-PDF pages, and verifying the compatibility validator.
+Files/areas changed: API order/payment/settings/message routes, API email and seeded copy, mobile checkout/API wrapper/app branding, storefront checkout/settings/studio copy, generated API clients, dependency manifests/lockfile, mockup validator/docs, audit PDF tooling, and this handoff.
+Remaining work: None for the verified local commerce/dependency scope. Authenticated browser review and controlled visual/runtime acceptance of all 188 Smart v9 surfaces are still required before any production mockup promotion.
+Blocker: The artifact preview registry cannot resolve this checkout for screenshot capture; the previous handoff also records that browser-use is unavailable. Local Redis credentials remain rejected, while the documented fallback is operating.
+Next safe action: Review the authenticated Checkout, Account messages, and Design Studio routes in a real browser. Keep Smart v9 staged until visual/runtime evidence is accepted; do not create test orders during review.
+Verification: `pnpm audit --audit-level=moderate` reports 0 advisories; API tests 6 files/26 tests and storefront tests 22 files/76 tests passed; API/storefront/mobile/full-workspace typechecks passed; storefront production build and mobile Expo web export passed; 188/188 active Smart v9 validation passed; the legacy validator delegates successfully; API rebuilt and the managed workflow restarted cleanly; proxied liveness/readiness/products/categories/settings/blog/sitemap/robots returned expected 200 responses; `/api/settings` now returns `Trynext Lifestyle` despite the legacy persisted value; invalid order/payment-info/message probes rejected without creating records; all 12 audit-PDF pages rendered and were visually inspected; no order or payment data was mutated; `git diff --check` passed. Screenshot attempt failed with "Artifact not found: trynext-storefront".
+```
+
+### Redis and readiness note
+
+Redis is an optional, disposable cache. PostgreSQL remains the source of truth for
+products, orders, settings, and other persistent data. The configured Upstash Redis
+provider currently rejects its credentials, so the API uses its documented
+process-local in-memory cache fallback with TTLs; a process restart clears that
+cache but does not remove database data. `/api/healthz` may therefore report
+`degraded` with `redis: "error"`, while `/api/health/readiness` can still report
+`status: "ok"` because readiness checks the database required to serve requests.
+
+## Current continuation checkpoint (2026-09-01)
+
+```text
+Status: in progress — local runtime resolver repaired and ready for visual review
+Last completed: Activated the tracked 188-surface smart-v9 candidate for exact
+  runtime matches, preserved the reviewed PSD-derived T-shirt front/back bases,
+  and kept ambiguous Hoodie/Long Sleeve catalog shades on their reviewed
+  color-specific source-matrix assets instead of mapping them to the wrong hue.
+Stopped at: After a clean workflow restart and direct proxied asset checks.
+Files/areas changed: Design Studio mockup resolver and the two related source
+  matrix test files.
+Remaining work: Perform a real browser visual review of the Customize/Design
+  Studio flow and, if required, regenerate a product-color-aligned v9 candidate
+  for the currently unmatched Hoodie/Long Sleeve shades before production
+  promotion.
+Blocker: The artifact preview registry cannot resolve this checkout for a
+  screenshot; direct proxy checks are available and passing.
+Next safe action: Review the Customize route with the 188 staged assets, then
+  approve or regenerate only the unmatched product-color surfaces.
+Verification: Storefront tests 22 files/76 tests passed; storefront typecheck,
+  full workspace typecheck, production build, workflow restart, git diff check,
+  and representative v9/source-matrix/PSD asset requests passed. Screenshot
+  capture was unavailable because the artifact was not found in the registry.
+```
+
+## Current handoff (2026-09-02)
+
+Status: ready for review — the shared admin shell, Products workspace, and
+Settings workspace have been redesigned in place; Smart Object production
+promotion remains fail-closed.
+Last completed: Applied the approved operator-console redesign while preserving
+the existing admin shell routes and settings/product fields. Added responsive
+navigation and accessibility affordances, catalogue KPIs and filters, clearer
+product create/edit/delete feedback, gallery and cloud-image handling,
+structured variants, color availability, CSV import, AI descriptions, duplicate
+slug protection, grouped settings navigation, dirty/saving/saved states, and a
+sticky settings save action. Reconciled the product API so color availability
+round-trips, sale prices can be cleared, and duplicate slugs return a useful
+conflict response.
+Stopped at: After a clean API/storefront typecheck and production build,
+focused API tests, managed workflow restart, public proxied smoke checks, and
+preservation checks confirming no existing admin route or registered form field
+was removed. A fresh browser screenshot could not be captured because this
+checkout is absent from the artifact registry and the browser-use CLI is
+unavailable.
+Files/areas changed: `artifacts/trynex-storefront/src/components/layout/AdminLayout.tsx`,
+`artifacts/trynex-storefront/src/pages/admin/AdminProducts.tsx`,
+`artifacts/trynex-storefront/src/pages/admin/AdminSettings.tsx`,
+`artifacts/trynex-storefront/src/index.css`, and
+`artifacts/api-server/src/routes/products.ts`.
+Remaining work: Extend the same approved interaction language to the remaining
+admin screens if the owner wants the full panel rewritten; perform controlled
+browser/runtime visual comparison and explicit visual acceptance for all 188
+Smart Object surfaces before promoting any runtime derivatives or manifest
+data. Authenticated admin-health success is not claimed without a safe existing
+session or in-process credential path.
+Blocker: Artifact screenshot registry and browser-use are unavailable in this
+checkout. Upstash Redis is degraded because the environment rejects its
+credentials, while the documented fallback is healthy. Replit's dependency
+scanner fails with `OSV_SCAN_FAILED` because its `osv` executable is absent;
+the local `pnpm audit` is clean and the lockfile contains no upstream
+`image-size` package.
+Next safe action: Review the redesigned Products and Settings screens with a
+real authenticated browser session, then continue the remaining admin-screen
+redesign only as an explicitly approved follow-up. Keep
+`masterStatus: manifest-only` / `structurally-verified` until Smart Object
+visual/runtime evidence is complete.
+Verification: Smart Object release gate 188/188 passed; PSD reopen audit
+188/188 passed at 1024x1024 8-bit with one non-empty embedded Smart Object and
+composite per file; canonical matrix 188/188 passed; contact sheets reviewed;
+focused API tests 6 files/26 tests passed; storefront and API typechecks passed;
+storefront production build passed; workflow restart, healthz, products,
+categories, settings, and unauthenticated admin 401 checks passed; git diff
+check passed. The redesigned admin screens retain all previously registered
+product/settings fields and all current admin menu routes. The artifact
+registry could not capture a fresh screenshot.
+
+## Latest admin continuation checkpoint (2026-09-02)
+
+```text
+Status: ready for review — focused admin operations hardening is complete
+Last completed: Extended the existing admin interaction language to Categories,
+  Reviews, Promo Codes, and Newsletter without changing their API contracts.
+  Added searchable category filtering and catalogue KPIs, review queue KPIs and
+  rating summary, promo-code validation/error recovery and operational KPIs, and
+  newsletter refresh/error states plus formula-injection-safe CSV export.
+Stopped at: After a clean full typecheck, storefront production build, API test
+  run, Smart Object matrix validation, managed workflow restart, and proxied
+  public/protected smoke checks.
+Files/areas changed: `artifacts/trynex-storefront/src/pages/admin/AdminCategories.tsx`,
+  `AdminReviews.tsx`, `AdminPromoCodes.tsx`, and `AdminNewsletter.tsx`.
+Remaining work: Review these screens with a real authenticated browser session;
+  continue the same treatment on lower-priority operational screens only if the
+  owner wants the full panel standardized. Smart Object production promotion is
+  still blocked on controlled visual/runtime acceptance of all 188 surfaces.
+Blocker: The artifact registry cannot resolve this checkout for screenshots, so
+  visual acceptance is unavailable here. Replit deployment is not yet published
+  and requires the owner to use the Publish action.
+Next safe action: Push the verified source to GitHub main, then publish this
+  project from Replit after reviewing the authenticated admin and staged mockups.
+Verification: Full workspace typecheck passed; storefront typecheck and
+  production build passed; API tests 6 files/26 tests passed; Smart Object
+  canonical matrix and 188/188 candidate validation passed; workflow restarted
+  cleanly; healthz/products/categories/settings returned 200; unauthenticated
+  admin checks returned 401; git diff --check passed. The proxied
+  `/api/admin/orders` probe was not used as evidence because that path is not
+  registered; no source change was made for it.
+```
+
+## Latest admin operations checkpoint (2026-09-02)
+
+```text
+Status: ready for review — focused admin operations hardening is complete
+Last completed: Reconciled the unfinished order mutation loading state and
+  date-aware cache updates, then standardized retryable load errors, visible
+  pending states, accessible labels, and explicit destructive confirmations
+  across orders, activity logs, backup/schema repair, deployment/system actions,
+  Facebook import/guide, hampers, mockups, referrals, roles, SEO, and security.
+  Existing routes, API contracts, permissions, registered fields, and Smart
+  Object fail-closed behavior were preserved.
+Stopped at: After the final storefront typecheck, workflow restart, and runtime
+  smoke verification; production promotion and publishing were not attempted.
+Files/areas changed: `artifacts/trynex-storefront/src/pages/admin/` files
+  `AdminActivityLog.tsx`, `AdminBackup.tsx`, `AdminDeployment.tsx`,
+  `AdminFacebookGuide.tsx`, `AdminFacebookImport.tsx`, `AdminHampers.tsx`,
+  `AdminMockups.tsx`, `AdminOrders.tsx`, `AdminReferrals.tsx`, `AdminRoles.tsx`,
+  `AdminSEO.tsx`, and `AdminSecurity.tsx`.
+Remaining work: Review the changed admin screens with a real authenticated
+  browser session. Lower-priority screens such as AI Developer, Designer, Page
+  Builder, Database Cluster, Tech Stack, Secrets, Customers, and Login still
+  need a dedicated visual pass if the owner wants every admin route to share
+  the same interaction language. Smart Object production promotion still
+  requires controlled visual/runtime acceptance of all 188 surfaces.
+Blocker: This checkout is absent from the artifact preview registry and the
+  browser-use CLI is unavailable, so authenticated visual acceptance cannot be
+  claimed. Local Redis credentials remain rejected; the documented fallback is
+  operating. The dependency scanner still lacks its `osv` executable.
+Next safe action: Review the authenticated admin routes and staged Smart Object
+  surfaces, then either approve this batch for delivery or scope the remaining
+  lower-priority admin screens as a separate pass. Keep staged mockups
+  `manifest-only` / `structurally-verified` until visual/runtime evidence is
+  complete.
+Verification: Full workspace typecheck passed; storefront production build
+  passed; API tests (6 files/26 tests) passed; storefront tests (22 files/76
+  tests) passed; Smart Object matrix and 188/188 candidate validators passed;
+  the managed workflow restarted cleanly; proxied health, products, and
+  settings checks returned 200; `git diff --check` passed. The untracked
+  credential-bearing attached note remains excluded from release changes.
+```
+
+## Latest local studio reliability pass (2026-09-01)
+
+```text
+Status: complete — external rollout is live; GitHub checks are still processing
+Last completed: Hardened V2 draft recovery, deterministic in-browser image
+  auto-fix, export/cart failure handling, original-asset preservation, active
+  face geometry for generated layers, and product-zone-aware switching. Added
+  undo/redo coverage for direct layer edits and product-aware history frames.
+Stopped at: After pushing the verified source to GitHub main and confirming both
+  public Pages and Render hosts return healthy application/API responses.
+Files/areas changed: Design Studio V2 state/history and panels, product switcher,
+  generated sticker/QR placement, and React type compatibility in sibling
+  preview/design-system artifacts.
+Remaining work: The six-family Smart Mockup implementation is now the active
+  workstream. The revised spec requires representative proof masters,
+  quarantined full-matrix generation, staged runtime comparison, and controlled
+  production promotion.
+Blocker: None for the approved studio reliability scope. Replit publishing is
+  intentionally out of scope; local Redis credentials are degraded but the
+  documented fallback is operating.
+Next safe action: After the revised spec gate, implement and validate one
+  representative real Smart Object master per family in staging before
+  generating the complete 188-surface release.
+Verification: Storefront typecheck and 76 tests passed; API typecheck passed;
+  full workspace typecheck passed; storefront production build passed; the
+  managed workflow restarted cleanly; local healthz/products/settings/robots/
+  sitemap and invalid-order checks returned expected responses. The artifact
+  registry and browser-use CLI were unavailable for a screenshot capture.
+```
+
+## Required status at every handoff
+
+Every Agent must keep the following status fields current before ending a chat,
+pausing work, or transferring the project.
+
+### Active workstream — 4-Render main promotion
+
+```text
+Status: complete for the external production rollout
+Last completed: Published the verified release to GitHub main through a clean
+  history that excludes credential-bearing attachments. The active Render service
+  auto-deployed commit ca1c202 and reached live status. Cloudflare Pages now
+  routes the gateway to the primary Render service, whose health reports DB
+  healthy, Redis healthy:primary, R2 storage, primary runtime, and scheduler on.
+Stopped at: No runtime blocker remains for the approved CF Pages + Render +
+  Upstash scope. Cloudflare's management API token returns Invalid API Token,
+  but the Pages GitHub deployment and live gateway are functioning.
+Files/areas changed: customer-facing URL references, API CORS defaults, Telegram
+  summary URL, mobile production routing safeguards, operational audit scripts,
+  docs/SOURCE_OF_TRUTH.md, API Redis/product caching and gateway budget handling,
+  storefront homepage payload/image normalization, and this handoff. The attached
+  credential-bearing text file and current evidence screenshots are excluded from
+  the release history.
+Remaining work: None for the external production rollout. The mockup master-layer
+  decision remains paused as documented below.
+Blocker: None for live storefront/API traffic. Do not copy credentials from
+  attachments or re-add a retired domain.
+Next safe action: Monitor the active Render service and Pages gateway. Replace
+  only CLOUDFLARE_API_TOKEN through the secure Secrets UI before future Cloudflare
+  API management, if needed.
+Verification: See the latest external production verification below. Local app
+  and API checks, typechecks, tests, workflow restart, and git diff --check passed.
+  readiness, public stats, sitemap, and robots routes returned 200. Live headers
+still show the older standby gateway because the latest local release has not
+reached GitHub. Fresh local API checks and application build passed. A fresh
+browser screenshot could not be captured because this checkout is absent from the
+artifact preview registry and the browser-use CLI is unavailable.
+```
+
+### Active workstream — mockup master layer system
+
+```text
+Status: in progress — approved genuine Smart Object rebuild
+Last completed: Direct binary audit of all 108 PSD/PSB masters in attached_assets/trynext-mockup-source-kit/psd using psd-tools 1.18.0. Findings written to MOCKUP_MASTER_AUDIT_2026-08-28.md and committed (8ee94e1). Re-runnable auditor added at tools/audit_psd_masters.py.
+Stopped at: After the approved design was written. No new master or runtime asset has been released yet.
+Files/areas changed: The audit and auditor remain the baseline; the approved specification is at `docs/superpowers/specs/2026-09-01-six-family-psd-smart-mockup-design.md`, and `AGENTS.md` now records the system inputs, outputs, and fail-closed rules.
+Remaining work: Build and validate the 188 canonical surfaces, including genuine embedded Smart Objects, reviewed missing faces, runtime manifest integration, and browser/PSD composite comparisons.
+Blocker: None for starting the implementation. The writer must prove a real Smart Object round trip; if a free writer cannot produce a document that `psd-tools` reopens as a Smart Object, stop and repair the writer path rather than shipping another raster kit.
+Next safe action: Build one representative surface for each family, run the structural auditor, and review composites before expanding to all 188 surfaces.
+Verification: 108/108 masters opened cleanly; all 1024x1024 8-bit RGB 4-channel; 6 layers each; 0 smart objects in all 108; artwork layer measured 0/1048576 non-zero alpha pixels; colour variants measured at luminance correlation ~0.0 against the white master; coverage arithmetic 188 needed vs 94 canonical present. Composite renders committed for visual confirmation.
+```
+
+## Mockup rebuild decision (approved — staged implementation)
+
+The previous chat attempted to build a PSD/PSB smart-object system. The audit
+proved no such system exists in the assets. The owner has now approved:
+
+  Rebuild genuine Smart Object masters from the existing source photos,
+  cutouts, masks, and geometry assets, while using the same manifest to drive
+  the local realtime browser compositor. Build representatives first, quarantine
+  the full matrix, and promote to production only after all written gates pass.
+
+The approved approach retains these constraints:
+  - 94 of 188 canonical surfaces have no master at all (see audit §3).
+  - Water bottle is hash-pinned and single-colour; the kit's 14 extra bottle
+     colours are non-canonical and must not ship.
+  - smart-v9 gate requires 188 surfaces, each visually accepted with real
+     provenance. Copying smart-v4 into smart-v9 cannot pass it.
+  - No fallback is permitted: partial shipping blocks release, by contract.
+
+## Latest audit checkpoint
+
+- Confirmed strengths: settings-driven commerce, multi-surface product catalog,
+  high-fidelity photo mockups, 2D/3D Design Studio, draft autosave, product
+  switching with print-zone refit, API caching/rate limits/CSRF protection,
+  dynamic sitemap, and mobile loading/error states.
+- Highest-priority findings: icon-only navigation controls need accessible names;
+  mobile sticky actions need a shared stacking context; image dimensions need
+  reserved layout space; 25% advance payment needs to be visible beside buying
+  actions; the Design Studio needs a clearer guided workflow and quality gate;
+  mobile checkout keyboard handling needs verification; production security
+  must never expose development reset/bypass behavior.
+- Visual direction recommended for approval: a premium "Dhaka Color Spectrum"
+  system—warm white and ink foundations with controlled orange, indigo, teal,
+  Bangladesh green, and violet accents—using multicolor for product/category
+  meaning and moments of delight, not as uncontrolled decoration.
+- Audit evidence: `audit/live-trynextshop-home.png`,
+  `audit/live-trynextshop-products.png`, and
+  `audit/live-trynextshop-design-studio.png`.
+
+## Latest local follow-up pass (2026-09-01)
+
+```text
+Status: complete — external production rollout verified
+Last completed: Added the Design Studio first-use guide and print-quality gate,
+published the verified source release to GitHub main using a clean history, and
+confirmed the active Render service deployed commit ca1c202. Cloudflare Pages
+now routes to the Render primary. Production health reports DB healthy, Redis
+healthy:primary, R2 storage, primary runtime, and scheduler enabled.
+Stopped at: No runtime blocker remains for the approved CF Pages + Render +
+Upstash scope. Cloudflare's management API token returns Invalid API Token, but
+the GitHub-connected Pages deployment and live gateway are functioning.
+Files/areas changed: Design Studio quality workflow and guidance, homepage image
+layout, mobile checkout spacing, API/gateway reliability, deployment routing,
+and operational handoff. Credential-bearing attachments, screenshots, PDFs, and
+cache output were excluded from the release.
+Remaining work: None for external production. The mockup master-layer decision
+remains paused as documented below. Rotate CLOUDFLARE_API_TOKEN only if future
+automated Cloudflare API administration is needed.
+Blocker: None for live storefront/API traffic. Replit publishing is intentionally
+out of scope. Do not copy credentials from attachments or re-add a retired
+domain.
+Next safe action: Monitor the active Render service and Pages gateway. Replace
+only CLOUDFLARE_API_TOKEN through the secure Secrets UI before future Cloudflare
+API management, if needed.
+Verification: GitHub main is ca1c202; Render deploy
+dep-dab1mv68bjmc7380ovk0 is live on that commit. Both Pages and Render returned
+200 for healthz, liveness, readiness, products, settings, robots.txt, and
+sitemap.xml. Invalid POST /api/orders returned the expected 400 validation
+response without creating an order. Pages health reported runtimeRole=primary,
+redis_detail=healthy:primary, and schedulerEnabled=true. Storefront tests (21
+files, 71 tests), API tests (5 files, 20 tests), typechecks, workflow restart,
+browser logs, and git diff --check passed. The artifact registry could not
+capture a screenshot of the external Pages deployment.
+```
+
+## Latest external production verification (2026-09-01)
+
+The external production rollout is complete for the approved Cloudflare Pages +
+Render + Upstash scope. GitHub `main` is `ca1c202`; Render deploy
+`dep-dab1mv68bjmc7380ovk0` is live on that commit; and the active service is
+`trynext-lifestyle-main-render`. Cloudflare Pages now routes the gateway to the
+Render primary, whose health reports `runtimeRole=primary`,
+`redis_detail=healthy:primary`, and `schedulerEnabled=true`.
+
+Both `https://trynext.pages.dev` and
+`https://trynex-lifestyle-main-render.onrender.com` returned 200 for healthz,
+liveness, readiness, products, settings, robots.txt, and sitemap.xml. Invalid
+`POST /api/orders` returned the expected 400 validation response without creating
+an order. The legacy Render service is suspended and is not routed.
+
+The current Cloudflare management token returns `Invalid API Token`; this does
+not affect the already-working GitHub-connected Pages deployment. Replit
+publishing is intentionally out of scope for this project. The mockup
+master-layer decision remains paused as documented below.
+
+## Latest live health check (2026-08-29)
+
+See `.agents/memory/live-health-check-2026-08-29.md` for evidence. Summary:
+- `https://trynext.pages.dev/` is ONLINE and current with `main`
+  (a95903b). Homepage, products, Design Studio, robots.txt, 404/SPA routing OK.
+- API reads healthy via standby origin: health OK, DB `db:true` (~60ms),
+  `/api/products` returns 70 products, `/api/public-stats` 78 orders.
+- **Primary API origin is SUSPENDED** (`trynex-api.onrender.com` → Render
+  "Service Suspended"). Because the gateway never failovers mutations, checkout
+  and all writes are currently broken; admin/system health also hits the
+  suspended primary. Owner must restore/replace the primary Render service or
+  repoint CF Pages `API_ORIGINS`.
+- **`/sitemap.xml` is not in `SAFE_PUBLIC_PREFIXES`**, so it cannot fail over —
+  Google currently receives a suspended page for the sitemap (SEO regression).
+- **`trynext.pages.dev` DNS is parked at Namecheap** (NS =
+  `ns1/ns2.lander.d.parity.domains`; A = parking IPs; site shows a Namecheap
+  parking page). Custom domain no longer points to Cloudflare Pages.
+- `trynext-shop-pages.dev` does not resolve — the real hostname is
+  `trynext.pages.dev`.
+- CRITICAL_FINDINGS.md claims the proxy has no hardcoded Render fallback, but
+  `functions/api/[[path]].ts` still sets `DEFAULT_ORIGIN = trynex-api.onrender.com`
+  (and `_middleware.ts` line 272) — that stale claim caused this diagnosis to be
+  missed.
+
+## 4-Render main migration (2026-08-29 — gateway LIVE, promotion blocked on owner access)
+
+Owner decision: the 4th Render service becomes the ACTUAL MAIN (sole write
+authority); reads split round-robin across `trynext-api-standby-2` /
+`trynext-api-standby-3`; Render 1 (`trynext-api`) is retired (still suspended).
+Implemented and **merged** — PR #55 landed as `2985b5d`, all GitHub checks green
+(CI build+typecheck+lint+audit, active-app verification, Cloudflare Pages build).
+
+- `functions/gateway-config.ts` + rewritten `functions/api/[[path]].ts` (root AND
+  artifacts copy, kept byte-identical): role-based multi-route gateway — writes/admin/AI
+  → primary only; safe public reads → round-robin + failover + down-skip;
+  `/sitemap.xml` is now a safe read (SEO fix); **no hardcoded Render origin
+  anywhere**; fails closed with a truthful 503.
+- `_middleware.ts`: stale `trynex-api.onrender.com` fallback removed.
+- Gateway tests: 10/10 green — re-verified on 2026-08-29 in this sandbox by running
+  `vitest run` against the copied `functions/api/gateway.test.ts` (deps installed with
+  npm in a scratch dir, since the monorepo store is not provisioned here).
+- `tools/render-orchestrate.sh`: Render API inventory/promote/deploy/verify.
+- `.github/workflows/render-orchestrate.yml`: **could never be committed** — GitHub
+  refuses workflow writes from the agent's App, so PR #55 shipped the script without
+  its runner. The workflow body is now versioned at
+  `tools/ci/render-orchestrate.workflow.yml` for the owner to paste into
+  `.github/workflows/render-orchestrate.yml`.
+- Docs: `docs/FOUR_RENDER_MULTI_ROUTE_CONTRACT_2026-08-29.md` now carries the full
+  promotion runbook (Path A CI / Path B Render dashboard / Path C interim restore),
+  the post-wiring verification checklist, and the rollback note.
+- Known pre-existing noise: "Workers Builds: trynex-liestyle" fails on every PR
+  (also #45/#54) — stale/typo'd CF Workers project, NOT the Pages deploy; ignore
+  or clean up in CF dashboard.
+
+### Live consequence of the unfinished promotion
+
+Because `PRODUCTION_ORIGINS.primary` is empty and no `API_PRIMARY_ORIGIN` is set in
+Cloudflare Pages, **every mutation is refused by design**: checkout/order placement,
+admin login and settings, Spin & Win settlement, AI generation, and
+`GET /api/admin/system/health` all answer `503 {"detail":"No primary API origin
+configured"}`. Reads (`/api/products`, `/api/public-stats`, `/sitemap.xml`) work. This
+is not a new outage — writes were already dead while `trynext-api` is suspended — but
+the gateway now says so truthfully instead of leaking a dead host, and the fix is the
+promotion, not a fallback.
+
+Second consequence: both read origins are free-tier Render services, so a cold
+visitor can still get a 503 while Render serves its "Application loading" spin-up
+page (observed 2026-08-29 on `trynext-api-standby-2`). The gateway's 15 s down-skip
+bounds it; a dedicated cold-start retry policy is an open idea, deliberately NOT
+implemented without approval.
+
+### Blocker (owner step, exactly one path required)
+
+- **Path A** — add repo secret `RENDER_API_KEY`, then create
+  `.github/workflows/render-orchestrate.yml` from
+  `tools/ci/render-orchestrate.workflow.yml`. The agent then runs `apply=false`
+  (inventory), confirms a 4th Trynext service actually exists and which workspace it is
+  in, runs `apply=true` with an explicit `target`, and commits the returned primary URL.
+- **Path B** — no CI and no key: the owner creates/copies the 4th Render service in the
+  dashboard, sets `TRYNEXT_RUNTIME_ROLE=primary`, `SCHEDULER_ENABLED=true`,
+  `BACKUP_SYNC_ENABLED=false`, deploys `main`, and gives the agent the public URL to
+  commit. Exactly one service may hold the primary role at a time.
+- **Path C** — interim: restore `trynext-api` and set
+  `API_PRIMARY_ORIGIN=https://trynex-api.onrender.com` in Cloudflare Pages to bring
+  writes back while A or B completes; clear it immediately after the promotion.
+
+Unverified premise that all three paths inherit: no session has ever completed a Render
+API inventory, and the 2026-08-20 keys returned HTTP 400, so the existence and naming of
+a 4th Trynext service is still an assumption until the inventory (Path A step 3) or the
+owner (Path B) confirms it. A 4th service inside the **same** workspace also adds no new
+5 GB bandwidth allowance — see `docs/RESOURCE_QUOTA_AUDIT_2026-08-20.md`.
+
+## Completed handoff setup
+
+The project now contains a mandatory Agent operating protocol in `AGENTS.md`,
+with a pointer from `replit.md`. It requires first-reading the project context,
+preserving existing work, planning before edits, updating related before/after
+paths together, safely coordinating parallel work, verifying results, and
+updating this handoff before completion.
+
+The strong startup command is now prominently included in `AGENTS.md`,
+`AGENT_HANDOFF.md`, and `replit.md`. Replit Agent automatically reads
+`replit.md`, so the command is available in the original project and in
+copies/Remixes that include the project README.
+
+This protocol is file-based and will be included when the project is copied or
+Remixed. A Remix still starts a new private Agent conversation; the original
+chat itself is not transferred. The durable context that has been written into
+these project files is what the next Agent can read.
+
+## Approved plans and decisions
+
+The project owner has approved this handoff protocol:
+
+- Future Agents must read the project context first.
+- The exact default instruction must be treated as the first operating request
+  in every new or Remixed Agent chat.
+- Every new chat must clearly report where work was left off and what remains
+  before proposing or starting implementation.
+- User instructions and newer explicit decisions remain authoritative.
+- Existing work must be preserved and related before/after paths updated together.
+- Plans must be submitted before implementation.
+- Independent parallel work is allowed only with clear boundaries and a final
+  reconciliation.
+- A completion or pause/blocked handoff summary and updated handoff are required
+  before closing.
+
+## Best startup command for the next Agent
+
+> **START HERE — do not edit anything yet.** Read `AGENTS.md`,
+> `AGENT_HANDOFF.md`, and `replit.md` first. Then inspect the current project
+> state and respond with these headings: **Completed**, **Last stopping point**,
+> **Remaining work**, **Blockers**, **Plan**, **Existing behavior to preserve**,
+> **Verification**, and **Safe parallel work**. Submit the plan before editing.
+> Preserve all working features, update related before/after paths together,
+> keep the handoff current while working, reconcile and verify parallel work,
+> and finish with the exact **Status**, **Last completed**, **Stopped at**,
+> **Files/areas changed**, **Remaining work**, **Blocker**, **Next safe action**,
+> and **Verification** in `AGENT_HANDOFF.md`. If work stops early, provide the
+> same handoff instead of leaving the next Agent to infer anything from chat.
+
+## Runtime-role regeneration checkpoint (2026-09-06)
+
+```text
+Status: ready for review — local structural release verified
+Last completed: Finished the pending Smart v10.3 runtime-role generation from the
+  regenerated 188 PSD/source surfaces, promoted only the six reviewed PNG roles
+  plus manifest into the public runtime tree, and repaired the release validator
+  to accept the generator's intentional candidate staging status while keeping
+  the release output structurally-verified.
+Stopped at: After restarting both managed services and completing the local
+  non-mutating verification pass.
+Files/areas changed: tools/build-smartobject-mockups.mjs,
+  tools/build-smartobject-runtime-roles.mjs,
+  tools/validate-smartobject-release.mjs, the v10-v3 staging/runtime-role
+  outputs, and the active public v10 runtime-role PNG/manifest tree.
+Remaining work: Publish/commit this verified local continuation through the
+  normal owner-controlled GitHub/hosting rollout if desired; do not mark visual
+  approval from this checkpoint alone.
+Blocker: None for local structural verification. Production/public rollout is a
+  separate provider step and was not performed in this continuation.
+Next safe action: Review or publish the verified runtime-role continuation, then
+  repeat the non-mutating public canonical/retired-path checks after deployment.
+Verification: Smart matrix 188/188; Smart Object release gate
+  structurally-verified 188/188; public runtime matrix 188 surfaces and 1,128
+  roles; protected roles non-empty; storefront typecheck passed; storefront
+  tests passed (19 files/64 tests); storefront production build passed; API
+  typecheck passed; proxied root, Design Studio, health, readiness, products,
+  mockups, and settings routes returned 200; both managed workflows are
+  running; desktop preview rendered without browser-console errors. No order,
+  payment, or production data was changed.
+```
+
+## Full-canvas Smart Object compositor checkpoint (2026-09-07)
+
+```text
+Status: complete — shared runtime compositor implemented and locally verified
+Last completed: Rewired the live Design Studio 3D viewer, mug wrap preview, and
+  WebGL-less fallback to consume a full-canvas PSD-derived composite instead of
+  an artwork-only texture. The shared order is studio background → base →
+  artwork in the Smart Object print zone → shadow multiply → highlight screen →
+  protected source-over. Protected runtime roles therefore remain above artwork,
+  including hoodie drawstrings, hood seams, collars, cuffs, pockets, handles,
+  and bottle hardware. The API renderer now uses the same order with protected
+  as its final foreground pass.
+Stopped at: After restarting the storefront workflow, capturing the Design
+  Studio preview, and completing the final API/storefront validation pass.
+Files/areas changed: artifacts/trynex-storefront/src/pages/design-studio/composer.ts,
+  ProductViewer3D.tsx, garment3d.tsx, composer.contract.test.ts,
+  artifacts/api-server/src/routes/mockupRender.ts, and the approved design
+  specification at docs/superpowers/specs/2026-09-07-smart-object-runtime-
+  compositor-design.md.
+Remaining work: A browser-interaction upload proof with a non-empty design
+  still needs to be performed if visual release approval requires testing a
+  real uploaded image over the hoodie ropes. The screenshot tool could load the
+  studio and confirm 6/6 roles, but the browser-use interaction binary was not
+  available in this workspace to dismiss the onboarding guide or upload an
+  artwork fixture. Provider deployment/GitHub promotion remains separate.
+Blocker: None for implementation or local structural verification. Redis emits
+  its existing optional-cache credential degradation while DB-backed API
+  readiness remains healthy.
+Next safe action: Perform the authenticated visual upload proof on the Design
+  Studio, then review the same output in cart/export before any public rollout.
+Verification: Storefront typecheck passed; storefront tests passed (19 files,
+  65 tests); storefront production build passed; API typecheck passed; API tests
+  passed (10 files, 36 tests); API build passed; both managed workflows are
+  running; root and Design Studio previews rendered with no browser-console
+  errors; Design Studio status card reported 6/6 runtime roles ready; and no
+  order, payment, production data, or deployment state changed.
+```
+
+## Print-area selection controls checkpoint (2026-09-07)
+
+```text
+Status: complete — non-destructive print-area editing controls implemented
+Last completed: Replaced the selected-image raw bitmap rectangle with a fixed
+  active-face print-area frame. The frame dims the outside area, shows eight
+  edge/corner scale handles and a rotation control, and keeps the source image
+  draggable underneath the non-destructive print mask. Image layers use the
+  print-area controls while text and shape layers retain their existing
+  transformer behavior.
+Stopped at: After restarting the storefront workflow and completing typecheck
+  plus the storefront regression suite.
+Files/areas changed: artifacts/trynex-storefront/src/pages/studio/CanvasArea.tsx,
+  studio-regressions.test.ts, and the interaction specification at
+  docs/superpowers/specs/2026-09-07-print-area-selection-design.md.
+Remaining work: Perform a manual upload-and-select visual check on mobile and
+  desktop, including hoodie, T-shirt, long sleeve, cap, mug, and bottle faces.
+  The browser-use CLI is not installed in this workspace, so that interaction
+  could not be automated in this continuation. The underlying product print
+  zones and Smart Object compositor remain the source of truth.
+Blocker: None for implementation. Only the authenticated browser interaction
+  proof remains.
+Next safe action: Upload a real artwork fixture in the Design Studio, confirm
+  the fixed frame follows the active print zone, drag each handle, rotate, and
+  verify live preview/export clipping before public rollout.
+Verification: Storefront typecheck passed; storefront tests passed (19 files,
+  66 tests); the storefront workflow restarted successfully; Design Studio
+  route loaded at mobile size without browser-console errors; and no order,
+  payment, production data, or deployment state changed.
+```
+
+## Production catalog repair checkpoint (2026-09-18)
+
+```text
+Status: in progress — source repair published; Render 4 has not deployed it
+Last completed: Added an idempotent product-catalog schema repair migration,
+  made API readiness exercise the catalog query, removed the suspended standby
+  from committed public-read routing, rebuilt and restarted the local API, and
+  published commit f3430077f to GitHub main. The repaired source is based
+  directly on the verified GitHub main tree; no force-push was used.
+Stopped at: Waiting for the existing Render 4 service
+  (trynex-lifestyle-main-render) to deploy the published main commit. Its
+  public process is still the older release: readiness has no `catalog` field
+  and `/api/products` still returns HTTP 500.
+Files/areas changed: lib/db/migrations/006_ensure_product_catalog_columns.sql,
+  artifacts/api-server/src/routes/health.ts, functions/gateway-config.ts.
+  The migration adds the current product JSON/timestamp columns idempotently
+  and the readiness check now reports catalog separately from DB connectivity.
+Remaining work: Trigger/complete a Render 4 deploy, confirm migration 006 runs
+  against its managed database, verify /api/products and /api/products/featured
+  through both Render 4 and trynext.shop, then perform authenticated read-only
+  checks for admin login, dashboard, catalog editing, order views, and Design
+  Studio. Verify Render 2 and 3 before adding either back to read failover.
+Blocker: Render 1 is suspended for quota exhaustion; Render 2 and Render 3
+  return 404; Render 4 is serving the old release and did not auto-deploy the
+  GitHub push. Provider-side manual deployment/API access is still required.
+  A Render credential was pasted into chat and must not be reused; it should be
+  rotated through the provider after access is restored.
+Next safe action: Manually deploy commit f3430077f to Render 4, wait for its
+  health check, and run the live catalog smoke checks before changing any
+  standby routing or touching production data.
+Verification: API typecheck, shared-library typecheck, API bundle build, local
+  workflow restart, local readiness, local /api/products, and local featured
+  products all passed. Local readiness reports db=true and catalog=true.
+  GitHub CI and Active app verification passed for f3430077f. Public checks:
+  trynex-api is suspended (503), standby-2 and standby-3 return 404, Render 4
+  readiness/categories return 200, and Render 4 plus trynext.shop
+  /api/products return HTTP 500 until the new release is deployed.
+```
+
+## Critical-flow smoke reliability checkpoint (2026-09-18)
+
+```text
+Status: complete — local application verification is green
+Last completed: Added bounded transient retries to the non-mutating critical
+  flow smoke checker so startup/failover windows do not create false failures.
+  Retries are limited to network errors and transient HTTP statuses; every
+  final assertion remains strict.
+Stopped at: No local application blocker remains. The external production API
+  is still blocked by the canonical Neon quota state and missing Render
+  ADMIN_PASSWORD configuration documented in the latest provider checkpoint.
+Files/areas changed: scripts/verify-critical-flows.mjs and this handoff.
+Remaining work: Restore the canonical production database quota and configure
+  the existing production admin password through secure provider settings, then
+  rerun the production readiness, catalog, settings, sitemap, and admin checks.
+  Do not promote catalog satellites or create/reset a replacement database.
+Blocker: Provider-side production configuration only; no code workaround is
+  safe for the transactional primary.
+Next safe action: After provider recovery, run the same 30-check smoke suite
+  against the canonical production URL and confirm the external API gateway.
+Verification: Local API liveness/readiness/products/categories/settings/sitemap
+  checks returned healthy responses; storefront typecheck, API typecheck,
+  mobile typecheck, full workspace typecheck, storefront tests (19 files,
+  69 tests), storefront production build, diff check, and the 30/30 critical
+  flow smoke suite all passed. Desktop and mobile storefront previews rendered
+  without browser-console errors.
+```
+
+## External production recovery checkpoint (2026-09-20)
+
+```text
+Status: blocked — source release delivered; external provider recovery remains
+Last completed: Reconciled the latest pasted notes, confirmed the intended
+  GitHub repository, attached the authorized GitHub connection, and delivered
+  the two pending release-handoff documentation updates to GitHub main through
+  a normal non-force commit. Restarted the local API and storefront workflows.
+Stopped at: After the GitHub commit was accepted and CI/active-app verification
+  started. The direct Render primary is reachable for liveness but still fails
+  readiness and catalog queries because its production database connection is
+  unavailable. The custom domain returns Cloudflare 522 for API and sitemap
+  requests.
+Files/areas changed: release-handoff documentation only; no application source,
+  database, order, payment, mockup, or provider configuration was changed in
+  this checkpoint.
+Remaining work: Restore the existing production database connection/quota in
+  the Render primary, confirm the service's current release and required
+  production settings, verify the Cloudflare Pages API origin, and rerun the
+  public catalog/admin/customer smoke checks. Do not promote catalog-only
+  satellites or create a replacement transactional database.
+Blocker: Provider-side production access is unavailable from this workspace.
+  The stored Cloudflare token is rejected, the Render management credential is
+  not attached to the shell path, and the direct Render database remains
+  unhealthy. The credential pasted into chat must not be reused or committed.
+Next safe action: Use secure provider-managed credentials to inspect and repair
+  the existing Render/Neon/Cloudflare deployment, then verify readiness,
+  products, categories, sitemap, storefront, admin, checkout, and Design
+  Studio before claiming the public site is live.
+Verification: Local readiness, products, featured products, categories,
+  settings, and sitemap all returned 200 with catalog=true; local API and
+  storefront workflows are running; the storefront preview loaded with no
+  browser-console errors; GitHub main contains the delivered commit and its CI
+  and active-app verification runs were in progress. Public direct Render
+  liveness returned 200, readiness/products returned 503/500, and trynext.shop
+  returned 522.
+```
+
+## Smart Object browser upload-and-verify pass + 3D-crash fix checkpoint (2026-09-22)
+
+```text
+Status: complete for the local verification scope this checkpoint covers
+Last completed: Performed the real authenticated browser upload-and-verify
+  pass on the Design Studio Smart Object compositor that every checkpoint
+  since 2026-09-06 had flagged as never actually done (no browser-use binary
+  was available in prior continuations). Provisioned a local Postgres 16 dev
+  database (not Neon, not production) in this workspace only, ran migrations
+  and auto-seed, started the API and storefront dev servers, and drove
+  Chromium via Playwright through all six canonical product families
+  (tshirt, longsleeve, hoodie, mug, cap, waterbottle) using the studio's own
+  `?product=<category>` template switch (works without a matching catalog
+  row, so the two missing catalog families did not block this). For each
+  family: dismissed the first-use guide, uploaded a real PNG fixture through
+  the actual hidden file input, and confirmed the upload placed correctly
+  inside the fixed print-area frame with the "Smart Object Surface · 6/6
+  roles ready · Print zone: protected" panel showing for every family.
+  Screenshots for all six families (before/after upload) were captured and
+  reviewed directly, not inferred.
+  While doing this, found and fixed a real defect: opening the 3D Preview (the
+  default view for mug/cap/waterbottle per the documented architecture
+  decision) threw when `@react-three/drei`'s `<Environment preset="studio">`
+  fetched its HDRI asset from the hardcoded external `raw.githack.com` CDN,
+  and that failure was uncaught below the single app-wide `AppErrorBoundary`
+  — so any customer whose network can't reach that third-party CDN (blocked,
+  rate-limited, regionally filtered, ad-blocked) loses their entire in-progress
+  design to a full-page "Something went wrong" crash screen, not just the 3D
+  widget. Added a small `Studio3DErrorBoundary` scoped to only the
+  `<LazyProductViewer3D>` subtree; on catch it now calls `setShow3D(false)`
+  and shows a destructive toast ("3D preview unavailable — Showing the 2D
+  editor instead — your design and print zone are unaffected"), so the
+  customer falls back to the already-working 2D print-zone editor instead of
+  losing the session. Re-ran the same six-family Playwright pass after the
+  fix and confirmed the app no longer crashes; the local sandbox's outbound
+  proxy still blocks `raw.githack.com` itself (403 at the proxy, confirmed via
+  curl), so the HDRI still fails to load in this environment specifically —
+  that part is an unfixed root cause (see Remaining work), only the crash
+  blast-radius is fixed.
+Stopped at: After the second Playwright pass confirmed the graceful fallback
+  for all six families and the full local verification suite passed.
+Files/areas changed:
+  artifacts/trynex-storefront/src/pages/studio/DesignStudioV2.tsx (added
+  `Studio3DErrorBoundary` class and wrapped the existing
+  `<LazyProductViewer3D>` usage with it; no other behavior changed). This
+  handoff file only, otherwise.
+Remaining work: The actual root cause — the 3D preview's environment lighting
+  depends on an uncontrolled third-party CDN (`raw.githack.com`) with no local
+  fallback — is not fixed, only contained. The correct fix is to self-host the
+  `studio_small_03_1k.hdr` (or an equivalent) asset under this app's own
+  `public/` tree and pass it to `<Environment files="...">` instead of
+  `preset="studio"`, removing the runtime dependency on a third-party CDN
+  entirely. This was not done in this checkpoint because this workspace's own
+  outbound proxy denies `raw.githack.com` (403), so the asset could not be
+  fetched from here to bundle it; it needs fetching from an environment that
+  can reach it, or a locally-authored replacement HDRI. The long-sleeve and
+  water-bottle catalog gap (no DB rows) noted in
+  `docs/TRYNEXT_RELEASE_STATUS.md` is unchanged and still real — this
+  checkpoint worked around it via the studio's own template switch, which is
+  fine for design/print-zone verification but does not fix the storefront
+  catalog listing gap. The external production recovery (Render/Neon/
+  Cloudflare) blocker from the 2026-09-20 checkpoint is untouched and still
+  open; nothing in this checkpoint touched production, deployment, or secret
+  configuration.
+Blocker: None for the completed scope. The HDRI self-hosting follow-up is
+  blocked on network access to `raw.githack.com` (or an alternative source)
+  from wherever the fix is next attempted.
+Next safe action: Self-host the environment HDRI asset and switch
+  `ProductViewer3D.tsx` from `preset="studio"` to `files="/<local-path>.hdr"`,
+  then re-run the same six-family Playwright pass to confirm the 3D preview
+  renders the real environment (not just the graceful-fallback path) for
+  mug/cap/waterbottle. Separately, decide whether to seed real long-sleeve and
+  water-bottle catalog rows so those families are reachable from the public
+  storefront/catalog, not only via the studio's own product switch.
+Verification: Storefront typecheck passed; storefront test suite passed
+  (19 files, 69 tests, unchanged); storefront production build passed.
+  Local API readiness/products/categories all returned 200 with catalog=true
+  against the local dev database. Six-family Playwright pass (upload +
+  screenshot + console-error capture) reviewed directly for both the
+  pre-fix (crash) and post-fix (graceful fallback) runs. No order, payment,
+  production data, secrets, or deployment/provider configuration were read,
+  changed, or touched — this entire checkpoint ran against a local-only dev
+  database and local dev servers in this workspace.
+```
+
+## Sitewide bug-fixing pass checkpoint (2026-09-22)
+
+```text
+Status: in progress — two more real bugs found, fixed, verified, and pushed
+Last completed:
+  1. Fixed a header/nav overlap bug (reported as "overblending at different
+     screen sizes"). Root cause: AnnouncementBar's height-sync effect
+     depended on [visible, enabled] only, so when the announcement text
+     arrived asynchronously after mount (settings fetched from the API)
+     without either of those flipping, --announcement-height stayed stuck at
+     0px while the bar kept rendering at 36px. The fixed header (positioned
+     at top: var(--announcement-height)) then sat too high and the
+     still-visible, higher z-index bar drew over the logo/nav. This was a
+     load-timing race, not actually tied to viewport width — confirmed by
+     reading getComputedStyle(--announcement-height) directly (it read
+     "0px" while the bar was visibly showing text) rather than guessing from
+     screenshots alone. Replaced the one-shot measurement with a
+     ResizeObserver keyed off a single derived `showing` flag.
+  2. Cut /api/ai/generate's worst-case latency from ~6 minutes to ~2 minutes.
+     The model fallback chain (up to 4 sequential attempts) used a 90s abort
+     timeout per attempt; reduced to 30s (Pollinations normally responds
+     well under 20s when healthy). Also wired up AIPanel's already-present
+     but previously-unused progressTimer ref so the progress bar trickles
+     forward during the wait instead of sitting frozen at 18-35% the entire
+     time, which read as "broken" before it read as "slow".
+Stopped at: Continuing the general responsiveness/bug audit (Cart, Checkout,
+  Admin panel next) per an open-ended user request to fix bugs sitewide,
+  improve admin-panel automation, add "advanced/futuristic" features, and
+  redesign Design Studio responsiveness. That request is intentionally being
+  worked incrementally (small, verified, pushed commits) rather than as one
+  large unreviewable change.
+Files/areas changed: artifacts/trynex-storefront/src/components/AnnouncementBar.tsx,
+  artifacts/api-server/src/routes/ai.ts, artifacts/trynex-storefront/src/pages/studio/AIPanel.tsx.
+Remaining work: The reported product-detail "scrolls down automatically on
+  click" bug did NOT reproduce against the current code in a real browser
+  test (ScrollToTop is already correctly wired for the Products→ProductDetail
+  path) — needs an exact repro (page/card/device) before further chasing.
+  The "beat the latest Laravel e-commerce" / "more futuristic admin
+  automation" asks are not concrete engineering tasks as stated; treating
+  them as an ongoing bug-fix + polish pass rather than inventing speculative
+  new features. Production (Render/Neon/Cloudflare) recovery is unchanged
+  and still blocked on real provider credentials/access — a runbook for a
+  human "subworker" was given directly in chat, not committed to the repo.
+Blocker: None for the completed scope. All work this checkpoint is local-only
+  (local Postgres, local API/storefront dev servers) — no production data,
+  secrets, or provider configuration touched.
+Next safe action: Continue the audit (Cart/Checkout responsiveness next),
+  keep committing in small verified increments (typecheck + test + build
+  before every push), and merge to `main` only if/when explicitly requested
+  — current work is intentionally staying on `claude/ecom-customization-itpg9o`.
+Verification: Full workspace typecheck (`pnpm run typecheck` from repo root,
+  which builds lib/db first) passed clean across all 10 packages. Storefront
+  tests (19 files, 69 tests) and API tests (10 files, 36 tests) both passed.
+  API production bundle rebuilt and restarted; live-smoke-tested
+  /api/ai/generate against the real Pollinations service (reached it, got a
+  real 403 in ~200ms, fallback chain correctly tried all 3 models and
+  surfaced the right error — confirms the retry/error-handling logic itself
+  is intact after the timeout change).
+```
+
+## Admin login security/auth-race fix (2026-09-22)
+
+```text
+Status: complete for the code fix; PRODUCTION STILL NEEDS A MANUAL STEP — see below
+Last completed: Found and fixed a serious bug while testing admin login
+  locally: autoSeed.ts's autoSeedIfEmpty() had its own hardcoded admin-seeding
+  block (username "admin", password "admin123" SHA-256'd with a hardcoded
+  salt) that raced admin.ts's correct ensureAdminExists() (which
+  argon2id-hashes the real ADMIN_PASSWORD env var) on any fresh/empty
+  database. Whichever ran first won; on this checkout autoSeed's won every
+  time. Worse: verifying that SHA-256 hash requires an ADMIN_SALT env var
+  that is undocumented anywhere (not in replit.md's env var list) — so the
+  resulting account couldn't be logged into with ADMIN_PASSWORD, "admin123",
+  or anything else, without reading this specific source line. Removed the
+  redundant/dangerous block; admin.ts's path is now the only one.
+Stopped at: Verified locally — dropped the stale local-dev admin row,
+  restarted, confirmed the freshly-created row is a real $argon2id$ hash and
+  ADMIN_PASSWORD logs in successfully.
+Files/areas changed: artifacts/api-server/src/lib/autoSeed.ts.
+Remaining work — IMPORTANT FOR PRODUCTION: this fix only prevents the race on
+  a database that doesn't have an admin row yet. It does NOT retroactively
+  repair an admin row that already exists — and the real production database
+  almost certainly already has one, created the same broken way whenever it
+  was first initialized. Deploying this fix alone will not restore admin
+  login. Once this commit is live and ADMIN_PASSWORD is confirmed set
+  (Step 3 of the provider runbook already covers this), the operator/
+  subworker also needs to do ONE of:
+    (a) Preferred if ADMIN_RESET_KEY is set on the service: use the existing
+        POST /api/admin/reset-password recovery flow (see admin.ts) — this
+        is the supported path and touches only the admin credential.
+    (b) Otherwise: connect to the production database and run
+        `DELETE FROM admins;` (only that table, only that row — this does
+        not touch products, orders, or the ~70+/~10+ real catalog data) then
+        restart the Render service so ensureAdminExists() recreates it
+        correctly from the real ADMIN_PASSWORD.
+  This should be added as a step in the provider recovery runbook given to
+  the user's subworker.
+Blocker: None for the code fix. The production remediation step above is
+  pending — it needs real production DB access, which this workspace does
+  not have.
+Next safe action: Communicate the production remediation step (above) to the
+  user/subworker alongside the existing Render/Neon/Cloudflare runbook.
+Verification: Full workspace typecheck passed. API tests (10 files, 36 tests)
+  and storefront tests (19 files, 69 tests) both passed after this change.
+  Live-verified end-to-end locally: DELETE FROM admins → restart → POST
+  /api/admin/login with the real ADMIN_PASSWORD → {"success":true,"token":...}.
+```
+
+## AGPL removal + main merge checkpoint (2026-09-23)
+
+```text
+Status: complete — session batch merged to main and pushed
+Last completed: Found @imgly/background-removal (both the JS wrapper and its
+  model-data package) is AGPLv3-licensed, mid-fix, before committing anything —
+  stopped and got an explicit decision from the project owner rather than
+  shipping it or deciding alone. Replaced it with a direct implementation of
+  U-2-Net (Apache 2.0, from the original academic authors) via onnxruntime-web
+  (MIT, already a dependency), self-hosted (~40MB: the u2netp.onnx model plus
+  onnxruntime-web's own bundled WASM runtime — no external CDN dependency).
+  Preprocessing/postprocessing intentionally mirrors the rembg reference
+  implementation exactly (same resize, same ImageNet mean/std, same output
+  normalization) rather than improvised values. See
+  artifacts/trynex-storefront/src/lib/backgroundRemoval.ts and
+  artifacts/trynex-storefront/public/onnx/NOTICE.md for full provenance.
+  Two real integration issues only surfaced by testing live in a browser:
+  onnxruntime-web 1.21.0's broken "exports" map (worked around with a minimal
+  local .d.ts) and the runtime requesting the ".jsep" WASM variant by default
+  regardless of configured executionProviders (confirmed via an actual failed
+  network request, not assumed).
+  Merged the full session's branch (claude/ecom-customization-itpg9o) into
+  main and pushed, per explicit instruction from the project owner — this was
+  previously held pending that instruction. Full typecheck + both test suites
+  + production build were re-run and passed on the exact merged commit before
+  pushing to main, not just on the feature branch in isolation.
+Stopped at: main pushed (commit 8d95432). This should trigger Cloudflare
+  Pages' auto-deploy (confirmed connected: georgelsmith333-hub/New-Trynext →
+  main → Automatic deployments: Enabled, per a live dashboard check earlier
+  this session). Whether Render also auto-deploys from this push is unverified
+  from this workspace — prior checkpoints (2026-09-18) documented Render not
+  auto-deploying a GitHub push at least once before; the production runbook
+  given to the user's subworker covers manually triggering a Render deploy if
+  it doesn't pick this up on its own.
+Files/areas changed (this session, full list): 3D preview error boundary,
+  AnnouncementBar height-sync race, AI generate timeout + progress trickle,
+  autoSeed.ts hardcoded-admin removal, mockup placeholder scanner + manifest
+  status derivation + server-mockup-render.ts gate, AGPL background-removal
+  replacement. See individual commits for full detail on each.
+Remaining work: Confirm the live deploy actually picked up this commit
+  (Cloudflare Pages deployment log / trynext.shop response) — not verified
+  from this workspace since it can't reach trynext.shop directly. The mockup
+  system's deeper issues (real Photoshop Smart Object verification, true
+  projective/displacement rendering, shared browser/API compositor) remain
+  open per docs/MOCKUP_DEEP_AUDIT_AND_IMPLEMENTATION_PLAN_2026-09-23.md — not
+  started, by explicit choice, pending proper scoping rather than started
+  blind. Long-sleeve/water-bottle catalog gap and full admin-panel /
+  mobile-app audit remain open from earlier checkpoints.
+Blocker: None for the completed scope. Confirming the live deploy needs
+  either provider dashboard access or a working path to reach trynext.shop,
+  neither of which this workspace has.
+Next safe action: Verify the Cloudflare Pages deployment log shows this
+  commit built and deployed; if Render didn't auto-deploy, trigger it
+  manually per the provider runbook. Then decide on scope for the mockup
+  system's deeper rebuild.
+Verification: Full workspace typecheck, both test suites (105 tests total),
+  and a full storefront production build all passed on the exact commit
+  pushed to main — not re-verified after merging, but verified on the merge
+  result itself before pushing.
+```
+
+## Checkpoint: mobile .gitignore fix + main sync (2026-09-23, follow-up)
+
+```text
+Status: complete
+Last completed: Fixed a stop-hook-flagged untracked-files issue: running
+  `expo export --platform web` earlier in the mobile app audit left
+  artifacts/trynext-mobile/.expo/web/ untracked (not covered by any existing
+  .gitignore). Added `.expo/` to artifacts/trynext-mobile/.gitignore
+  (alongside the existing expo-cli-generated expo-env.d.ts entry), confirmed
+  via `git status --short` that the tree is clean, committed
+  (2b6b3ff), and pushed to origin/claude/ecom-customization-itpg9o. Then
+  fast-forwarded and pushed origin/main to the same commit (main was one
+  commit behind, at 50fe50a), consistent with the standing "push everything
+  live" instruction from earlier this session.
+Stopped at: main and claude/ecom-customization-itpg9o both at commit
+  2b6b3ff. No source/runtime code changed — .gitignore only.
+Files/areas changed: artifacts/trynext-mobile/.gitignore (added `.expo/`).
+Remaining work: None for this housekeeping item. Broader open items are
+  unchanged from the prior checkpoint above: confirming the live Cloudflare
+  Pages deploy picked up the latest commit, and the mockup system's deeper
+  rebuild scoping (docs/MOCKUP_DEEP_AUDIT_AND_IMPLEMENTATION_PLAN_2026-09-23.md)
+  remains not started, pending proper scoping.
+Blocker: None.
+Next safe action: Ask the user what's actually bothering them in day-to-day
+  use of the live site (a specific page/flow) to prioritize next, since the
+  broad audit asks have all been addressed at the scale this workspace can
+  verify; alternatively scope and start the mockup rebuild plan if that's the
+  priority.
+Verification: `git status --short` clean on both branches after push; push
+  output confirmed both refs updated (50fe50a..2b6b3ff on the feature branch,
+  50fe50a..2b6b3ff on main).
+```
+
+## Checkpoint: T-shirt displacement pilot — first real slice (2026-09-23)
+
+Per AGENTS.md's "Active approved workstream — six-family PSD/PSB Smart
+Mockups" section: this is the first genuinely verified slice of that
+rebuild, not the full 188-surface effort. Scope was deliberately narrowed
+to 4 surfaces to prove the method before committing further.
+
+```text
+Status: ready for review
+Last completed: Built and shipped a real geometric displacement pipeline
+  for exactly tshirt/{white,black}/{front,back} (4 of 188 surfaces):
+  - tools/build-displacement-maps.mjs generates a real two-channel
+    (R=dx, G=dy) displacement map per view (front/back), derived from that
+    view's own photographed fold structure (blurred luminance height-field
+    proxy -> gradient -> offset field, normalized within the print zone).
+    One map per view, shared across colors of that view.
+  - composer.ts (browser) and mockupRender.ts (server, Sharp) both gained
+    a real per-pixel displacement remap of the artwork before compositing
+    — the actual Photoshop "Displace filter" mechanic — gated so only
+    surfaces with a "displacement" runtime role use it. All 184 other
+    surfaces render through the exact prior code path, unchanged.
+  - tools/verify-smartobject-roundtrip.mjs performs a genuine open/replace
+    Smart Object payload/re-save/reopen-from-scratch cycle against each
+    pilot master's real shipped PSD bytes (via ag-psd, the same library
+    the builder uses, plus a minimal in-repo canvas polyfill since
+    node-canvas isn't installed in this sandbox). All 4 surfaces pass every
+    check: linked content genuinely swappable and persists, transform/
+    registration preserved, unrelated layers byte-identical, composite
+    reflects the edit inside the zone and not outside it. This is NOT a
+    Photoshop-verified claim — no Adobe product is available here — it is
+    an honest, evidenced claim about the shipped file's real structure.
+  - Manifest: only these 4 rows carry reviewStatus "accepted" plus the
+    embedded verification evidence (dist-mockups/staging/smart-v10-v3/
+    manifest.json). All other 184 stay "candidate". Tightened
+    validate-smartobject-release.mjs and build-smartobject-runtime-roles.mjs
+    so "accepted" without passing evidence is now a hard build/validate
+    error — previously the status could be hand-edited with nothing
+    checking it.
+  - mockupContract.ts / server-mockup-render.ts (client fetcher) gained an
+    optional "displacement" runtime role end-to-end, additive: the 6
+    REQUIRED_RUNTIME_ROLES are unchanged and every other surface's request
+    shape is byte-identical to before.
+  - Incidental fix (found re-running the full pipeline, not intentional
+    scope): 20 mug runtime-role PNGs (base/protected/shadow, 10 colors)
+    had drifted out of sync with their own unchanged staging source images
+    — same staleness pattern as a separate masterChecksum drift also fixed
+    here for tshirt/white/front. Verified pixel-for-pixel that regenerated
+    output now matches the current (unchanged) staging source exactly
+    before committing; no mug source/geometry data was touched.
+Stopped at: Committed (1510189) and pushed to both
+  claude/ecom-customization-itpg9o and main. Not yet scaled beyond the 4
+  approved pilot surfaces — that is an explicit next decision, not an
+  oversight.
+Files/areas changed: tools/build-displacement-maps.mjs (new),
+  tools/verify-smartobject-roundtrip.mjs (new),
+  tools/build-smartobject-runtime-roles.mjs, tools/validate-smartobject-release.mjs,
+  artifacts/api-server/src/lib/mockupContract.ts,
+  artifacts/api-server/src/routes/mockupRender.ts,
+  artifacts/trynex-storefront/src/pages/design-studio/{composer,
+  server-mockup-render,smart-mockup-manifest,smart-v10-runtime}.ts,
+  dist-mockups/staging/smart-v10-v3/manifest.json + derived manifests,
+  20 mug runtime-role PNGs (resync only, see above).
+Remaining work: (1) Decide whether to scale displacement to the other 6
+  T-shirt colors (front/back only — geometry is color-independent, the map
+  already works for them, this is a scope decision not an engineering
+  blocker) and/or to the 3 synthetic-derivative T-shirt views (left-sleeve/
+  right-sleeve/neck-label — these are NOT authentic photography per the
+  staging manifest's own provenance field, so promoting them to "accepted"
+  needs a separate, explicit decision, not silent inclusion). (2) The other
+  5 families (longsleeve, hoodie, mug, cap, waterbottle) have no
+  displacement work at all yet. (3) Cosmetic tuning: the current effect
+  reads as fairly organic/rippled at print-zone edges (visually confirmed
+  via a live render) — arguably a good thing (directly answers the "looks
+  like a flat photo overlap" complaint) but could be tuned subtler if
+  wanted. (4) The verification method is explicitly NOT Photoshop-based
+  (no Adobe product available in this sandbox) — if a true Photoshop
+  open/edit/save verification is required before a wider "verified"
+  claim, that needs to happen outside this environment.
+Blocker: None for the completed scope. Local Postgres/DB-backed E2E
+  testing was blocked mid-session by the sandbox's credential-exploration
+  guard (any psql connection attempt was denied) — worked around entirely
+  by testing the rendering pipeline through a standalone Vite-served
+  harness that doesn't need the DB, since the actual change is in
+  image/canvas code, not data flow. Full DB-backed Design Studio E2E
+  (uploading real artwork through the live UI, not a synthetic harness)
+  is still unverified from this workspace for that reason.
+Next safe action: Either (a) scope-approve scaling to the remaining 6
+  T-shirt colors for front/back, or (b) pick the next family to pilot the
+  same method on, or (c) do a DB-backed live-UI pass once Postgres access
+  is available, to visually confirm the pilot in the real Design Studio
+  (not just the standalone harness).
+Verification: storefront test suite 69/69 pass, API test suite 36/36 pass,
+  storefront production build succeeds, all three mockup validators
+  (placeholder scanner, release gate, runtime-roles builder) pass with the
+  tightened evidence requirement, and a live browser render (flat vs.
+  displaced vs. a non-pilot control surface) visually confirms the
+  displacement is real, visible, and fully contained to the 4 approved
+  surfaces with zero effect elsewhere.
+```
+
+## Checkpoint: confirmed live Cloudflare/GitHub wiring (2026-09-23)
+
+```text
+Status: complete — repo/deploy identity confirmed from the actual dashboard,
+  not inferred from file contents
+Last completed: Resolved real confusion about which repo is live. This
+  workspace also contains a completely separate, unrelated-history repo
+  (georgelsmith333-hub/trynext-lifestyle, last pushed 2026-09-16) with an
+  identical wrangler.toml/render.yaml (because it's the origin this repo was
+  copied from). That similarity briefly led to a wrong inference that
+  trynext-lifestyle might be the real deployed repo. The project owner
+  checked the actual Cloudflare dashboard and confirmed ground truth:
+  - Live Cloudflare Pages project: "trynext-shop-new"
+  - Domains attached: trynext.shop, www.trynext.shop, trynext-shop-new.pages.dev
+  - Source repo: georgelsmith333-hub/New-Trynext, branch main (confirmed
+    correct — this IS the repo this session has been working in all along)
+  - Production + preview auto-deploy: enabled, watched paths: *
+  - Two other older Cloudflare projects exist (trynext-shop, trynext-lifestyle)
+    pointed at the old trynext-lifestyle repo, but neither serves the
+    trynext.shop custom domain — only *.pages.dev subdomains. They are not
+    live production and should not be worked on.
+  - The last recorded deployment on trynext-shop-new (9b80fa5a, commit
+    35fc583) was triggered "ad_hoc" (manual), not "github:push" — meaning
+    the GitHub source binding had been freshly repaired/reconnected but had
+    not yet been proven by an actual push-triggered auto-deploy. This
+    commit is intentionally being pushed to produce that first
+    post-reconnection github:push-triggered deployment.
+Stopped at: This commit is the test push. Whether it actually triggers and
+  succeeds on Cloudflare needs to be confirmed from the dashboard (deployment
+  trigger should read "github:push" instead of "ad_hoc"), since this
+  workspace cannot reach the Cloudflare dashboard or trynext.shop directly.
+Files/areas changed: AGENT_HANDOFF.md only (this note).
+Remaining work: Confirm the Cloudflare Pages deployment log shows a new
+  github:push-triggered build for this commit and that it succeeds; confirm
+  Render's connected repo/branch the same way (dashboard-verified, not
+  inferred) since only Cloudflare was checked this round.
+Blocker: None for this note. Confirming the deploy fired needs dashboard
+  access this workspace doesn't have.
+Next safe action: After the project owner confirms the deploy fired and
+  succeeded, resume the mockup pilot scaling work (or whatever is next) with
+  confidence pushes are actually reaching the live site.
+Verification: Repo/branch/domain binding confirmed directly from the
+  Cloudflare dashboard by the project owner, not inferred.
+```
+
+## Checkpoint: mockup scale-up to 94 surfaces + 3 critical security fixes (2026-09-23)
+
+```text
+Status: ready for review
+Last completed: Two independent workstreams, both fully verified.
+
+Mockups: generalized the T-shirt-only displacement pilot to cover every
+  color of every flat-apparel family's authentic front/back views
+  (T-shirt 16, long sleeve 20, hoodie 20 = 56 surfaces with real
+  displacement), plus extended real Smart Object round-trip verification
+  (no displacement — a different rendering path) to mug (20), cap (16),
+  water bottle (2) = 38 more. Total 94/188 surfaces now "accepted" with
+  embedded verification evidence; the other 94 (synthetic sleeve/neck-label
+  crops, mug's generated wrap) deliberately stay "candidate" — not
+  independently photographed, so not eligible for "accepted" without a
+  separate review decision. tools/build-displacement-maps.mjs and
+  tools/verify-smartobject-roundtrip.mjs were generalized from hardcoded
+  T-shirt lists to pull from CANONICAL/family color lists, so future scope
+  changes are a data change, not a script rewrite. Fixed a real bug found
+  scaling to mug/water bottle: they ship as .psb not .psd, and the
+  verifier silently reported "not found" for all of them until fixed to
+  check both extensions.
+
+Security: ran a full-stack audit (general-purpose agent, read-only,
+  evidence-required) across storefront/admin/API. It found 3 Critical + 1
+  High + 2 Medium real, verified issues — not invented ones; every finding
+  was independently re-confirmed by reading the actual code before fixing.
+  Fixed:
+  - referrals.ts PUT /:code/use and promoCodes.ts PUT /:id/use: both had
+    zero auth and zero legitimate callers (confirmed by grep across
+    storefront + mobile) — the real order flow already credits/checks
+    these atomically inside its own transaction. Anyone could inflate a
+    referrer's balance or exhaust a promo's maxUses with a fake request
+    and no real order. Admin-gated both, added the missing active/maxUses
+    guards to match the real flow.
+  - orders.ts stock decrement: was read-stock-then-write-computed-value
+    (classic lost-update race under concurrent orders); worse for JSONB
+    variants, where the WHOLE variants array was overwritten from a stale
+    read, silently clobbering a concurrent order for a *different* variant
+    of the same product. Replaced with atomic conditional SQL (UPDATE ...
+    WHERE stock >= qty, and a jsonb_set targeting only the one variant's
+    stock field) — the same pattern already correct elsewhere in the same
+    function, now applied consistently.
+  - AdminAIAssistant.tsx: dangerouslySetInnerHTML only escaped
+    **bold**/_em_, leaving any other HTML in an AI response (plausible via
+    prompt injection from product/order data in its context) able to
+    execute in the authenticated admin session. Sanitized with DOMPurify
+    (already a dependency; BlogPost.tsx already used it correctly
+    elsewhere), allow-listing only strong/em.
+  - CORS/CSRF hardcoded origin fallbacks (app.ts, adminAuth.ts) referenced
+    stale Cloudflare project names that don't match the real live project
+    (trynext-shop-new, confirmed from the actual Cloudflare dashboard this
+    session — see the "confirmed live Cloudflare/GitHub wiring" checkpoint
+    above). Production on trynext.shop was unaffected (that domain was
+    already correctly allow-listed), but direct testing against the live
+    *.pages.dev preview URL would have been silently rejected.
+  Investigated but deliberately NOT changed: admin/customers pagination.
+  The audit correctly flagged it as unpaginated and O(n) on total order
+  count, but AdminCustomers.tsx does client-side search/sort/CSV-export
+  over the full response — slicing it would have broken those working
+  features. Left the endpoint's response shape unchanged with a comment
+  documenting the real fix (SQL-level GROUP BY instead of loading every
+  order into memory) as separate follow-up work, rather than ship a
+  regression to close a Medium-severity performance concern.
+Stopped at: Committed (fd0d60d) and pushed to both
+  claude/ecom-customization-itpg9o and main.
+Files/areas changed: tools/build-displacement-maps.mjs,
+  tools/build-smartobject-runtime-roles.mjs,
+  tools/verify-smartobject-roundtrip.mjs, dist-mockups/staging/smart-v10-v3/
+  manifest.json + derived manifests, 4 new shared displacement PNGs
+  (hoodie/longsleeve front+back), artifacts/api-server/src/{app.ts,
+  middlewares/adminAuth.ts,routes/{admin,orders,promoCodes,referrals}.ts},
+  artifacts/trynex-storefront/src/{components/AdminAIAssistant.tsx,
+  pages/design-studio/smart-v10-runtime.ts}.
+Remaining work: Mockups — decide whether to scale displacement further
+  (the 3 synthetic-derivative T-shirt/longsleeve/hoodie views, or attempt
+  a curvature-specific realism improvement for mug/cap/waterbottle beyond
+  today's structural-only verification). Security — the High XSS finding
+  is fixed; two Medium items remain: the documented admin/customers
+  pagination follow-up (needs a SQL aggregation rewrite, not a quick fix),
+  and none else outstanding from this audit pass. A second, later audit
+  pass would likely find more — this was one thorough pass, not an
+  exhaustive one.
+Blocker: None for the completed scope.
+Next safe action: Continue the broader "3 hours" work the project owner
+  authorized — admin panel enhancements and a frontend design pass are
+  still open asks from that authorization, not yet started this round.
+Verification: storefront (69/69) and API (36/36) test suites pass, both
+  packages typecheck clean, storefront production build succeeds, all
+  three mockup validators pass, and a live browser render confirms all 6
+  product families render correctly (displacement visible on flat apparel,
+  curvature warp untouched on mug/cap/bottle).
+```
+
+## Checkpoint: settings credential leak fix + customer-facing studio fixes (2026-09-23)
+
+```text
+Status: ready for review (code pushed; production activation depends on
+  Render redeploying the API, see Blocker)
+Last completed: Ran the full stack locally (sandbox Postgres with seeded dev
+  data only, never production) and crawled 76 page-views (18 customer + 20
+  admin routes, desktop 1440 and mobile 390). Baseline was clean: no JS
+  exceptions, no mobile horizontal overflow, one noisy 404 (see below).
+  Fixed:
+  - CRITICAL: GET /api/settings/:key was unauthenticated and read any raw
+    settings row except two denylisted names. The admin Deployment page
+    stores github_token (plaintext), render_deploy_hook and
+    cloudflare_pages_hook in that table; the admin reset flow stores
+    adminResetKeyHash. Proven exploitable locally with a planted fake
+    token. Now requireAdmin (its only callers, Dashboard.tsx and
+    AdminAIDeveloper.tsx, already send getAuthHeaders()), and those keys
+    return 403 even to admins. Public GET /api/settings is unchanged and
+    was already safe (buildSettings() allowlist by construction).
+  - Design Studio: the internal SmartObjectStatusCard (PSD/runtime-role
+    jargon) was shown to customers and pushed the canvas below the fold.
+    Now shown only with an admin session in the same tab or ?studioDebug;
+    customers get a plain notice only when a surface is unavailable. The
+    admin card now shows "Displacement: active/-".
+  - ViewerCount.tsx: removed the invented 2-11 viewer count shown when the
+    API failed; hides for count < 2 (fixes "1 people viewing now").
+  - product-placeholder.svg: square, so the brand text isn't cropped.
+  - /admin/customers: column projection (skips items JSONB), same shape.
+Stopped at: Committed 38e0767, merged an empty Manus commit (d1493b3),
+  pushed main at 45fc777.
+Files/areas changed: artifacts/api-server/src/routes/{settings,admin}.ts,
+  artifacts/trynex-storefront/src/pages/studio/DesignStudioV2.tsx,
+  src/components/ViewerCount.tsx, public/images/product-placeholder.svg.
+Remaining work: (1) Owner should rotate any GitHub token / Render hook /
+  Cloudflare hook ever saved in the admin Deployment page on production,
+  since they were publicly readable before this fix. (2) Telegram bot is
+  trust-on-first-use: if no admin chat is registered (and TELEGRAM_CHAT_ID
+  unset), the first person to message it becomes admin, and it has deploy
+  commands. Intentional onboarding, left unchanged; owner should confirm
+  their chat is registered. (3) The /api/settings/prodNoticeDismissed 404
+  on the admin dashboard is the existing "not set" signal, cosmetic only.
+  (4) Admin panel feature enhancements and a design pass were requested
+  but not started; the crawl found the UI already solid, so any further
+  work there needs specific direction from the owner.
+Blocker: The API runs on Render, not Cloudflare. Every API-side fix
+  (settings leak, referral/promo endpoints, stock race) is only live once
+  Render redeploys from New-Trynext/main. Render's connected repo/branch
+  has not been confirmed from its dashboard (only Cloudflare's was).
+Next safe action: Owner confirms Render deploys 45fc777 (or later), then
+  verifies GET https://<api-host>/api/settings/siteName returns 401.
+Verification: storefront 69/69, API 36/36 tests pass; both typecheck;
+  storefront production build passes; exploit re-run against the fixed
+  server returned 401/401/200/403/200/0 as expected; post-fix crawl of all
+  76 page-views shows no regressions.
+```
+
+## Checkpoint: Automation Center admin page (2026-09-25)
+
+```text
+Status: complete for the scope built this checkpoint
+Last completed: Surfaced the existing in-process scheduler (lib/scheduler.ts
+  — daily summary, low-stock alert, stale-order alert, revenue milestones,
+  keep-alive ping) in the admin panel. Before this, all five jobs ran with
+  hardcoded thresholds and zero admin visibility; the only trace was a
+  Telegram message or a server log line, and an admin had no way to see a
+  job existed, disable it, change its threshold, or confirm it actually
+  fired.
+  - lib/automationConfig.ts (new): admin-editable config (per-job enabled
+    flags, lowStockThreshold, staleOrdersHours) + a capped 100-entry event
+    log, both stored as JSON under keys in the existing settings table —
+    same pattern already used for homepage_layout, so no schema migration.
+  - lib/scheduler.ts: every job now calls markJobChecked() on every tick
+    (proves the scheduler is alive even when nothing fires), respects its
+    config.*Enabled flag, uses the configurable threshold instead of the
+    old hardcoded 3 / 24h, and appends a real log entry whenever it
+    evaluates. Added a manual run-now path (sendDailySummary(manual),
+    checkAndAlertLowStock(manual), etc.) that bypasses the normal dedup
+    window and — critically — still computes and logs a real result even
+    when Telegram isn't configured (the dev sandbox has no Telegram set
+    up), so clicking "Run Now" is verifiable instead of silently doing
+    nothing. Exported runAutomationJobNow(job) and getAutomationStatus().
+  - routes/automation.ts (new): requireAdmin-gated GET status / PUT config
+    / GET log / POST run/:job, mirroring the existing routes/backup.ts
+    pattern exactly. Mounted in routes/index.ts.
+  - AdminAutomation.tsx (new): System-nav page (added between Settings and
+    Backup) with one status card per job (icon, schedule badge, live
+    enable toggle, last-checked time, Run Now button), inline threshold
+    inputs for low-stock and stale-orders, a read-only DB Backup Sync
+    summary card linking to the existing /admin/backup page, a Telegram-
+    not-configured banner, and an event log table. Nav entry in
+    AdminLayout.tsx, route in App.tsx.
+  Verified for real in a browser via Playwright, not just typecheck: logged
+  into /admin, opened /admin/automation, ran all 5 jobs via "Run Now" (each
+  produced a distinct, correct log entry — e.g. low-stock correctly showed
+  "No items at or below stock threshold 3", stale-orders showed the one
+  real pending order in the dev DB, revenue milestones showed "next at
+  ৳10,000"), toggled the low-stock switch off and back on, edited the
+  low-stock threshold to 7 and reloaded the page to confirm it persisted
+  server-side, then restored it to 3. No app-level console/page errors;
+  the only console noise was the sandbox's pre-existing GTM/Google
+  analytics calls being blocked by the outbound proxy, unrelated to this
+  page.
+Stopped at: Feature complete, tested, committed, and pushed. Nothing left
+  mid-edit.
+Files/areas changed: artifacts/api-server/src/lib/{automationConfig.ts (new),
+  scheduler.ts}, artifacts/api-server/src/routes/{automation.ts (new),
+  index.ts}, artifacts/trynex-storefront/src/{App.tsx,
+  components/layout/AdminLayout.tsx, pages/admin/AdminAutomation.tsx (new)}.
+Remaining work: None for the approved scope. The broader ask ("full admin
+  panel audit, confirm everything works") has now had two audit passes
+  across this and the prior checkpoint (page builder, designer, AI
+  developer, SEO, Tech Stack, Facebook Guide, Facebook Import, DB Cluster,
+  and now Automation) with real functional testing, not just page loads.
+  A further pass could still cover any admin page not explicitly named in
+  either audit if the owner wants that guarantee extended.
+Blocker: None. Telegram bot token/chat ID are still unset in this sandbox
+  (the owner said they'll configure Telegram themselves), so the four
+  Telegram-backed jobs run and log correctly but don't deliver a message
+  until that's set — this is expected and surfaced to the admin via the
+  banner on the new page, not a bug.
+Next safe action: Owner can open /admin/automation on the live site once
+  Cloudflare Pages redeploys main, and Render redeploys the API, to see it
+  live. If Telegram is configured, "Run Now" will start actually delivering
+  messages with no further code change needed.
+Verification: api-server typecheck clean, storefront typecheck clean;
+  api-server tests 38/38 pass, storefront tests 69/69 pass; storefront
+  production build succeeds (AdminAutomation chunk present in dist); all 5
+  jobs manually exercised end-to-end through the real HTTP API and then
+  through a real browser session; committed as f889b84 and pushed to both
+  claude/ecom-customization-itpg9o and main (Cloudflare Pages auto-deploys
+  main; confirmed origin/main was still at 844ed51 — no one else's work —
+  before this push).
+```
+
+## Checkpoint: T-shirt print realism — fabric texture + render-path parity (2026-09-25)
+
+```text
+Status: complete for the scope built this checkpoint
+Last completed: The owner asked "does my design actually look printed on
+  the product" and, separately mid-session, demanded the fast/live studio
+  preview match the post-add-to-cart render and that designs read as
+  printed-into-fabric rather than pasted on top. Investigated end-to-end
+  with a real uploaded test artwork (a red/yellow badge PNG with real
+  alpha transparency) driven through Playwright, not just code reading:
+  - Confirmed the live studio canvas (LiveCompositorPreview), the manual
+    PNG export, and the cart's server-rendered thumbnail are architecturally
+    meant to share one compositor (composer.ts's composeGarmentMockup /
+    composeDesignTexture), so this was the right place to look.
+  - Found the T-shirt's actual base garment photo
+    (public/mockups/psd-master-v10/runtime-roles/tshirt/white/front-base.png)
+    is a very clean, flat studio shot with almost no luminance variation in
+    the chest print zone, so the existing per-pixel lighting-transfer pass
+    (applyPhotoLighting/getShadeField — real, correctly-implemented code,
+    not a stub) had nothing to pick up there; confirmed by sampling pixel
+    values through the exported print on both white and black shirts —
+    near-zero gradient.
+  - Found fabricTexture (the woven-grain overlay, applyFabricGrain) was
+    real, working code gated behind an undiscoverable manual toggle,
+    defaulted OFF with a comment saying new designs must never carry grain
+    "before the user explicitly enables it" — exactly backwards from what
+    was asked. Flipped the default to true in useDesignStore.ts.
+  - That change exposed a real, previously-latent bug: canvas blend modes
+    (soft-light included) paint fully into fully-transparent destination
+    pixels rather than staying invisible, so grain filled the *entire*
+    print-zone rectangle, not just the artwork's own shape — a visible
+    ghost box around every design once texture was on by default. Fixed in
+    composer.ts by snapshotting the artwork's alpha silhouette before
+    painting the grain and compositing with destination-in afterward to
+    punch it back down to that shape.
+  - Found a real inconsistency: renderApprovedMockupOnServer (used for both
+    the cart's imageUrl thumbnail and the manual "Export PNG" button) built
+    its artwork crop via composeDesignTexture without passing runtimeRoles
+    or fabricTexture — the only caller of that shared function that
+    omitted them — so the cart thumbnail always skipped the lighting
+    transfer and grain that the live preview and print texture already
+    applied. Added `runtimeRoles` to the ServerRenderableSurface Pick type,
+    added a `fabricTexture` param, and threaded the studio's live
+    fabricTexture state into both DesignStudioV2.tsx call sites.
+  - Also found (secondary, not fixed): clicking "3D Preview" throws
+    "Could not load studio_small_03_1k.hdr: Failed to fetch" and falls back
+    to 2D with a toast — root cause is `<Environment preset="studio" />`
+    (ProductViewer3D.tsx) fetching an HDRI from
+    https://raw.githack.com/pmndrs/drei-assets/... at runtime, an
+    unofficial third-party CDN never self-hosted for this project. This
+    sandbox's own egress proxy blocks that domain by policy (confirmed via
+    direct curl: 403 from the proxy itself), so it is NOT proven broken for
+    real customers — but it is a genuinely fragile dependency (a free
+    GitHack mirror, not a paid/reliable CDN) for a customer-facing feature,
+    worth self-hosting the .hdr file under public/ instead. Left alone this
+    checkpoint since the owner's request was specifically about print
+    realism/consistency, not 3D preview, and the graceful 2D fallback means
+    it fails safe rather than breaking checkout.
+Stopped at: All four fixes committed together, tested, and pushed. Nothing
+  left mid-edit.
+Files/areas changed: artifacts/trynex-storefront/src/hooks/useDesignStore.ts,
+  artifacts/trynex-storefront/src/pages/design-studio/composer.ts,
+  artifacts/trynex-storefront/src/pages/design-studio/server-mockup-render.ts,
+  artifacts/trynex-storefront/src/pages/studio/DesignStudioV2.tsx.
+Remaining work: None for the approved scope. Two real, honestly-scoped
+  follow-ups exist if the owner wants them: (1) self-host the 3D preview's
+  HDRI under public/ instead of fetching it from raw.githack.com at
+  runtime — likely the actual root cause of any customer reports of 3D
+  Preview failing; (2) if a customer ever complains a specific product's
+  print still looks too flat even with texture on, the real lever is a
+  base garment photo with more visible fold/lighting variation in the
+  print zone (the shading code already transfers whatever variation
+  exists — it can't invent detail the source photo doesn't have).
+Blocker: None.
+Next safe action: If the owner wants (1) above, fetch
+  https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d99b8bcce736/hdri/studio_small_03_1k.hdr
+  from an environment that can reach it, add it under
+  artifacts/trynex-storefront/public/, and change ProductViewer3D.tsx's
+  `<Environment preset="studio" />` to `<Environment files="/<path>.hdr" />`.
+Verification: storefront typecheck clean; storefront tests 69/69 pass;
+  production build succeeds; verified in a real browser via Playwright on
+  four surfaces (T-shirt white, T-shirt black, mug, hoodie) — grain is
+  visibly present with no box artifact on any of them, exported PNG and
+  the cart's server-rendered thumbnail are visually identical, and no new
+  console/page errors. Committed as 33e8861 and pushed to both
+  claude/ecom-customization-itpg9o and main (confirmed origin/main was
+  still at 2527c4f — no one else's work — before this push).
+```
+
+## Checkpoint: removed 3D/2D toggle; Add to Cart no longer blocks on image quality (2026-09-25)
+
+```text
+Status: complete for the scope built this checkpoint
+Last completed: The owner explicitly said to remove the 3D/2D split
+  ("3D / 2D NOT LIKE THIS, REMOVE THESE"), said the studio should work
+  like Printify/Printful end to end, reported that uploading an image and
+  trying to add it to cart was failing, and said the resolution-warning
+  messaging was too technical for real customers. Before changing
+  anything, ran an automated sweep of all 188 product/color/face
+  combinations across all 6 families (T-shirt, long sleeve, hoodie, mug,
+  cap, water bottle) through the live studio — zero "surface unavailable"
+  states, zero console errors. Mockup completeness was already solid; the
+  real problems were UX/architecture:
+  - Removed the "3D Preview" toggle and deleted
+    pages/design-studio/ProductViewer3D.tsx entirely (nothing else
+    imported it — garment3d.tsx, the shared 3D helper, is also used by the
+    separate, unrelated CartViewer3D.tsx, which was left untouched since
+    it isn't rendered anywhere and wasn't part of this report). Root cause
+    of the "3D preview unavailable" failure: `<Environment preset="studio">`
+    fetched an HDRI file from raw.githack.com (an unofficial third-party
+    mirror) at runtime; this sandbox's own egress proxy blocks that domain,
+    so it couldn't be fully confirmed broken for real customers, but it's
+    now moot — the whole feature is gone, so the previous checkpoint's
+    "self-host the HDR" follow-up no longer applies. The 2D compositor
+    (composeGarmentMockup/composeMockupSurface, carrying the fabric
+    shading fix from the prior checkpoint) is now the only view; curved
+    products (mug/cap/bottle) keep their curvature warp, which was always
+    driven by that same 2D compositor's `liveCurvature`/drawImageCurved,
+    not by the removed 3D viewer.
+  - Found the real add-to-cart bug: any uploaded image under 600px on its
+    shortest edge hard-disabled Add to Cart (two enforcement points —
+    addToCartBlockReason and a duplicate check inside handleAddToCart),
+    with a message quoting raw pixel dimensions. Removed both blocking
+    checks; image quality is now informational only, matching how
+    Printify/Printful handle it. Reworded StudioQualityBanner from "Print
+    check: blocked until fixed" to a calm, dismissible "A quick tip before
+    you order" with plain-language copy (no px numbers, no "danger" tone).
+    Genuine blockers are unchanged: no artwork uploaded, or a surface that
+    fails the smart-mockup contract.
+  - Removed show3D/setShow3D from useDesignStore.ts and
+    pages/studio/types.ts.
+  - Checked mobile at 390px: no horizontal overflow on load or after
+    upload. One full-page screenshot appeared to show the canvas missing
+    after upload — turned out to be a position:fixed screenshot-stitching
+    artifact from StudioStickyPurchaseBar, not a real bug; scrolling to the
+    canvas (or a viewport-only screenshot) shows it rendering correctly
+    with the design placed and selection handles working. Not fixed this
+    checkpoint, flagged as a known minor density issue below.
+Stopped at: All changes committed together, tested, and pushed. Nothing
+  left mid-edit.
+Files/areas changed: artifacts/trynex-storefront/src/hooks/useDesignStore.ts,
+  artifacts/trynex-storefront/src/pages/design-studio/ProductViewer3D.tsx
+  (deleted), artifacts/trynex-storefront/src/pages/studio/{DesignStudioV2.tsx,
+  types.ts, v1-components/V1StudioSupport.tsx}.
+Remaining work: None for the approved scope. One real, minor, honestly-
+  scoped follow-up if the owner wants it: on a phone-height viewport
+  (~844px), the onboarding tip banner + toolbar + face tabs push the
+  actual product canvas mostly below the fold on first upload — not
+  broken (no overflow, canvas renders correctly once scrolled to), just
+  denser than ideal. Lowest-risk fix would be collapsing
+  StudioQualityBanner's detail list on mobile by default, mirroring the
+  pattern StudioFirstUseGuide already uses (collapsed steps under
+  639px). Left alone this checkpoint since it isn't broken and the
+  reported bugs (can't add to cart, technical messaging, 3D toggle) are
+  now fixed.
+Blocker: None.
+Next safe action: If the owner wants the mobile density follow-up above,
+  it's a small, isolated change to V1StudioSupport.tsx's
+  StudioQualityBanner (add the same `expanded` + matchMedia pattern
+  StudioFirstUseGuide already has).
+Verification: storefront typecheck clean; storefront tests 69/69 pass;
+  production build succeeds (confirmed no ProductViewer3D chunk remains
+  in dist/assets); re-ran the full 188-combo sweep after all changes —
+  still zero unavailable surfaces, zero errors; verified in a real browser
+  that a deliberately tiny (300×300) uploaded image no longer blocks Add
+  to Cart and reaches a correct cart summary; checked mobile viewport
+  (390×844) for overflow (none) and confirmed the canvas renders
+  correctly. Committed as 0c9fc39 and pushed to both
+  claude/ecom-customization-itpg9o and main (confirmed origin/main was
+  still at 4612a1d — no one else's work — before this push).
+```
+
+## Checkpoint: real Smart Object mockup renderer — investigation + first infra slice (2026-09-25)
+
+```text
+Status: in progress — real infrastructure built and verified end-to-end;
+  the actual photorealistic render step remains blocked on a reachable
+  PSD-compositing engine
+Last completed: The owner asked for a production-grade pipeline
+  (customer artwork -> real PSD Smart Object -> real render -> photorealistic
+  image), explicitly forbidding hand-coded product geometry/fake canvas
+  overlays, and asked to investigate github.com/SethRobinson/Patchy as the
+  renderer. Required "first response before coding" (repo architecture +
+  Patchy's actual documented API) before any implementation — did that
+  first, then built the parts that turned out to be genuinely achievable.
+
+  Patchy investigation (read directly from the repo, not training-data
+  memory): README, scripts/bundled/scripting-guide.md, AGENTS.md,
+  docs/smart-objects.md, docs/smart-object-editing.md, docs/ai-control.md,
+  RELEASE-HISTORY.md. Confirmed real strengths (MIT, native+WASM, 98.83%
+  perceptual PSD fidelity, genuine Smart Object/blend-mode/mask/layer-style
+  support) and one load-bearing gap: the documented JS scripting API and
+  MCP connector have zero methods for Smart Object detection or content
+  replacement — docs/smart-object-editing.md states plainly this is
+  GUI-menu-only today. CLI automation (--headless --run-script
+  script.js --script-output out.txt, patchy.args.key, patchy.setResult())
+  is real and documented for general layer/pixel/export operations.
+
+  This sandbox's network policy only allows npm/PyPI/crates.io/Go-modules/
+  Anthropic APIs (confirmed via the proxy's own rejection log) — Flathub,
+  GitHub releases, Patchy's own WASM web build (patchyimageeditor.com), and
+  Photopea were all individually tested and all rejected at the proxy
+  (connect_rejected, policy denial), not a per-host issue. npm itself was
+  checked for any Patchy package/WASM distribution — none exists (the only
+  "patchy" on npm is an unrelated 2013 diff-patching utility). This is a
+  hard environment boundary, not a Patchy-specific problem: no native
+  binary, WASM build, or hosted web editor could be reached to actually
+  install/run/test a real PSD compositor from inside this sandbox.
+
+  Found real, git-committed PSD/PSB Smart Object masters already exist in
+  this repo: dist-mockups/staging/smart-v10-v3/masters/ — 188 files (every
+  product x color x face), passing tools/audit_psd_masters.mjs's structural
+  check 188/188. Important honest caveat found and reported to the owner:
+  their Smart Object placement is a hard-coded rectangle per product/view
+  (tools/build-smartobject-mockups.mjs's CANONICAL table) — programmatically
+  authored, not hand-warped by a human in real Photoshop — and the repo's
+  own most rigorous existing test (tools/verify-smartobject-roundtrip.mjs)
+  admits in its own comments that its "recomposite" step is a flat
+  nearest-neighbor rectangle paste, not real blend-mode/mask-aware
+  rendering. Confirmed by direct code reading (lines 256-258 of that
+  script) that ag-psd itself does not regenerate a Smart Object layer's
+  composited pixels from its transform when linked content changes — it
+  only swaps linked bytes at the container level. An initially-promising
+  "two-stage" idea (ag-psd swaps linked bytes, Patchy just needs to open+
+  export using only documented API) was tested against this and could not
+  be confirmed to work with tools available here — genuinely unresolved,
+  not dismissed; flagged as the specific thing the first real Patchy run
+  must prove or disprove.
+
+  Built, tested, and verified through the real running dev server (not
+  just typechecked):
+  - lib/psdSmartObject.ts: real ag-psd Smart Object discovery
+    (inspectTemplate — works regardless of layer name, walks groups) and
+    linked-content replacement (replaceSmartObjectContent).
+  - lib/mockupRenderer.ts: MockupRenderer interface + PatchyRenderer
+    (shells out to PATCHY_BINARY_PATH via the documented CLI surface;
+    throws RendererNotConfiguredError, never fakes output, when unset).
+  - scripts/render-smart-object.js: the actual Patchy automation script,
+    using only app.open/doc.exportAs/patchy.args/patchy.setResult — no
+    invented Smart Object API.
+  - mockup_templates + mockup_jobs tables (migration 007) and
+    lib/mockupQueue.ts: DB-backed job queue (Redis isn't provisioned —
+    REDIS_URL is an unpopulated optional secret in render.yaml), worker
+    concurrency via MOCKUP_WORKER_CONCURRENCY, retry limit, render caching
+    by templateVersion+artworkHash+options cache key.
+  - routes/smartMockupRender.ts: admin template create/inspect/select-
+    smart-object/test-render(9-point)/activate/deactivate, plus customer
+    POST /api/smart-mockups/render and GET /api/smart-mockups/jobs/:id.
+    Deliberately new/additive — does not touch routes/mockups.ts (the
+    existing Mockup Gallery admin content feature, built on the pre-
+    existing mockupsTable) or routes/mockupRender.ts (the current
+    canvas-compositor render path at POST /api/mockup/render used by
+    server-mockup-render.ts on the frontend). CAUTION for the next agent:
+    this session's first attempt at this file overwrote the pre-existing
+    routes/mockups.ts by mistake (recovered immediately via
+    `git checkout --`, nothing lost) — this is exactly why the new file is
+    named smartMockupRender.ts and not mockups.ts/mockupRender.ts; do not
+    rename it back into either of those names without re-checking for
+    collision first.
+  - tools/seed-mockup-templates.mjs: registered all 188 real masters
+    through the live admin HTTP API (not a DB shortcut) — 188/188 created,
+    inspected, and had their (single, auto-detected) Smart Object
+    auto-selected, with zero errors.
+
+  Verified live against the running dev server, via curl, not assumed:
+  templates list shows 188 rows, all active:false (fail-closed default);
+  a real test-render on template id 1 correctly passed tests 1-3
+  (open/find-smart-object/replace-content — genuinely real ag-psd
+  operations) and correctly, honestly failed test 4 (render) with
+  "PATCHY_BINARY_PATH is not set" rather than fabricating output;
+  activate was correctly refused (409 not_validated) on that
+  failed-validation template; a customer render POST was correctly refused
+  (409 template_not_active); security checks all correct: non-image/SVG
+  artwork rejected (400), missing templateId rejected (400), a path-
+  traversal attempt on template registration rejected (400, "escapes the
+  configured template root").
+Stopped at: All of the above committed together, tested, and pushed.
+  Nothing left mid-edit. The rendering engine itself is the one piece not
+  yet real — everything upstream and downstream of it is.
+Files/areas changed: lib/db/src/schema/index.ts (mockup_templates,
+  mockup_jobs tables), lib/db/migrations/007_add_mockup_templates_and_jobs.sql,
+  artifacts/api-server/src/lib/{psdSmartObject.ts, mockupRenderer.ts,
+  mockupQueue.ts, objectStorage.ts (added saveBuffer)},
+  artifacts/api-server/src/routes/{smartMockupRender.ts (new), index.ts},
+  artifacts/api-server/scripts/render-smart-object.js,
+  artifacts/api-server/src/index.ts (starts the worker),
+  tools/seed-mockup-templates.mjs.
+Remaining work: The rendering engine. Two real paths, both requiring
+  either the owner or a different environment, not cleverness from inside
+  this sandbox: (1) the owner uploads Patchy's Linux build (Flatpak or an
+  AppImage/tarball if one exists) directly as a file into this session —
+  bypasses the network block entirely, could be tested within minutes;
+  (2) build a small Dockerized worker service and deploy it to Render
+  (env: docker, not the current env: node — no Dockerfile exists in this
+  repo yet), since Render's build/runtime environment has normal internet
+  access unlike this coding sandbox — this is a real infra/cost change the
+  owner should approve before it's built, not something to do silently.
+  Once either unblocks it: run the first real render, confirm or disprove
+  the two-stage hypothesis in lib/mockupRenderer.ts's own doc comment, and
+  only then activate templates and build the customer-facing Design Studio
+  integration (uploading via the existing studio UI into POST
+  /api/smart-mockups/render, polling job status, replacing the current
+  canvas-compositor preview) and the admin template-management UI page —
+  neither of those frontend pieces exist yet, by design, since building
+  them around an unverified renderer would risk exactly the "looks done,
+  isn't" outcome the owner explicitly warned against repeating.
+Blocker: No PSD-compositing renderer is reachable from this sandbox by any
+  means (native binary, WASM build, or hosted web editor — all individually
+  confirmed blocked by this environment's network policy, not a Patchy-
+  specific problem).
+Next safe action: Owner uploads a real Patchy Linux build as a file into
+  this session (fastest), or approves building+deploying a Dockerized
+  render worker to Render. Either way, the very next step after that is
+  running one real render against template id 1 (cap black back, already
+  registered and Smart-Object-mapped) and honestly reporting whether the
+  two-stage architecture actually reproduces Photoshop-fidelity output.
+Verification: api-server typecheck clean, tests 38/38 pass; lib/db
+  declarations rebuilt after the schema change; migration 007 applied
+  cleanly against the local dev DB (confirmed in server boot logs); all
+  188 real templates registered/inspected/smart-object-selected through
+  the live HTTP API with zero errors; every fail-closed gate (activation,
+  customer render on inactive template) and every security check (format
+  allowlist, path traversal) verified against real requests, not assumed.
+```
+
+---
+
+## 2026-09-26 audit and release checkpoint
+
+Status: ready for review
+Last completed: Audited the checkout against `github/main`, confirmed the local
+branch is exactly synchronized with the remote, verified the active 188-surface
+Smart Mockup staging tree and runtime-role matrix, rebuilt shared database
+declarations, passed the full workspace typecheck, passed storefront/API tests
+and production builds, restarted the API and storefront workflows, and passed
+the live non-mutating smoke suite 30/30 at `https://trynext.shop`.
+Stopped at: The public site is already live and the source is already pushed to
+GitHub `main`; only this audit checkpoint remains to be committed. The
+Smart Object renderer remains fail-closed because no Patchy/native renderer is
+available in this environment.
+Files/areas changed: This checkpoint updates this handoff and the durable agent
+memory only. No application source, runtime assets, or uploaded screenshots were
+added to the release.
+Remaining work: Provide a real PSD compositor binary or an approved external
+worker before activating the 188 Smart Object templates or replacing the current
+browser/runtime compositor.
+Blocker: No reachable PSD-compositing renderer is available in the current
+environment; structural PSD/PSB validity and runtime matrix validity do not
+prove Photoshop-fidelity output.
+Next safe action: Commit and push this documentation checkpoint. For the
+renderer work, upload a Patchy Linux build or explicitly approve a separate
+Dockerized worker deployment, then validate one real render before activation.
+Verification: `node tools/audit_psd_masters.mjs dist-mockups/staging/smart-v10-v3/masters`
+passed 188/188; `node tools/validate-smart-matrix.mjs
+dist-mockups/staging/smart-v10-v3` passed 188/188 with matching checksums;
+`node scripts/validate-mockup-matrix.mjs` passed 188 surfaces and 1,128 roles
+with status `candidate`; `pnpm run typecheck` passed; storefront tests passed
+19 files/69 tests; API tests passed 11 files/38 tests; storefront and API builds
+passed; `git diff --check` passed; both workflows restarted cleanly; live
+critical-flow smoke checks passed 30/30.
+
+---
+
+## 2026-09-26 real PSD compositor checkpoint
+
+Status: blocked — real compositor launch succeeded, Smart Object compositing
+failed visual validation
+
+Last completed: Downloaded Patchy v0.99 `PatchyLinux.flatpak` from the public
+release and verified its published SHA-256. Flatpak deployment could not finish
+through the sandbox's missing D-Bus service, but the app and KDE runtime commits
+were imported and Patchy's own runtime loader launched the genuine binary.
+Ran the repository's actual two-stage pipeline against
+`cap/cap-black-back.psd`: `replaceSmartObjectContent` replaced the linked bytes,
+then `render-smart-object.js` opened and exported the modified PSD through
+Patchy's documented headless CLI.
+
+Result: the output was a valid non-empty 1024×1024 RGBA PNG, but it was
+byte-for-byte identical to Patchy's export of the untouched PSD
+(`196996e9d6e6a6d332a23e25ef13cd0ac7223170244023e22b7ada125e5e1387`).
+The replacement artwork therefore did not enter the Smart Object composite;
+the renderer trusted the stale cached raster. This is a genuine compositor
+failure, not a structural PSD failure.
+
+Files/areas changed: `artifacts/api-server/src/lib/mockupRenderer.ts` now
+resolves its script path with `fileURLToPath(import.meta.url)`, which works in
+the configured `tsx`/CommonJS execution path; the previous `import.meta.dirname`
+expression was undefined there. The renderer status comment records the
+Patchy result. No runtime assets or template activation state was changed.
+
+Remaining work: Find a PSD compositor that recomputes Smart Object pixels from
+updated linked content, or add an explicitly approved render worker using one.
+Do not activate the 188 candidate templates or replace the current browser
+compositor based on this Patchy result.
+
+Blocker: Patchy v0.99's documented `app.open`/`doc.exportAs` path does not
+refresh the modified Smart Object composite in this repository's masters.
+
+Verification: API typecheck passed; real renderer returned `engine: patchy`,
+`outputWidth: 1024`, `outputHeight: 1024`, and a non-empty PNG; untouched and
+modified exports compared equal with `cmp`; all templates remain fail-closed.
+
+---
+
+## 2026-09-26 Photopea renderer integration checkpoint
+
+Status: in progress — Photopea engine implemented; real export remains blocked by
+the headless environment's Cloudflare challenge
+
+Last completed: Added a genuine Photopea renderer behind the existing
+`MockupRenderer` seam. It launches the available Chromium executable through the
+DevTools protocol, loads a configurable Photopea URL, sends the modified PSD as
+an ArrayBuffer, waits for Photopea's `done` message, executes
+`app.activeDocument.saveToOE("png")`, receives the exported image ArrayBuffer,
+and writes the PNG without touching its pixels. `PSD_RENDERER=photopea`,
+`patchy`, or `auto` selects the engine; auto prefers Photopea when Chromium is
+present. Fixed the compiled API helper-script path for both renderer scripts.
+
+The source inventory is complete for the active staged release: 188 PSD/PSB
+masters, 200 source PNGs, 188 previews, 188 proof previews, and the public
+1,128-role runtime matrix. The structural master audit, staging checksum
+matrix, runtime-role validator, API tests, and full workspace typecheck all
+pass.
+
+Stopped at: A real Chromium invocation reached the Photopea URL but received
+only the Cloudflare challenge and therefore never emitted `done`; no exported
+PNG was accepted. This is an external access blocker, not a PSD parse,
+Smart Object replacement, or renderer-cleanup failure.
+
+Files/areas changed:
+  - `artifacts/api-server/scripts/render-photopea.js`
+  - `artifacts/api-server/src/lib/mockupRenderer.ts`
+  - `replit.md`
+  - `.agents/memory/photopea-smart-object-renderer.md`
+  - `.agents/memory/MEMORY.md`
+  - this handoff
+
+Remaining work: Run the Photopea renderer once from an environment that can
+pass the Photopea/Cloudflare challenge, confirm the modified export differs
+from the untouched baseline, and only then validate/activate templates. No
+customer-facing renderer replacement or candidate activation is permitted
+before that evidence exists.
+
+Blocker: Photopea is reachable from this headless Chromium only as a
+Cloudflare challenge in the current environment. Patchy remains rejected
+because its export was byte-for-byte identical after Smart Object replacement.
+
+Next safe action: Set `PSD_RENDERER=photopea` and a reachable
+`PHOTOPEA_URL`/Chromium path in an approved worker environment, run the admin
+template test-render on one cap master, and require tests 4–9 — especially the
+changed-vs-baseline export check — before scaling beyond the representative
+surface.
+
+Verification: Photopea helper syntax check passed; API typecheck and bundle
+build passed; API tests passed 11 files/38 tests; full workspace typecheck
+passed; the 188-master audit passed; the 188-surface staging checksum matrix
+passed; the public runtime validator passed 188 surfaces/1,128 roles; API
+liveness/readiness returned 200 after restart. The real Photopea attempt
+failed closed with `Photopea did not return an export before the timeout`;
+no runtime assets or template activation state changed.
+
+---
+
+## 2026-09-28 Browser validator selector fix
+
+Status: fixed and running in the local preview; Smart Mockup templates remain
+fail-closed.
+
+Last completed: Fixed the Browser Photopea validator catalog normalization in
+`artifacts/api-server/src/routes/smartMockupRender.ts`. The staging manifest
+does not persist `surfaceKey`, so the API now derives the canonical
+`family/color/view` key before returning catalog rows. The frontend select in
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`
+is controlled directly by that normalized key. This fixes the issue where
+`cap / black / back` could be clicked but would immediately disappear because
+every option had an undefined value.
+
+Verification: API typecheck passed; storefront typecheck passed; API tests
+passed 11 files/38 tests; storefront tests passed 19 files/69 tests; API and
+storefront builds passed; both preview workflows restarted successfully and
+reported their ports as ready.
+
+Remaining work: Use the authenticated browser Photopea session to prove one
+modified export differs from its untouched baseline, then continue the
+representative-family and 188-surface validation. Do not activate templates or
+replace the customer compositor before that evidence exists.
+
+Next safe action: Open the local Replit preview at `/admin/mockups`, sign in
+normally, and confirm the normalized selector now retains `cap / black / back`
+before running the browser Photopea export proof.
+
+---
+
+## 2026-09-28 Mobile artwork upload fix
+
+Status: fixed and live in the local preview.
+
+Observed issue: On Android, the validator showed the selected PNG filename but
+then displayed `Could not read the artwork file.` The API logs confirmed that
+admin login and the browser catalog both succeeded, so this was a client-side
+file-reader failure rather than an authentication or selector problem.
+
+Last completed: Replaced the validator's FileReader-based data URL conversion
+with `File.arrayBuffer()` and bounded chunked base64 conversion in
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`.
+The client now preserves PNG/JPG/JPEG/WebP MIME types and reports explicit
+unsupported or empty-file errors.
+
+Verification: Storefront typecheck passed; storefront tests passed 19
+files/69 tests; storefront build passed; the storefront workflow restarted
+successfully. API remained healthy and the authenticated catalog request
+returned HTTP 200.
+
+Remaining work: The real Photopea changed-vs-baseline export proof is still
+required before any Smart Mockup activation. No templates or customer
+compositor behavior were changed.
+
+---
+
+## 2026-09-28 GitHub publication checkpoint
+
+Status: reviewed validator source published to GitHub `main`; Smart Mockup
+activation remains blocked pending real Photopea evidence.
+
+Published commit: `efdf2c2d6e42229130a65e64c7f4c773c2391866` in
+`georgelsmith333-hub/New-Trynext`. The GitHub integration verified the branch
+ref and confirmed the published catalog normalization, mobile artwork reader,
+and Photopea renderer files.
+
+The publication intentionally included functional source and project
+documentation only. Local screenshots, pasted evidence files, and the
+upload-only test artwork were not copied into the GitHub release commit.
+
+Remaining work: A successful code build, selector response, or PSD byte
+replacement is not evidence that all 188 Smart Objects render. The next
+release gate is still one real Photopea modified-vs-untouched PNG comparison,
+followed by representative-family checks and the full 188-surface run. Until
+those exports differ and are visually reviewed, do not claim all 188 work,
+activate templates, or replace the customer compositor.
+
+---
+
+## Current continuation — browser payload gateway timeout (2026-09-27)
+
+Status: ready for review — the confirmed production gateway failure is fixed in
+the local source and committed, but the Pages deployment still needs to publish
+the change.
+
+Last completed: Compared the attached blocker report with the live route and
+source. The POST `/api/admin/smart-mockups/browser-payload` request was routed
+as a primary write and could be aborted by the shared 3.5-second edge timeout.
+Added a route-specific 30-second primary budget for that endpoint only, in both
+Cloudflare gateway copies, with regression coverage. Ordinary API writes keep
+the 3.5-second timeout.
+
+Stopped at: The focused gateway test, storefront typecheck, API typecheck, local
+API/storefront restart, and unauthenticated production probes are complete.
+Production POST reaches the primary and returns the expected 401 without admin
+credentials; no authenticated PSD pair was requested or accepted.
+
+Files/areas changed: `functions/gateway-config.ts`,
+`functions/api/[[path]].ts`, `artifacts/trynex-storefront/functions/gateway-config.ts`,
+`artifacts/trynex-storefront/functions/api/[[path]].ts`, and
+`artifacts/trynex-storefront/functions/api/gateway.test.ts`.
+
+Remaining work: Publish the reviewed commit to GitHub/Pages, then use an
+authenticated browser session to confirm the endpoint returns both PSD payloads
+and run the changed-vs-untouched Photopea export proof. Keep all templates
+inactive until that proof differs and is visually reviewed.
+
+Blocker: The current headless environment still cannot complete the Photopea
+Cloudflare challenge. This checkpoint does not claim Smart Object rendering or
+188-surface readiness.
+
+Next safe action: After Pages deploys, run the existing authenticated browser
+validator on `cap/black/back`; inspect response timing and require modified and
+baseline PNG hashes before any activation.
+
+Verification: Local PSD inspection plus Smart Object replacement measured
+126–208ms on the reported cap master. Gateway tests passed 14/14; storefront
+and API typechecks passed; local liveness/products probes returned 200; local
+and production unauthenticated browser-payload POST probes returned 401.
+
+---
+
+## 2026-09-27 Photopea Smart Object refresh fix
+
+Status: in progress — the next source fix is implemented and locally verified;
+the authenticated production retry is still required.
+
+Last completed: Reviewed the new live evidence for `cap/black/back`. The API
+returned both PSDs, Photopea opened and exported both 1024×1024 PNGs, and the
+modified and baseline SHA-256 values were identical
+(`9d83297530b244eb2c921b94682b8ac39cb725d6dcd95e3894d76af98b7e9889`).
+The artwork was not visible, so the surface correctly remained unapproved.
+
+Root cause addressed: The server-side `ag-psd` replacement changes the linked
+Smart Object bytes, but the browser validator opened the parent PSD and
+exported immediately. Photopea can retain the parent's cached Smart Object
+composite until the placed layer is explicitly opened, saved, and closed.
+
+Files/areas changed: `artifacts/api-server/src/routes/smartMockupRender.ts`
+now returns the exact selected Smart Object layer name. The browser validator
+now runs Photopea's documented `placedLayerEditContents` → save → close flow
+for the modified PSD, waits for an explicit completion marker, and then
+exports the parent. The untouched baseline still exports without mutation.
+The script builder and its focused test are in
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.ts` and
+`photopeaSmartObject.test.ts`.
+
+Remaining work: Publish this source fix and rerun the authenticated browser
+validator on `cap/black/back`. Require a changed modified-vs-baseline hash and
+visual artwork evidence before any template activation or broader matrix run.
+
+Blocker: The local headless environment is still blocked by Photopea's
+Cloudflare challenge, so this fix has not been claimed as a real compositor
+success.
+
+Next safe action: Deploy the updated API and storefront, run the same uploaded
+artwork through the validator, and inspect the browser console/status if the
+refresh marker is not received. Keep all templates inactive on any failure.
+
+Verification: Storefront tests passed 20 files/72 tests; API tests passed
+11 files/38 tests; both typechecks passed; API bundle build passed; the local
+cap master resolved the expected layer name and ID, and linked-art replacement
+changed the PSD SHA-256 from `22f3c0bf…` to `bfb9afb3…`.
+
+---
+
+## 2026-09-27 Production readiness continuation
+
+Status: ready for review — the merged API/gateway and storefront validator
+assets are live; Smart Mockup activation remains blocked on authenticated
+Photopea evidence.
+
+Last completed: Reconciled the reported `65cf5f5` merge with GitHub `main`.
+Commit `65cf5f5904dc4553ab155bdd00e6b7c2d50b11a8` contains the `a6c2044`
+validator fix, and GitHub `main` advanced to
+`89fe820bfa5f5414281963a16b26a7a098c40df1`, which includes both. GitHub's
+Cloudflare Pages check passed for that revision.
+
+Verification: The live root and `/admin/mockups` returned HTTP 200. Live
+`/api/health/liveness` and `/api/health/readiness` returned HTTP 200. An
+unauthenticated POST to
+`/api/admin/smart-mockups/browser-payload` returned the expected HTTP 401 in
+under one second. The live root bundle and lazy-loaded
+`AdminMockups-CsveVTho.js` bundle matched the fresh local production build by
+SHA-256; the admin chunk contains the
+`placedLayerEditContents` refresh marker and `browser-payload` route.
+Local API and storefront workflows restarted successfully; API connected to
+the healthy database candidate and completed migrations with no errors.
+
+Stopped at: The authenticated browser validator has not been run from this
+session, so there is still no accepted modified-vs-untouched PNG pair or
+visual proof for `cap / black / back`.
+
+Files/areas changed: No product/runtime source was changed during this
+readiness check. The storefront production bundle was rebuilt locally for
+comparison. This handoff entry records the live evidence.
+
+Remaining work: Sign in through the existing admin browser session, run the
+validator once for `cap / black / back` with asymmetric artwork, record both
+PNG dimensions and SHA-256 values, and require visible realistic artwork plus
+`changed composite: PASS`. Then repeat representative flat and curved checks
+and the documented 188-surface matrix.
+
+Blocker: This environment has no authenticated admin browser session and the
+headless Photopea path has previously been blocked by Photopea's Cloudflare
+challenge. Do not weaken authentication, activate templates, or replace the
+customer compositor to work around this.
+
+Next safe action: Use the normal authenticated admin session at
+`https://trynext.shop/admin/mockups` and complete the documented Photopea
+proof. Keep every Smart Mockup template inactive until the modified export
+differs from the untouched baseline and the artwork is visually reviewed.
+
+---
+
+## 2026-09-27 GitHub publication and preview verification
+
+Status: published and locally verified; Smart Mockup activation remains blocked
+on authenticated Photopea evidence.
+
+Last completed: Reconciled the local branch with GitHub `main` without a force
+push, published the handoff/runbook updates and the latest attached preview
+troubleshooting notes, rebuilt the API and storefront, restarted both managed
+workflows, and verified the local and production preview boundaries.
+
+Verification: Local root and `/admin/mockups` returned HTTP 200; local
+liveness/readiness returned HTTP 200; production root and `/admin/mockups`
+returned HTTP 200; production liveness returned HTTP 200; unauthenticated
+browser-payload requests returned the expected HTTP 401. API tests passed
+12 files/39 tests, storefront tests passed 20 files/72 tests, API and
+storefront typechecks passed, shared library typecheck passed, and both
+production builds passed. The local screenshot rendered the storefront with
+no browser console errors. GitHub `main` was published at
+`627f8a8ae5a6da761c9f5f97b1ae1ff3f3d421dc`; CI and active app verification
+were still in progress at the time of this entry.
+
+Remaining work: Complete the authenticated `cap / black / back` browser
+validator run, record the modified and untouched PNG hashes, and require
+visible artwork plus `changed composite: PASS` before activating any Smart
+Mockup template or replacing the customer compositor.
+
+Blocker: This session has no authenticated admin browser session, and the
+headless Photopea path has previously been blocked by Photopea's Cloudflare
+challenge. Do not weaken authentication or activate templates to work around
+this.
+
+Next safe action: Open the normal authenticated admin session at
+`https://trynext.shop/admin/mockups`, run the validator once with asymmetric
+artwork, and review both output images and hashes.
+
+---
+
+## Server-side Smart Object raster refresh fix (2026-09-27)
+
+Status: implemented on top of current main and locally verified; production deployment still pending.
+
+The browser validator previously replaced only linkedFiles.data, leaving the placed layer raster and stale document composite unchanged. The server now decodes artwork to the placed layer's native dimensions, updates the placed-layer raster, and reserializes the PSD so Photopea receives changed source and changed layer/composite data. This complements the current main browser-side placedLayerEditContents refresh flow.
+
+Verification: API 39/39 tests, workspace typecheck, storefront 69/69 tests, storefront build, API build, and PSD audit 188/188 passed. No templates were activated. The generic mockups:validate-matrix command still references the stale smart-v10 manifest path and is unrelated.
+
+---
+
+## 2026-09-28 Smart Mockup renderer publication and verification
+
+Status: ready for review — the current Smart Mockup source fixes are published and
+locally verified; authenticated Photopea visual approval remains intentionally
+pending.
+
+Last completed: Reauthorized the GitHub connection, reconciled against the live
+remote `main`, and published the current renderer/browser-validator changes as
+`85990e8f`. Published the follow-up validator test correction as
+`35eb68e1`. The pasted chat transcript was not added to the release.
+
+Files/areas changed: server-side Photopea output conversion and validation
+persistence, Smart Object placed-layer replacement/refresh handling, browser
+Photopea refresh and export handling, and the focused renderer/validator tests.
+
+Verification: API tests passed 42/42; storefront tests passed 72/72; workspace
+typecheck passed; API and storefront production builds passed; the PSD audit
+found 188/188 openable masters with one Smart Object each; the Smart Object
+release gate passed as `structurally-verified` for all 188 surfaces. Local
+liveness, readiness, and products probes returned 200. Protected browser-catalog
+and browser-payload probes returned the expected 401 without admin credentials.
+The storefront preview rendered without browser console errors.
+
+Stopped at: No authenticated admin browser session is available here, and the
+headless Photopea path has previously been blocked by Photopea's Cloudflare
+challenge. Therefore there is still no accepted modified-vs-untouched PNG pair
+or visual proof for `cap / black / back`.
+
+Remaining work: Run the existing authenticated browser validator with asymmetric
+artwork, require different modified and baseline PNG hashes plus visible artwork,
+then repeat representative flat/curved checks before any template activation.
+
+Blocker: Authenticated Photopea visual proof is unavailable in this session.
+Do not weaken authentication, activate templates, or replace the customer
+compositor to work around it.
+
+Next safe action: Open the normal authenticated admin session at
+`https://trynext.shop/admin/mockups`, run `cap / black / back`, and review the
+two exported images and their hashes.
+
+---
+
+## 2026-09-28 Photopea browser bridge continuation
+
+Status: blocked — the validator hardening is published and locally verified;
+authenticated Photopea visual approval remains required.
+
+Last completed: Reconciled the current checkout with GitHub `main`, hardened the
+browser validator to accept Photopea live-messaging responses by documented
+origin rather than a fragile `event.source` identity, and published the reviewed
+three-file source change to GitHub `main` as `a596fbe8`. The pasted transcript and
+attached screenshots were not added to the release.
+
+Stopped at: Local services were restarted successfully, but this session still
+does not have an authenticated admin browser session for the final Photopea
+visual proof.
+
+Files/areas changed:
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`,
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.ts`, and
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.test.ts`.
+
+Remaining work: Run `cap / black / back` with asymmetric artwork in the normal
+authenticated admin browser, record modified and untouched PNG dimensions and
+SHA-256 values, require visible artwork plus a changed composite, then repeat
+representative flat and curved surfaces and the documented 188-surface review.
+Do not activate any Smart Mockup template before those gates pass.
+
+Blocker: No authenticated Photopea browser session is available in this
+session. Headless Photopea has previously been blocked by its Cloudflare
+challenge. Do not weaken authentication, bypass the changed-composite gate, or
+replace the customer compositor.
+
+Next safe action: Open `https://trynext.shop/admin/mockups` in the normal
+authenticated admin session, run the existing browser validator, and review both
+exports and their hashes.
+
+Verification: Storefront tests passed 20 files/72 tests; storefront typecheck
+and production build passed; API typecheck passed; local root and
+`/admin/mockups` returned 200; liveness, readiness, and products returned 200;
+the protected browser-payload probe returned the expected 401; both managed
+workflows restarted cleanly; and the storefront screenshot rendered without
+browser-console errors. The structural 188/188 and Smart Object gates remain
+verified from the prior checkpoint. No authenticated visual-composite proof was
+claimed.
+---
+
+## 2026-09-29 Photopea baseline isolation fix
+
+Status: deployed and locally verified — the browser validator now isolates the
+untouched baseline render in a fresh Photopea iframe; authenticated visual
+approval remains required.
+
+Last completed: Reviewed the authenticated `cap / black / back` result from
+Manus. The modified export visibly contained the asymmetric artwork, but its
+SHA-256 matched the untouched baseline exactly, so the Smart Mockup activation
+gate correctly failed closed. The likely contamination point was reuse of the
+same Photopea session for both modified and baseline exports. Updated the
+browser validator to render the baseline in an isolated hidden Photopea
+session, remove it after completion, and report the exact Photopea phase and
+message on timeout or export failure. The modified preview remains in the
+visible session. Published only the three validator/Photopea bridge source
+files to GitHub `main`; attached screenshots and transcripts were excluded.
+
+Stopped at: The isolated-browser fix is deployed and present in the live lazy
+admin chunk, but has not yet been rerun in the authenticated admin browser.
+
+Files/areas changed:
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`,
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.ts`, and its
+focused test. The attached continuation transcripts and screenshots remain
+untracked and were not added to the release.
+
+Remaining work: Rerun `cap / black / back` with asymmetric artwork. Require
+visible artwork plus different modified and untouched PNG SHA-256 values.
+Then repeat representative flat and curved surfaces and the documented
+188-surface review before any Smart Mockup activation.
+
+Blocker: This session cannot perform the authenticated Photopea browser run.
+Headless Photopea has previously been blocked by its Cloudflare challenge.
+The live deployment is not blocked: build marker `20260928183646` and the
+lazy `AdminMockups` chunk contain the isolation and diagnostic markers.
+Do not weaken authentication, bypass the changed-composite gate, or replace
+the customer compositor.
+
+Next safe action: Open `https://trynext.shop/admin/mockups` in the normal
+authenticated admin session and rerun the validator on `cap / black / back`
+with asymmetric artwork. Keep all templates inactive until visible artwork and
+different modified/untouched PNG SHA-256 values are both recorded.
+
+Verification: Storefront tests passed 20 files/72 tests (72/72); API tests
+passed locally 14 files/42 tests; storefront and API typechecks passed;
+storefront and API production builds passed; local root, `/admin/mockups`,
+liveness, readiness, and products probes returned 200; the protected
+browser-payload probe returned the expected 401; the local storefront workflow
+restarted cleanly; the live root returned 200 with the updated build marker;
+and the live lazy admin chunk contained the fresh baseline-session,
+phase-specific timeout, and Smart Object refresh markers. The final
+authenticated visual-composite proof remains intentionally unclaimed.
+
+---
+
+## 2026-09-29 Photopea readiness handshake fix
+
+Status: published and live — local verification complete; authenticated visual
+composite proof remains required.
+
+Last completed: Fixed the browser Photopea bridge so iframe load and Photopea's
+initial `done` readiness message may arrive in either order, but the PSD is sent
+only once both have occurred. The initialization `done` is no longer treated as
+PSD-opened; the next `done` after the PSD transfer is the document-open
+transition. Smart Object refresh and PNG export remain ordered behind that
+transition. Added regression coverage for both readiness orders and the
+ready-versus-open distinction. Published the verified validator source and test
+through the connected GitHub account; Cloudflare Pages served the new build.
+
+Stopped at: The live bundle is verified, but this session cannot perform the
+authenticated browser validation with asymmetric artwork.
+
+Files/areas changed:
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`,
+`artifacts/trynex-storefront/src/pages/admin/photopeaSmartObject.test.ts`.
+
+Remaining work: Open `https://trynext.shop/admin/mockups` in the normal
+authenticated admin session and run `cap / black / back` with asymmetric
+artwork. Require visible artwork and different modified/untouched PNG SHA-256
+values before activating any template. Then repeat representative flat and
+curved surfaces and the documented 188-surface review.
+
+Blocker: No authenticated Photopea browser session is available to this Agent;
+headless Photopea has previously been blocked by its Cloudflare challenge.
+GitHub CI and active-app verification were still in progress at the last poll.
+
+Next safe action: Use the authenticated admin browser validator on
+`cap / black / back`; keep all templates inactive until the changed-composite
+gate passes.
+
+Verification: Focused Photopea tests passed 3/3; full storefront tests passed
+20 files/74 tests; storefront typecheck passed; full workspace typecheck
+passed; storefront production build passed; local storefront and API workflows
+restarted cleanly; the local admin route returned the expected unauthenticated
+401 boundary; the live root returned HTTP 200 with build marker
+`20260928190800`; and the live `AdminMockups` chunk contains the new readiness,
+PSD-open, refresh-marker, and phase-specific timeout strings.
+
+---
+
+## 2026-09-29 Authenticated Photopea representative validation
+
+Status: representative browser validation passed; full activation review remains
+pending.
+
+Last completed: The authenticated admin-browser report for the live site
+confirmed the readiness-gated validator passed all three representative
+surfaces: `cap / black / back`, `tshirt / white / front`, and
+`mug / white / front`. Each reported visible asymmetric artwork and different
+modified versus untouched PNG SHA-256 values. No PSD-open timeout or
+received-message error was reported, and no template was activated.
+
+Evidence:
+- `cap / black / back`: modified
+  `06a2a11316380a8d4823858d5166428dcb2030f2ccd1992d7108f879445d40de`;
+  baseline `9d83297530b244eb2c921b94682b8ac39cb725d6dcd95e3894d76af98b7e9889`.
+- `tshirt / white / front`: modified
+  `a21a3be1ba9074d6965189e650c9302efc551d6edd9eeccd60199580687b0976`;
+  baseline `6841336b11f556ee77e6cc20cdd8f68937f77ad697367d86f8c92094362777f0`.
+- `mug / white / front`: modified
+  `2e18abfd824ef45181433a2ff7eedd9896bddc871580f7c3db600704444213d7`;
+  baseline `5621e8e72e20c85fee0e94a5dbf3e535644b44a916ea5d858ee19aa5c5c852c0`.
+
+Stopped at: The report's two screenshot paths point to the separate browser
+environment and are not present in this workspace, so the recorded visual
+result is attributed to the authenticated browser report rather than
+independently re-opened here.
+
+Remaining work: Repeat the documented full 188-surface review before activating
+any Smart Mockup template.
+
+CI note: GitHub `CI` passed for the published source commit. The separate
+`Active app verification` workflow failed only at its `Run API tests` step;
+its GitHub job-log endpoint returned `Forbidden` and the check published no
+diagnostic summary. The same local API suite passes 14 files/42 tests, so do
+not claim the active workflow failure is a Photopea regression or invent its
+root cause without a rerun/log.
+
+---
+
+## 2026-09-29 Full mockup release gate status
+
+Status: structurally ready for all 188 surfaces; not visually approved for
+blanket activation.
+
+Completed directly in the workspace:
+- Smart Object release gate: passed, `188/188`, structurally verified.
+- Canonical matrix: passed, `188/188`, all checksum records match.
+- Runtime role matrix: passed, `188/188` surfaces and `1,128` runtime roles.
+- Editable masters remain outside public runtime paths.
+- Live representative browser evidence already passes for cap, tshirt, and mug.
+
+The authoritative manifests remain fail-closed by design:
+`release-manifest.status=structurally-verified`,
+`release-manifest.visualApproval=false`, and runtime roles remain
+`status=candidate`. Do not pass `--approve-visual`, activate templates, or
+promote all surfaces from structural checks alone.
+
+Remaining work: An authenticated browser operator must run the full documented
+188-surface Photopea review with visible artwork and changed-composite proof on
+every surface. Keep any failed or ambiguous surface inactive.
+
+---
+
+## 2026-09-29 Photopea timeout recovery
+
+Status: recovery fix verified locally; publish before resuming the browser
+review.
+
+Reported state: the external review reached `47/188`, with `46` passes and one
+failure at `longsleeve / black / back`. The failure was `Runner timeout or
+missing terminal state`; the next surface was not executed because the browser
+validator button remained unavailable. No results were carried forward and no
+templates were activated.
+
+Diagnosis: local preparation of the reported PSD pair completes in about one
+second, so the failure is in the browser/Photopea session rather than a slow
+server-side PSD payload.
+
+Fix: the browser validator now retries each modified or baseline Photopea
+render once after resetting the editor frame, reports the retry phase, and
+always returns to a terminal error state after the final failure. The action
+button exposes `Retry browser validation` after an error instead of remaining
+locked in a non-terminal state. The changed-composite and authentication gates
+remain fail-closed.
+
+Verification: focused Photopea tests passed `3/3`; full storefront tests passed
+`20 files / 74 tests`; storefront typecheck passed; production build passed; and
+the storefront workflow restarted cleanly.
+
+Next safe action: publish this recovery fix, then resume at
+`longsleeve / black / back`. Record the existing 46 passes as prior evidence,
+rerun the failed surface, and continue through the remaining 141 surfaces.
+Do not activate templates until all 188 surfaces have explicit visual proof.
+
+---
+
+## 2026-09-29 Photopea timeout recovery publication
+
+Status: published and locally verified; the authenticated 188-surface visual
+review remains pending.
+
+Last completed: Fetched the newer GitHub `main`, merged it without rewriting
+history, preserved the readiness handshake, baseline isolation, and timeout
+retry behavior, reran the storefront checks, and published the reconciled
+history to GitHub `main`. The attached continuation transcript remains
+untracked and was not published.
+
+Stopped at: The source fix is live in the repository and local services are
+healthy. The browser review must resume at `longsleeve / black / back`, using
+the prior 46 recorded passes as evidence and requiring a fresh pass for the
+failed surface before continuing.
+
+Files/areas changed:
+`artifacts/trynex-storefront/src/pages/admin/SmartMockupBrowserValidator.tsx`,
+`AGENT_HANDOFF.md`, and
+`.agents/memory/photopea-smart-object-renderer.md`.
+
+Remaining work: Use the normal authenticated admin browser to rerun
+`longsleeve / black / back`, continue the remaining documented surfaces, and
+keep every template inactive until all 188 surfaces have visible artwork and
+different modified/untouched PNG SHA-256 values.
+
+Blocker: This Agent session has no authenticated Photopea browser session.
+Headless Photopea remains blocked by its Cloudflare challenge. Do not weaken
+authentication, bypass the changed-composite gate, or replace the customer
+compositor.
+
+Next safe action: Open `https://trynext.shop/admin/mockups` in the normal
+authenticated admin session, rerun the failed surface, then continue the
+full review from that checkpoint.
+
+Verification: Photopea focused tests passed `3/3`; storefront tests passed
+`20 files / 74 tests`; storefront typecheck and production build passed; API
+typecheck and build passed; local storefront and API workflows restarted
+cleanly; local storefront/admin and API liveness/readiness/products routes
+returned 200; and GitHub `main` matches the reconciled local merge commit.
+
+---
+
+## 2026-09-29 Authenticated Photopea visual release gate
+
+Status: complete — authenticated visual gate passed; templates remain inactive
+
+Last completed: The authenticated browser runner completed the remaining
+Smart Mockup review and retried the previously unresolved
+`hoodie / burgundy / back` surface in a fresh Photopea session. The operator
+reported valid modified and untouched 1024×1024 PNG exports, visible
+asymmetric artwork, a changed composite, and different SHA-256 values.
+
+Stopped at: All 188 canonical surfaces have reported successful visual
+validation. No template approval, promotion, or activation action was used.
+
+Files/areas changed: `AGENT_HANDOFF.md` only. The proof log and screenshot
+remain in the external authenticated runner environment and were not available
+as local workspace files for independent inspection in this session.
+
+Remaining work: None for the authenticated 188-surface visual review. Any
+future template activation or production promotion is a separate explicit
+release action and must preserve the fail-closed approval gate.
+
+Blocker: None for the reported visual gate. This Agent session did not own the
+authenticated browser session, so the aggregate result is recorded as
+operator-reported evidence rather than locally re-executed evidence.
+
+Next safe action: Keep all templates inactive until the owner explicitly
+authorizes promotion. If promotion is requested, inspect the stored proof
+record, run the structural/runtime release checks, then perform only the
+approved activation path.
+
+Verification: Operator reported `188/188` live visual passes, zero timeout or
+message failures, zero hash-equality failures, zero unresolved surfaces, and
+successful retry evidence for `hoodie / burgundy / back`. No Meta Ads campaign
+was changed or launched.
+
+---
+
+## 2026-09-29 Smart Mockup runtime promotion
+
+Status: complete — promoted, verified, and published to GitHub
+
+Last completed: Applied the explicit owner-authorized Smart Mockup promotion,
+recreated the complete four-commit history through the authorized GitHub
+connection, and verified that GitHub `main` reaches the same local head.
+The v10.3 release manifest now reports `status:verified`,
+`visualApproval:true`, and 188 surfaces. The staging source-master manifest
+remains `candidate` by design, while both staging and public runtime-role
+manifests report `status:accepted` for the reviewed 188-surface runtime.
+
+Stopped at: Publication completed without activating legacy database template
+rows or changing customer/order/payment behavior.
+
+Files/areas changed:
+`dist-mockups/staging/smart-v10-v3/release-manifest.json`,
+`dist-mockups/staging/smart-v10-v3/runtime-roles/manifest.json`,
+`artifacts/trynex-storefront/public/mockups/psd-master-v10/runtime-roles/manifest.json`,
+`tools/validate-smartobject-release.mjs`, and the capability verifier.
+
+Remaining work: None for the approved promotion scope. No further Smart Mockup
+visual review is required for the reported 188/188 authenticated gate.
+
+Blocker: None for GitHub publication. The authenticated proof record remains
+in the external runner environment and was not independently re-executed here.
+
+Next safe action: Keep the accepted v10.3 runtime-role package active. Do not
+mass-activate legacy database template rows; the canonical customer resolver
+uses the accepted runtime-role package.
+
+Verification: Structural release validator passed 188/188 before and after
+approval; approval remained intact across a no-flag structural recheck;
+capability verification passed 22/22; runtime matrix passed 188 surfaces and
+1,128 roles with `status:accepted`; API typecheck and 14 files/42 tests
+passed; storefront typecheck, 20 files/74 tests, and production build passed;
+both workflows restarted cleanly; local `/`, `/design-studio`,
+`/api/health/liveness`, `/api/health/readiness`, and `/api/mockups` returned
+200; the API returned 188 rows; the public runtime manifest returned accepted
+with 188 surfaces; the final Design Studio screenshot had no browser console
+errors; and GitHub `main` was verified at
+`58e81e39d7f90c7a34829ce1704f4ff83b5319c4`.
+
+---
+
+## 2026-10-03 Order success, invoices, and Rocket checkout
+
+Status: implementation and local verification complete; clean feature-branch
+publication complete. No production deployment was performed.
+
+Last completed: Aligned Rocket wallet support across web checkout, mobile
+checkout, and API order/payment-evidence validation. Order invoices now map
+Rocket, keep submitted money separate from verified payments, handle refunded
+orders without showing an outstanding balance, recognize Dhaka district
+variants, and include courier tracking details when available. Mobile success
+invoices now use the saved order response for customer, item, and amount data.
+The Design Studio control is visibly labeled “Change product”.
+
+Verification: Storefront, API, and mobile typechecks passed; all 84 storefront
+tests and 42 API tests passed; storefront production build and mobile web
+export completed; API production build completed; web/API/mobile workflows
+started; Design Studio preview showed the updated control. No real customer
+orders were created. The public settings response contains the `rocketNumber`
+field, but the current development database has no configured value, so Rocket
+is correctly hidden there until an admin number is saved.
+
+Publication: `fix/waterbottle-white-identity` contains the reviewed functional
+source changes based on the verified `main` tip. Pasted notes and screenshot
+evidence under `attached_assets` were excluded. `main` was not changed.
+
+The local Replit branch was intentionally left unchanged and still has its
+earlier four-commit history. Do not push that local history over the clean
+GitHub branch. All 17 tracked pasted-note and screenshot paths were excluded
+from the published tree.
+
+Remaining work: None for this verified release. In another Replit remix, fetch
+and select `fix/waterbottle-white-identity` before continuing; `main` does not
+contain these release changes. If the changes should become the default for
+future remixes, ask before merging the feature branch into `main`. Preserve the
+water-bottle fail-closed approval gates. Production deployment remains separate
+and was not requested.
+
+## 2026-10-03 Cloudflare Pages Smart Mockup production audit
+
+Status: complete for read-only production serving verification. No production
+data, Cloudflare configuration, GitHub ref, or deployment was changed.
+
+Last completed: Checked the actual custom domain `https://trynext.shop`, not a
+local preview. The storefront and `/design-studio` returned 200 through
+Cloudflare; the non-mutating critical-flow smoke check passed 30/30. The live
+Smart v10.3 runtime manifest returned `accepted` with 188 surfaces and 188
+source masters. `/api/mockups` returned 188 ready/approved rows: 156 PSD and
+32 PSB records, all marked `staging-only` for editable-master storage. The
+public runtime contains six core roles for each surface plus displacement
+roles on 56 surfaces. All 1,134 unique runtime-role PNG files were fetched;
+every response was HTTP 200 `image/png` and every SHA-256 matched the manifest.
+
+Live Chromium interactions loaded the T-shirt front/back and black variant,
+then switched through long sleeve, hoodie, mug, cap, and water bottle; the
+matching live runtime images loaded for each family. No artwork upload, cart,
+checkout, order, payment, or application API mutation was performed (Cloudflare
+RUM telemetry was observed). This verifies the live derivative/runtime path,
+not a new artwork upload through to checkout or a fresh authenticated Photopea
+visual-validation run. The browser receives runtime PNGs; editable PSD/PSB
+masters remain outside public paths, as intended.
+
+Separate production issue found: a fresh browser could not register
+`/sw.js`. Workbox reports conflicting precache entries for `/offline.html`
+(one revisioned and one unrevisioned); the live service-worker file itself
+returns 200 JavaScript and parses, but fails during evaluation. The online
+storefront and Design Studio interactions still work. Local `vite.config.ts`
+includes `offline.html` in both the HTML precache glob and
+`additionalManifestEntries`. This issue was not changed or deployed.
+
+The current local checkout is `fix/waterbottle-white-identity`, six commits
+ahead of `github/main`; those commits include attached notes/screenshots and
+change the bottle path to a non-Smart-Object photo while removing it from the
+customer Smart Mockup release. Production currently serves the accepted bottle
+runtime. Do not push this local history or replace the live bottle runtime
+without reconciling the clean published branch and the bottle approval decision.
+
+Stopped at: Read-only production checks and assessment of the local
+unpublished diff are complete. No Manus-specific action was present in the
+attached note.
+
+Files/areas changed: This handoff only; no application source was edited.
+
+Remaining work: If requested, fix and locally verify the duplicate
+`offline.html` precache registration before a separate Pages release. An
+authenticated Photopea visual proof and artwork-upload-to-cart flow were not
+performed in production.
+
+Blocker: No authenticated admin/Photopea session was available. Production
+uploads and commerce writes were intentionally avoided.
+
+Next safe action: Keep the verified live runtime unchanged. Treat the PWA
+precache collision and any Manus-specific work as separate, explicitly scoped
+follow-ups; do not push the current local branch.
+
+Verification: `https://trynext.shop` route/API/auth-boundary smoke 30/30;
+manifest 188/188; 1,134/1,134 unique runtime files returned 200 and matched
+their SHA-256 values; public Design Studio family/color/face interactions
+passed. The separate service-worker registration failure is recorded above.
+
+## 2026-10-04 Read-only production and order-success audit
+
+Status: read-only audit complete; owner supplied current dashboard results.
+No application or provider changes made.
+
+Cloudflare Pages: `trynext-shop-new` serves `trynext.shop` and
+`www.trynext.shop`. Its latest successful production deploy is `main` at
+`80dbab30692b9e5f202cf9a01594b6abb7981c78`, from 2026-10-01 01:20 UTC.
+`API_PRIMARY_ORIGIN`, `API_READ_ORIGINS`, and legacy `API_ORIGINS` are unset.
+
+Render: the current workspace has active Free service
+`trynex-lifestyle-main-render`, deployed at `80dbab3…`, and a
+`trynex-lifestyle` service suspended by its user. The requested `trynex-api`,
+standby-2, and standby-3 names are not present in the current inventory.
+Thirty-day telemetry includes an hourly peak near 163.99 MB; the monthly total
+and workspace quota remain unknown because the billing page redirected to
+login. The live service's Free plan differs from the committed `render.yaml`
+Starter plan; trust the dashboard for current service state, not the manifest.
+
+Database and backups: the admin DB Cluster page reports Neon Main online and
+active, 1/1 healthy, approximately 467 ms probe latency. All fallback, analytics,
+secondary, products, and Replit candidates are unconfigured. Public readiness
+also passed, measuring 58 ms for its simpler query. The backup page reports a
+closed circuit, zero failures, and no last-run timestamp. Its generic 30-minute
+mirror description does not show that a mirror ran; API health says
+`backupSyncEnabled=false`. Neon provider-level usage/retention and any separate
+backup service are still unverified.
+
+Live routing/cache: public health reports database/catalog and Redis healthy,
+`runtimeRole=primary`, scheduler enabled, backup sync disabled, and `storage=r2`.
+Safe reads and writes route to the same primary. Two identical product requests
+both returned `X-Trynext-Edge-Cache: MISS` and `CF-Cache-Status: DYNAMIC`, and
+both reached Render. This is an unresolved code-level cache/egress issue; do not
+assume the configured safe-read cache is reducing origin traffic.
+
+Checkout diagnosis: the successful Pages and Render builds use `main` commit
+`80dbab306`, which lacks the customer invoice button and success celebration.
+The clean remote `fix/waterbottle-white-identity` branch (`a19dbdc5`) contains
+the previously verified work from `83868e91`. The feature branch has not been
+deployed. Its celebration respects reduced-motion settings and lasts only a
+few seconds. No production order was created.
+
+Release safety: the local checkout is not a safe push target. It is seven
+commits ahead of `github/main`, differs from the clean feature branch in
+handoff/evidence files, and has two untracked user attachments. Do not push it.
+Review/reconcile the clean feature branch against live `main` and preserve the
+water-bottle approval gates before any merge or deployment.
+
+Separate known issue: Workbox's duplicate `offline.html` precache entry breaks
+fresh service-worker registration. It was not fixed in this audit.
+
+Stopped at: current Render workspace quota/monthly total and Neon provider-level
+usage/backup retention remain unknown. No production order/payment/admin write,
+provider setting, application source, commit, push, or deployment was changed.
+
+Next safe action: wait for direction on whether to review the clean checkout
+release branch, fix the code-level cache/PWA issues first, or pause for provider
+usage details. Never request or share provider tokens, passwords, or database
+URLs.
+
+Verification: production storefront, products, sitemap, liveness, readiness,
+healthz, and repeat safe-read cache behavior were checked read-only. The owner
+provided Cloudflare, Render, and DB/backup status summaries. No app build/test
+was rerun because application source was not changed.
+
+## Approved follow-up work — 2026-10-04
+
+Status: owner asked to complete both the invoice-branch review and the cache/PWA
+work. This authorizes local review and code fixes, not a production release.
+
+Order of work:
+1. Compare clean remote `fix/waterbottle-white-identity` (`a19dbdc5`) with the
+   deployed `main` commit (`80dbab306`); identify the precise release scope and
+   preserve all water-bottle approval gates.
+2. Diagnose and fix safe-read API cache misses without caching cookie-bearing,
+   authenticated, searching, or otherwise user-specific responses. Verify an
+   identical public catalog request can produce a cache hit and still routes
+   correctly.
+3. Fix duplicate `offline.html` precaching; verify a fresh service-worker
+   install/evaluation with exactly one offline-shell entry.
+4. Run relevant storefront tests/build and inspect the final diff. Keep changes
+   local; do not merge, push, deploy, submit an order, or change provider
+   configuration without separate approval.
+
+Owner evidence still needed for infrastructure conclusions: current Render
+workspace monthly outbound total/quota and Neon provider usage/backup-retention
+status. Cloudflare's API-origin overrides are unset, so no override change is
+currently indicated. Ask the owner for the remaining non-secret readings if
+they become necessary; never request credentials.
+
+## 2026-10-04 Local verification of approved follow-up work
+
+Status: local implementation and verification complete; no production release.
+This section supersedes the earlier checkout-count snapshot: the current
+workspace is 10 commits ahead of `github/main`, and six untracked screenshot
+attachments remain untouched.
+
+Why the order-success and invoice work remained pending: the clean remote
+`github/fix/waterbottle-white-identity` branch at `a19dbdc5d` contains the
+reduced-motion-aware `OrderSuccessCelebration`, invoice PDF generator, and
+customer download buttons in Checkout and Track Order. Deployed
+`github/main` remains at `80dbab306` and does not contain that feature set.
+The handoff's pending status was therefore a release/integration boundary, not
+evidence that the feature code had not been written. The feature branch was not
+merged to `main` or deployed.
+
+Local checks and changes:
+- Celebration source uses `useReducedMotion()` and renders no confetti when
+  reduced motion is requested; its particles finish in about 2.8–3.7 seconds.
+  No order was submitted to verify this against production.
+- The invoice test calls the real PDF generator in a temporary working
+  directory, reads the generated file, verifies the `%PDF` signature and
+  non-trivial size, then removes it. This verifies Node-side PDF generation and
+  safe naming; a browser/device download event has not been verified.
+- Mobile shop filters now have a labelled 44px trigger, active-filter count,
+  right-side accessible drawer, focus/escape handling, safe-area spacing, and
+  scroll locking. Current and improved states are available in the isolated
+  design-system preview; both were visually checked at 402×874.
+- The Pages API cache only stores safe public catalog GETs. Cookies,
+  authorization, search/unknown query parameters, unknown `x-` headers, and
+  unsafe response headers/statuses bypass storage. Local cache and invoice
+  tests passed; this is not a live Cloudflare cache-hit measurement.
+- Workbox excludes `offline.html` from the glob and adds it explicitly once.
+  The generated service worker has one `/offline.html` precache manifest entry;
+  its second occurrence is the runtime offline fallback.
+
+Verification: storefront suite passed (23 files, 96 tests); targeted cache and
+invoice tests passed (19 tests); storefront typecheck and production build
+passed; mockup sandbox typecheck/build passed; `git diff --check` passed.
+
+Safety: COD/25% advance and payment/order safeguards remain in place; no order
+or payment was created, no mockup approval gate was bypassed, and Cloudflare,
+Render, and Neon settings were not changed. The API Server workflow was not
+started. Six untracked customer-provided screenshots remain unstaged.
+
+Next safe action: ask before reconciling or pushing this checkout to GitHub
+`main`; doing so may trigger production deployment. Until then, keep all changes
+local and do not merge, push, deploy, or change provider configuration.
+
+## 2026-10-04 Consolidated Claude handoff checklist
+
+Status: documentation complete; no application source or provider configuration
+changed.
+
+Last completed: Reviewed `AGENTS.md`, `AGENT_HANDOFF.md`, `replit.md`,
+`docs/trynext-agent-handoff-prompt.md`, and the project rebuild tracker. Added
+`CLAUDE_HANDOFF_CHECKLIST.md` as a self-contained transfer document covering the
+latest verified state, immediate remaining work, project-wide audit areas,
+release limits, and stale-document handling. Marked the older Smart Mockup
+prompt as historical in the new checklist; it must not be treated as the active
+release plan.
+
+Stopped at: The approved cache/PWA and invoice source work is locally verified.
+Production reconciliation, push, merge, deployment, and provider changes remain
+outside the approved scope. Invoice browser/device download behavior and live
+Cloudflare cache-hit behavior have not been verified.
+
+Files/areas changed:
+- `CLAUDE_HANDOFF_CHECKLIST.md`
+- `AGENT_HANDOFF.md`
+- `docs/trynext-agent-handoff-prompt.md`
+
+Remaining work: Use the checklist to verify invoice browser downloads and
+determine whether mobile shop-filter preview work is integrated into the app.
+Resolve the configured remote versus historical canonical repository mismatch
+before any GitHub write. Obtain separate approval before release actions.
+
+Blocker: No blocker for this documentation work. Release actions require
+separate owner approval; current production cache behavior requires an approved
+deployment to verify.
+
+Next safe action: Start the next coding session by reading
+`CLAUDE_HANDOFF_CHECKLIST.md` and the newest `AGENT_HANDOFF.md` section, then
+continue with local, non-mutating invoice and mobile integration verification.
+
+Verification: Cross-checked the latest 2026-10-04 handoff section against the
+current Git branch/status output. The configured remote discrepancy and the
+historical untracked-attachment note are explicitly flagged for rechecking.
+No application tests were rerun because application code was not changed.
+
+## 2026-10-04 Claude Code and GitHub development-home handoff
+
+Status: handoff files prepared; GitHub publication is pending repository
+selection. No application code, provider configuration, or production data was
+changed.
+
+Last completed: Added root `CLAUDE.md` as Claude Code's automatic project entry
+point. Updated `CLAUDE_HANDOFF_CHECKLIST.md` with the owner's GitHub/Claude Code
+transition request and the publication boundary. Updated this handoff and
+`replit.md` to distinguish future GitHub development from Replit-specific
+environment notes.
+
+Stopped at: The owner asked to push the project to GitHub and continue full-stack
+development there. The connected GitHub account can access both
+`georgelsmith333-hub/New-Trynext` (the configured remote, recently active) and
+`georgelsmith333-hub/trynext-lifestyle` (the repository named in the older
+prompt). The destination has not yet been selected.
+
+Files/areas changed:
+- `CLAUDE.md`
+- `CLAUDE_HANDOFF_CHECKLIST.md`
+- `AGENT_HANDOFF.md`
+- `replit.md`
+
+Remaining work:
+- Owner selects the destination repository.
+- Prepare a clean, reviewed non-default branch from that repository's current
+  default-branch tip and publish it; do not push the existing local history
+  wholesale.
+- Verify the handoff branch and files through GitHub.
+- Keep pasted chat records, customer screenshots, credentials, and unrelated
+  attachments out of the transfer.
+- Do not merge to `main`, deploy, or change provider settings without separate
+  approval.
+
+Blocker: Destination repository is ambiguous. The current local branch is 12
+commits ahead of its tracking ref and its 79-path delta includes 27
+`attached_assets/` files (pasted chat records and screenshots); publishing that
+history wholesale would expose unrelated user-provided material. A clean
+reviewed transfer branch is required.
+
+Next safe action: Ask the owner to choose `New-Trynext` or
+`trynext-lifestyle`; then compare against the selected repository's current
+default branch and prepare a filtered, non-default handoff branch.
+
+Verification: Confirmed the current branch, upstream, configured remote, ahead
+count, and changed-path inventory without changing refs. The connected GitHub
+account reports access to both candidate repositories. `CLAUDE.md` and the
+checklist are linked together. No push or deployment was performed.
+
+## 2026-10-04 — Destination confirmed and pre-release checks
+
+Status: A clean candidate branch is on GitHub. The production `main` branch is
+unchanged; pull-request checks and the live merge are still pending.
+
+Last completed: The owner selected `georgelsmith333-hub/New-Trynext` and
+explicitly authorized a live push if safety checks pass. GitHub's `main` was
+verified at `80dbab30692b9e5f202cf9a01594b6abb7981c78`. Tree comparison found no
+required source or public assets to copy from `trynext-lifestyle`; its only
+old-only code file is an unused Studio V2 3D viewer. Do not copy it.
+
+Verification completed locally:
+- API tests pass with database environment variables unset: 14 files, 42 tests.
+- Storefront tests pass: 23 files, 96 tests.
+- Workspace typecheck and the full workspace production build pass.
+- Mobile typecheck passes.
+- Smart mockup matrix accepts all 188 surfaces and 1,128 runtime roles.
+- `git diff --check` passes.
+- GitHub's current root CI passed. Its Active App Verification had failed on the
+  previous `main` because a pure validation test imported a database-dependent
+  API route. The validator is now isolated in a database-independent module;
+  verify the fix in pull-request CI before merging.
+
+Stopped at: `claude-handoff-2026-10-04` was created directly from the verified
+`New-Trynext/main` tip `80dbab30692b9e5f202cf9a01594b6abb7981c78` and has since
+been advanced by handoff-only commits. Re-read the branch ref to get its current
+tip before continuing. The branch contains only the reviewed 54-file candidate;
+all 27 `attached_assets/` paths, local commit history, and Replit-only
+`.agents/memory` notes were excluded. PR #2 is open with the verified base and
+head and exactly 54 changed files; the GitHub PR file list contains no excluded
+paths. Required checks and the live merge are pending.
+
+Files/areas changed: Checkout/invoice/payment and mobile order-flow work from the
+local branch, product/catalog and edge-cache changes, Smart Mockup validation
+test isolation, and the Claude Code handoff documents. The release tree contains
+81 changed paths relative to the last verified local tracking ref; 27 attachment
+paths are excluded.
+
+- Wait for the pull-request checks, including Active App Verification, on the
+  final PR head.
+- Merge only if all required pull-request checks pass.
+- After the live update, verify the storefront, API health, catalog cache
+  behavior, sitemap, and accepted Smart Mockup runtime on `trynext.shop`.
+- Do not create a test order, payment, or production-data mutation.
+- Browser/device invoice-download checks remain safe follow-up verification; do
+  not create a real order to perform them.
+
+Blocker: No local blocker. Pull-request checks and production health are still
+pending.
+
+Next safe action: Monitor PR #2's checks. Recheck the base branch and verify all
+required checks are green immediately before merging.
+
+Verification: `pnpm run typecheck`, `pnpm run build`, `pnpm run validate:mockups`,
+the API and storefront tests, `git diff --check`, and 30/30 read-only live
+critical-flow checks all passed. The candidate path scan found no
+high-confidence credential patterns. No provider settings, database data,
+orders, or payments were changed.
+
+## 2026-10-04 Claude Code session — post-merge reconciliation and invoice verification
+
+This section supersedes the "Destination confirmed and pre-release checks"
+section above, which still describes PR #2 as open. Times are UTC; the repo's
+"2026-10-04" dates are Dhaka local time (UTC+6).
+
+```text
+Status: in progress — verification pass complete for checklist items A and B;
+  item C blocked by the session's network policy. Docs-only change; no
+  application source was edited. Not merged to main, not deployed.
+Last completed:
+  - Fetched GitHub. origin/main is 2549742 ("Reviewed Trynext release and Claude
+    Code handoff (#2)"). PR #2 was MERGED by the owner on 2026-10-03 22:22 UTC.
+    CI and Active app verification both succeeded on that commit. The previous
+    main (80dbab3) had failed Active app verification; the database-independent
+    validator fix resolved it.
+  - Remote branch review: claude/ecom-customization-itpg9o and
+    manus/photopea-browser-validator are fully contained in main;
+    claude-handoff-2026-10-04 has a tree identical to main (pre-squash PR
+    branch); fix/waterbottle-white-identity (2 commits from 2026-10-03) is older
+    than main and differs by 24 files where main has the newer work. Nothing was
+    merged from any of them. The remote copy of claude/nice-carson-nxjq7q did
+    not exist at fetch time.
+  - Baseline on 2549742: pnpm install --frozen-lockfile OK; pnpm run typecheck
+    passes for all packages; storefront tests 23 files / 96 tests pass; API
+    tests with DATABASE_URL* unset 14 files / 42 tests pass.
+  - Item A (invoice downloads): verified in headless Chromium against the local
+    Vite dev server with every /api call served from fixtures (fake customer
+    data, non-localhost requests aborted, any unmocked write aborted and
+    recorded — none occurred). A real browser download event fired for Track
+    Order (desktop 1280x800 and phone 390x844) and for Checkout success (COD and
+    bKash wallet paths, both viewports). Filename is
+    Trynext-Invoice-<orderNumber>.pdf; each file is a valid 1-page A4 PDF
+    (%PDF- header, %%EOF trailer, about 10.4-10.7 KB). pdftotext confirmed order
+    number, customer name/phone/email/address, payment method, items, totals,
+    the 25% advance (1,100 total -> 275 advance, 825 on delivery), settings-
+    driven store name and contact block, and "Payment submitted — awaiting
+    verification" without crediting unverified payment. Dates render in
+    Asia/Dhaka by design. No page exceptions.
+  - Item B (mobile shop filters): NOT integrated in the Expo app.
+    artifacts/trynext-mobile/app/(tabs)/shop.tsx has only inline search,
+    category chips, and sort pills. The drawer exists in the isolated
+    artifacts/mockup-sandbox previews, and in the WEB storefront
+    (artifacts/trynex-storefront/src/pages/Products.tsx): 44px labelled trigger
+    with active count, aria-modal dialog, Escape handling, focus trap, body
+    scroll lock, and safe-area padding. The web drawer was inspected in code
+    only in this session, not exercised in a browser.
+Stopped at: Item C — the live cache check could not run. The session's egress
+  policy denied trynext.shop:443 (CONNECT 403, logged by the agent proxy).
+Files/areas changed: AGENT_HANDOFF.md and CLAUDE_HANDOFF_CHECKLIST.md only.
+Remaining work:
+  - Item C: after trynext.shop is allowed for this environment (or from a
+    machine with access), send the same anonymous public catalog request twice,
+    for example /api/products?limit=4&includeTotal=false (both parameters are on
+    the cache allowlist), and record X-Trynext-Edge-Cache,
+    CF-Cache-Status, and whether the second request is a HIT. Also confirm the
+    PR #2 deployment actually went live (Cloudflare was not visible from here).
+  - Real-device or Safari invoice download is not verified; Chromium only.
+  - Authenticated-customer Track Order and an unmocked backend were not tested.
+  - Expo shop filter drawer is follow-up work and needs owner approval as scope.
+  - Reconcile PROJECT_REBUILD_TRACKER against current code (not started).
+  - Optional: browser-check the web Products.tsx filter drawer at narrow/tall
+    viewports.
+Blocker: Network policy denies trynext.shop for this session (item C only).
+Next safe action: Allow trynext.shop under the environment's network settings and
+  run the two-request cache check, or ask the owner for the headers.
+Verification: Commands and results are as listed above. Test fixtures and
+  scripts were kept outside the repository. The dev server was stopped. No
+  production request was made, and no order, payment, provider setting, or
+  database was touched.
+Observations (not changed):
+  - src/lib/psdSmartObject.test.ts in the API package takes about 3.3 s alone but
+    up to about 5.6 s when other test files run in parallel, against Vitest's 5 s
+    default; it timed out twice in this session. FIXED in the next section by a
+    30 s per-test timeout (not a skip).
+  - Mobile checkout summary reads "Order Summary (1 items)" (pluralization).
+```
+
+## 2026-10-04 Backend audit and first fixes (Claude Code session)
+
+```text
+Status: in progress — audit complete; first fixes verified locally and on PR #3
+  (claude/nice-carson-nxjq7q). Not merged to main, not deployed.
+Last completed:
+  - Static routing audit of artifacts/api-server/src/routes: 222 literal
+    router.<method>("path") registrations across 40 routers, mounted order
+    checked: 0 duplicate method+path pairs and 0 static routes shadowed by an
+    earlier parameterised route. Limit: routes registered with a variable path,
+    a regex, or router.use(path, ...) were not scanned.
+  - AI endpoints: every outbound provider fetch in routes/ai.ts and
+    routes/aiExecute.ts had an abort timeout except one. FIXED: the Pollinations
+    fallback in POST /api/ai/developer/chat (admin only) now has a 60 s connect
+    timeout; before, a hung fallback held the request open until the gateway cut
+    it. Public AI routes are rate limited by aiLimiter in app.ts.
+  - Admin health (GET /api/admin/system/health) reported config, not health:
+    * Redis showed "ok" whenever the env vars were set, even during a real
+      Upstash outage (the check wrote to the in-process fallback cache, which
+      never throws). FIXED: it now uses getRedisStatus(), as the public
+      /healthz already did.
+    * The DB ping had no timeout and its latency was never returned. FIXED:
+      database and Redis probes now have a 5 s deadline and return latencyMs and
+      a fixed, secret-safe detail ("timed out" / "unreachable") on failure.
+      Response additions are additive; services.<name>.status is unchanged.
+  - New test file src/routes/systemHealth.test.ts (9 tests). Mutation-checked:
+    reintroducing the old Redis behaviour makes the outage test fail.
+  - psdSmartObject.test.ts got a 30 s per-test timeout (see the note above).
+Stopped at: Fixes verified locally; PR #3 CI pending on the new commit.
+Files/areas changed: artifacts/api-server/src/routes/ai.ts,
+  artifacts/api-server/src/routes/systemHealth.ts,
+  artifacts/api-server/src/routes/systemHealth.test.ts (new),
+  artifacts/api-server/src/lib/psdSmartObject.test.ts, and this file.
+Remaining work:
+  - storage, Telegram, and auth entries in the admin health response are still
+    "ok" from configuration alone (storage is hard-coded "ok"); they are not
+    live probes. Decide which are worth probing without cost or side effects.
+  - Admin "live health" page (realtime health, request/error rate, latency,
+    recent errors, live change feed) is designed but not built; it needs the
+    owner's go-ahead on polling cadence and scope. Render Free plan limits
+    mean small payloads and tab-visible polling only, no always-on streaming.
+  - Real production errors cannot be seen from this session (network policy
+    denies trynext.shop). Ask the owner for non-secret error text from the admin
+    Activity Log, Render logs, or the browser console.
+  - Live deployment and live cache behaviour remain unverified (see above).
+Blocker: None for local work; production visibility is blocked by network policy.
+Next safe action: Wait for PR #3 CI, owner review of the preview, and the
+  owner's decision on release gating; then build the admin live-health page on a
+  fresh branch from main after PR #3 merges.
+Verification: API typecheck passes; API suite 15 files / 51 tests pass on two
+  consecutive runs with DATABASE_URL* unset; node ./build.mjs succeeds; the new
+  Redis-outage test fails against the old behaviour and passes with the fix.
+  No production request, order, payment, or data change was made.
+```
+
+## 2026-10-04 Live Health page, crash and error fixes, mockup readiness (Claude Code session)
+
+This continues the section above, whose pull request (#3) was merged to `main` as
+`dd6f1e2` after CI passed. This work is on branch `claude/nice-carson-nxjq7q`,
+restarted from that `main`, and is delivered by the pull request that carries
+this section. At the time of writing it is pushed for review and **not merged and
+not deployed**; GitHub, not this file, shows what happened afterwards.
+
+```text
+Status: ready for review — verified locally against a real API and database.
+Last completed:
+  1. Admin "Live Health" page (/admin/live-health, sidebar: System > Live Health).
+     API: GET /api/admin/system/live (admin only, no-store, about 6 KB) returns
+     real database and Redis probes (5 s deadline, measured latency, shared for
+     5 s across tabs), process memory, event-loop lag, a rolling 60-minute
+     traffic window (requests, 4xx, 5xx, p50/p95 from a fixed histogram),
+     slowest and failing routes, redacted recent server errors, and a count-only
+     backup summary. Counters live in memory (lib/requestMetrics.ts, bounded: 60
+     buckets, 200 routes, 50 errors) and reset when the API restarts or sleeps;
+     the page says so. Probes, uptime pings and the live endpoint itself are not
+     counted. Page: refreshes every 10 s only while the tab is visible, Pause /
+     Resume (Resume refreshes at once), overall verdict with plain-language
+     findings (thresholds in src/lib/liveHealth.ts), traffic and p95 charts,
+     routes tables, recent errors, and a live feed of admin changes from the
+     existing activity log. When the API cannot reach its database the admin
+     endpoint answers 500 (sessions are verified in the database), so the page
+     reads the public /healthz to say "API running, database down" and keeps the
+     last good numbers on screen marked Stale.
+  2. API process crash fixed. When Postgres dropped an idle connection (restart,
+     failover, Neon idle suspend) pg emitted an unhandled pool 'error' and Node
+     killed the whole API. Reproduced by stopping a local Postgres; every pool in
+     lib/db and the API now has an error listener (lib/db/src/index.ts, and
+     api-server src/lib/poolGuard.ts for the backup-sync and cluster-probe
+     pools). Re-run: the API stayed up, /healthz reported db "error", and it
+     recovered by itself.
+  3. Global error handler moved to src/lib/errorHandler.ts. Malformed JSON,
+     oversized and wrongly encoded bodies now return 400 / 413 / 415 (they were
+     HTTP 500 with a raw parser message and an error log); real server errors
+     return a generic message in production (no SQL or internal text) and are
+     recorded redacted for the Live Health page; a response that has already
+     started is handed to Express so the connection closes instead of hanging.
+  4. Duplicate category and blog slugs return 409 (they were 500); helper in
+     src/lib/dbErrors.ts. Hampers and customer signup already did.
+  5. Smart Mockups checked, nothing changed except one tooling default.
+     validate:mockups: accepted, 188 surfaces, 1,128 runtime roles.
+     mockups:validate-matrix now defaults to dist-mockups/staging/smart-v10-v3
+     (it pointed at a folder that does not exist): 188/188, all checksums match.
+     mockups:audit-psd: 188/188 masters open and contain real Smart Objects.
+     Browser check of the Design Studio for all six families at 1440 and 390 px
+     with a real artwork upload: only canonical /mockups/psd-master-v10/ files
+     were requested, all 200, zero page or console errors, artwork composited on
+     the real photographic mockups. The five released families (T-shirt, long
+     sleeve, hoodie, mug, cap) are ready.
+  6. Water bottle deliberately stays on hold. Server (routes/orders.ts, 409
+     "mockup_not_approved") and Studio (Add to Cart and Export disabled with a
+     notice) both block custom bottle orders; routes/mockups.ts keeps bottle
+     rows out of the customer set. The proof previews in
+     dist-mockups/staging/smart-v10-v3/proof-previews/waterbottle/white/ show the
+     print-area box left of centre and overhanging the bottle's left edge on
+     front and back, so the hold is correct, not stale.
+  7. Old July tracker reconciled with evidence (see PROJECT_REBUILD_TRACKER/
+     All Tasks Left To Do/CRITICAL_FINDINGS.md, "Reconciliation 2026-10-04"):
+     most items verified fixed, several stale, backup-sync TRUNCATE recorded as
+     "changed" (it is transactional with rollback, source-empty skip and schema
+     check; do not alter without owner approval), a few still open.
+  8. Whole-API sweep on the real local API: 144 requests over 72 parameter-free
+     GET routes, anonymous and admin, gave no 5xx, no hangs, nothing over 2 s.
+     AI endpoints: bad input is 400, an unreachable provider is a clean 502 in
+     under half a second, admin developer chat falls back to the local agent.
+     Customer and admin login verified. Routing audit unchanged (222 routes, 0
+     duplicates, 0 shadowed).
+Stopped at: Everything verified; pull request open for review.
+Files/areas changed:
+  - API: src/app.ts, src/lib/{requestMetrics,errorHandler,poolGuard,dbErrors}.ts
+    (+ tests), src/routes/{systemHealth,categories,blog,dbCluster}.ts,
+    src/lib/dbBackupSync.ts (pool guard only), lib/db/src/index.ts (pool guard).
+  - Storefront: src/lib/liveHealth.ts (+ tests), src/pages/admin/AdminLiveHealth.tsx,
+    App.tsx route, AdminLayout.tsx nav entry.
+  - tools/validate-smart-matrix.mjs (default staging root), PROJECT_REBUILD_TRACKER/*
+    (superseded banners, reconciliation), this file, CLAUDE_HANDOFF_CHECKLIST.md.
+Remaining work:
+  - Water bottle: correct the print-area geometry (PSB master and its runtime
+    print-mask role, then regenerate the checksum-bound roles). Measured from
+    the runtime base images (1024x1024, rows y=320..910): the manifest uses one
+    zone x=335..611 (w 276) for both faces. Front body spans x=368..652
+    (centre 510), so the zone is 37 px left of centre and overhangs the left
+    edge by 33 px; back body spans x=379..644 (centre 511.5), 38.5 px off and
+    44 px overhang. Proposed, centred and 84% of the body width, per face:
+    front x=391..630 (w 239), back x=400..623 (w 223), both y=320, h=590.
+    Proposal images were sent to the owner (red = current, green = proposed).
+    This is a proposal only: nothing in the accepted runtime was changed.
+    Regenerate the proof, get the owner's visual approval, and then continue:
+    proof, get the owner's visual approval, and only then add "waterbottle" to
+    CUSTOMER_RELEASED_CATEGORIES (routes/mockups.ts), remove the 409 gate in
+    routes/orders.ts, and lift the Studio hold. Never promote it on a structural
+    pass alone.
+  - After deployment: open /admin/live-health on trynext.shop with an admin
+    session and confirm it shows database and Redis latency; run the cache check
+    from the earlier section. This session's network policy denies trynext.shop,
+    so nothing here has been verified on the live site.
+  - Storage, Telegram and auth entries in the admin health response are still
+    configuration checks, not live probes.
+  - Live Health figures are per process. If the API ever runs as more than one
+    instance, each instance reports only its own traffic.
+  - Not audited for 409 handling: other write routes with user-supplied unique
+    values (for example promo codes and product slugs).
+  - Real-device or Safari invoice download; an authenticated-customer session test.
+Blocker: None for the code. Live verification needs trynext.shop allowed in the
+  environment's network settings, or an owner with browser access.
+Next safe action: Review and merge the pull request when CI is green, then do the
+  post-deploy checks above. Rollback is a revert of the merge commit.
+Verification: workspace typecheck passes; production build passes (exit 0); API
+  suite 19 files / 109 tests and storefront suite 24 files / 125 tests pass with
+  DATABASE_URL* unset; mockup gates as in item 5. Regression tests were
+  mutation-checked (put the old behaviour back, the test fails). Real end-to-end:
+  headless Chromium drove /admin/live-health against the real API on a throwaway
+  local Postgres, 27/27 checks including a live change appearing without a
+  reload, polling every 10 s, Pause stopping it, a real database outage shown as
+  Critical with the reason and stale numbers, and automatic recovery. The
+  throwaway database and local servers were removed afterwards. No production
+  request, order, payment, provider setting or production data was touched.
+How to repeat the local end-to-end setup (scripts are not in the repo):
+  pg_ctlcluster 16 main start; create a throwaway role and database as the
+  postgres user; run `pnpm --filter @workspace/db run push` with DATABASE_URL set
+  to it (empty database only); build with `node ./build.mjs` in artifacts/api-server;
+  start with NODE_ENV=development, PORT=8082 and throwaway values for DATABASE_URL,
+  JWT_SECRET, ADMIN_JWT_SECRET (different), ADMIN_PASSWORD and ALLOWED_ORIGINS; start
+  the storefront with `pnpm --filter @workspace/trynext-storefront run dev`, which
+  proxies /api to port 8082; sign in via POST /api/admin/login. Never point any of
+  this at a real database.
+```
+
+## 2026-10-04 Broken product images fix (Claude Code session)
+
+- **Status:** local → committed → pushed on branch `claude/nice-carson-nxjq7q`; merge/deploy state is recorded by the PR, not here.
+- **Root cause:** `functions/mockups/[[path]].ts` answers 410 for every `/mockups/` URL outside `psd-master-v10/runtime-roles/`. Old product rows, cached bundles, saved carts and several hard-coded paths (water bottle, Instagram hoodie, mobile Design tab) still pointed at retired files, so production showed broken images.
+- **Last completed:**
+  - `src/lib/legacy-mockup-url.ts`: maps any retired `/mockups/` URL to the approved Smart v10.3 photo of the same product, colour and face (placeholder if unknown). The bottle only ever maps to the one approved white photo.
+  - `resolveImageUrl` and `getCustomerProductImage` repair retired URLs; raw `src` in Hampers, Account, Navbar, Cart, popups, lightbox, 404 now go through `resolveImageUrl`.
+  - `src/lib/image-fallback.ts` (installed in `main.tsx`): a failed image retries once with the repaired URL, then the placeholder.
+  - Mobile: `lib/mockup-url.ts` (copy of the mapping, kept equal by a storefront test) used by Design tab, cart, product screen.
+- **Files/areas changed:** storefront `src/lib`, `components`, `pages`, `main.tsx`; mobile `lib/mockup-url.ts`, `app/(tabs)/design.tsx`, `app/cart.tsx`, `app/product/[id].tsx`. No API, database, provider or bottle-hold change.
+- **Verification (local):** storefront 150 tests, API 114 tests, workspace typecheck, mobile typecheck, `git diff --check`; browser crawl on a local API + throwaway Postgres: 80 page loads (40 pages × 2 viewports), 0 broken images, homepage 31/31 approved photos load. `verify:critical-flows` could not run here (it targets the live domain; the sandbox proxy returns 403).
+- **Remaining work:** live check of `trynext.shop` after deploy (network blocked here); work through the owner's `reports.md` backlog (not started; P0 first).
+- **Blocker:** live domain not reachable from this sandbox.
+- **Next safe action:** merge after green CI, then start `reports.md` P0 items in small PRs. Water-bottle hold stays until the owner visually approves.
+
+## 2026-10-04 `reports.md` first pass (Claude Code session)
+
+- **Status:** PR #6 (image fix) is merged to `main` as `075d139` (CI green: typecheck/test/build, build-and-check, security-scan, Cloudflare Pages preview). Deployment of that commit is not verified from this sandbox.
+- **`reports.md` read in full.** P0 triage:
+  - **P0-A bottle print zones:** needs a versioned proposal plus the owner's visual approval before any checksum-bound asset is regenerated. Measurements and proposed zones are already in the earlier bottle section. The customer hold (`409 mockup_not_approved`) stays. Not started.
+  - **P0-B live verification:** blocked. The sandbox proxy returns 403 for `trynext.shop` and `*.pages.dev`, so `scripts/verify-critical-flows.mjs` (which targets the live host) cannot pass from here. Operator action: allow those hosts in the environment network settings, or run the script from a machine that can reach them.
+  - Health alias reconciliation (checked in code): `render.yaml` `healthCheckPath` is `/api/health/readiness`; the API serves `/healthz`, `/health/liveness`, `/health/readiness` and `/readyz` (same handler), and `functions/gateway-config.ts` proxies `/healthz` and `/readyz`. No mismatch found.
+  - **P0-C real errors:** needs the Admin Activity Log / Render log content from the owner (redacted). Not available here.
+- **Remaining work:** catalog, Studio geometry, checkout, admin, performance and security sections of `reports.md` (sections 4 onward), each as a small reviewed PR. Next safe action: start section 5's transform double-scale invariant test (no data or provider impact).
+- **Blocker:** items above that need owner approval, network access or real logs.
+
+## 2026-10-04 P0 implementation and live verification checkpoint
+
+Status: frontend implementation published and auto-deployed; read-only live verification passed.
+
+Implemented in commit `bbe58d2`:
+- Replaced the shared water-bottle front zone with the measured normalized proposal (`x=382, y=313, w=233, h=576`) and added an independently narrower back zone (`x=391, y=313, w=218, h=576`).
+- Kept the canonical mockup contract aligned with those front/back zones.
+- Added one shared image-transform convention: rendered dimensions use `natural dimensions × scale × relative axis`; composer, selection sizing, and processed-image replacement now use the same rule.
+- Added regression coverage for bottle-zone dimensions/centering and same-size/different-size processed-image replacement invariants.
+
+Verification:
+- Storefront: 27 test files / 155 tests passed; typecheck passed; production build passed.
+- Workspace typecheck passed, including API, storefront, mobile, scripts, and supporting artifacts.
+- API: 20 test files / 114 tests passed.
+- Smart mockup matrix: 188 expected surfaces / 1,128 runtime roles accepted.
+- Live `https://trynext.shop`: non-mutating critical-flow smoke checks passed 30/30.
+- Live `/api/healthz`, liveness, readiness, `readyz`, products, categories, and mockups returned HTTP 200; health reported DB/Redis/R2 healthy, runtimeRole primary, scheduler enabled, and backup sync disabled.
+- `trynext.shop`, `www.trynext.shop`, and `trynext-shop-new.pages.dev` served identical HTML and the post-build bundle after auto-deploy.
+
+Remaining safety boundary:
+- The bottle customer hold remains active (`409 mockup_not_approved`). The PSB masters and checksum-bound runtime print-mask roles were not regenerated or promoted by this code-only correction; they require proof generation and owner visual approval before customer release.
+- No production order, payment, upload, admin mutation, provider setting, DNS change, or secret operation was performed.
+- Admin Activity Log and Render log root-cause review still requires redacted log content or authenticated provider access.
+
+## 2026-10-05 Owner answers consumed; Design Studio draft-restore fix (Claude Code session)
+
+- **Status:** local → committed → pushed (PR open, **not merged**; owner answered "ask me each time" for merges).
+- **Owner answers read:** `claude/reports.md` (blob `726ceb6bc83c8f849f7b672d41c59523dafb420c`). Binding rules from it: bottle hold stays and bottle masters are not regenerated until a visual proof is reviewed; the 94 side-view surfaces (sleeves, neck label, mug wrap) stay `candidate` (no saved validator report); merge only after checks are green and scope is reported, asking each time; data repairs only with a dry run and per-change approval; real-error review stays blocked until sanitized logs exist; COD advance 25% and settings-driven payment/contact values unchanged; keep `claude/nice-carson-nxjq7q` (historical); use fresh branches from `main`. Priority order: 1) Design Studio reliability, 2) checkout and orders, 3) catalog and first-party images.
+- **Last completed (item 1, first slice):** a saved Studio draft no longer overwrites the variant the customer opened from a link.
+  - Defect: restoring a draft unconditionally replaced product colour, size, face, mug mode and the *linked store product* (id, name, price). With `?product=` or `?storeProductId=` in the URL, a stale draft could put another product's colour on the new product (surface unavailable) or attach an old linked product to the cart item. Cloud and local drafts were also both applied in sequence, so the local copy always won even when older.
+  - Fix: new `src/pages/studio/draftRestore.ts` (`planDraftRestore`, `pickNewestDraft`). When the URL names a product, only the artwork layers restore. Otherwise colour is matched to the product's own colours (first colour if the saved one does not exist), and size, face, mug mode and linked store product are validated. Only the newest of cloud/local draft is applied (one toast). Wired into `DesignStudioV2.tsx`.
+- **Files changed:** `artifacts/trynex-storefront/src/pages/studio/draftRestore.ts` (new), `draftRestore.test.ts` (new, 10 tests), `DesignStudioV2.tsx` (restore + `applyDraftPayload`). No API, database, provider, manifest or bottle change.
+- **Verification (local):** storefront 28 files / 165 tests pass; workspace typecheck passes; storefront build passes; `git diff --check` clean. Mutation checks: removing the "link owns the variant" rule and changing the newest-draft tie-break each make a test fail. Not browser-tested in this session.
+- **Not changed on purpose:** bottle hold, candidate surface status, payment/COD logic, any live data.
+- **Remaining work (item 1):** verify export parity and cart payload against the Studio canvas for each product family in a browser; touch/mobile editing checks; upload/processing failure states. Then items 2 and 3.
+- **Blocker:** none for the next slice. Owner approval is needed before any merge.
+- **Next safe action:** wait for the owner's OK to merge this PR, then take the next Studio slice.
+
+## 2026-10-05 Studio draft-restore fix: merged and browser-verified (Claude Code session)
+
+- **Status:** the draft-restore fix is merged to `main` (PR #10, `b6d5fc7`, CI green: typecheck/test/build, build-and-check, security-scan, Cloudflare preview). Not verified on the live domain from this sandbox.
+- **Autonomy:** the owner then asked Claude to work automatically on every new `claude/reports.md` or `reports.md` push and to keep merging small, tested, green PRs. The hourly checker now watches both files (handled blobs: `claude/reports.md` `726ceb6`, root `reports.md` `dfcef5c`). Guardrails unchanged: no live data/settings/schema/order/payment changes without a dry run and written approval for that change; bottle hold and the 94 candidate surfaces stay as they are; COD advance 25%; no force-push.
+- **Browser verification (local API, throwaway Postgres, real Chromium):** 7/7 checks passed. With `?product=mug` and a saved hoodie/navy draft: product stays mug, mug-valid colour, stale linked store product not attached, artwork layer restored. With no link: full restore (hoodie, navy, size L, layer, linked product). Unknown saved colour: falls back to a real hoodie colour.
+- **Reviewed, no change needed:** the Studio add-to-cart path already blocks with explicit messages when an original upload fails or counts mismatch, and blocks unavailable surfaces (including the bottle).
+- **Remaining work (item 1):** export vs canvas parity per product family and the cart payload, in a browser with stubbed storage; mobile touch editing. Then item 2 (checkout and orders) and item 3 (catalog and first-party images).
+- **Blocker:** none. Real-error review still needs sanitized logs; live-site checks still need network access.
+
+## 2026-10-05 Studio add-to-cart browser verification (Claude Code session)
+
+- **Status:** verification only; no code change. Draft-restore doc PR #11 merged as `55f452f`.
+- **What was run (local API + throwaway Postgres + real Chromium, text-only artwork so no storage upload is involved):** for each product family, open `/design-studio?product=<family>` with a saved draft, click Add to cart, and inspect the saved cart item.
+- **Result: all 46 checks passed.** T-shirt, long sleeve, hoodie, mug and cap each produced exactly one cart item with: a studio payload whose `category` matches the product; colour name and hex recorded; a front artwork texture (`data:image/...`); a recorded print zone with finite positive size (T-shirt 240,185,520x580; long sleeve 312,222,376x404; hoodie 240,270,520x400; mug 165,220,475x580 `mug-front-body`; cap 240,260,540x320 `cap-front`); a positive price and quantity 1; size present for garments and absent for mug and cap; layer counts 1/1. The water bottle's Add to cart button is disabled with the reason "source and print area are awaiting authentic..." and nothing is added to the cart (hold intact).
+- **Not covered:** image-upload artwork (needs storage stubbing), back/sleeve/neck faces, mobile touch editing, export-PNG parity against the canvas, and the live site.
+- **Remaining work (item 1):** the uncovered items above, then item 2 (checkout and orders) and item 3 (catalog and first-party images).
+- **Blocker:** none.
+
+## 2026-10-05 Studio multi-face and export verification (Claude Code session)
+
+- **Status:** verification only; no code change. Docs PR #12 merged as `deec879`.
+- **Multi-face add to cart (local API + throwaway Postgres + real Chromium):** artwork added through the real Studio UI ("Add Text Layer" on Front, Back, L.Sleeve, R.Sleeve, Neck) for a T-shirt. One cart item; layer counts 5 total / 1 front / 1 back; 5 face textures saved, each with 8,618 opaque artwork pixels (not blank). Back print zones recorded for T-shirt, long sleeve, hoodie, mug, cap.
+- **Correction to an earlier probe:** a first run seeded hand-written text layers into the saved draft; those never drew on the canvas, so their textures were fully transparent. That was a malformed test layer, not a site defect (verified by the UI-created run above). Do not seed synthetic layers for rendering checks; build them through the UI.
+- **PNG export (T-shirt front):** the PNG downloaded (`trynext-tshirt-front-design.png`) and a success message showed. Pixel comparison against the canvas was not done.
+- **Edge case recorded (decision N5 in `claude/CLAUDE_NEEDS.md`):** restoring a draft with back/sleeve/neck artwork onto a product without that side keeps the layers in the design but they are not shown or saved with the cart item. Only reachable through restored drafts.
+- **Not covered:** uploaded-image artwork with real or stand-in storage, mobile touch editing, PNG pixel parity, live site.
+- **Next:** uploaded images with stand-in storage and simulated touch; then item 2 (checkout and orders) and item 3 (catalog and first-party images).
+
+## 2026-10-05 Operator replies to the living needs list consumed (Claude Code session)
+
+- **Replies read:** branch `manus/answer-claude-needs-2026-10-05` (`claude/reports.md` blob `f44c7a48d4aeb16ceb7c1a06621ce95bbd080a8e`, answers N1-N4 and a mockup audit) and `manus/reconcile-claude-owner-needs-2026-10-05` (`claude/reports.md` blob `3b70129b0b00ad190e408510d62d24134d225658`, older, superseded; it is based on an old `main` and would delete current files, so it must not be merged as-is). Neither branch was merged by Claude.
+- **Binding points:** real-device touch, real-bucket upload and the live post-merge check are all UNVERIFIED; bottle hold, the 94 candidate surfaces and error review stay as they are; curved rendering is described as an approximation; the runtime manifest is mixed (94 accepted, 94 candidate) and stays fail-closed; ask before merging each PR; do not force-push.
+- **Conflict raised (N6):** the owner's chat said to merge automatically; the operator reply says ask each PR. Interim rule: docs-only PRs merge when green; code PRs stay open and green, and Claude asks first.
+- **New finding (N7):** in production the Studio's storage upload gets as far as the presigned link and then the browser PUT is rejected. The API presign (`lib/objectStorage.ts getObjectEntityUploadURL`) does not bind a content type, so the link looks correct; the likely cause is the bucket's CORS rule (a provider setting, not changed). Needs the failed request's status/console text, or the owner's decision on bucket CORS vs through-the-API upload.
+- **Next:** pixel-parity/geometry evidence work and the simulated touch and stand-in-storage upload tests; then checkout and orders. Code PRs wait for N6.
+
+## 2026-10-05 Owner decisions N5-N7 consumed; artwork-on-missing-side warning (Claude Code session)
+
+- **Decisions read:** branch `manus/answer-claude-n5-n7-2026-10-05` (`claude/reports.md` blob `711611e`; also read its `claude/CLAUDE_NEEDS.md` `ee40b0a`). N5: keep artwork and warn. N6: Claude may merge code PRs automatically once all checks are green and scope is reported (small, tested, in the approved backlog; never production data/settings/provider/schema/order/payment changes, force-push, or bypassing fail-closed gates). N7: build the through-the-API upload path (no Cloudflare/R2 changes). The owner's chat also said: no more permission asking.
+- **Done (N5):** `studio/artworkFaces.ts` (`supportedFaces`, `unsupportedArtworkFaces`, `unsupportedArtworkMessage`). The Studio shows an amber `role="alert"` banner naming the sides and product when artwork sits on a side the product lacks, repeats it in the add-to-cart message, and records `unrenderedArtworkFaces` in the cart note. Faces: garments 5; cap/bottle 2; mug front only. Draft artwork is never deleted or moved.
+- **Verification (local):** storefront 29 files / 171 tests pass; typecheck passes; real-browser check: mug and cap with back/sleeve artwork show the warning, T-shirt with the same draft does not; mug cart note has `["back","left-sleeve"]`.
+- **Next:** N7 through-the-API upload (new PR), then checkout/orders and catalog images.
+
+## 2026-10-05 Through-the-API image upload (N7) (Claude Code session)
+
+- **Status:** local → committed → pushed (PR open); merge per owner decision N6 once all checks are green. Not deployed or verified on the real storage.
+- **Problem (owner-reported):** in production the browser's direct upload (PUT) to the storage bucket is rejected. The API's presigned link looks correct (no content type bound), so the likely cause is the bucket's CORS rule, a provider setting. No Cloudflare/R2 setting was changed.
+- **Built:** `POST /storage/uploads/request-url` now also returns `fallbackUploadURL` (relative API path, cloud backends only) with a signed grant bound to object id, max size, content type and a 15-minute expiry (`lib/uploadGrant.ts`, HMAC with the server secret, domain-separated). New `PUT /storage/upload-via-api/:objectId` verifies the grant, caps the body at the declared size (413, connection closed) with a 90 s deadline (408), checks the real file type from the bytes against the grant (415), uses the validated UUID as the key, writes via `ObjectStorageService.storeUploadedObject`, and returns a plain 502 without internals if storage fails. Existing protections still apply: CORS origin allow-list, global CSRF check, the 30-uploads-per-10-minutes limiter, and the request logger strips query strings (the signature is never logged). Storefront `lib/storageUpload.ts` tries the direct upload first and falls back to the API, remembers a browser-level refusal for the page session, and reports both attempts truthfully if both fail. Used by the Studio (original artwork), Checkout payment-proof screenshot, and the Admin Blog, Products and Mockups uploads. Cart contract unchanged. Mobile app unchanged (no CORS in native fetch).
+- **Verification (local):** API 18 new tests (grant signing, route rules, mutation checks on signature, expiry, type, size, magic bytes all caught); storefront 7 new tests; typecheck passes; real-browser end-to-end with a stand-in S3-style bucket that refuses the browser's preflight like production: the Studio uploaded a real image through the API, the bucket holds exactly the PNG (magic bytes and size match), the cart records the matching object path, and the API log shows no signature.
+- **Trade-offs:** the file passes through the Render API (up to 25 MB, held in memory during the upload, subject to the 30 per 10 minutes per IP limit); used only when direct upload fails.
+- **Not verified:** the real bucket and live site (needs one real upload after deploy; N8).
+- **Next:** checkout and orders, then catalog and first-party images.
+
+## 2026-10-05 Checkout and orders: duplicate-order guard and order-status validation (Claude Code session)
+
+- **Status:** local → committed → pushed (PR open); merge per owner decision N6 once all checks are green. Not deployed or verified on the live site. Only a local API with a throwaway database was used; no real order, payment or live data was touched.
+- **Defect 1 (real):** checkout retries order creation up to three times on gateway errors or cold starts, but nothing stopped a second order if the first attempt had succeeded and only the reply was lost (duplicate order, stock deduction, promo use, notifications).
+- **Fix 1:** `lib/idempotency.ts` (`createIdempotency`, mounted on `POST /orders` via `orderIdempotency`). A repeated `Idempotency-Key` replays the first successful (2xx) reply instead of running the handler (reply marked `Idempotent-Replayed: true`); simultaneous duplicates run the handler once and share the reply; a key reused with a different body is refused (422, no reply leaked); failed attempts are not kept; malformed keys are 400; memory only, 30-minute limit, 1000-entry cap; a still-running first attempt gives duplicates 503 with Retry-After after 20 s. `Idempotency-Key` added to the API CORS allowed headers (the Cloudflare proxy function already allowed and forwarded it). Storefront: `lib/checkoutIdempotency.ts` keeps one key per checkout attempt (reused across retries while the payload is unchanged, cleared after success); `useCreateOrder` accepts an optional `idempotencyKey` and sends it as the header; Checkout passes it. No database change.
+- **Limit (decision N9):** memory only, per process: covers retries and double taps within minutes, not restarts or multiple API instances. A permanent version needs an `idempotency_key` column and unique index on `orders` (schema change; needs the owner's approval, reversible migration and dry run). The standby sync code already adds that column to its copy of `orders`.
+- **Defect 2:** `PUT/PATCH /orders/:id/status` accepted any text; the database `orders_status_check` constraint then turned unknown values into a 500. Now 400 with the allowed list (`lib/orderStatus.ts`: pending, processing, ongoing, shipped, delivered, cancelled), before any database access.
+- **Verification (local):** API: 11 idempotency tests (+4 mutation checks all caught), 15 order-status tests (+1 mutation check caught), full API suite 24 files / 148+ tests; storefront 7 key-helper tests, full suite 31 files / 185 tests; typechecks pass. Real API + throwaway Postgres: same key twice returns the same order number and ONE order and ONE stock deduction; five simultaneous requests share one order; same key with a different body is 422; no key behaves as before; an invalid order is 400 and a valid retry with that key is processed; malformed key is 400; unknown order status is 400 with the allowed list and a known status still returns 200.
+- **Not verified:** the live site; a real browser checkout (payment steps were not driven; the header path is covered by the hook change, the proxy already forwards it).
+- **Next:** payment-status and notification truthfulness review, then catalog data and first-party images.
+
+## 2026-10-05 Contact form honesty (Claude Code session)
+
+- **Status:** local → committed → pushed (PR open); merge per owner decision N6 once all checks are green. Not deployed or verified on the live site. Only a local API with a throwaway database was used.
+- **Review result:** the checkout messages are honest (they describe what a person will do, not a system message). Payment status already validates against an allowed list. One real problem found: `POST /api/contact` replied "Your message has been sent! We'll get back to you within 24 hours." regardless of outcome, while the message only went to Telegram fire-and-forget (errors swallowed) and was stored nowhere. The owner's operator reports Telegram `not_configured`, so contact messages could be silently lost.
+- **Fix:** `routes/newsletter.ts` contact route now escapes visitor text before sending to Telegram (a stray `<` made Telegram reject the whole message), awaits Telegram's real result, and saves every message in `admin_activity_logs` (`entity: contact_message`, `action: create`, `after` holds name, email, phone, subject, message up to 2000 characters, `receivedAt`, `telegramDelivered`) so the admin can read it under Admin > Activity Log, filter "Contact Messages" (new filter option). The visitor is told "received" and gets `delivered`/`stored` in the reply; if neither Telegram nor the save worked the route answers 503 with a WhatsApp suggestion and no success claim. Contact page wording changed from "Message sent" to "Message received". The activity log's rollback refuses `create` entries, so these records cannot be rolled back. No database schema change; no provider setting changed.
+- **Verification (local):** 8 new route tests plus 3 mutation checks (always-success, no escaping, no save) all caught; full API suite 26 files / 167 tests; storefront suite and typechecks pass; real API with no Telegram: reply `delivered:false, stored:true`, wording "received", and the message is readable via the admin activity-log endpoint with `entity=contact_message`.
+- **Decision N10 (owner):** where contact messages should alert the admin (Telegram setup, email, or the Activity Log only). Nobody is notified of a new message unless Telegram is configured.
+- **Next:** catalog data and first-party image correctness.
+
+## 2026-10-04 — Catalog image file check (read-only)
+- Status: verified locally; docs only. Nothing deployed or changed in data.
+- Checked every colour/face base photo that `SMART_V10_COLORS` x `SMART_V10_VIEWS` expects under `public/mockups/psd-master-v10/runtime-roles/`: all 188 files exist and are non-trivial in size. Extra `_shared` folders exist for tshirt/longsleeve/hoodie (not referenced as colours).
+- Not checked: which image URLs the live product database rows hold (needs read access to production data; sandbox cannot reach it). Any data repair needs a dry run and per-change approval.
+- Next safe action: owner supplies a sanitized export of product image URLs so Claude can list the rows that still point at retired `/mockups/` paths (the storefront already maps them to v10.3 photos at display time).
+
+## 2026-10-05 — Studio: retry no longer re-uploads originals (Slice A)
+- Status: local, committed on `claude/nice-carson-nxjq7q`; PR and merge follow. Not deployed.
+- Picked up: `manus/claude-next-work-2026-10-05` work order (Slice A) and `manus/claude-unresolved-work-queue-2026-10-05` queue. Merge rule matches N6.
+- Gap chosen: upload failure/retry state. Failure already leaves the cart untouched and re-enables the button; but a retry re-uploaded every original, orphaning copies when a later image failed.
+- Change: `pages/studio/originalAssetCache.ts` (+test) remembers originals uploaded this visit, keyed by exact image data; `DesignStudioV2.tsx` reuses them on retry.
+- Tests: 3 new cache tests, 40 Studio tests, storefront typecheck pass.
+- Limits: real-bucket behavior unverified (N8). Cached object paths are assumed to stay valid for the visit.
+- Next: export-vs-canvas pixel parity, processed-image replacement, product switching, then checkout lifecycle tests. N9: design/dry-run doc only, no schema change. N10: Activity Log decided as sufficient.
+
+## 2026-10-05 — Studio: export vs live preview comparison (evidence only)
+- Status: local evidence, no code change, not deployed. Throwaway Postgres + local API + Vite, uploaded the same harmless test image on T-shirt, hoodie, mug, cap and long sleeve, then compared the live preview canvas with the exported PNG (both scaled to 256x256).
+- Result: mean per-pixel difference 4.6–6.7 of 255 with artwork; about 3.6–4.4 with no artwork (the baseline comes from the browser preview and the API renderer being different pipelines at different sizes, 454px vs 1024px). Artwork appeared in both at the expected place.
+- Meaning: no gross preview/export mismatch on these five families. This is NOT proof of pixel-identical output, and it does not cover back, sleeve or neck-label faces, curved products at detail level, or real devices.
+- Next: product switching and processed-image replacement checks, then checkout lifecycle tests.
+
+## 2026-10-05 — Command 1: processed-image replacement parity (evidence only)
+- Status: local evidence, no code change, not deployed. Throwaway Postgres + local API + Vite; harmless test image; real browser.
+- Setup: uploaded the image on T-shirt, hoodie, mug, cap and long sleeve, set position (+40,-25), scale 0.37, rotation 17° on the front face, reloaded so the Studio restored it, then ran the real "Auto-fix image" and "HD upscale" buttons.
+- Result (all five families identical): Auto-fix keeps the transform unchanged (same 600x600 size). HD upscale makes the image 1200x1200 and sets the relative axes to 0.5, so the drawn size is unchanged (600 x 0.37 x 1 = 1200 x 0.37 x 0.5); position, scale, rotation, face and layer count are preserved; the size is fitted once, not twice.
+- Not covered: "Remove background" (needs the background-removal service/model, not run here), back/sleeve faces, real phones, cart payload after replacement (cart payload parity was verified earlier for the same families).
+- Next: command 2, product switching and variant identity.
+
+## 2026-10-05 — Command 2: product switching shares one refit plan
+- Status: local, committed on `claude/nice-carson-nxjq7q`; browser check, PR and merge follow. Not deployed.
+- Finding: the quick product switcher (`DesignStudioV2.tsx`) and the product picker (`toolbar/ProductSwitcher.tsx`) each carried a copy of the same artwork-refit code, so they could drift apart.
+- Change: new `pages/studio/productSwitch.ts` (`planProductSwitch`, `getSwitchPrintZone`) used by both; behavior is unchanged. 6 new tests (colour kept/fallback, mug mode only mug-to-mug, per-face zone refit with the smaller ratio, unset axes stay unset, rotation/opacity kept, same-product identity). Mutation checks (max instead of min ratio; mug mode kept on any switch) were caught by the tests. Source-text regression test updated to the new function. Storefront: 33 files, 194 tests pass; typecheck clean.
+- Already covered earlier: draft restore never leaks a stale colour/linked product when the link names a product (draftRestore tests); unsupported-face warning (artworkFaces).
+- Limits: face is still reset to front on a switch (unchanged behavior, not changed here); real phones not tested.
+- Browser check (throwaway DB, local API/Vite, harmless image): switching T-shirt → hoodie → mug → cap → long sleeve → T-shirt through the real product picker changed the product each time, kept the white colour variant, refitted the artwork scale per zone (0.797, 0.55, 0.502, 0.277, 0.193, 0.267), no page errors.
+- Finding (pre-existing, NOT changed here): a round trip does not restore the artwork size (0.797 → 0.267 after the loop). The refit scales by the smaller of the width/height zone ratios, which is not reversible when zone shapes differ. Fits-inside is intentional (artwork never spills over the zone), so any fix (for example remembering the pre-switch size per product) is a behavior decision; proposed as a separate small PR with tests.
+
+## 2026-10-05 — Command 3 (part 1): order-creation tests + atomic promo redemption
+- Status: local, committed on `claude/nice-carson-nxjq7q`; PR and merge follow. Not deployed.
+- Added `artifacts/api-server/src/routes/orders.create.test.ts` (12 tests, stand-in database, no payment provider, no real orders): required fields, unsupported payment method, quantity 1-100, water-bottle hold (409), server-side pricing for catalog and Studio items (browser price ignored; T-shirt 549), free-shipping threshold, stock-out 409 with nothing stored, product-missing 400, promo applied/expired/inactive/used-up/below-minimum, discount never below zero.
+- Code change: promo redemption is now claimed with one conditional UPDATE (`used_count < max_uses`), so two simultaneous orders cannot both take the last allowed use. The earlier check was read-then-write.
+- Evidence: mutation checks caught (a) ignoring a failed promo claim, (b) trusting the browser price for Studio items, (c) removing the bottle hold. Real throwaway Postgres + real API: 6 and 30 simultaneous orders on a one-use promo gave exactly 1 success and used_count 1 with the fix.
+- Honest limit: the same race against the OLD code also gave exactly 1 success locally, so I could not reproduce the over-use; the fix closes a theoretical gap and is harmless. Not claimed as a proven production bug.
+- Not changed, needs an owner decision (recorded for N-list): (1) order status can be set to any known status in any direction (e.g. delivered back to pending) and cancelling does not return stock; adding allowed-transition rules or restock-on-cancel changes admin workflow. (2) Customers' notification failures are only logged; the order response never claims a message was sent.
+- Next: command 3 part 2 (payment-status/idempotency/duplicate-click checks in the browser), then command 4.
+
+## 2026-10-05 — Command 4: catalog and first-party image audit (repo side only)
+- Status: local, read-only, docs only. Not deployed. No live data seen or changed.
+- Checked in the repo: all 188 expected Smart v10.3 base photos exist (see earlier note); the seeded catalog (`autoSeed.ts`) runs only on empty tables, uses third-party stock photo links and has no long-sleeve or water-bottle products, so it does not describe the 70 live products; seeded categories are T-Shirts, Hoodies, Mugs, Caps, Custom Orders.
+- Not possible from here: auditing the live six-family / 70-product snapshot (retired `/mockups/` paths, missing or duplicate records). Needs a sanitized product export from the owner. Added as N11 in `claude/CLAUDE_NEEDS.md`.
+- Next: command 5 (mockup release evidence reconciliation), then idle on owner-blocked items.
+
+## 2026-10-05 — Command 5: mockup release evidence reconciliation (read-only)
+- Status: local, read-only, docs only. Not deployed. Nothing promoted, no manifest or data changed.
+- Shipped runtime manifest (`public/mockups/psd-master-v10/runtime-roles/manifest.json`): 188 surfaces. Accepted 94 = 47 fronts + 47 backs (T-shirt 8, long sleeve 10, hoodie 10, mug 10, cap 8, bottle 1 each face). Candidate 94 = 28 left sleeves + 28 right sleeves + 28 neck labels + 10 mug wraps.
+- The 94 accepted surfaces each carry a verification block: all 8 checks true (artwork layer, linked file, base layer, unrelated layers, re-serialized, linked content persisted and actually changed, transform preserved); the master checksum at verification equals the master checksum for 94/94. The 94 candidates carry NO verification block, consistent with keeping them as candidates.
+- Important limit: the method recorded in the manifest is an "ag-psd read/write round-trip (no Adobe Photoshop available in this environment)". The owner's Photopea 188/188 pass is operator-reported and its proof is not in the repo, so Photoshop/Photopea-level Smart Object editability is still not proven by repository evidence (N4).
+- Mismatch to know about (no change made): both water-bottle surfaces are marked `accepted` in the manifest, while the owner says the bottle print area is "not yet" approved. The customer hold stays enforced in code (Studio blocks it, `POST /orders` answers 409 `mockup_not_approved`; covered by a test). The manifest status is not customer approval; do not read it as one.
+- Not claimed: photorealistic release, live health, curved-product accuracy beyond the approximation, real phones.
+- Five-command order status: commands 1, 2, 3 (part 1), 4 (repo side) and 5 done; real-device, live-storage, provider-log and production-database items remain owner-blocked (N1, N3, N4, N8, N11).
+
+## 2026-10-08 — Command 0: PR 27 (Studio upload CSRF header)
+- Status: merged to main (squash `014bdce`). NOT confirmed deployed or live-tested from here.
+- What: the request that prepares an original-artwork upload now sends `X-Requested-With: XMLHttpRequest` (one line in `DesignStudioV2.tsx`) plus a source-contract regression test. Without it the live API answered `403 csrf_blocked` and Add to Cart stopped (owner's live finding).
+- Merge: PR had conflicts only in the two report files after main moved; resolved by merging main into the PR branch (both sections kept, no history rewrite, new head `5a35ac0`). All 4 checks green on that head (Cloudflare Pages, security-scan, typecheck/test/build, build-and-check) before merge.
+- Not done / UNVERIFIED: the post-deploy live check (tiny PNG upload, render, Add to Cart, cart item shown, stop before checkout). This sandbox cannot reach the live site, so it needs you or a deploy-side run. Pages deployment id for the merge is in the Cloudflare dashboard, not visible here.
+- Next: Command 1 (Studio reliability evidence gap check across T-shirt, long sleeve, hoodie, mug, cap).
+
+## 2026-10-08 — Command 1: Studio reliability evidence (gap check)
+- Status: local, tests only. Not deployed.
+- Existing coverage confirmed (storefront suite: 33 files, 195 tests pass): upload retry + original-asset cache (`originalAssetCache`, `storageUpload`), processed-image replacement parity, product switching/variant identity (`productSwitch`, `product-options`), draft restore (`draftRestore`), artwork faces/sleeve/neck/wrap (`artworkFaces`), geometry/auto-fit, mobile workflow, Studio source contracts.
+- Real gap found and closed: nothing checked that a Studio item's `originalAssets` survive checkout into the stored order. Added one API test (`orders.create.test.ts`, now 13 tests): originals are merged into the order note, moved to the order's own storage prefix (stand-in storage), not flagged missing, and `originalAssetUrls` match. Mutation check: disabling the server merge makes it fail; restored.
+- Test-only change; no runtime code touched. API typecheck clean.
+- Uncovered / not claimed: real storage and real browser upload after PR 27 deploys (Command 0 live check, UNVERIFIED); per-family cart payload in a real browser for cap/long-sleeve (covered only by source contracts); real-phone touch (UNVERIFIED).
+- Next: Command 2 (live/device verification: not possible from this sandbox, will be recorded as limitation), then Command 3.
+
+## 2026-10-08 — Commands 0-6 status (after PR 29, merge `488a30b`)
+- Command 0: PR 27 merged (`014bdce`). Live post-deploy upload + Add to Cart test: UNVERIFIED (blocked: sandbox proxy returns 403 for the live domain; confirmed again this run).
+- Command 1: done (test-only, PR 29 `488a30b`). 195 storefront + 13 order-creation tests pass.
+- Command 2 (device/live): blocked. Real-phone touch UNVERIFIED. Domain, Pages bundle, health aliases, catalog/mockup reads, service worker, canonical host: cannot be checked from here (403 tunnel). Needs owner/deploy-side evidence.
+- Command 3 (checkout/order safety): done as far as local checks go. Covered by 13 stand-in-DB tests (validation, quantity, bottle hold, server pricing, shipping threshold, stock-out, promo applied/expired/used-up/min/race, discount floor, Studio originals) plus earlier browser checks. Still open and needs an owner decision: allowed status transitions and restock-on-cancel (found: any status can move to any status; cancel does not restock). Persistent idempotency stays design/dry-run only (no schema work done). No real order, payment or notification was made.
+- Command 4 (catalog audit): blocked on the sanitized product export (N11). Nothing changed.
+- Command 5 (mockup gate): unchanged and fail-closed. 188 surfaces = 94 accepted + 94 candidate; no saved validator report; bottle hold kept; nothing promoted.
+- Command 6 (errors/health): blocked on sanitized Activity Log / Render evidence. No provider, CORS, DNS, variable or schema change.
+- Next safe action: owner runs the live upload test after the `014bdce` deploy and supplies the product export, sanitized logs, and a decision on status transitions/restock. Claude idles on those until they arrive.
+
+---
+
+## 2026-10-08 Live post-deployment Studio smoke test
+
+Status: **blocked at Add to Cart; do not claim the live flow passed**.
+
+The live custom domain `https://trynext.shop/design-studio` returned 200 and its production bundle contained the merged CSRF header fix. A harmless 185-byte PNG was injected through the normal file-input change handler and appeared visibly as a new `live-upload-smoke` artwork layer on the T-shirt preview. The browser reached the normal upload request and the API fallback upload path; signed URLs and credentials were not recorded.
+
+Add to Cart entered `Preparing…`, then returned to `Add to Cart`, but the cart indicator remained `0 items`. There was no visible error, success toast, or retry message. No checkout, order, payment, or customer-data mutation occurred.
+
+Conclusion: the CSRF fix and visible upload path are live, but the production smoke test fails after upload/render and before successful cart insertion or completion-state feedback. Next safe code task for Claude: reproduce with local/stand-in storage, isolate the post-upload/render-to-cart failure, add a regression test, and provide truthful retry/error feedback. Keep bottle ordering blocked, candidate mockup surfaces unpromoted, and all other provider/data blockers unchanged.
+
+---
+
+## 2026-10-08 Owner directive — remaining Claude work order
+
+The next priority is the **Design Studio Add to Cart blocker**. Reproduce locally with stand-in storage, trace the path from upload/render completion to cart insertion, inspect console/network/async/state/asset/product-variant/cart-store failures, add a regression test, implement the smallest safe fix, and add truthful retry/error feedback. Run focused tests, typecheck, and build; prepare a small PR and do not merge/deploy until checks and scope are reported. After deployment, repeat one harmless live smoke test and stop before checkout. The current live truth remains: CSRF/header fix live, upload/render visibly works, Add to Cart returns idle, cart stays at 0 items.
+
+Then monitor PR #31 and merge only when green as documentation-only. Keep mockup templates inactive, bottle ordering blocked, and the 94 accepted plus 94 candidate release gate unchanged. Read-only sanitized catalog/log/deployment/device evidence remains requested; do not change Cloudflare/R2, DNS, Render, Neon, Upstash, backup, schema, customer, order, or payment state. Continue checkout checks only on local/throwaway data; owner decisions remain status transitions and restock-on-cancel. Treat the ৳600 Meta campaign as unverified and do not spend or activate it from this work order.
+
+Claude must acknowledge this directive in `claude/reports.md` before starting Command A and report status, exact tests, evidence, deployment identifier, limitations, and next command for each item.
+## 2026-10-08 — Live Studio smoke test: Add to Cart blocker (root cause + fix)
+- Status: fix local, tested, in a PR. NOT deployed; the live re-test is UNVERIFIED until the new Pages bundle is serving.
+- Owner finding (branch `manus/live-studio-smoke-result-2026-10-08`, not merged by me): after PR 27, upload and render worked live but Add to Cart returned to idle with 0 items and no visible error.
+- Root cause (from code, not reproduced live; the sandbox cannot reach the domain): Add to Cart makes a second POST, to `/api/mockup/render`, via `renderApprovedMockupOnServer`. It sent no `X-Requested-With` header. The API's global CSRF middleware (`app.ts`) answers 403 `csrf_blocked` to any cookie-carrying mutation without that header or a bearer token. Same class as PR 27. A signed-in/cookie visitor (the owner's browser) hits it; the handler toasts "Final mockup failed" and returns before `addToCart`, which matches the symptom. The error toast exists (Toaster is mounted, default ~5s) but is easy to miss.
+- Fix: add the header to `/api/mockup/render`, plus the two other customer Studio POSTs that lacked it (`/api/remove-bg`, `/api/ai/reference`).
+- Test: new `studioCsrfHeader.test.ts` scans every POST/PUT/PATCH/DELETE `fetch` in the Studio files and requires the header. Mutation check: removing the header from the render call fails it. Storefront: 34 files, 199 tests pass; typecheck clean.
+- Not done: no persistent (non-toast) error banner was added; a visual change I could not verify here. Real-browser re-test after deploy is the owner's step.
+- Next: owner re-runs the live upload + Add to Cart test once the new bundle is live; Claude idles on the other owner items.
+
+## 2026-10-08 — Command A: Add to Cart blocker (local reproduction, test, persistent feedback)
+- Status: local, tested; in a PR; NOT deployed. Live re-test UNVERIFIED (sandbox cannot reach the live domain).
+- Reproduced locally (throwaway Postgres, local API with stand-in S3, Vite dev server, Playwright, signed-in customer = real `customer_token` cookie, no bearer): upload `POST /api/storage/uploads/request-url -> 200`, then `POST /api/mockup/render -> 403 csrf_blocked`, cart stays at 0 items. Same symptom as the owner's live test. Only a signed-in/cookie visitor hits it; an anonymous visitor does not (the older anonymous e2e script passed, which is why it was missed).
+- Root cause: `/api/mockup/render` request lacked `X-Requested-With`. Fixed in PR 32 (`74c51ef`, merged after the owner's 07:10 smoke test, so that test pre-dates the fix). With the header: render `-> 200`, cart holds 1 item, "Added to cart!" shown.
+- New in this PR (feedback only; CSRF, upload validation and order gates untouched): every Add to Cart failure path now calls one `reportCartFailure(...)`: toast plus a persistent, dismissible `role="alert"` banner ("Your design was not added to the cart. <reason>") with a **Try again** button, scrolled into view. Browser check with the header deliberately removed: 8 s after the click the banner is still on screen, cart empty; with the header: no banner, cart 1.
+- Tests: new source-contract test for the persistent alert (mutation check: reverting one failure path to a bare toast fails it); the earlier `studioCsrfHeader.test.ts` guards the header. Storefront 34 files / 200 tests pass; typecheck clean; `vite build` passes.
+- Limits: contract tests plus local browser run, not a real-phone or live run. The live post-deploy smoke test (one harmless PNG, Add to Cart, stop before checkout) still needs the new bundle live and a run by the owner.
+- Next: Command B (PR 31 docs-only merge after green), then idle on owner-blocked items.
+
+## 2026-10-08 — Command B: PR 31 (docs-only) merged
+- Status: merged to main as `9d60d7d` (squash). Docs only (AGENT_HANDOFF.md, reports.md, claude/reports.md); no code.
+- It had merge conflicts after main moved (report files only); resolved by merging main into its branch with a merge commit (both sections kept, no force-push), new head `bb02308`. Checks on that head: Cloudflare Pages, security-scan, Typecheck/test/build, build-and-check all green; mergeable state clean.
+- Preserved truthfully: at the time of the owner's smoke test the CSRF header on the upload was live and upload/render passed, but Add to Cart stayed at 0 items. That test pre-dates PR 32 (render-request header) and is not yet re-run live.
+- Next: PR 33 (persistent, retryable cart-error alert) once green; then the owner's live re-test.
+
+---
+
+## 2026-10-09 — Manus AI task execution checkpoint
+
+Status: **blocked** at live original-artwork fallback upload; public health checks passed.
+
+Last completed: read and executed `claude/MANUS_AI_TODO_TASKS.md`; merged its documentation PR #34 as `dc0aff1`; ran `node scripts/verify-critical-flows.mjs` with 30/30 passes; verified both canonical custom hosts returned identical HTTP 200 homepage content; checked public health/readiness/products/categories/mockups/service-worker endpoints; ran the live Design Studio Add to Cart test without checkout.
+
+Stopped at: live Add to Cart. The direct storage upload could not be reached and `/api/storage/upload-via-api/<redacted-id>` returned 502. The cart stayed at 0. The persistent user-facing alert correctly displayed the failure reason and retry guidance. No order, payment, notification, or live data mutation occurred.
+
+Files/areas changed: reports only on the follow-up evidence branch; no application/provider/database changes. Main includes PR #34 task list and PR #33 persistent cart-error alert.
+
+Remaining work: reproduce and fix the API fallback 502 with local/stand-in storage and tests; then deploy and repeat one harmless live Studio test. Obtain sanitized product export, Activity Log/Render evidence, saved validator hashes, real-phone result, and exact Pages deployment identity when available. Resolve owner decisions for status transitions/restock-on-cancel and artwork-size restoration.
+
+Blocker: live fallback failure requires code investigation; admin/provider/device evidence is unavailable from this environment. `trynext.pages.dev` did not resolve, and `/service-worker.js` served SPA HTML, so deployment/service-worker parity is not claimed.
+
+Next safe action: Claude should inspect the API fallback upstream error path, add a regression test for 502 plus success, open a small PR, and keep all mockup, bottle, order, payment, provider, and Meta Ads gates fail-closed.
+
+Verification: 30/30 critical-flow checks passed; public endpoint statuses were 200; exact live Add to Cart failure was captured; no secrets were recorded.
+
+---
+
+## 2026-10-09 — Owner-decided remaining work order
+
+The owner authorized conservative decisions for the previously open behavior choices. Order transitions are forward-only: `pending -> processing|cancelled`, `processing -> ongoing|shipped|cancelled`, `ongoing -> shipped|cancelled`, and `shipped -> delivered`; no transitions out of delivered or cancelled. Cancellation is allowed only before shipping and must restore reserved stock exactly once with an audit record. This is a local/throwaway implementation task first; no live data or schema change is authorized.
+
+Prepare a reversible `idempotency_key` migration and dry run, but do not execute it. Restore each product’s pre-switch artwork size when switching back while preserving fit-to-zone safety, face behavior, undo/redo, and variant identity. Keep bottle approval at `not yet`, keep Activity Log sufficient for contact messages, and leave Telegram/email unconfigured.
+
+The highest-priority unresolved production issue is the live API fallback upload 502. Claude must reproduce direct-upload failure/API-side success and API-side storage failure locally, inspect the S3/R2 PutObject path and sanitized error classification, add regression tests, and prepare the smallest safe PR if code is responsible. If provider credentials or permissions are responsible, report that without changing provider settings. Public T2 checks passed 30/30; T3-T6 and Pages deployment parity remain evidence-blocked. Mockup promotion, bottle ordering, real transactions, provider changes, and Meta Ads remain fail-closed.
+
+## 2026-10-09 T1 live upload 502 — Claude report (code fix, local only; live UNVERIFIED)
+- Finding: the presigned R2 upload URL was signed with `x-amz-checksum-crc32=AAAAAA==` (checksum of an EMPTY body) plus `x-amz-sdk-checksum-algorithm=CRC32`, a default of the current AWS SDK. A browser PUT of a real file does not match that checksum, so a bucket can refuse it; that fits the live "browser could not reach storage" step. Reproduced locally by generating the URL with fake credentials.
+- Fix (small): both S3/R2 clients now use `requestChecksumCalculation/responseChecksumValidation: WHEN_REQUIRED`. Validation, size caps, magic-byte checks, grant signing, CSRF and fail-closed cart behaviour are unchanged. The through-the-API 502 now logs a sanitized failure class (error name, code, HTTP status; no message, key or URL) so Render logs can name the real cause.
+- Test: `src/lib/objectStorage.r2.test.ts` (fails before: URL carries the checksum params; passes after). Also run: storage.upload.test.ts (direct-fail/API-success and API-write-failure 502 with no leak, already present), api-server typecheck, full api-server vitest (181 passed), `node ./build.mjs`.
+- Limits: the real 502 from `/api/storage/upload-via-api` is a storage write error; the checksum fix explains the direct failure, but the API-write failure may also be credentials/permissions/bucket settings (not changed, not visible from here). Needs one sanitized Render log line (`storageFailure`) after deploy. No live test run; sandbox cannot reach the live site.
+- Next: PR, green checks, merge, then one harmless live upload + Add to Cart (stop before checkout). Then T7 (order transitions + stock restore, local only) and T9 (restore artwork size on product switch), T8 migration dry run only.
+
+### T1 follow-up: PR 36 merged
+- Merged (not yet confirmed deployed or live-tested): squash `8eec152` after all 4 checks green on `41133be`. Next for the owner/operator: confirm the Pages/Render deploy for `8eec152`, then one harmless live upload + Add to Cart (stop before checkout). If it still fails, send the sanitized `storageFailure` log line.
+
+## 2026-10-09 T7 order transitions + stock restore, and a variant checkout fix — Claude report (local/throwaway only; not merged or deployed)
+- T7 (owner decision): forward-only moves `pending->processing|cancelled`, `processing->ongoing|shipped|cancelled`, `ongoing->shipped|cancelled`, `shipped->delivered`; nothing out of `delivered`/`cancelled`. Anything else answers 400 `invalid_status_transition` with the allowed next statuses. Setting the status an order already has is a harmless no-op (no notification, no stock change).
+- Cancellation before shipping restores reserved stock (plain stock, one variant, each custom-hamper product; studio lines ignored) inside the same locked transaction as the status change, so it happens exactly once; the Activity Log row for the order carries `stockRestored` (restored and skipped lines). No schema change.
+- The admin order screen now shows the server reason instead of a bare "Update failed".
+- Extra finding, fixed with one cast: checkout for a product VARIANT was refused as out of stock even with stock available, because an untyped parameter after the JSON `->` operator is read as a text key and finds nothing in a JSON array. Found by running the real SQL on a throwaway local Postgres; the mocked tests could not see it. Whether live variant products exist is unknown to me; if they do, such orders were being refused.
+- Tests: orderStatus transitions, orders.status (every refused move, forward path, restore once, double cancel, 404), orderStock, variantStockSql source guard; throwaway-Postgres script (12 checks incl. two simultaneous cancels restore once, variant checkout 201 then cancel restores). api-server typecheck, 207 tests, build, storefront typecheck all pass.
+- For the owner to check: the admin labels read "Shipped to Department" then "On the Way (Ongoing)", but the agreed table allows `ongoing->shipped` and not `shipped->ongoing`. Ask the operator whether those two labels are in the intended order.
+- Not done: no live data touched; live behaviour UNVERIFIED. Next: PR + green checks + merge, then T9 (restore artwork size on product switch), T8 migration dry-run design.
+
+### T7 follow-up: PR 38 merged
+- Merged (not yet confirmed deployed or live-tested): squash `8960620` after all 4 checks green on `fb5f937`. Release scope: API order-status route (forward-only moves, stock restored once on cancel, Activity Log `stockRestored`), variant stock SQL fix in order creation, admin screen shows the server reason. No schema change, no live data touched.
+- Owner question still open: admin labels order ("Shipped to Department" then "On the Way (Ongoing)") versus the agreed table (`ongoing->shipped`, not `shipped->ongoing`).
+
+## 2026-10-09 T9 restore artwork size after switching products — Claude report (local only; not merged or deployed)
+- Behaviour: the Studio now remembers each layer's size/position/rotation when it leaves a product and gives it back exactly when the customer returns to that product (also through chains such as tee -> mug -> cap -> tee), including after undo steps.
+- Safety kept: it is only reused when the layer is unchanged since the last switch and the print zone has the same size as before; otherwise the existing fit-to-zone refit runs, so artwork cannot overflow. A customer edit or an undo always wins. New layers use the normal refit. Face behaviour, undo/redo history and variant identity (linked store product reset) are unchanged; the memory is not saved in drafts or undo history.
+- Files: `pages/studio/productSwitch.ts`, `hooks/useDesignStore.ts`, `DesignStudioV2.tsx`, `toolbar/ProductSwitcher.tsx`; tests in `productSwitch.test.ts` (7 new, mutation-checked) and `useDesignStore.test.ts` (2 new, through the real store incl. undo).
+- Checks: storefront typecheck, 209 tests, build. Not checked: visual overflow in a real browser or phone for T-shirt/hoodie/mug/cap (logic-level only), so treat the look as UNVERIFIED until someone switches products on the live Studio.
+
+## 2026-10-09 T8 persistent duplicate-order protection — Claude report (design + dry run only; nothing executed live)
+- Delivered as documents only: `claude/T8_IDEMPOTENCY_MIGRATION_PLAN.md`, `claude/t8/up.sql`, `claude/t8/down.sql`, `claude/t8/collision-report.sql`. No schema file, no app code and no live database was changed.
+- Dry run on a throwaway local Postgres: up, re-run no-op, duplicate key refused (23505), NULL keys unaffected, down restores the original shape with all orders kept.
+- Found: the backup mirror stops (fail-closed) if the primary has a column the backup lacks, so the migration must go to the backup database first, then the primary; the plan states this order and a rollback.
+- Needs owner approval for this exact change before anything runs; the application change is described but not written.
+
+## 2026-10-09 — Storage failure reason code and real-adapter test (rebuilt on main after PR 36/38/39/41)
+- Status: local, committed on `claude/awesome-goldberg-u7c4n4`, draft PR 37 (rebuilt; the checksum change it first carried is already on main as PR 36). Not merged, not deployed.
+- Why: live T1 re-test still ends in `502` from `/api/storage/upload-via-api` after the checksum fix, so the API's own bucket write is being refused or cannot connect. That is most likely a storage permission, credential or bucket-name problem (provider settings, which Claude does not change), but nothing in the browser says which.
+- Change: the 502 body now carries a short non-secret `reason` (`storage_access_denied`, `storage_credentials_rejected`, `storage_bucket_missing`, `storage_unreachable`, `storage_error`); the log line carries the sanitized class; the Studio alert shows it as `[reason]`, so the next live attempt names the cause without Render logs.
+- Tests: new `objectStorage.write.test.ts` (real adapter and AWS SDK against a local stand-in S3 server: key, content type, no optional checksum, refused write without leaking the secret), `storageErrors.test.ts`, two route tests, two storefront tests.
+- Next: after deploy, one harmless live upload + Add to Cart; read the `[reason]` in the alert. `storage_access_denied` / `storage_credentials_rejected` / `storage_bucket_missing` = fix in the Cloudflare R2 token/bucket (owner action, not code); `storage_unreachable` = endpoint/account id.
+
+## 2026-10-09 — Whole-stack local audit (owner: "check everywhere and finish")
+- Status: local audit done against `main` at `e25f2fb` plus PR 37; fixes committed on `claude/awesome-goldberg-u7c4n4` (draft PR 37). Nothing merged or deployed by this session. Live behaviour UNVERIFIED (the sandbox cannot reach the live site).
+- Setup: throwaway local Postgres 16 (schema pushed with `drizzle-kit push-force` into a scratch database), the built API bundle, the Vite storefront, headless Chromium. No provider, credential, live data, payment or real customer touched.
+- Results: root `pnpm run typecheck` clean; `node ./build.mjs` and all workspace builds pass; API 32 files / 223 tests, storefront 34 files / 211 tests pass.
+- Browser sweep: 43 customer pages x desktop and phone width = 86 loads, no script errors, no horizontal overflow, no empty pages, no API 4xx/5xx (the only console noise is this sandbox blocking external stock-photo/font hosts). 29 admin pages x 2 widths logged in = 58 loads, same result; the only 4xx is the dashboard's harmless `GET /api/settings/prodNoticeDismissed` 404 (UI falls back to showing the notice).
+- Customer journey (real browser, local data): product -> size -> add to bag -> cart (৳849 + ৳100 = ৳949) -> checkout (guest, 3-level delivery area, 25% advance ৳238, ৳711 on delivery) -> order received screen with invoice button -> tracking by order number + phone (wrong phone = "not found") -> invoice PDF downloaded at desktop and phone width; contents correct and honest (payment pending, advance and balance, store contact from settings).
+- Admin/API: 39 of 43 authenticated admin GETs return 200, the 4 others are expected refusals. T7 on a real database: refused moves return `invalid_status_transition` with the allowed list; cancelling restored stock 29 -> 30 once; a cancelled order is final.
+- Design Studio (local storage): upload -> `Design placed!` (honest low-resolution warning on a 64px test image) -> Add to Cart -> `request-url` 200, upload 200, `mockup/render` 200 -> cart item "Custom Unisex T-Shirt" ৳549, no error alert.
+- Defects found and fixed (mobile app, both were silent):
+  1. Shop sort pills (Newest / Price / Featured) changed state but never sent `sort` to the API, so every pill returned the same order. Now sent and typed to the API's accepted values; page resets to 1 on sort/search-clear.
+  2. Mobile reviews client called `GET /api/reviews?productId=N` (404; the route is `/api/reviews/:productId`) and submitted `comment` without the required email (API answers 400). Contract and types aligned and checked against the running API. No screen calls these yet.
+- Observation, not changed: web checkout stores the division as `shippingCity` and puts the area in the address; the mobile app stores the area as `shippingCity`. Pick one convention before building reports on city.
+- Still open (needs the owner, device or provider): live T1 (storage fallback 502; PR 37 shows the reason code), real-phone touch (N1), sanitized product export (T4), sanitized Render/Activity Log (T5), Photopea validator report (T6), bottle print-area approval (T10).
+
+## 2026-10-09 — Mobile shop filter sheet + server-side price range
+- Status: local, committed on `claude/awesome-goldberg-u7c4n4` (draft PR 37). Not merged, not deployed. Live UNVERIFIED; real phone UNVERIFIED.
+- API: `GET /api/products?minPrice=&maxPrice=` filters on the price the customer pays (`COALESCE(discount_price, price)`); non-numeric, negative or huge values are ignored; a reversed range is swapped; both product-list cache keys (shared and in-process) carry the range, so a filtered list can never come from an unfiltered cache entry (guarded by a source test; mutation check confirmed it fails when the key is dropped).
+- Real-database check (throwaway Postgres): all 9 products; min500 -> 7; max600 -> 3; 500-1000 -> 5; reversed 1000-500 -> same 5; garbage -> all 9; page 2 of sort=price_asc under 1000 -> 649, 649, 699; unfiltered list unchanged afterwards.
+- Mobile: filter sheet (price range, customizable only), badge, Reset, empty-state "Clear filters". Pure helpers in `lib/shopFilters.ts` (digits-only input, count, params) checked with a throwaway script; the app has no test runner. Checked in the Expo web build at 390px with the app's API calls redirected to the local API: found and fixed one layout defect (Max field ran off the sheet).
+- Tests: API 33 files / 244 pass (new `priceRange.test.ts`, 21), storefront 34 files / 211 pass, root typecheck clean, API bundle builds, Expo web export builds.
+- Not done: in-stock filter (variant stock is per-variant JSON); web `Products.tsx` filters still filter the loaded page client-side and could use the new server range later (behavior change, left alone).
+
+## 2026-10-09 — Further functional checks (local, throwaway database; no live data)
+- Customer auth: register (duplicate 409, weak password 400), login (wrong password 401, right 200), `/auth/me`, `/orders/my`, logout ends the session (me -> 401). Profile name rejects digits by design.
+- Admin: create/update/delete category and product; the public list and the new price filter reflect each change immediately (cache invalidation works); an out-of-stock product is refused at checkout with a clear message.
+- Promo: create, below-minimum refused with the minimum shown, 10% of ৳849 = ৳85 (total ৳864 with ৳100 delivery), one-use code refuses a second use.
+- Contact form: stored in the Activity Log and answered truthfully (`delivered:false`, `stored:true`); bad input 400.
+- Payment evidence (`PUT /orders/:id/payment-info`): wrong phone 403, wrong payment method 400. Mobile app is guest-only; every endpoint it calls exists after the two contract fixes.
+- Public settings expose no secret values (`metaCapiTokenConfigured` is a boolean flag).
+- Local servers and the scratch Postgres cluster were stopped afterwards; nothing from this audit persists outside the sandbox.
+## 2026-10-09 Claude acknowledgement of the T7/T1 owner note (PR 40 branch `manus/remaining-safe-work-2026-10-09`) — status
+- Read and understood. T1 stays UNVERIFIED/FAILED on live after PR 36. Two points: (a) the browser says direct storage cannot be reached AND the API's own bucket write returns 502, which points at the storage account itself (write permission of the token, bucket name/endpoint, or credentials) rather than the request, but I cannot see those from here and will not guess; (b) `storageFailure` is logged on Render, but the operator cannot read Render logs, so the useful evidence is the reason code PR 37 (another Claude session, draft) puts in the 502 body and the Studio alert. I did not merge or touch PR 37 as asked; if you want the next live test to name the cause in the browser, that PR is the shortest route and only needs your go-ahead.
+- Correction to your note: T9 is not pending, it is merged (PR 39, `db10856`). T8: my plan (`claude/T8_IDEMPOTENCY_MIGRATION_PLAN.md`, merged in PR 41) now also records that `repairTargetSchemas` may already have added a plain `orders.idempotency_key` on backups, so run the collision check before building the unique index.
+- PR 40 is your branch and is behind main; I have not changed it. Its report entries will conflict with newer appends; say so if you want me to merge main into it.
+
+## 2026-10-10 Claude status after owner merge of PR 37 (`70acdb0`) — local note, no code change
+- PR 37 (another Claude session: storage reason code, mobile sort/filter/reviews contract fixes, price-range filter on `GET /api/products`) is now on main. Not confirmed deployed or live-tested by me. It also changes the mobile app and a public API query, which I did not review or test; its own report lists API 244 tests and typecheck passing.
+- Next step is unchanged and belongs to the owner/operator: deploy, one harmless live upload + Add to Cart, report the `[reason]` code. Claude is otherwise idle on the evidence-blocked items.
+
+## 2026-10-09 — Dependency security patch (pnpm audit --prod: 38 -> 3)
+- Status: local, committed on `claude/awesome-goldberg-u7c4n4`, draft PR open. Not merged, not deployed.
+- Before: 38 vulnerabilities (2 critical, 20 high, 13 moderate, 3 low). After: 3 (2 high, 1 moderate) and all three have NO published fix upstream (`node-forge`, `braces`, `sprintf-js`, reachable only through Expo/Metro build tooling under the storefront's `@react-three/fiber` -> `expo` chain, not shipped code).
+- API runtime fixed: `proxy-addr` 2.0.7 -> 2.0.8 (critical, IPv4-mapped IPv6 trust-subnet spoofing; matters for client-IP rate limits and logs), `nodemailer` 9.0.3 -> 10.0.16 (7 advisories incl. address-parser DoS and recipient-domain validation bypasses), `sharp` 0.35.3 -> 0.35.5 (libheif/librsvg), `compression` -> 1.8.2, `undici` -> 6.28.1.
+- Shipped storefront fixed: `dompurify` 3.4.16, `prosemirror-view` >= 1.42.6, `fflate` >= 0.6.11. Tooling-only fixed via overrides: `shell-quote` 1.11 (critical), `js-yaml`, `fast-uri`, `brace-expansion`, `source-map-js`, `postcss-selector-parser`.
+- How: direct bumps in `artifacts/api-server/package.json`, root and storefront `package.json`; the existing floor pins in `pnpm-workspace.yaml` `overrides` raised to the patched versions (the lockfile had kept the older resolutions); a few new override lines added. Lockfile regenerated; `pnpm install --frozen-lockfile` passes.
+- Breaking-change check: nodemailer 10 only raises the minimum Node to 20 (CI runs 22; `sharp` and the AWS SDK already need 20+). Make sure the Render service runs Node 20 or newer (its default does).
+- Verified: root typecheck clean; API 33 files / 244 tests, storefront 34 files / 211 tests; API bundle, storefront and Expo web builds pass; nodemailer 10 sends (JSON transport, unicode subject, display-name recipient) and sharp resizes/encodes; the built API boots with no error logs and serves `/api/products`.
+- Not done / limits: not tested against a real SMTP server; live UNVERIFIED. The 3 unfixable advisories need an upstream release.
+## 2026-10-09 — Storefront image weight (published as its own PR after the security patch, PR 45, was merged as `3b5fb12`)
+- Problem: `artifacts/trynex-storefront/public/images/` held 11 MB of PNGs (category tiles ~1.7 MB each, `pattern.png` 2.2 MB, `hero-bg.png` 0.9 MB). The service worker precached all of it, so a first PWA install fetched ~14.4 MB before anything else; on mobile data that is the heaviest single cost.
+- Change: re-encoded in place, SAME file names (category records in the live database store `/images/cat-*.png`; renaming would touch live data). Category tiles 1280x896 -> 1100x770 (displayed ~240-500 CSS px tall), 256-colour optimized PNG; `cat-waterbottle`, `hero-bg`, `pattern` keep their dimensions. 11.0 MB -> 2.9 MB (tiles 1100x770).
+- Result: precache 14.4 MB -> 6.5 MB (verified in the build output); storefront tests 211 pass; tiles checked at card size in a real browser (crisp, no banding).
+- Not done: `hero-bg.png` and `pattern.png` are referenced by no source file in this repo, so they could be removed, but pages stored in the database may reference them; left in place.
+## 2026-10-09 — Web checkout stores the local area as `shippingCity` (published as its own PR after PRs 45 and 46 were merged)
+- Decision (owner delegated): one convention across web and mobile. `shippingCity` = the local area the customer picked (falls back to the division); `shippingDistrict` = the district. Every consumer (invoice, email, Telegram alert, admin) prints them together, so "Adabor, Dhaka" reads correctly where the web used to print "Dhaka, Dhaka" (it stored the division). The mobile app already did this.
+- Change: `lib/shippingLocality.ts` (`resolveShippingCity`) applied in `Checkout.tsx` when the order payload is built; the address text is unchanged (it already includes the area). Orders already stored keep their old values; no data migration and no schema change.
+- Verified on a throwaway database in a real browser: new order stores `shipping_city = Adabor`, `shipping_district = Dhaka`; the downloaded invoice shows "Adabor, Dhaka". Unit tests (9) plus a source guard that the helper is applied after the form values are spread. Storefront tests all pass.
+- Not done: no backfill of older orders (live data; needs a dry run and approval if ever wanted).
+
+
+## 2026-10-10 01:30 UTC — Manus S1–S3 live evidence read (docs only; state: local, then PR)
+- Status: Manus S1–S3 evidence landed (`f47c7b8`). Price filter, image weight and health verified live; `/sw.js` is the real worker (no defect).
+- Blocker: live Studio upload still returns a 502 with no message or `[reason]`. The current storage route always sends both, so the 502 did not come from this code: either the primary Render instance is on an older build or Render/edge produced the 502.
+- Next safe action: owner checks the Render primary's deployed commit, Node version and logs around 01:12 UTC, deploys `main` normally if older; Manus captures the failing request's status, content-type, server/cf-ray headers and first 200 body characters. No code change, provider change or data change was made.
+- Verification: read-only review of evidence files and `storageUpload.ts`, `routes/storage.ts`, `functions/api/[[path]].ts`, `vite.config.ts`.
+
+## 2026-10-10 Claude: independent local check of the live upload 502 (local only; live UNVERIFIED)
+- Agree with the 01:30 UTC reading on `main`: the live 502 has no message and no `[reason]`, so it was not produced by the current storage route.
+- Extra evidence: I bundled the real Pages gateway function (`functions/api/[[path]].ts`) and ran it in front of the built API from `main`, with a stand-in S3 bucket and a throwaway Postgres. `POST /storage/uploads/request-url` returned a fallback link, and a real 3.6 KB PNG sent with `PUT /storage/upload-via-api/...` through the gateway returned 200 and was stored. So the gateway method/body forwarding and the route work end to end when the bucket accepts the write; this points away from a gateway or route code defect and toward the deployed Render build/state or a Render/edge-level failure (as already stated).
+- Not proven from here: the Render primary's deployed commit, Node version, logs, and whether Render deploys `main` automatically. Those remain the owner step in N12. No provider setting, credential, data or code was changed.
+
+
+## 2026-10-10 03:05 UTC — Manus S1–S3 report and product export read (docs only; local, then PR)
+- Status: Manus S1–S3 sections and `claude/evidence/products-export.csv` landed (`dbc43ed`). Read-only catalog/image audit written to `claude/evidence/catalog-audit-2026-10-10.md`.
+- Findings: 10 products (ids 1–9, 20) use third-party image hosts and look like seed items; everything else in the export is consistent. No code defect.
+- Remaining: live upload 502 (owner checks Render commit/Node/logs; Manus captures failing request headers), Photopea report, real-phone test, bottle approval (`not yet`).
+- Verification: CSV analysed locally with a script; local image files confirmed present. No live, provider, data or schema change.
+## 2026-10-10 — Mobile Design Studio preview and touch responsiveness
+- Status: complete for the approved storefront scope; local, ready for review, not deployed.
+- Last completed: fixed narrow-phone preview sizing, mobile upload presentation, smooth post-upload centering, and scroll-safe canvas touch behavior.
+- Stopped at: after focused Studio tests, storefront typecheck, production build, and `git diff --check` all passed.
+- Files/areas changed: `artifacts/trynex-storefront/src/pages/studio/DesignStudioV2.tsx`, `CanvasArea.tsx`, and `DesignStudioV2.mobile-workflow.test.ts`.
+- Behavior: mobile canvas no longer has a forced 320px minimum; it is contained within narrow phone widths with a 280px lower bound and 560px cap. Uploaded artwork uses a smaller initial mobile fit (`0.78` print-zone padding, max scale `2.5`), and the preview smoothly centers after upload. Select mode allows vertical page scrolling (`pan-y`) while draw/pinch modes retain gesture capture; canvas overscroll is contained.
+- Preserved: desktop sizing and artwork fit, upload immediacy, transforms, front/back/surface switching, export, cart metadata, and photoreal curved-product rendering.
+- Remaining work: none for this approved local UX scope. Real-device validation and deployment remain separate follow-ups.
+- Blocker: no code blocker; the unrelated live storage 502/provider issue remains unchanged.
+- Next safe action: review/deploy the storefront through the normal connected workflow, then verify at narrow phone widths with upload, scroll, drag, pinch, rotate, surface switching, export, and Add to Cart (stop before checkout).
+- Verification: focused `DesignStudioV2.mobile-workflow.test.ts` and `studio-regressions.test.ts` passed; storefront typecheck passed; storefront production build passed. Build emitted only the existing large-chunk warning.
+
+
+## 2026-10-10 04:35 UTC — Manus R1–R7 read (docs only; on PR branch, not yet merged)
+- Status: R1 and R4 VERIFIED by Manus (`8f43d75`). R2, R3, R5, R6, R7 BLOCKED (no Photopea report, no phone, no dashboard/admin access).
+- Key finding: the live `upload-via-api` 502 is an HTML Cloudflare-style page, so it did not come from the storage route in `main` (that route only sends JSON errors). Likely Render origin or edge failure; local reproduction through the real gateway passes. No code cause found, no code changed.
+- Next safe action: owner opens the Render dashboard for the primary service, notes deployed commit and Node version, reads logs for 04:18 and 01:12 UTC, redeploys `main` normally if older than `7c284f5`, and pastes sanitized lines as R5/R6.
+- Delivery picker (R4) matches intended behaviour. No provider, data or schema change.
+
+
+## 2026-10-10 04:50 UTC — Live upload 502 root cause found (Manus R5/R6); small status-code fix (state: committed on PR branch, not merged)
+- Status: Manus read Render: live `6feed17`, Node 24.14.1, clean start. Both upload attempts failed at the R2 write with `AccessDenied` / 403 (`storage_access_denied`). Root cause is the R2 token/bucket authorization (owner action in Cloudflare R2: Object Read & Write on the configured bucket; account ID, bucket and endpoint must match). No provider setting was changed.
+- Why the reason was invisible: Cloudflare in front of Render replaces an origin 502 body with its own HTML page.
+- Changed: `artifacts/api-server/src/routes/storage.ts` now returns 424 (not 502) for a storage write failure so the JSON reason reaches the browser; tests updated first in `storage.upload.test.ts` and `storageUpload.test.ts` (14 + 9 passing, API typecheck clean).
+- Remaining: owner fixes the R2 token permission, then one harmless Studio upload to confirm. Still blocked: Photopea report, real-phone test, bottle approval (`not yet`).
+
+
+## 2026-10-10 06:40 UTC — Current open list moved to claude/MANUS_TO_DO_REPORTS.md (docs only; state: local, then PR)
+- Status: all repository-side work is merged (last code change #57, 424 status). The live Studio upload still fails because Cloudflare R2 refuses the server-side write (AccessDenied/403). The next action needs dashboard access: give the R2 token Object Read & Write on the configured bucket and match account ID/bucket/endpoint in Render, then one harmless Studio upload (M1, M2).
+- Also open: Render build confirmation (M3), Photopea report (M4), real-phone check (M5), admin log (M6), owner decisions D1–D6.
+- Next safe action: Manus or the owner does M1; Claude acts on each report within minutes.
+
+- 06:45 UTC update: Manus live retest (`635c4f4`) VERIFIED PR #57 is deployed: fallback upload returns 424 JSON `storage_access_denied` and the Studio alert shows `[storage_access_denied]`. Only the Cloudflare R2 write authorization remains (M1, then M2).
+
+
+## 2026-10-12 Manus — Claude queue reconciliation and relay handoff (docs only)
+
+Status: **ready for Claude/owner follow-up; no application code or production state changed.**
+Last completed: inspected the selected GitHub repository at `main` commit `cec19bd77e00f17276c0af987e2dd35e2b6d31a4`; local worktree was clean and matched `origin/main` before these documentation edits. Reviewed Claude's current queue, reports, project instructions, and latest handoff notes. GitHub showed no open PRs or issues on this check.
+Stopped at: published a current, reconciled Claude task queue and report-back protocol in `claude to do tasks.md`; it records only verified evidence and labels remaining access-dependent work as blocked/partial.
+Files/areas changed: new repo-root `claude to do tasks.md`; this handoff note; `CLAUDE_HANDOFF_CHECKLIST.md` appended with this checkpoint. No code, provider, database, catalog, order, payment, or mockup state changed.
+Remaining work: owner-side R2 Object Read & Write/bucket configuration (M1), then one harmless live Studio upload test (M2); exact post-PR-57 Render deployment identity (M3); Photopea report (M4); real-phone Studio test (M5); sanitized Admin Activity Log summary (M6); owner decisions D1/D5. D2 remains `not yet`; D3 and D4 are done within their stated boundaries; D6 has no current open PRs to close. See the new queue for detail and relay format.
+Blocker: M1 requires owner dashboard access; M4–M6 require owner-provided tool/device/admin access. The repo file establishes a handoff loop but does not create or verify unattended Claude polling or Manus wakeups.
+Next safe action: owner resolves M1 without sharing credentials, then tells Manus `M1 done`; only then run M2 once and append a sanitized report. Claude should read the newest report, take the next unblocked item, append its result to `claude/reports.md`, and update this queue/handoff.
+Verification: confirmed local `main` and `origin/main` were both `cec19bd77e00f17276c0af987e2dd35e2b6d31a4`; confirmed clean status before edits; `gh pr list --state open` and issue list returned empty; checked report evidence through 2026-10-10; no secrets or live data were accessed or changed.
+
+
+## 2026-10-12 follow-up — autonomous trigger authorization blocked
+
+Status: repo queue PR #60 is merged. Attempted to configure the requested event-driven Claude-to-Manus relay after discovering the GitHub `commit_created` event. The Triggers service rejected creation: `connector(s) not installed for this user: github`. The usual GitHub repo integration is enabled, but the Triggers service lacks its own authorized GitHub connector. **No trigger is active.** No fallback webhook, connector edit, or polling script was created.
+Last completed: verified GitHub PR #60 merged at `6c9c1ce90145d2854b797b585925415d0fa9e123`; repository task queue is on `main`. Event discovery exposed the selected repo and `main` branch with text filters, but authorization prevented creating the event trigger.
+Stopped at: documenting the exact authorization blocker and safe retry path in `claude to do tasks.md`.
+Files/areas changed: planned docs-only update to the queue, `AGENT_HANDOFF.md`, and `CLAUDE_HANDOFF_CHECKLIST.md`. No product/provider/database setting changed.
+Remaining work: owner must enable/authorize GitHub for the Triggers service through Manus’s supported integration flow. Only then retry one trigger for `main` report commits with `[Claude report]` or `[Owner report]` subject markers. Until service-confirmed, Manus follow-up requires a new active session; Claude polling remains unverified.
+Blocker: Triggers authorization failure. Per skill guidance, do not bypass it with connector edits, a webhook, or a polling script.
+Next safe action: after the owner makes GitHub available to Triggers, retry the narrowly filtered event trigger and verify it is active before describing the relay as autonomous.
+Verification: trigger list was empty before the attempt; creation returned an authorization error; no trigger UID/resource was returned. No automation is active.
+
+
+## 2026-10-11 Claude — reconciled Manus queue (docs only)
+
+Status: **no repository work is ready; waiting on owner (M1) and access-dependent evidence.**
+Last completed: read `claude to do tasks.md` and the 2026-10-12 Manus handoff entries at `main` `8139505`; agreed with the reconciliation; appended a Claude report to `claude/reports.md`.
+Stopped at: docs-only note; no code, provider, database, catalog, order or payment state changed.
+Files/areas changed: `claude/reports.md`, this file, `CLAUDE_HANDOFF_CHECKLIST.md`.
+Remaining work: unchanged — M1 owner R2 fix, then M2 retest; M3 exact Render SHA; M4 Photopea; M5 phone; M6 Admin Activity Log; D1 and D5 owner decisions.
+Blocker: owner dashboard access (M1). Claude's earlier 5-minute loop was session-bound and ended 2026-10-10 about 22:21 UTC; nothing polls now.
+Next safe action: owner says "M1 done"; Manus runs M2 once and reports; Claude follows the queue table.
+Verification: docs only; `git diff --check`.
+
+
+## 2026-10-12 — M1–M6 report and Claude handoff (PR #63)
+
+Status: ready for review (docs/evidence-only PR #63 is open; not merged; checks were pending at 2026-10-11 21:32 UTC).
+Last completed: refreshed the current M1–M6 evidence against main `2e5e63eda6d06800e15b2291225eff615d948849`; verified M3; recorded M1/M2 gates, M4 blocker, M5 emulator results, and M6 data-source limits in `claude/reports.md`.
+Stopped at: the report is pushed on `manus/m1-m6-report-2026-10-12`, latest commit `e84be77`, and PR #63 is awaiting checks/review. No merge or deployment was performed by this run.
+Files/areas changed: `claude/reports.md`; `claude/MANUS_TO_DO_REPORTS.md`; repo-root `claude to do tasks.md`; sanitized evidence under `claude/evidence/` for M3, M5 and M6, including three 390×844 screenshots; this handoff and the Claude checklist.
+Remaining work: M1 owner-only R2 permission/matching-configuration check; M2 only after explicit owner `M1 done`; M4 Photopea report/hash list for 94 candidate surfaces; Claude to investigate M5 pinch mismatch with a focused failing test; M6 needs a supported seven-day request-log source; D1 and D5 remain owner decisions/checks. D2 stays `not yet`; D3/D4 are done; D6's old close-list remains stale and PR #63 must not be closed as stale.
+Blocker: no owner authorization/dashboard changes for M1; no Photopea evidence; Render exposes no request-log rows for M6. No GitHub-to-Manus trigger is active because the Triggers service lacks its own authorized GitHub connector, and Claude polling is unverified.
+Next safe action: Claude reviews PR #63 and the latest report, tests the M5 pinch behavior before proposing a fix, then appends a dated result to `claude/reports.md` and updates both queues and this handoff. Do not run M2 until the owner explicitly says `M1 done`. To continue automatically would require a supported, service-confirmed GitHub trigger; do not use a webhook or polling workaround.
+Verification: current live Render release is `2e5e63e…`, includes PR #57, started cleanly, and reports Node `v24.14.1`; mobile emulation reproduced drag/back/scroll and the pinch mismatch, and Add to Cart returned sanitized 424 `storage_access_denied`; M6 is explicitly partial, not a seven-day no-error claim. Local `git diff --check` passed before the report commit. No application code, provider setting, credential, database, catalog, order, payment, or customer/admin Activity Log row was changed or fetched.
+
+
+## 2026-10-11 Claude — M3/M5/M6 reply after PR #63 (docs only)
+
+Status: **M3 verified; M5 needs one more measurement (M5b); nothing else ready for Claude.**
+Last completed: read Manus's M1–M6 reports (merged as `5cceb34`), appended a Claude report to `claude/reports.md`, noted M5b in `claude to do tasks.md`.
+Stopped at: the pinch code (`CanvasArea.tsx` vs `DesignLayer.tsx` / `transformGeometry.ts`) uses two different scale conventions; cannot tell which is wrong without before/after transform numbers. No code changed.
+Files/areas changed: `claude/reports.md`, `claude to do tasks.md`, this file, `CLAUDE_HANDOFF_CHECKLIST.md`.
+Remaining work: M1 owner R2 fix then M2; M4 Photopea; M5b numbers then failing test and small fix; M6 request logs; D1 and D5 owner decisions.
+Blocker: owner dashboard access (M1); Manus emulator numbers (M5b).
+Next safe action: Manus posts M5b; Claude writes the failing test first.
+Verification: docs only; `git diff --check`.
+
+
+## 2026-10-12 — M5b local pinch-transform measurement (Manus)
+
+Status: **M5b measurement complete; docs/evidence-only PR #66 is open for review.**
+Last completed: Reproduced the M5 pinch in a local 390×844 mobile-emulated storefront with a disposable 64×64 PNG. Before: `scale=2.5, scaleX=1, scaleY=1, rotation=0°`, visible frame 54.72×54.72 CSS px. After one pinch: `scale=2.5, scaleX=0.15, scaleY=1, rotation=0°`, visible frame 28×54.72 CSS px. The width collapsed, height stayed constant, and no rotation occurred.
+Stopped at: Report commit `6b39cc7` is pushed on `manus/m5b-measurement-2026-10-12`; [PR #66](https://github.com/georgelsmith333-hub/New-Trynext/pull/66) is open, unmerged and undeployed. Three checks were pending at 2026-10-12 04:20 +06:00. No code fix was made.
+Files/areas changed: `claude/reports.md`, `claude/MANUS_TO_DO_REPORTS.md`, repo-root `claude to do tasks.md`, `claude/evidence/m5b-transform-local-2026-10-12.md`, the before/after 390×844 screenshots, and this handoff/checklist.
+Remaining work: Claude must trace the pointer/touch/Transformer path, add a focused failing regression test first, then prepare the smallest source-of-truth fix and report focused tests, storefront tests, typecheck, and build. M1 remains owner-only; do not run M2 without explicit `M1 done`. M4 Photopea evidence and M6 historical request logs remain unavailable; D1/D5 remain owner actions.
+Blocker: Project permission says ask the owner before each merge. No application change, merge, or deployment is authorized by this measurement report.
+Next safe action: Complete the PR checks and await the owner’s per-PR merge decision. After merge approval, Claude reads the latest `claude/reports.md` report and begins the regression-test-first M5 fix. No event trigger is active; use an explicit Claude `check`/Manus resume rather than claiming unattended automation.
+Verification: Local-only Playwright Chromium, touch-enabled 390×844 viewport, DPR 1; no page errors. `CanvasArea.tsx` diagnostics were reverted byte-for-byte (SHA-256 verified). A local API backend was not running; Add to Cart/checkout were not used. No live storage, provider, database, catalog, order, payment, customer, or admin data was changed or read.
+
+
+## 2026-10-11 Claude — M5b diagnosis and PR #67 (docs note)
+
+Status: **fix proposed in PR #67 (draft, not merged, not deployed); M5 stays PARTIAL until Manus verifies it in a browser and the owner approves the merge.**
+Last completed: read Manus's M5b numbers (PR #66, `4a922c1`); traced `scaleX` 1 -> 0.15 to the handle-resize path (floor 0.15) with two fingers on two handles; wrote the test first and the fix (`selectionGesturePointer.ts`, `CanvasArea.tsx`).
+Stopped at: waiting on a browser rerun of the M5b sequence on the #67 preview.
+Files/areas changed: PR #67 code (storefront Studio); this docs PR touches `claude/reports.md`, `claude to do tasks.md`, this file, `CLAUDE_HANDOFF_CHECKLIST.md`.
+Remaining work: M1 owner R2 fix then M2; M4 Photopea; M5 browser verification and optional physical-phone check; M6 request logs; D1 and D5 owner decisions; unconfirmed `scale` vs `scaleX/scaleY` convention in the Stage pinch handler.
+Blocker: owner approval to merge #67; owner dashboard access (M1).
+Next safe action: Manus reruns M5b on the #67 preview; owner says merge or not.
+Verification: studio tests 65/65, storefront 226/226, typecheck clean, four CI checks green on `9b81008`.
+
+## 2026-10-19 — Claude audit and owner task note
+
+- Status: repo audited from the Claude workspace; no site code changed.
+- Last completed: merged `origin/main` (`e6c7041`) into `claude/nice-carson-nxjq7q`; full workspace typecheck PASS; wrote `manus to do tasks all main.md` (complete T1-T9 dashboard tasks, D1-D10 decisions, what Claude does after each).
+- Stopped at: waiting on owner/Manus reports; the hourly watcher found no change since 2026-10-12.
+- Files/areas changed: `manus to do tasks all main.md` (new), `AGENT_HANDOFF.md`.
+- Remaining work: everything in the new note (R2 write permission, live upload test, live deploy and cache check, Photopea evidence, real-phone check, admin log, token revoke, decisions).
+- Blocker: Claude workspace cannot reach `trynext.shop` (proxy 403); `scripts/verify-critical-flows.mjs` targets the live site and cannot run here. Live state is UNVERIFIED by Claude.
+- Next safe action: owner or Manus works the note and reports in `claude/reports.md`.
+- Verification: `pnpm run typecheck` passed for all packages. Nothing live was checked.
+- State: local + committed + pushed to the working branch only; not merged, not deployed.
+
+## 2026-10-19 — Claude routing audit and Manus report note
+- Status: no site code changed. Added `manus report.md` (routing audit from source, read-only live-check commands L1-L5, what Claude does when each result lands).
+- Findings: every in-app link has a matching `<Route>`; `_redirects` has the SPA fallback; the API gateway points both write and read roles at one Render service, so an asleep/suspended origin or an old Pages deploy would show an empty catalog. Live state is UNVERIFIED (sandbox cannot reach trynext.shop).
+- Next safe action: Manus runs L1-L5 and writes `## Manus report — L1..L5` in `claude/reports.md`. Claude polls every 5 minutes for 2 hours, then the hourly watcher continues.
+- State: local, committed and pushed to the working branch only (draft PR #70); not merged, not deployed.
+
+## 2026-10-19 — Manus L1-L5 result and owner item N13
+- Status: Manus (branch `manus/recovery-phase1-2026-10-16`, read-only) found routes and deploys healthy (Pages and Render both at `1d8fb7b`) but the API unhealthy: readiness `db=false`, `/api/products` 500; both Neon production branches report archived. Recorded as owner action N13. No site code changed here.
+- Next safe action: owner restores the Neon production branch (dashboard); Manus reruns L2/L3. Manus's recovery code branch is NOT merged; Claude reviews and ports it separately via a normal PR.
+- State: docs only; committed locally, pushed with the PR below. Not deployed.
+
+## 2026-10-19 — Port of reviewed Manus recovery changes (PR pending)
+- Ported from `manus/recovery-phase1-2026-10-16` after review (branch itself not merged): health storage error now a stable code; mobile image URLs resolved against the API origin; activity-log secrets masked in API responses and rollback results; activity-log write failures log metadata only.
+- Not ported: write-time masking (breaks rollback), backup export/import secret filtering (owner decision N14), mockup allowlist (no behavior change, next to the bottle hold).
+- Verification: API 34 files / 249 tests, API typecheck and bundle build pass; mobile 9 URL tests and typecheck pass. Not run: storefront (no storefront change), device/browser checks.
+- State: local until the PR below; not merged, not deployed. The live outage (database unreachable, N13) is unaffected by this code.
+
+## 2026-10-20 checkpoint — Manus current-truth read, CI wiring port
+- Status: read `manus/current-truth-2026-10-20` (docs only, not merged). Outage unchanged: liveness 200, readiness 503 `db=false`, products 500. N13 (restore Neon production branch) stays owner/Manus-gated; Manus did not answer M-A..M-D.
+- Last completed: PRs #74 (manus task note) and #75 (checklist fix) merged. Ported only the CI wiring from PR #71 (mobile `test:image-url` and mobile typecheck in `ci.yml`).
+- Not ported (owner decision N14): backup export/import secret filtering and mockup candidate gating. PR #71 conflicts with main and is not to be merged; #67 and #69 stay owner-gated.
+- Remaining work: N13, N14, Manus rerun of the three read-only API checks after the restore.
+- Blocker: database unreachable. Next safe action: owner restores the Neon production branch; Manus reruns liveness/readiness/products.
+- Verification: mobile `test:image-url` and `typecheck` pass locally. State: local until PR checks are green; not deployed.
+
+## 2026-10-20 checkpoint — Neon quota root cause (from Manus 9ce773b)
+- Status: Render healthy; API cannot reach the database because Neon returns quota error 53000. Products and admin login stay down until the owner fixes the Neon plan/quota and restores/starts the production branch.
+- Last completed: recorded the diagnosis (N13 update) and the exposed-keys warning (N15) in `claude/CLAUDE_NEEDS.md`.
+- Not done by Claude on purpose: no failover-chain change, no provider/Render/Neon change, no backup promotion.
+- Remaining work: owner restores Neon (N13), rotates keys (N15), decides N14. Then Manus reruns liveness/readiness/products and Claude verifies products + admin login.
+- State: local until the docs PR merges; nothing deployed by this change.
+
+## 2026-10-20 22:00 UTC checkpoint — answered Manus `manus reports.md` (9a0935e)
+- Status: blocked on provider access only (Neon quota, N13; exposed keys, N15). No code defect found; no change to failover, Render or data.
+- Last completed: read the Manus command notes and appended the required dated entry to `claude/reports.md`.
+- Remaining: owner/Manus fix Neon, then Manus appends read-only results; Claude verifies products and admin login and fixes any real code issue.
+- State: docs only; nothing deployed by this change.
+
+## 2026-10-29 checkpoint — Studio recovery review (owner commit c9d802f) and selection fix
+- Status: the owner pushed Manus's Studio recovery change straight to `main` (`c9d802f`; same 10 files as `manus/design-studio-recovery-2026-10-30`, which was reported as unmerged). Re-ran it from `main`: 35 files / 224 tests, typecheck and build pass, matching Manus.
+- Defect found by code review: the new document-level "tap outside clears selection" handler also fired for taps in the Studio tools panel (`ImagePanel`, text and colour controls), which sits outside the canvas root and only renders while a layer is selected. Tapping Remove background, Upscale, Auto-fix or a colour would clear the selection and unmount the panel.
+- Fix: `selectionDismissal.ts` decides the dismissal; taps on buttons, inputs, dialogs, sliders, tabs and anything inside the tools sheet (`data-studio-tools`) keep the selection, only inert background clears it. Eight new tests; storefront suite now 36 files / 232 tests; typecheck, build and `git diff --check` pass.
+- Not verified: real-phone gesture behaviour, deployed preview, live AI provider quota, live catalog/mockup/settings. The 24px handles are below the usual 44px touch target; judge on a real phone before changing.
+- Outage unchanged: Neon quota (N13) and key rotation (N15) are still owner/Manus items; no failover, provider or data change.
+- State: local until the PR below merges; nothing deployed by this change.
+
+## 2026-10-29 22:00 UTC checkpoint — reviewed ae64668 and the resilience branch
+- Status: PR #81 merged (`83ce5d7`). Owner commit `ae64668` (Crop direct, dismiss overlays) passes 232 tests and typecheck, but one line now clears selection on taps inside the canvas; flagged in `claude/reports.md` for a real-phone check (Konva Transformer handles).
+- `manus/professional-resilience-2026-10-30` changes database selection to configured order only (failover behaviour) plus a product page-size default; not merged, owner decision required.
+- Remaining: N13, N15, N14; real-phone Studio acceptance. State: docs only; nothing deployed by this change.
+
+## 2026-11-08 — Studio cart draft size guard (Claude)
+- Status: committed on claude/nice-carson-nxjq7q; PR pending.
+- Change: `DesignStudioV2.tsx` embeds `studioDraft` in the cart `customNote` only when it serializes to <=3000 chars (order API caps customNote at 10,000; image layers hold base64 data URLs). Full draft stays in localStorage. Regression test updated.
+- Verified: storefront vitest (commerce-recovery) + workspace typecheck. Not verified: real browser/device, live checkout.
+- Remaining: owner may prefer persisting draft via uploaded asset URLs for re-edit durability when localStorage is cleared.
+
+
+## 2026-11-10 checkpoint — category SEO and source-managed editorial guides
+
+Status: ready for review (local feature branch `manus/seo-category-guides-2026-11-10`; not pushed, merged, or deployed).
+
+Last completed:
+- Expanded the shared mug/drinkware content and both client/root Pages renderers with direct answers, current customizable catalog cards and detail links, current price/availability, conditional size/color facts, image normalization/alt text, design/order steps, photo tips, gift use cases, Bangladesh delivery and conditional 25%-advance/COD copy, visible FAQs, support and inquiry-only team/corporate language. Drinkware remains restricted to verified mug and water-bottle catalog groups; no tumbler or automatic bulk-order claims were added.
+- Added three source-managed editorial guides at `/blog/how-to-design-a-custom-photo-mug`, `/blog/custom-mug-gift-ideas-for-couples`, and `/blog/custom-drinkware-gifts-in-bangladesh`. Their content is independent of CMS blog records; root Pages adds read-only links to current customizable product detail pages when those products are available. React routes, blog index cards, route manifest, metadata, canonical URLs, BlogPosting/FAQPage/BreadcrumbList data, and the API sitemap were synchronized. Matching CMS slugs are not duplicated in the sitemap.
+- Updated TODO with the approved acceptance criteria; every live/release-dependent item remains open because production data and deployment were not verified.
+
+Stopped at: local implementation and validation are complete; awaiting owner review before any remote publication or deployment.
+
+Files/areas changed: `TODO.md`; `artifacts/api-server/src/routes/sitemap.ts`; `artifacts/trynex-storefront/public/manus-routes.json`; `artifacts/trynex-storefront/src/App.tsx`; `artifacts/trynex-storefront/src/content/commerceSeoContent.ts`; `artifacts/trynex-storefront/src/content/editorialGuides.ts`; `artifacts/trynex-storefront/src/content/simpleMarkdown.ts`; `artifacts/trynex-storefront/src/lib/legacy-mockup-url.ts`; `artifacts/trynex-storefront/src/lib/product-options.ts`; `artifacts/trynex-storefront/src/pages/Blog.tsx`; `artifacts/trynex-storefront/src/pages/CommerceCategoryLanding.tsx`; `artifacts/trynex-storefront/src/pages/EditorialGuide.tsx`; `artifacts/trynex-storefront/functions/seo-guides.test.ts`; root Pages handlers `functions/_commerce-category.ts`, `functions/custom-mugs-bangladesh.ts`, `functions/custom-drinkware-bangladesh.ts`, and `functions/blog/[[slug]].ts`.
+
+Remaining work: None for the approved local code-only implementation. Before release, an owner-approved deployment still needs read-only checks of the deployed category/article HTML and HTTP status, live catalog image/price/size/color/orderability, the merged sitemap, mobile layout, and product/Design Studio/cart/checkout navigation. Checkout must not complete a payment or create an order during verification; monitor Search Console/Peec only after publication and sufficient data accumulation.
+
+Blocker: Production verification was intentionally not attempted. The latest earlier durable handoff recorded API readiness failing with `db=false`/Neon outage; that state was not freshly checked in this task. No production settings/data, orders, payment, or hosting were changed.
+
+Next safe action: Owner reviews the local feature branch. If publication is desired, separately authorize the remote PR/deployment path; after the production API is restored, run only the planned read-only smoke checks first.
+
+Verification: `pnpm run typecheck` passed; storefront Vitest passed 40 files / 257 tests; storefront production Vite/PWA build passed (existing non-blocking large-chunk warning over 500 KB); `node build.mjs` in `artifacts/api-server` passed after the sitemap source update (bundle-size warning only); `git diff --check` passed. API bundle was built but no API dev service was running to restart; no browser, live database, or deployment was used.
+
+
+## 2026-11-11 checkpoint — preview-first publication requested; production database gate
+
+Status: blocked from production merge (owner requested a live push; commit `d69e4a8252cc4ac04cadd655c63f953dcf0cab00` is pushed on `manus/seo-category-guides-2026-11-10`, and PR #103 is open; preview and checks are ready, but the production API database is unhealthy).
+
+Last completed:
+- Reconciled the new request with the older code-only plan and updated `TODO.md`: push an isolated preview first, pass CI and verify it, then publish through the existing `main` → Cloudflare Pages/Render integration. Do not create an order, payment, production data/settings mutation, or restore/repoint a production DB branch without the owner selecting the exact source.
+- Rechecked production read-only. `/api/health/readiness` reports `db=false` and `catalog=false`; `/api/products?limit=1` returns `internal_error`; both category routes show the stale “Products are loading” state; `/api/sitemap.xml` returns “Sitemap generation failed”; the new guide URL currently renders only “Loading”.
+- Confirmed Cloudflare Pages project `trynext-shop-new` is connected to `georgelsmith333-hub/New-Trynext` on `main`, with preview deployments enabled for all branches. `render.yaml` has `autoDeploy: true` and uses `/api/health/readiness` as its health check, so a main merge deploys the API as well as Pages.
+- Read-only Neon inventory found two possible backup projects with archived production branches (`Trynex-backup-secondary` and `Trynex-backup-2`); no recoverable project was listed. No branch was resumed, no DATABASE_URL read or changed, and no provider, data, order, payment, or hosting state was modified. The owner must choose the authoritative DB source before restoration.
+- Implemented per-dataset fallback in the API sitemap: core/category/source-managed article URLs remain available if DB reads fail; dynamic catalog/CMS URLs are retained when those reads work; duplicate static CMS slugs remain deduplicated. Added API route regression tests for database outage and healthy dynamic data.
+- Independent read-only review caught a fail-open stock rule in the client and root category renderers. Added shared `hasVerifiedStock`, now requiring an explicit finite positive quantity; malformed/unknown variants are not used to claim in-stock size availability. Added unit and crawler-output/schema regression tests for missing, empty, malformed, zero, and negative stock.
+- Local verification after that fix: `pnpm run typecheck` passed; storefront tests passed 40 files / 259 tests; storefront Vite/PWA production build passed with the existing non-blocking >500 KB chunk warning; API tests passed 35 files / 251 tests after restoring one tracked PSD fixture omitted by sparse checkout; API typecheck and `node build.mjs` from `artifacts/api-server` passed; staged `git diff --check` passed.
+- Pushed commit `d69e4a8` and opened PR #103 to `main`. GitHub Active app verification and CI passed (including typechecks, storefront/API tests, lint, all-package builds and security audit); Cloudflare Pages preview build passed.
+- Read-only preview verification: both category routes and all three static guide routes returned HTTP 200 with the expected H1, unique title/canonical, visible FAQ and FAQPage/BreadcrumbList schema; category routes also emitted CollectionPage/ItemList schema. Browser inspection confirmed the mug category leaves the initial shell and renders the full guide plus an explicit empty-inventory message. The Design Studio route opens and retains its existing UI; its photoreal preview was still loading at capture and is not confirmed. No product was added and no order/payment was submitted.
+
+Stopped at: preview routes and all current PR checks are verified; before merging to `main`. Keep the PR open. Do not merge until the owner selects the authoritative production DB source, recovery is completed, and readiness/product reads pass; `main` automatically deploys both Cloudflare Pages and Render, and the Render health check currently fails.
+
+Files/areas changed: `TODO.md`; `AGENT_HANDOFF.md`; `artifacts/api-server/src/routes/sitemap.ts`; `artifacts/api-server/src/routes/sitemap.test.ts`; `artifacts/trynex-storefront/public/manus-routes.json`; `artifacts/trynex-storefront/src/App.tsx`; `artifacts/trynex-storefront/src/content/commerceSeoContent.ts`; `artifacts/trynex-storefront/src/content/editorialGuides.ts`; `artifacts/trynex-storefront/src/content/simpleMarkdown.ts`; `artifacts/trynex-storefront/src/lib/legacy-mockup-url.ts`; `artifacts/trynex-storefront/src/lib/product-options.ts`; `artifacts/trynex-storefront/src/lib/product-options.test.ts`; `artifacts/trynex-storefront/src/pages/Blog.tsx`; `artifacts/trynex-storefront/src/pages/CommerceCategoryLanding.tsx`; `artifacts/trynex-storefront/src/pages/EditorialGuide.tsx`; `artifacts/trynex-storefront/functions/seo-guides.test.ts`; root Pages handlers `functions/_commerce-category.ts`, `functions/custom-mugs-bangladesh.ts`, `functions/custom-drinkware-bangladesh.ts`, and `functions/blog/[[slug]].ts`.
+
+Remaining work: after the owner selects an authoritative DB source, restore/reconnect it, confirm API readiness and live product reads, then merge PR #103 and verify production category/article/sitemap routes plus the product → Design Studio → cart/checkout path without creating an order or payment. Mobile-specific visual behavior remains unverified.
+
+Blocker: live DB/catalog is down. Two accessible Neon backup projects both expose archived `production` branches; selecting/restoring one is an owner data decision. Merging now would auto-deploy both Pages and Render, while Render readiness currently fails.
+
+Next safe action: ask the owner to select the authoritative Neon backup project/production branch (`Trynex-backup-secondary` or `Trynex-backup-2`) or provide the correct database source. Do not resume, restore, repoint `DATABASE_URL`, or merge until that source is confirmed and API/product health is restored.
+
+Verification: local checks passed; GitHub Active app verification, CI/security-scan and Cloudflare preview passed; five preview routes returned HTTP 200 with expected metadata/schema/visible FAQ, and the browser confirmed the category guide content. Production API/database is still unhealthy and therefore live product/checkout/sitemap behavior is not fully verified. The feature branch/PR was pushed/opened; no merge or production deployment, database mutation/restoration, real order, or payment has occurred. Full live audit details are saved at `/tmp/trynext-live-audit-2026-11-11.md`.
+
+## 2026-11-12 — Read-only Render/Neon outage refresh
+
+Status: blocked on authoritative database source selection and Neon account scope; PR #103 remains behind the production health gate.
+
+Last completed:
+- Fresh read-only public checks: `https://trynext.shop/` returned 200; `/api/health/readiness` returned 503 with `db=false` and `catalog=false`; `/api/products?limit=1` returned 500 `internal_error`; `/api/sitemap.xml` returned 500. The site shell is reachable, but catalog-backed and sitemap functionality remains down.
+- Render API inventory confirmed the primary service `trynex-lifestyle-main-render` is active and not suspended, uses `georgelsmith333-hub/New-Trynext` branch `main`, and has commit-triggered auto-deploy enabled. Its latest live deploy remains `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78`, which completed successfully on 2026-11-09. Recent Render events show successful builds/deploys and no recorded server-failure event in the queried page.
+- Render reports `healthCheckPath` empty on the live service even though the repository configuration is expected to use `/api/health/readiness`. This is configuration drift; it was not changed because the API currently fails readiness and changing provider health behavior before recovery could disrupt deployment.
+- The Render workspace has no Render-managed Postgres. The service is on the Free plan. A sanitized read of service environment metadata confirmed `DATABASE_URL_MAIN` and `DATABASE_URL` both target `ep-falling-tooth-aubsig3i-pooler.c-10.us-east-1.aws.neon.tech` / database `neondb`; `NEON_API_KEY` is present and no `DATABASE_URL_STANDBY` variable was found. Secret values and the full connection URL were not recorded.
+- The current Neon connector sees organization `itmedofficial2@gmail.com`, not the organization recorded in the earlier primary-project audit. The current organization lists `Trynex-backup-2`, `Trynex-backup-secondary`, and `Aibay`; an exact search for the previously reported primary project ID `small-mouse-64402656` returned no result. This indicates current Neon account/scope mismatch or changed access; it does not prove the primary project was deleted.
+- The visible archived `production` branches are `Trynex-backup-2` / `br-late-brook-aprg159n` (archived 2026-11-09 07:44:45Z; logical size 51,150,848 bytes) and `Trynex-backup-secondary` / `br-holy-shadow-az6alfwa` (archived 2026-11-05 20:55:55Z; logical size 52,707,328 bytes). Their names, timestamps, and sizes do not establish which is authoritative or transactionally current. No branch was resumed, restored, or modified.
+
+Stopped at: read-only infrastructure and public health checks are complete. No new SQL connection test was run, and no database contents were read or changed in this pass.
+
+Files/areas changed: this local handoff note only. No application source, GitHub ref, deployment, Cloudflare setting, Render service setting, Neon project/branch, order, payment, or production data was changed. The PR was not merged.
+
+Remaining work: obtain access to the Neon organization/project currently targeted by Render, or have the owner choose the exact backup branch to recover; verify its data before any restoration; restore/reconnect only after the source is confirmed and no overwrite/data-loss risk is indicated; rerun readiness, products, and sitemap; merge PR #103 only after API health is restored; then verify live SEO routes and the product-to-cart/checkout path without creating an order or payment.
+
+Blocker: database/catalog outage remains confirmed. Current Neon access cannot see the previously reported primary project, and the owner has not selected either archived backup as the authoritative source. The live Render health-check configuration also differs from the repository declaration and is intentionally untouched.
+
+Next safe action: owner selects `Trynex-backup-2` / `production` (`br-late-brook-aprg159n`), `Trynex-backup-secondary` / `production` (`br-holy-shadow-az6alfwa`), or provides the correct primary Neon organization/project/branch. Until then, do not resume, restore, repoint `DATABASE_URL_MAIN`, change Render health settings, or merge PR #103.
+
+Verification: public health/products/sitemap responses were freshly checked; Render service/workspace/deploy/event/environment metadata were read-only; Neon project/organization/branch metadata was read-only; secret values were suppressed. Production remains unhealthy and no recovery or deployment is claimed.
+
+## 2026-11-12 — Owner-selected backup activation blocked by Neon quota
+
+Status: owner selected `Trynex-backup-secondary` / `production` for recovery and Render reconnection; activation is blocked by the selected Neon project's Free-plan quota.
+
+Last completed:
+- The owner explicitly selected project `bold-math-43930059`, branch `production` (`br-holy-shadow-az6alfwa`). The branch was confirmed as the project's primary/default branch, archived since 2026-11-05 20:55:55Z, with logical size 52,707,328 bytes. The project has no listed snapshots.
+- Neon documentation says archived branches unarchive automatically on first access; snapshot restoration is not needed to reactivate this existing branch. Snapshot restore/finalize can create and swap branches, move computes, and rename the target, so that path was not used.
+- The branch has existing read-write endpoint `ep-jolly-sunset-azyhesuf` in `aws-ap-southeast-1`, idle/suspended since 2026-11-04. An authorized start request returned HTTP 423 `quota exceeded`. A subsequent read-only endpoint check showed it remained idle/suspended, and a read-only branch check still showed `current_state=archived`. No branch data or connection setting changed.
+- `describe_project` reports organization `itmedofficial2@gmail.com`, plan `free_v3`, and consumption period 2026-11-01 through 2026-12-01 UTC. Neon Free quotas include 100 CU-hours and 5 GB public network transfer per project per month; exceeding compute or transfer suspends compute until the next billing period or upgrade, without deleting data. The provider error did not identify which quota was exhausted.
+- Official Neon Launch pricing is usage-based with no monthly minimum: $0.106/CU-hour, $0.35/GB-month storage, and 500 GB public egress per project included before $0.10/GB. No plan change, payment, or billing action was attempted.
+
+Stopped at: branch activation is blocked by provider quota. No schema/data query was possible while the compute remained suspended; no connection string was retrieved, and Render was not repointed.
+
+Files/areas changed: this local handoff note only. No Neon branch/snapshot, Render environment variable or plan, Cloudflare setting, GitHub ref, production data, order, payment, or deployment was changed. PR #103 remains unmerged.
+
+Remaining work: the owner can either upgrade the selected Neon organization to a paid plan through Neon Console (separate billing decision) or keep Free and wait for the 2026-12-01 UTC quota reset. After quota becomes available, retry starting only endpoint `ep-jolly-sunset-azyhesuf`; then inspect schema and relevant product/order records with read-only checks. If checks pass, use the already-authorized reconnection scope to update only the correct Render database variables, preserve all unrelated settings, and rerun readiness/products/sitemap. Do not merge PR #103 until backend health is restored and verified.
+
+Blocker: Neon Free-plan quota denial (HTTP 423) prevents the selected branch from being accessed or the production API from being reconnected. No paid upgrade is authorized; no data-loss or overwrite operation has occurred.
+
+Next safe action: owner upgrades `itmedofficial2@gmail.com` / organization `org-noisy-dew-07535119` in Neon Console and informs the agent, or waits until the period resets on 2026-12-01 UTC. Do not retry repeatedly, change plans, choose a different backup, restore a snapshot, or modify Render until quota is available and the selected branch passes read-only integrity checks.
+
+Verification: Neon project and branch metadata were re-read after the failed start; the endpoint remains idle/suspended, branch remains archived, snapshots list is empty, and no database query or connection-string retrieval occurred. Official sources reviewed: [Branch archiving](https://neon.com/docs/guides/branch-archiving), [Free-plan limits and quotas](https://neon.com/faqs/free-plan-limits-and-quotas), and [Neon pricing](https://neon.com/pricing). Production health was last freshly observed at readiness 503, products 500, and sitemap 500; no production configuration changed afterward.
+
+### Final live check — 2026-11-12 04:05 +06
+
+- `GET /` returned 200.
+- `GET /api/health/readiness` returned 503 with `status=error`, `db=false`, `catalog=false`.
+- `GET /api/products?limit=1` returned 500.
+- Both `GET /api/sitemap.xml` and `GET /sitemap.xml` returned 500.
+- These checks were read-only. No branch, Render, Cloudflare, GitHub, or billing configuration changed; the site is not restored yet.
+
+## 2026-11-15 — Neon re-auth and project inventory
+
+Status: the requested Neon login as `itmedofficial@gmail.com` is not verifiable from the available tool response; the accessible organization scope still contains only the organization named `itmedofficial2@gmail.com` (`org-noisy-dew-07535119`). Do not assume the account switch succeeded.
+
+Last completed:
+- The user requested a fresh Neon sign-in for `itmedofficial@gmail.com`. After the sign-in flow, Neon auth status reported `unknown` with a stored token. `list_organizations` returned only `org-noisy-dew-07535119` named `itmedofficial2@gmail.com`. The Neon tool does not expose the authenticated principal email, so the identity cannot be independently verified.
+- Read-only project inventory for that organization returned exactly three projects: `Trynex-backup-secondary` (`bold-math-43930059`, `aws-ap-southeast-1`), `Trynex-backup-2` (`curly-flower-85463650`, `aws-us-east-1`), and `Aibay` (`calm-brook-97346927`, `aws-us-east-1`). The previously identified primary `trynex-main-backup` (`small-mouse-64402656`) is still not visible.
+- Read-only branch inventory found one `production` branch per visible project. The Trynex backup branches remain archived: `br-holy-shadow-az6alfwa` (52,707,328 bytes; state changed 2026-11-05 20:55:55Z) and `br-late-brook-aprg159n` (51,150,848 bytes; state changed 2026-11-09 07:44:45Z). Aibay's `br-sparkling-bonus-amsg01w3` is also archived (32,374,784 bytes; state changed 2026-11-03 04:09:21Z).
+
+Stopped at: the requested primary project was not accessible in the organization scope returned by Neon. No compute was started, no SQL/schema inspection or migration was performed, and no database, Render, Cloudflare, GitHub, billing, or production setting was changed.
+
+Next safe action: confirm the Neon authorization card was completed with the exact account `itmedofficial@gmail.com`. If that account is confirmed and `small-mouse-64402656` remains absent, verify the project ID in Neon Console or grant the correct account access to the project/organization. Only after the primary source is accessible should its branches and data be compared; preserve the source and stop before any overwrite or production cutover without verified integrity.
+
+### `itmedofficial2@gmail.com` project search follow-up — 2026-11-15 04:30 +06
+
+Within the only visible organization `org-noisy-dew-07535119`, a project search for `Trynex` returned the two backup projects; searches for `main` and `small-mouse-64402656` returned no results. The recoverable-project inventory also returned empty. This only establishes what is visible/recoverable in this organization; it does not prove whether the primary exists in another Neon organization or was deleted outside Neon’s recovery window. No project was restored or changed.
+
+## 2026-11-15 — Supplied Neon key identifies the primary project
+
+The owner explicitly authorized using the supplied Neon API key only for `GET /api/v2/users/me/organizations` and `GET /api/v2/projects` scoped to returned organization IDs. Neon’s official API documentation was checked first; the key was entered through hidden terminal input and was not printed or written to a file.
+
+The GET requests returned one organization: `improvewithamit@gmail.com` (`org-green-bread-59152632`, Free plan). Its project inventory contains exactly one project: `trynex-main-backup` (`small-mouse-64402656`), region `aws-us-east-1`, PostgreSQL 17. This is the primary project previously missing from the Neon MCP account scope.
+
+Stopped at the user-approved scope: no branch or compute endpoint was inspected, no SQL/schema/data was read, no connection string was retrieved, and no Neon, Render, Cloudflare, GitHub, billing, or production setting was changed. The key itself is not recorded here.
+
+Next safe step: obtain separate authorization for read-only branch and endpoint metadata on `small-mouse-64402656`; any compute start, migration, or production reconnection requires its own safety assessment and approval before execution.
+
+## 2026-11-17 — Primary Neon branch and compute inventory (read-only)
+
+The owner authorized only GET requests for branch metadata and compute-endpoint status on project `small-mouse-64402656` (`trynex-main-backup`). Official Neon API references were checked for both list endpoints before querying. No database contents or connection strings were accessed.
+
+The project has three branches, all archived:
+- `main` (`br-nameless-scene-au75xw42`) is primary/default; state changed 2026-11-11 20:38:32Z; logical size 57,417,728 bytes.
+- `trynext-transactional-standby` (`br-mute-sky-au9gjdyg`) is non-primary; state changed 2026-11-13 21:13:33Z; logical size 56,885,248 bytes.
+- `pre-merge-backup-20261028203216` (`br-summer-wind-au3dxfz7`) is a child of `main`; state changed 2026-11-11 20:33:33Z; logical size 33,529,856 bytes.
+
+The project has three read-write compute endpoints, all reported `idle` and not disabled:
+- `ep-falling-tooth-aubsig3i` on `main`, suspended 2026-11-10 03:28:32Z.
+- `ep-lucky-wave-auxoem19` on the standby branch, suspended 2026-11-10 03:28:31Z.
+- `ep-sweet-leaf-aumzpqx3` on the pre-merge backup, suspended 2026-10-28 21:05:34Z.
+
+Stopped at the approved read-only scope. No quota/consumption endpoint was queried, no compute was started, no branch was restored, and no Neon, Render, Cloudflare, GitHub, billing, or production setting was changed. The key is not recorded. Next safe action: obtain separate approval before any additional API query outside this metadata scope; any compute start, migration, or production reconnection requires its own safety assessment and explicit authorization.
+
+
+## 2026-11-17 — Cross-account Neon quota and live-health recheck (read-only)
+
+Using the owner-supplied Neon API keys through hidden input, only GET requests were made for organizations, projects, project usage details, branch metadata, and endpoint metadata. No SQL, customer/order contents, connection strings, billing changes, branch/compute changes, or production settings were touched. All four relevant Neon organizations report Free plan. Neon’s current Free limits and suspension behavior are documented at https://neon.com/docs/introduction/plans; Free usage fields are described at https://neon.com/docs/introduction/usage-calculations.
+
+The current Render database target remains `trynex-main-backup` (`small-mouse-64402656`, AWS us-east-1, PG17), matched in the prior Render audit. For the period beginning 2026-11-01T00:00:00Z, its project-detail GET reports 397,164 compute CU-seconds (110.3233 CU-hours) against the Free 100-CU-hour limit, an overage of 10.3233 CU-hours. Transfer is 0.366752 GB against 5 GB. The three branch logical sizes total 147,832,832 bytes (0.1478 GB), with three branches. The primary/default `main` branch and its endpoint remain archived/idle; endpoint min/max compute is 0.25/2 CU. This confirms a compute-quota exceedance, not a transfer overage for the current Render target.
+
+The separate `georgelsmith333@gmail.com` Free organization contains `trynex` (`misty-dust-70559510`, 0.5644 CU-hours, 0.121694 GB transfer; production and active branches archived) and `trynex-db` (`proud-dew-38401180`, 0.3656 CU-hours, 0.000611 GB transfer; production branch archived). Both are below this period’s compute/transfer caps but have idle/suspended endpoints, and neither is verified as equivalent or authoritative for live orders/catalog.
+
+The `itmedofficial2@gmail.com` Free organization contains `Trynex-backup-secondary` (`bold-math-43930059`, ap-southeast-1, PG18; 8.4392 CU-hours, 5.556398 GB transfer) and `Trynex-backup-2` (`curly-flower-85463650`, us-east-1, PG17; 28.5869 CU-hours, 5.506838 GB transfer). Both exceed the 5-GB transfer cap; their production branches are archived and endpoints idle. The `itmedofficial3@gmail.com` Free organization contains `Trynex-Third-Final-Backup` (`snowy-rice-17379291`, us-east-2, PG18; 70.8142 CU-hours, 5.543637 GB transfer), also above the 5-GB transfer cap with archived production branch and idle endpoint. No discovered project is currently an active drop-in fallback. Do not promote another project without read-only data comparison and owner approval.
+
+Fresh public GET checks on 2026-11-17: storefront `/` returned 200; `/api/health/readiness` returned 503 with `db=false` and `catalog=false`; `/api/products?limit=1` returned 500 (`internal_error`); `/api/sitemap.xml` returned 500. PR #103 remains unmerged. A read-only paid-provider comparison/masterplan is in progress. No Neon upgrade, compute start, branch restore, migration, Render/Cloudflare change, or merge/deploy has occurred.
+
+
+## 2026-11-17 — Read-only provider comparison complete; release still blocked
+
+Created `RECOVERY_AND_DATABASE_OPTIONS_2026-11-17.md`, a source-backed comparison of Neon Launch, Render Postgres, Supabase Pro, Railway Pro, DigitalOcean Managed PostgreSQL, and Amazon RDS, with the verified cross-account Neon usage inventory, fresh public outage evidence, costs/limits, and a staged no-data-loss migration/rollback plan. The immediate low-risk recommendation is to seek explicit billing authorization for the existing Render-connected Neon production project (`small-mouse-64402656`) and recover that same primary branch, rather than promote any unverified backup. The report’s opening diagnosis was corrected to reflect the fresh 2026-11-17 live check.
+
+The user explicitly confirmed this phase is limited to read-only audit and masterplan. No Neon plan upgrade, endpoint start, branch restore, SQL/data inspection, migration, Render/Cloudflare settings change, repository code change, PR merge, or deployment was performed. PR #103 remains unmerged until production backend health is restored and verified.
+
+### Required handoff state
+
+- **Status:** Read-only audit and provider masterplan complete; production remains unhealthy.
+- **Last completed:** GET-only inventory of all four supplied Neon accounts/projects/usage/branch/endpoint metadata; fresh public HTTP health checks; five-provider comparison and recovery report; documentation-only handoff update.
+- **Stopped at:** Waiting for owner decision on paid recovery/migration. All listed Neon compute endpoints remain idle/suspended and branches archived.
+- **Files/areas changed:** `AGENT_HANDOFF.md` documentation; added `RECOVERY_AND_DATABASE_OPTIONS_2026-11-17.md`. No application code or provider configuration changed.
+- **Remaining work:** If authorized, upgrade the existing production Neon org/project to Launch and activate the same branch, then perform read-only DB/API/product/sitemap verification; if the owner declines, select a paid destination and budget before planning a staged migration. After backend health, re-run release verification for PR #103 and only then ask/act on merge and deployment authorization.
+- **Blocker:** Production database compute quota exceeded; readiness is 503, product endpoint 500, and sitemap endpoint 500. The user-approved current scope is read-only only; paid billing and resource changes are not authorized by that scope.
+- **Next safe action:** Obtain explicit owner approval for the specific paid plan and recovery action or a different target/budget. Do not start compute, upgrade, migrate, repoint, merge, or deploy before that approval.
+- **Verification:** Fresh GET results on 2026-11-17: `/` 200; `/api/health/readiness` 503 (`db=false`, `catalog=false`); `/api/products?limit=1` 500; `/api/sitemap.xml` 500. `git diff --check` passed for the documentation changes; the saved handoff diff was checked for credential-shaped strings and none were found.
+
+
+## 2026-11-17 — Expanded database options review; production release remains blocked
+
+Status: read-only research complete; production remains unhealthy; no provider or deployment change is authorized in the current scope.
+
+Last completed:
+- Expanded the source-backed comparison with seven additional candidates: AWS Lightsail managed PostgreSQL, Google Cloud SQL, Aiven, Crunchy Bridge, Fly.io Managed Postgres, Heroku Postgres, and self-managed PostgreSQL on Hetzner Cloud.
+- Added `EXPANDED_DATABASE_PLATFORM_REVIEW_2026-11-17.md`, with separate immediate recovery and long-term architecture recommendations, provider-specific costs/limits, availability/backup behavior, network/security fit, and a staged migration/rollback plan.
+- The long-term shortlist is conditional: Crunchy Bridge Standard HA in AWS us-west-2 plus Render PrivateLink is the strongest documented private managed route, with an indicative baseline around $170/month plus storage and any Render Pro workspace cost if not already paid; RDS PostgreSQL 17 Multi-AZ in Oregon is a lower-cost managed HA alternative requiring a carefully secured cross-provider connection. Render Postgres remains the simpler same-provider private-network option but has weaker reviewed SLA/HA terms.
+- Corrected Heroku and Render networking citations and recorded that Render PrivateLink requires a Pro workspace or higher; its link fee alone is not the full workspace/network cost.
+
+Stopped at: the owner must decide whether to authorize recurring paid recovery on the existing authoritative Neon project or approve a different destination and budget. The last public checks on 2026-11-17 still showed storefront `/` 200, API readiness 503 (`db=false`, `catalog=false`), product API 500, and sitemap 500. PR #103 remains unmerged.
+
+Files/areas changed: Added `EXPANDED_DATABASE_PLATFORM_REVIEW_2026-11-17.md`; appended this handoff note. No application code, database contents, Neon plans/compute/branches, Render/Cloudflare settings, billing, PR, or deployment was changed.
+
+Remaining work: Await owner decision. If paid recovery is authorized, recover only the identified existing Neon production source first and verify readiness/products/sitemap before considering migration. If a new provider is selected, obtain a region-specific total-cost quote and explicit approval, then plan an isolated rehearsal and controlled cutover while retaining the Neon source.
+
+Blocker: Production database compute-quota suspension; storefront APIs and sitemap remain unhealthy. The current authorization remains read-only research and planning only.
+
+Next safe action: Present the expanded report and ask for the owner’s budget/recovery authorization before any billing, compute, migration, Render/Cloudflare setting, merge, or deployment change.
+
+Verification: The expanded report was reviewed after generation; its recommended Crunchy Bridge path now explicitly includes the Render Pro-workspace prerequisite and associated possible cost. Heroku and Render networking citations were corrected. No live production endpoint or provider configuration was modified or represented as recovered.
+
+
+## 2026-11-17 — Free-only multi-route plan and live quota-driver evidence
+
+Owner requirement for this phase: keep ongoing spend at $0, evaluate multi-routing across legitimate free tiers, and do not assume multiple independent databases are safe failovers. The current work remains research/read-only only; no production code, provider settings, billing, branches, database data, PR, or deployment were changed.
+
+### Completed findings
+
+- Added `FREE_ONLY_MULTI_ROUTE_PLAN_2026-11-17.md`, a source-backed comparison of Neon Free, Render Free, Supabase Free, CockroachDB, Cloudflare Workers/D1/KV, Google Cloud Run, and OCI Always Free. It distinguishes static/stale public reads from transactional failover, and documents the $0 recovery/monitoring plan.
+- Read-only Render service inspection at 2026-11-17 03:02 UTC confirmed the active API service is on Render Free, on `main`, auto-deploy enabled, one instance reported, not suspended, and with no live health-check path. Its latest live deploy is `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78` (`fix: harden public route and crawler responses`). This differs from checked-in `render.yaml`, which declares Starter and a health-check path/interval; do not treat the Blueprint as the live configuration.
+- Recent Render application logs show `[scheduler] Keep-alive ping sent` with HTTP 200 at 2026-11-17 02:37:36Z and 02:51:36Z, about 14 minutes apart. This confirms the deployed scheduler keep-alive job ran. No environment-variable values were read or recorded.
+- Inspected the exact live commit in the local Git object database. It contains a database candidate re-probe every 60 seconds; each candidate probe checks `information_schema` and counts `orders`, `products`, and `mockups`. The same commit runs the scheduler every 60 seconds; each tick calls `keepAlive()`, which reads `automation_config` from PostgreSQL. The config cache TTL is 30 seconds, so the minute tick can query the database every minute. Keep-alive defaults to enabled and also calls `/api/healthz` every 14 minutes; that endpoint runs `SELECT 1`.
+- This is the strongest current explanation for the Neon Free compute overage: while the Render process is running, repeated database activity is much more frequent than Neon’s five-minute idle suspension. At 0.25 CU, 100 CU-hours allows 400 active hours (about 16.7 days continuous); the audited 110.3233 CU-hours for the period beginning 2026-11-01 is consistent with persistent low-size compute use. Treat polling as the leading supported cause, not proven to be the only contributor; Render Free can sleep and other traffic may add activity.
+- The safe architecture remains: keep static storefront/SEO available and optionally show a clearly labelled stale public catalog; route orders, payments, accounts, and admin writes only to one approved, current PostgreSQL authority; fail closed when it is unavailable. Do not dual-write or promote any unverified Neon/Supabase/D1/Cockroach database.
+
+### Required handoff state
+
+Status: Free-only provider comparison and read-only Render/source audit complete; production backend remains unhealthy.
+Last completed: Verified Render’s live plan/deploy/logs, matched the deployed commit to the 60-second database-probe and scheduler code, and created `FREE_ONLY_MULTI_ROUTE_PLAN_2026-11-17.md`.
+Stopped at: No code-level quota fix or routing change was authorized in this phase; PR #103 remains unmerged pending backend health.
+Files/areas changed: Documentation only: added the free-only plan report and this handoff entry. No application code or provider configuration changed.
+Remaining work: If the owner authorizes code work, design and test a focused change that removes unnecessary minute-level deep DB probes and scheduler config polling while preserving recovery/authority fencing; then verify the current Neon quota/status read-only and re-test API readiness, products, and sitemap only after compute quota is available. Do not deploy or merge until the backend is healthy.
+Blocker: The last known Neon production project exceeded the Free compute allowance and its branch/endpoint were reported archived/idle. Latest previously recorded public checks (2026-11-17) showed `/` 200, readiness 503 (`db=false`, `catalog=false`), products 500, and sitemap 500; this pass did not rerun public DB-backed checks.
+Next safe action: Ask the owner to authorize the code-only quota-polling fix, or continue read-only verification after the monthly Neon quota reset. Do not change providers, database routing, billing, production settings, merge, or deploy without explicit approval.
+Verification: Render read-only service/deploy/event/log calls completed; deployed SHA was checked against source code; the report has official provider references and contains no credentials. No SQL, connection string retrieval, or production write was performed.
+
+
+## 2026-11-18/19 — Code-only free-tier database polling fix
+
+Owner authorized a code-only polling fix and related safeguards. The implementation is complete and validated locally; production database/provider state was not changed. PR #103 remains open and unmerged, and no production deployment was performed.
+
+### Implemented
+
+- Replaced parallel full-chain row-count scans and the 60-second recurring DB re-probe with configured-priority sequential schema checks (`products` + `orders` only), stopping at the first reachable candidate.
+- Added error-triggered recovery for failed promise/callback `Pool.connect` acquisition and pool/client errors. Recovery uses a separate probe (it never replays the failed customer query), waits 5 seconds after a connection error, retries failures from 30 minutes up to a 6-hour cap, and checks only higher-priority candidates for failback at 6 hours up to a 24-hour cap.
+- Disabled scheduler-driven keep-alive pings; retained the admin's explicit Run Now action and labeled its database/compute impact. Automation settings cache for 6 hours on success (admin refresh/save remains immediate) and 5 minutes after a failed read.
+- Removed the Database Cluster page's 30-second auto-refresh, retained explicit Refresh Now, and set GET results to a five-minute cache with a visible warning that a fresh probe can wake configured free-tier databases.
+- Stopped writing a database automation-log record on every scheduled Neon usage-monitor API failure; process logging remains, and threshold/alert behavior is retained.
+- Updated resilience documentation and marked the approved polling-fix outcomes complete in `TODO.md`.
+
+### Verification and release boundary
+
+- `pnpm run typecheck` passed workspace TypeScript checks.
+- API server tests passed: 38 files, 261 tests (including sequential probe/backoff, pool connection error, and scheduler manual-only regressions).
+- Storefront tests passed: 40 files, 259 tests.
+- API server and storefront production builds passed. The storefront build retained its existing bundle-size warning for chunks above 500 kB.
+- `git diff --check` passed; a credential-pattern scan of the changed tracked diff found no matches.
+- Current branch is `manus/seo-category-guides-2026-11-10`; PR #103 was open, based on `main`, and its remote head matched the local head before this implementation. The code changes are prepared for that PR branch only. Do not merge or deploy until the production backend is restored and re-verified.
+- No live readiness/product/sitemap check was run in this code-only pass. The latest recorded public checks (2026-11-17) were `/` 200, readiness 503 (`db=false`, `catalog=false`), product API 500, and sitemap 500; production remains presumed unhealthy until a fresh check proves otherwise.
+
+Status: Code-only polling fix implemented and locally verified; production remains blocked by the Neon Free quota outage.
+Last completed: The complete test/typecheck/build suite above passed; local branch and PR #103 were inspected.
+Stopped at: Updating the existing PR branch is allowed, but merge/deployment remains prohibited until backend health is restored. No production resource, database connection, or data was changed.
+Files/areas changed: DB pool recovery/probe policy; API scheduler/config/monitor and cluster route; admin automation/cluster UI; Vitest configuration and regression tests; resilience docs, TODO, and this handoff.
+Remaining work: Push the verified changes to the existing feature PR, inspect its CI/preview checks, then wait for an authorized database recovery and verify live readiness/products/sitemap before any separate merge/deploy decision.
+Blocker: Production DB was last verified unhealthy (2026-11-17); this pass did not restore or test production.
+Next safe action: Update PR #103's feature branch only, confirm checks/previews, and keep main/production unchanged until the production database is healthy and the owner separately authorizes release.
+Verification: Workspace typecheck, API/storefront test suites, both production builds, whitespace check, and credential-pattern scan passed; no production deployment or DB write was performed.
+
+
+## 2026-11-20 — Read-only production, quota-driver, and backup sweep
+
+Owner's active scope for this checkpoint: read-only inspection to find a current, complete production database source. No database writes, compute/branch restores, billing changes, Render/Cloudflare setting changes, PR merge, or deployment were authorized or performed. The only file change in this checkpoint is documentation.
+
+### Verified findings
+
+- Fresh authenticated Neon GETs using the existing owner-provided credential confirm the Render-connected Free project remains `trynex-main-backup` (`small-mouse-64402656`, PG17, us-east-1). For the usage period beginning 2026-11-01T00:00:00Z, it reports 397,164 compute-seconds (about 110.32 CU-hours) against the 100-CU-hour Free limit; transfer is about 0.367 GB, below its 5-GB limit. Its primary `main` (about 57.4 MB), transactional standby (about 56.9 MB), and pre-merge branch (about 33.5 MB) are archived, with endpoints idle. The credential authenticates; the blocker is quota, not missing access. No SQL or connection URI was requested.
+- The newly connected destination organization has zero projects. No empty destination was created. Previously inspected alternatives remain unsuitable: `trynex` has 10 products and 73 orders with the latest order dated July 10; `trynex-db` has 11 products and 5 orders through April 7 and is missing production tables. Neither is proven authoritative for the current 80+ product claim or all transactional data.
+- Fresh public GETs: `/` returned 200; `/api/health/readiness` returned 503 (`db=false`, `catalog=false`); `/api/products?limit=1` returned 500; `/api/sitemap.xml` returned 500. The storefront shell is reachable, but commerce/API and sitemap are not healthy.
+- The Render service is still a Free web service on `main`, not suspended, and auto-deploy is enabled. The returned 100-record log page (2026-11-19 18:50:16–18:54:58 UTC) contained 95 repeated `[mockupQueue] Failed to claim job` errors with PostgreSQL quota code `53000` and five automation-config read failures. This is consistent with the deployed queue's 3-second interval poll. An explicit backup-only Render log query returned provider error 503, so backup-sync success across the full date range could not be established from that query.
+- Read-only source inspection confirms `mockupQueue.ts` polls every 3 seconds and retries a failed claim on each interval. PR #103's 35 changed files do not include `mockupQueue.ts`; therefore the committed database-probe/scheduler fix does not by itself eliminate this separate background database-polling path. Do not describe PR #103 as a complete quota fix until this gap is addressed and tested.
+- A read-only scan of all 34 GitHub branches (33 unique trees; no failed or truncated trees), releases, and workflow artifacts found no full SQL/custom-format database dump or backup archive, no release assets, and no matching workflow backup artifact. Available product-only evidence includes a 70-row public catalog snapshot dated 2026-10-10 and a separate 50-row missing-product restore payload dated 2026-08-17. These are different snapshots, may overlap, and do not contain a complete current database or orders/customers; do not sum or restore them as authoritative production state.
+- Earlier read-only inventory of Cloudflare storage found image objects only in the `trynex` R2 bucket and zero tables in the available D1 database; no portable database export was found there.
+- PR #103 remains open and unmerged; its four reported checks passed on 2026-11-18. Production has not received the SEO guides or the polling fix.
+
+### Required handoff state
+
+Status: Blocked pending an accessible, current, complete production data source.
+Last completed: Refreshed Neon usage/branch metadata, public site health, Render service/log evidence, GitHub backup/artifact inventory, and PR #103 coverage.
+Stopped at: No current authoritative full database source is readable; the active Neon source is over its Free compute quota and alternate copies are stale/incomplete.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No application code, database contents, provider configuration, PR state, or deployment changed.
+Remaining work: Obtain a recent full PostgreSQL dump or identify a currently readable, authoritative project containing the complete catalog and transactional tables; separately address the 3-second mockup queue database poll before relying on the code fix for $0-tier resilience. After a safe source is available, preserve it, rehearse a schema-and-data copy, verify row counts/freshness, and only then consider a controlled connection cutover.
+Blocker: No verified complete current backup or under-quota authoritative source; production API and sitemap remain unhealthy. The existing `improvewithamit` Neon key is sufficient for metadata and does not bypass the exhausted quota.
+Next safe action: Ask the owner for either (a) a current full PostgreSQL dump (schema plus all data, exported after the latest production changes), or (b) the project ID/branch and authorized access path for another currently readable source. If neither exists and the strict $0 limit remains, wait for the current source's expected 2026-12-01 quota reset; do not use stale copies or an empty destination. Separately request authorization for a code-only mockup-queue polling/backoff fix; do not merge/deploy until backend health is restored and release is separately authorized.
+Verification: Public GETs returned 200/503/500/500 as recorded above; Neon usage and branch state were GET-only; GitHub covered all 34 branches with no tree errors/truncation; Render service metadata was read-only. No production resource, database, credential, PR, or deployment was changed.
+
+## 2026-11-20 — Refreshed inventory of the three Neon keys re-supplied by owner
+
+The owner asked to identify the correct Neon source and migrate without data loss or spend. I re-read the repository operating/architecture notes, current TODO, latest handoff, credential handling guidance, deep-research guidance, and the existing sanitized Neon audit helper. Using the existing private credential file, I made only Neon REST GET requests for organization, project, usage, branch, and endpoint metadata. No credentials were printed by the audit; no SQL, connection URI, compute activation, branch restore, project creation, migration, Render setting change, PR merge, or deployment was performed.
+
+### Account-to-project mapping
+
+- `georgelsmith333@gmail.com` / key labeled by owner as “Trynex-Main-Database”: the organization contains two Free projects, not a project named `Trynex-Main-Database`: `trynex` (`misty-dust-70559510`, PG17, us-east-1) and `trynex-db` (`proud-dew-38401180`, PG17, us-east-1). Both endpoints are idle. Usage for the period beginning 2026-11-01 is 2,402 seconds (0.667 compute-hours) / 149,192,875 bytes transfer for `trynex`, and 1,337 seconds (0.371 compute-hours) / 614,174 bytes transfer for `trynex-db`. `trynex` production branch is 90,775,552 bytes and `trynex-db` production branch is 31,645,696 bytes. Prior approved read-only database inspections found `trynex` had 10 products and 73 orders through July 10, while `trynex-db` had 11 products and 5 orders through April 7 and lacked production tables. They are not complete/current production sources for the claimed 80+ product store.
+- `improvewithamit@gmail.com` / key labeled “Trynex-main-backup”: exactly one Free project is visible, `trynex-main-backup` (`small-mouse-64402656`, PG17, us-east-1). This remains the Render-linked source. Usage for the period beginning 2026-11-01 is 397,164 seconds (110.323 compute-hours), above the 100-CU-hour Free quota. Its primary `main`, `trynext-transactional-standby`, and `pre-merge-backup-20261028203216` branches are all archived; all corresponding endpoints are idle. Logical sizes are 57,417,728 bytes, 56,885,248 bytes, and 33,529,856 bytes. Current read-only metadata access succeeds, but these calls cannot inspect table contents or re-enable an over-quota production source.
+- `itmedofficial@gmail.com` / key labeled “Trynex-backup-secondary”: the organization `Trynext-Lifestyle-Main=New` is Free and currently has zero projects. It has no database to migrate from; no empty destination was created.
+- The previously inventoried fourth account `itmedofficial3@gmail.com` (`Trynex-Third-Final-Backup`) was also above its Free transfer allowance and had archived/idle production state. It was not part of this three-key refresh.
+
+### Decision and stop state
+
+The credentials are working; the correct current production source is identified as `improvewithamit` / `small-mouse-64402656`, but it is over quota and archived. The other accessible current candidates are proven stale/incomplete. The `itmedofficial` account is empty. Therefore no no-data-loss, strictly-$0 migration can be performed from the present accessible metadata and snapshots. Do not repoint production at the 10/73 or 11/5 candidate databases, do not create or use the empty organization as though it held production data, and do not claim that a migration is underway.
+
+Status: Blocked pending a current complete database source or the original source becoming runnable under its Free quota.
+Last completed: Read-only inventory across all three newly re-supplied Neon credentials, matching project IDs, usage and branch/endpoint status against previous source freshness checks and Render linkage.
+Stopped at: Source identified, but its Free compute quota is exhausted; alternatives are stale/incomplete or empty.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No data, provider configuration, source code, PR, or deployment changed.
+Remaining work: Obtain a recent full PostgreSQL dump (schema plus all production data including orders/customers) or wait until the expected 2026-12-01 Neon usage reset and verify the same source safely before export. Maintain the original source and restore to a separate destination only after a full dump is available. Separately, the 3-second mockup queue polling fix is not part of PR #103 and needs its own authorized code change and tests.
+Blocker: No current complete source can be read under the required $0 constraint; Render remains unable to connect to its quota-exhausted Neon source.
+Next safe action: Ask the owner to provide a recent full source dump from the production database, or confirm they want to wait for the original Neon usage reset. After source availability, perform read-only freshness/schema/count checks and a rehearsed non-destructive copy before requesting a separately confirmed production cutover.
+Verification: All three re-supplied credentials successfully returned account metadata. Project/usage/branch/endpoint values above came from GET requests only. No SQL, connection URI, resource mutation, migration, Render edit, merge, or deployment occurred.
+
+
+## 2026-11-20 — Full five-key Neon account sweep and source decision
+
+At the owner's request to check every Neon key already shared, a read-only sweep deduplicated five unique Neon API keys found across the current and prior conversation plus the private scratch file. Only Neon REST GETs were used for organization-scoped project lists, project quota metadata, branches, and endpoints. No credential value, connection URI, or SQL was emitted. No project/branch/compute change or migration occurred.
+
+### Additional account findings
+
+- `itmedofficial2@gmail.com` (`org-noisy-dew-07535119`, Free) contains three projects. `Trynex-backup-secondary` (`bold-math-43930059`, PG18, ap-southeast-1) has an archived production branch last metadata-updated 2026-11-05, logical size about 52.7 MB, and idle endpoint; transfer is 5.556 GB in the current usage period, above the 5-GB Free limit. `Trynex-backup-2` (`curly-flower-85463650`, PG17, us-east-1) has an archived production branch last metadata-updated 2026-11-09, logical size about 51.2 MB, and idle endpoint; transfer is 5.507 GB, above the 5-GB Free limit. The third project, `Aibay` (`calm-brook-97346927`, PG17, us-east-1), has an archived 32.4-MB production branch last metadata-updated 2026-11-03 and an idle endpoint; it is not identified as a Trynext production backup and is not a supported candidate.
+- `itmedofficial3@gmail.com` / organization `it` (`org-curly-tooth-30854079`, Free) contains `Trynex-Third-Final-Backup` (`snowy-rice-17379291`, PG18, us-east-2). Its production branch is archived and its endpoint idle. Branch metadata was last updated 2026-11-16, the newest branch timestamp among the discovered backup projects, with logical size 50 MB. Project transfer is 5.544 GB, above the 5-GB Free limit; compute use is about 70.8 CU-hours. The timestamp is metadata only and does not prove that the product catalog, orders, customers, or schema are the newest or complete.
+- The five unique credentials in the combined sweep map to: (1) `itmedofficial@gmail.com` empty organization, (2) `georgelsmith333@gmail.com` with `trynex` and `trynex-db`, (3) `improvewithamit@gmail.com` with the Render-linked `trynex-main-backup`, (4) `itmedofficial2@gmail.com` with `Trynex-backup-secondary`, `Trynex-backup-2`, and `Aibay`, and (5) `itmedofficial3@gmail.com` with `Trynex-Third-Final-Backup`.
+- The authenticated browser switch completed to My Browser, but navigation to Neon and subsequent page inspection each timed out. No browser state, account setting, or Neon data was changed; the API keys supplied by the owner already provide the account/metadata coverage above.
+
+### Source decision
+
+The only production source positively tied to the live Render service remains `improvewithamit@gmail.com` / `small-mouse-64402656`. It exceeds the Free compute limit and its branches/endpoints are archived/idle. `Trynex-Third-Final-Backup` is the newest branch by metadata timestamp among backup candidates, but it is archived, over the Free transfer quota, and has not been verified at the table/data level. The other named backup projects are also archived and over transfer, while `trynex`/`trynex-db` were previously inspected as stale/incomplete. There is therefore still no verified, under-quota, current and complete source from which to perform a no-loss $0 migration. Do not select a backup solely by size, project name, or metadata timestamp, and do not repoint Render to any unverified copy.
+
+Status: Blocked; full five-key account/project metadata inventory complete, but no safe migration source is data-verified and available within Free limits.
+Last completed: Enumerated five unique shared keys and all organization-scoped projects, usages, branches, and endpoint states; selected the actual Render-linked project as the only proven production authority.
+Stopped at: Candidate data contents for archived backups cannot be verified within Free quota; logged-in browser inspection timed out.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No application source, database, Neon resource, Render setting, PR, or deployment changed.
+Remaining work: Preserve all current branches; obtain a full current export, or wait for the Render-linked Neon project's expected reset around 2026-12-01 and verify its source before copy. Do not use the highest-timestamp backup as authority until its contents are proven.
+Blocker: All other plausible named backups have archived/idle branches and exceed the Free data-transfer quota; the original production source exceeds the Free compute quota. No current complete export was found.
+Next safe action: Use the original production source after its quota reset for a read-only schema/count/freshness check, or ingest a full owner-supplied PostgreSQL dump into a separate confirmed destination and verify it before any cutover.
+Verification: Five distinct keys authenticated to organization metadata; all project listings were retried with the exact organization ID, resolving an earlier unscoped HTTP 400. The API inventory was GET-only. Browser page navigation/view timed out. No migration or production setting change occurred.
+
+
+## 2026-11-20 — Final browser retry and public health verification
+
+The owner explicitly requested use of their My Browser (not the sandbox browser). The browser routing was set to My Browser and Neon dashboard navigation was retried; three total dashboard navigation/page-view attempts timed out. No Neon browser control or mutation succeeded, and no account/project settings were changed.
+
+A fresh public GET check at 2026-11-19 12:04 Pacific returned `/` 200, `/api/health/readiness` 503 with `db=false` and `catalog=false`, `/api/products?limit=1` 500, and `/api/sitemap.xml` 500. The storefront is not restored to healthy/live API status.
+
+Status: The five-key audit is complete, but no safe source is verified and usable under the strict Free-only constraint. No data migration, destination creation, code edit, PR merge, or deployment was performed in response to this check.
+Last completed: Retried the user-requested My Browser Neon dashboard access and refreshed the public health endpoints.
+Stopped at: Browser operations timed out; primary production database remains over quota and archived; backup content is not verified.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only.
+Remaining work: After the original source quota resets (expected around 2026-12-01), safely restore/check the Render-linked production source, verify schema/table counts/freshness, and only then export/copy to a confirmed destination. A full recent PostgreSQL dump supplied by the owner is an alternative. Address the separate 3-second mockup queue polling before leaving the database online on Free resources.
+Blocker: The primary Neon source is over Free compute quota, alternate backups are archived/over transfer allowance, and no complete current dump is available.
+Next safe action: Preserve all sources; do not cut over to any unverified backup. Recheck original production source after reset or use a verified full dump, then test health/product/sitemap before separately authorizing any merge or deployment.
+Verification: Public GET results recorded above; browser route was explicitly My Browser. No database, provider, source-code, PR, or deployment state changed.
+
+
+## 2026-11-20 — User-requested comprehensive live/readiness recheck
+
+Owner asked for fresh proof that the entire site is live and ready. I performed public HTTP GET checks against the Cloudflare custom domain, the Render API service host, and exact guide/category routes; read-only Render service/deploy queries; and read-only GitHub PR metadata. No infrastructure, code, PR, database, or deployment setting was changed.
+
+### Public results at 2026-11-19 12:05–12:08 Pacific
+
+- Cloudflare storefront root `/`: HTTP 200, HTML, title `Trynext Lifestyle | Premium Custom Apparel Bangladesh`.
+- Public `/api/health/readiness`: HTTP 503, JSON status `error`, `db=false`, `catalog=false`. `/api/health` and `/api/health/live` are not registered (404); readiness is the available health endpoint.
+- `/api/products?limit=5`: HTTP 500; no products returned. `/api/sitemap.xml`: HTTP 500. `/sitemap.xml` routes to `/api/sitemap.xml` and also returns 500. `/robots.txt` returns 200 and points crawlers at the sitemap, but the sitemap target is failing.
+- Direct Render API host `trynex-lifestyle-main-render.onrender.com` independently returns readiness 503 (`db=false`, `catalog=false`), products 500, and sitemap 500. This confirms the failure is in API/database health, not only Cloudflare routing.
+- `/custom-mugs-bangladesh` returns HTTP 200 with a page title `Personalized Photo Mugs in Bangladesh | Trynext Lifestyle`, an H1, and 4 JSON-LD blocks. `/custom-drinkware-bangladesh` returns HTTP 200 with title `Custom Drinkware in Bangladesh | Bottles, Mugs & More | Trynext`, an H1, and 4 JSON-LD blocks. These two category routes serve crawlable HTML, but live product inventory cannot be verified while the product API is failing.
+- The three intended editorial guide URLs `/blog/how-to-design-a-custom-photo-mug`, `/blog/custom-mug-gift-ideas-for-couples`, and `/blog/custom-drinkware-gifts-in-bangladesh` each return HTTP 500. The response falls back to the existing blog title and does not contain the expected guide title/content. The guides are not live in production.
+- General `/category` and `/guides` return HTTP 200, but those paths do not prove that the intended production catalog/guides are live; the specific route checks above are authoritative.
+
+### Hosting and release metadata
+
+- Render service `trynex-lifestyle-main-render` (`srv-da9pl91f2nfc7388d150`) is Free, not suspended, configured to track `main`, and auto-deploy is enabled. The latest Render deploy returned by the provider has status `live`, but it is from 2026-11-09 on commit `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78`; an older live deploy does not mean the currently failing database-backed API works.
+- PR #103 is still `OPEN` (head branch `manus/seo-category-guides-2026-11-10`, head `422abb317d93463c55191a4766734544e2b48b9e`). Its CI/typecheck, security scan, and Cloudflare preview checks are successful, but it has not been merged/deployed to production. The PR does not restore the current Neon database.
+
+Status: Partially serving static storefront/category content, but NOT fully live/ready. Database-backed API, product reads, sitemap, and all three intended new guide routes fail in production.
+Last completed: Fresh public GETs on both custom domain and direct Render host, exact SEO route checks, Render service/deploy status, and PR #103 metadata.
+Stopped at: Production remains unhealthy due to the Neon database outage; no complete, quota-available source has been verified.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No application files, data, Neon/Render/Cloudflare setting, PR state, or deployment changed.
+Remaining work: Restore/verifiably connect a complete production database within the $0 constraint; then recheck readiness/products/sitemap and guide pages, and only separately approve release. Also address the independent mockup-queue DB polling issue before relying on the restored Free-tier database.
+Blocker: Original Render-linked Neon project is over Free compute quota and archived; alternatives remain archived, over Free transfer limits, or stale/incomplete.
+Next safe action: Do not claim readiness or merge PR #103 while the production database is unavailable. Restore/check the original source after quota reset or use a verified full database dump, then repeat these checks.
+Verification: Results above are read-only HTTP, Render, and GitHub checks. No production mutation or deployment occurred.
+
+
+## 2026-11-19 12:24–12:30 Pacific — Owner requested full recovery and deployment; attempt blocked by account inspection
+
+The owner explicitly requested full recovery, migration, deployment, and post-deploy audit using the newly added Neon account in their My Browser session. Repository instructions, architecture, current handoff/TODO, credential workflow, browser workflow, GitHub workflow, and commit attribution guidance were refreshed. The planned recovery is to inspect the user's authenticated Neon account, identify a complete current data source, preserve it, copy full schema/data to a verified destination, update production only after validation, then deploy and check health/routes. No destructive action is permitted on source branches.
+
+### Current attempt findings
+
+- Switched routing to the user's My Browser and navigated to `https://console.neon.tech/app/projects`; the action again timed out after 25 seconds. The following browser view also timed out. No page contents were read and no browser setting/project was changed.
+- Neon MCP authentication is now reported as authenticated, but its organization list returns only `itmedofficial2@gmail.com` (`org-noisy-dew-07535119`), not an additional newly selected organization. Its project list returns the known `Trynex-backup-secondary`, `Trynex-backup-2`, and `Aibay` projects.
+- Neon MCP project/branch detail calls for the exact listed IDs return `project not found` (HTTP 404); project searches on the IDs return no results. No branch content or table data was read. This is a connector lookup inconsistency, not evidence the projects are empty or complete. Existing REST metadata says the two named backup branches are archived, endpoints idle, and project transfer exceeds the 5-GB Free cap.
+- Fresh public GETs at 2026-11-19 12:29 Pacific: `/` 200; `/api/health/readiness` 503 (`db=false`, `catalog=false`); `/api/products?limit=1` 500; `/api/sitemap.xml` 500; both category routes 200; all three editorial guide routes 500.
+- Render service remains Free and not suspended, auto-deploying `main`; latest live deploy remains 2026-11-09 commit `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78`. PR #103 remains open at `422abb317d93463c55191a4766734544e2b48b9e`; its checks pass, but it has not been deployed.
+
+### Stop state
+
+Status: Recovery and production deployment are blocked until the newly selected Neon account can be read and an authoritative, complete source is verified. Site is not healthy/live for database-backed commerce or guides.
+Last completed: Re-read startup rules and project state; attempted My Browser Neon access; checked available Neon MCP organization/projects; refreshed public site, Render, and PR status.
+Stopped at: My Browser dashboard action timed out; Neon MCP lists projects but cannot resolve their branch/project details; no source data can be verified from this access path.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No DB, Neon branch/project, Render setting, Cloudflare setting, code, PR, or deployment changed.
+Remaining work: Regain inspectable access to the user's new Neon account (My Browser reconnect/takeover or a working authorized Neon connection), inspect project and branch contents without altering the source, and select a source only after verifying the actual current data. Then preserve source, migrate to the confirmed free destination, verify completeness, update Render and deploy only after checks can pass.
+Blocker: Browser requests time out and the current authenticated Neon MCP account does not resolve the listed project/branch details. Current production source remains over quota; alternatives have archived branches/transfer-limit issues or stale data.
+Next safe action: Have the owner reconnect My Browser to Neon through the current task's browser extension/takeover flow, or supply a current full PostgreSQL dump/working account authorization. Once available, resume source verification, migration, and controlled production cutover; do not repoint Render now.
+Verification: Current public GET and Render/GitHub metadata are recorded above; all were read-only. No source data or production configuration changed.
+
+
+## 2026-11-20 — Owner-requested four-account Neon audit and recovery stop
+The owner asked me to inspect all four Neon API keys supplied in the current message, identify the database containing the latest complete Trynext production data, and restore/deploy the site while preserving a strictly free-tier and no-data-loss outcome. I extracted the keys only into a private mode-0600 scratch file for authenticated Neon API use, removed the scratch files after the audit, and never printed or recorded any key or connection URI.
+
+### Current account/project findings
+- `georgelsmith333@gmail.com` / organization `org-silent-math-41227084` (Free) has `trynex` (`misty-dust-70559510`, PG17, us-east-1) and `trynex-db` (`proud-dew-38401180`, PG17, us-east-1). `trynex` is within current-period usage (0.7131 CU-hours, 0.158677 GB transfer); its ready production branch is about 90.8 MB. A read-only SQL probe confirms all 22 application tables exist but only 10 products and 73 orders, with latest product update 2026-06-15, latest order creation 2026-07-10, and empty mockup tables. It is not current enough to replace the newer production catalog. `trynex-db` is within usage but has only 7 public tables, 11 products and 5 orders through 2026-04-07, and is missing 16 application tables. It is not a valid migration source.
+- `improvewithamit@gmail.com` / organization `org-green-bread-59152632` (Free) has the Render-linked `trynex-main-backup` project (`small-mouse-64402656`, PG17, us-east-1). Current-period compute is 110.3233 CU-hours, above the 100-CU-hour Free cap. Its `main` branch is archived at about 57.4 MB; the archived `trynext-transactional-standby` branch is about 56.9 MB and has the newest branch metadata update in this project (2026-11-13). The pre-merge branch is about 33.5 MB. Read-only connection attempts to `main`, `trynext-transactional-standby`, and the pre-merge branch each failed with a PostgreSQL operational connection error; all three endpoints remained idle. No row counts or data freshness can be verified from them while the project is over quota.
+- `itmedofficial@gmail.com` / organization displayed as `itmedofficial2@gmail.com` (`org-noisy-dew-07535119`, Free) has `Trynex-backup-secondary` (PG18, ap-southeast-1; archived production branch ~52.7 MB) and `Trynex-backup-2` (PG17, us-east-1; archived production branch ~51.2 MB). Both exceed the 5-GB Free transfer allowance (5.556398 GB and 5.506838 GB respectively). Read-only connection attempts to both failed with PostgreSQL operational connection errors; endpoints remained idle. The same account also contains `Aibay`, which is unrelated to Trynext and was not treated as a source.
+- `itmedofficial3@gmail.com` / organization `org-curly-tooth-30854079` (Free) has `Trynex-Third-Final-Backup` (PG18, us-east-2). It has 70.8142 CU-hours, 5.543637 GB transfer (above the 5-GB Free allowance), and one archived ~50-MB production branch with the latest metadata timestamp of all named backup branches, 2026-11-16. The read-only connection attempt failed with a PostgreSQL operational error and the endpoint remained idle. The newer metadata timestamp is not proof of newest or complete business data.
+
+### Recovery decision and live verification
+The production-authoritative source remains the Render-linked `trynex-main-backup` project, but its compute quota is exhausted. The branch with the newest metadata timestamp is `Trynex-Third-Final-Backup`, but its data could not be queried and it exceeds Free transfer quota. The currently queryable `trynex` branch is stale by business timestamps and catalog count. No source therefore passes both data-freshness/completeness verification and current Free-tier availability; choosing one for migration would risk losing the user's newer products, orders, or customer records. No new destination was created because there is no source that can be safely copied and verified.
+
+Fresh public GET checks at 2026-11-20 19:22 UTC returned `/` 200, `/api/health/readiness` 503, `/api/products?limit=2` 500, `/api/sitemap.xml` 500, and `/blog/how-to-design-a-custom-photo-mug` 500. The site is not fully live/ready. No Render setting was updated, no Neon project/branch/data was changed, and PR #103 was not merged or deployed. A GitHub CLI read attempt for PR #103 failed to produce JSON in this environment; do not infer its current state from that failed call. The previous handoff checkpoint recorded PR #103 open with successful checks, but that state was not refreshed here.
+
+Status: Blocked — four supplied Neon accounts and every listed Trynext project were re-inventoried, but there is no queryable current complete source available under the Free limits.
+Last completed: Read-only account/project/branch/endpoint/quota sweep; read-only aggregate schema/count/freshness checks on both under-quota branches; connection attempts against all archived named backup branches; fresh public health checks; removed all temporary Neon key JSON files from `/tmp`.
+Stopped at: Before any migration, destination creation, Render database-URL change, PR merge, or deploy, because all sources that were queryable are stale/incomplete and the plausible recent backups are unavailable under current quotas.
+Files/areas changed: `AGENT_HANDOFF.md` only. No application code, database, Neon resource, Render setting, Cloudflare setting, GitHub PR, or deployment changed.
+Remaining work: Obtain a current full PostgreSQL export or regain queryable access to the Render-linked production database after its quota reset; verify full schema and business freshness; create/confirm a Free destination only after a valid source is proven; copy without altering the source; validate counts and application health; then conduct a separately controlled Render cutover and release.
+Blocker: Render-linked Neon compute is 110.3233 CU-hours against the 100-CU-hour Free cap; other archived named backup projects exceed Free transfer or cannot be queried; current `trynex` data is old (10 products/73 orders) and `trynex-db` is incomplete (7 tables/11 products/5 orders). Production API readiness remains 503.
+Next safe action: Supply a current full database dump or wait until the source's Free quota resets (expected around 2026-12-01) and repeat read-only verification. Do not migrate from `trynex`, `trynex-db`, or a metadata-newer archived branch based only on name, size, or timestamp.
+Verification: Neon REST inventory used GET requests; database probes used read-only transactions and returned only aggregate counts/latest timestamps; all archived candidate connection failures left endpoints idle; public GET status results recorded above; temporary key files were removed. `AGENT_HANDOFF.md` diff-check and secret scan remain to be run.
+
+
+## 2026-11-20 — Fresh Neon destination, Render target, and source-data verification
+
+The owner supplied a new Neon API key and authorized full recovery/deployment. I refreshed the Neon account/project inventory using the owner-provided API keys, confirmed the live Render database host through the documented Render environment-variable GET endpoint (printing hostnames only), ran a read-only SQL inventory against the only low-usage ready candidate, and rechecked production health. No Neon project/branch/endpoint, database contents, Render environment, PR, or deployment was changed.
+
+### Verified findings
+
+- The Render workspace in use is `Azim's workspace` (workspace `tea-d5uiuknfte5s73c3b0f0`). The production service is `trynex-lifestyle-main-render` (`srv-da9pl91f2nfc7388d150`), on Render Free, not suspended, tracking `main` with auto-deploy enabled. Its latest live deploy remains commit `743315bf061cb6f3668e4c5e60cd57b3d4a0cf78` from 2026-11-09. A fresh read-only environment lookup confirmed both `DATABASE_URL` and `DATABASE_URL_MAIN` still use the Neon pooler hostname previously mapped to `trynex-main-backup` (`small-mouse-64402656`). No credential or complete URL was recorded. Render returned no recent service events in the queried range.
+- The supplied new Neon key resolves to the Free organization `Trynext-Lifestyle-Main=New` (`org-proud-water-47768651`), which currently has zero projects. The account API did not expose a login email. No destination project was created.
+- The Render-linked source remains under the organization named `improvewithamit@gmail.com`. For the usage period starting 2026-11-01, it reports 397,164 compute-seconds (about 110.32 CU-hours) against the 100-CU-hour Free limit. Its `main`, transactional-standby, and pre-merge branches are archived and their endpoints idle. Do not repoint production to an unverified standby or restore it while the quota constraint remains unresolved.
+- The newest metadata-dated named backup remains `Trynex-Third-Final-Backup` (`snowy-rice-17379291`), production branch `br-blue-wave-axm7ussu`, last metadata-updated 2026-11-16 and about 50 MB. It is archived/idle; project transfer is 5,543,637,375 bytes (about 5.54 GB), above the 5-GB Free allowance. The timestamp is not proof of latest business data or completeness; this branch was not queried in this pass because it is over the Free transfer limit.
+- The only under-quota, ready Trynext candidate queried was `trynex` (`misty-dust-70559510`), production branch `br-red-voice-am6pnr32`. A read-only SQL inventory found 23 public tables including `_migrations`, 10 products, 73 orders, 40 customers, 3 reviews, and 0 mockups. The latest product update was 2026-06-15; the latest order creation was 2026-07-10 (last update 2026-07-12). This candidate is stale/incomplete for the owner's stated current catalog and must not be used as a production replacement. The separate `trynex-db` project remains known to be incomplete from earlier read-only checks.
+- Fresh public checks on 2026-11-20: storefront root 200; custom-domain and direct Render-origin readiness 503 (`db=false`, `catalog=false`); product API 500; sitemap 500. The site shell is reachable, but database-backed service is not restored.
+
+### Required handoff state
+
+Status: Blocked — no verified, current, complete source is available within the strict Free-tier constraint.
+Last completed: Refreshed Neon key/account/project metadata; confirmed the live Render DB host still maps to the production source; ran a read-only aggregate inventory on the under-quota candidate; rechecked public and direct-origin health.
+Stopped at: Before destination creation, copy, production connection change, merge, or deploy because the accessible candidate is stale and the metadata-newest backup is archived/over the Free transfer allowance.
+Files/areas changed: `AGENT_HANDOFF.md` documentation only. No production application/data/provider setting, PR, or deployment changed.
+Remaining work: Obtain a current full PostgreSQL dump or wait for the Render-linked source's expected 2026-12-01 Free quota reset, then re-verify full schema/data freshness and copy to the confirmed empty Free organization without altering the original. Cut over Render only after validation, then rerun readiness/products/sitemap/guide checks. Keep PR #103 and production deploy held until database health is restored.
+Blocker: Source compute quota exhausted; the metadata-newest backup is archived and over transfer allowance; the only queried under-quota candidate is stale. No full export is available in the audited locations.
+Next safe action: Ask the owner for a recent full PostgreSQL export (schema and all production rows) or wait until the source quota reset and re-check the original. Do not restore from the stale candidate or select a backup solely by name, size, or timestamp.
+Verification: Render/Neon metadata came from read-only GETs; aggregate SQL ran in a read-only transaction and returned no customer records; public HTTP checks were GET-only. No data, compute/branch state, settings, PR, or deployment was changed.
+
+
+Provider API references used for this checkpoint: Render service environment-variable listing (`GET /v1/services/{serviceId}/env-vars`): https://api-docs.render.com/reference/get-env-vars-for-service. Neon connection-URI retrieval (`GET /projects/{project_id}/connection_uri`): https://neon.com/docs/reference/api/projects/get-connection-uri. Both were used only to inspect the existing target/source; no provider mutation was made.
+
+
+## 2026-11-20 — Event-driven mockup queue and Dec 1 read-only source recheck
+
+The owner asked to proceed now and revisit the original Neon source around Dec 1 if its Free quota has reset, with the goal of restoring the full site without data loss or spend. I preserved the existing recovery decision: Render still points to the authoritative `trynex-main-backup` project under the `improvewithamit@gmail.com` organization, but that source was over the Free compute limit with archived branches; the newly selected Free destination organization was empty; all checked alternatives were stale, incomplete, or over Free usage. No safe production copy/cutover is possible until a complete source is queryable.
+
+### Completed safely
+
+- Created an active one-shot ScheduleTask titled `Trynext Neon source recheck — read-only`, due Dec 1, 2026 at about 09:00 Asia/Dhaka. It carries the enabled Neon and Render connectors and is in `ask_user` run mode. Its instructions restrict it to GET/read-only checks, prohibit starting/restoring branches or compute, resource creation, copying, Render/Cloudflare edits, PR merge, and deploy, and require stopping on cost risk. It will report availability/freshness only; it does not perform a migration or cutover.
+- Replaced `artifacts/api-server/src/lib/mockupQueue.ts`'s unconditional 3-second polling with one startup drain, a wake after job insertion/completion, and bounded per-job exponential one-shot retry timers (30 seconds to 5 minutes). Deferred retries are excluded from immediate claims so other queued jobs can run. No database schema change was made.
+- Added `artifacts/api-server/src/lib/mockupQueue.polling.test.ts` covering no idle polling, event-triggered wakeup, and retry-delay bounds.
+- Updated `TODO.md` with the code-only result and the unchanged production release gate.
+
+### Required handoff state
+
+Status: blocked for production recovery; code-only queue change verified locally
+Last completed: Scheduled the Dec 1 read-only recheck and replaced the mockup worker's 3-second idle poll; focused tests, full API suite, typecheck, build, and diff check passed.
+Stopped at: Before any database restore/query requiring compute activation, destination creation, export/copy, Render connection change, PR merge, or deployment. The production data source remains unavailable under current Free limits.
+Files/areas changed: `artifacts/api-server/src/lib/mockupQueue.ts`, new `artifacts/api-server/src/lib/mockupQueue.polling.test.ts`, `TODO.md`, and this handoff append. Existing untracked database-review documents were preserved. No commit or push was made.
+Remaining work: On/after Dec 1, run the scheduled read-only source/usage/branch check. If the primary source is accessible within Free limits, verify full schema and aggregate business-data freshness before any copy; then validate a separate destination and controlled production cutover, followed by live readiness/products/sitemap/guide checks. Keep release blocked if the source remains archived/unavailable or if checks imply cost risk.
+Blocker: Original Render-linked Neon compute was over its Free quota and branches archived; the new Free organization has zero projects; no current complete export has been found. Production readiness/products/sitemap were previously 503/500/500. The code-only queue change is not deployed.
+Next safe action: Wait for the scheduled Dec 1 read-only recheck to request approval/run, preserve all database sources, and do not point Render to an empty or stale database.
+Verification: Focused worker test passed (3/3); full API suite passed (39 files, 264 tests); API typecheck and bundle build passed; `git diff --check` passed. The schedule service reported an active one-shot in Asia/Dhaka `ask_user` mode with Neon and Render connectors. No production database, provider setting, PR, or deployment was changed.
+
+
+## 2026-11-20 — Queue claim recovery and retry-budget hardening (review branch only)
+
+The owner asked me to proceed with safe updates while preserving a Free-only, no-data-loss recovery plan. An independent read-only review found that a failed startup queue claim could leave existing queued work idle until another event, and noted the pre-existing max-attempt off-by-one. I corrected both without schema changes and added a delayed one-shot retry path for claim-query errors. The worker remains event-driven when healthy; no short recurring database poll was reintroduced.
+
+- Added bounded exponential one-shot recovery after claim-query failures (30 seconds to 5 minutes), clearing the retry timer after any successful claim query.
+- Added regression coverage for idle startup, durable enqueue-triggered wake, two consecutive claim failures with backoff, no recurring idle retry after recovery, capped render retry delays, and the maximum-attempt boundary.
+- Documented that enqueue notifications are process-local. The current Render production service was read-only verified as one instance; horizontal scaling would require a cross-process wake mechanism. Per-job retry timers are also in-memory and do not persist across process restart; no schema change was made.
+- Preserved the existing production database target and all order/customer/catalog data. No Neon/Render settings, branch state, destination, PR merge, or production deployment were changed.
+
+Status: ready for review on the existing branch; production recovery remains blocked and the code is not merged/deployed.
+Last completed: Independent code review; added claim-error backoff and corrected max-attempt accounting; focused worker tests passed (5/5), full API suite passed (39 files / 266 tests), API typecheck/build, repository typecheck, and diff check passed.
+Stopped at: Before any production database cutover, PR merge, or deployment. The source remains quota-blocked/archived and the destination organization remains empty.
+Files/areas changed: `artifacts/api-server/src/lib/mockupQueue.ts`, `artifacts/api-server/src/lib/mockupQueue.polling.test.ts`, `TODO.md`, and this handoff. Existing untracked platform-review documents are preserved and excluded from the release change.
+Remaining work: Confirm the PR branch checks after the review update. Keep production release blocked until a current complete source is queryable within Free limits or a full verified dump is supplied; then validate a separate destination before any cutover. If scaling beyond one API instance or needing retry delays to survive restarts, design cross-process/durable scheduling separately.
+Blocker: The Render-linked Neon source is over its Free compute quota with archived branches; the new Free Neon organization is empty; no verified current full export is available.
+Next safe action: Push only reviewed code/docs to the existing PR branch for CI review; leave it open and unmerged until database health and data completeness are restored and verified. Keep all database/Render production settings unchanged.
+Verification: Focused queue tests 5/5; API tests 39 files / 266 tests; API typecheck and production bundle build; repository typecheck; `git diff --check`. No production database or provider mutation occurred.
+
+## 2026-11-20 — Claude Code watch: main sync after PR #102 and #103
+
+Status: local, committed and pushed to the review branch only; nothing deployed by me.
+Last completed: Merged `origin/main` (`a8eea92`) into `claude/nice-carson-nxjq7q` with a normal merge. PR #102 (Studio cart `customNote` cap) is merged as `149afaa`. PR #103 (SEO guides plus the `lib/db` pool-recovery and probe-policy changes from Manus commit `422abb3`) was merged to `main` by the owner as `a8eea92`; I did not merge it.
+Verification: storefront `functions/seo-guides.test.ts` and `product-options.test.ts` 12/12; `lib/db` pool-recovery and probe-policy tests 8/8. Not run: full suite, typecheck and build, any live-site or real-database check.
+Remaining work: Manus branch `manus/seo-category-guides-2026-11-10` has a newer unmerged commit (`d25d66d`, mockup-queue retry hardening, touching `mockupQueue.ts`, its test, `TODO.md` and this handoff). It is not merged and I have not reviewed it for `main`. Owner/Manus-blocked items N1, N2/N3/N8, N4 and N13-N15 are unchanged.
+Blocker: none for this change. Live cache, SEO routes and Pages Functions behavior still need a check on the deployed site; the DB failover change from #103 is not live-verified.
+Next safe action: Keep watching `claude/reports.md`, root `reports.md` and `ANSWER:` lines; do not merge `manus/*` branches.
+
+## 2026-11-26 checkpoint — comprehensive remediation continuation
+
+The first remediation batch remains committed as `52ea33a` (`fix: harden checkout storage and deployment paths`). It covered free-shipping persistence, card-on-delivery semantics, mobile checkout shipping/idempotency behavior, payment labels, sitemap routes, admin terminal error states, gateway parity checks, mobile production host correction, Studio curvature consistency, staging cleanup, and storage authorization regression coverage.
+
+The second remediation batch is committed as `48b2c39` (`harden cache accessibility and idempotency release path`). It adds authenticated catalog cache privacy, explicit public cache policies, category/product cache invalidation after mutations and committed stock decrements, a reusable storefront focus trap applied to the Design Studio picker and shared admin ConfirmDialog, and a release-gated database-backed order idempotency middleware with migration `lib/db/migrations/008_add_order_idempotency_keys.sql`.
+
+Verification completed for this checkpoint: API and storefront TypeScript checks passed after dependency cleanup; API production bundling passed; focused cache/category/order tests passed (3 files, 28 tests); existing memory idempotency/order tests passed (2 files, 25 tests); focused storage authorization/staging cleanup coverage passed (2 files, 16 tests); focused Studio/accessibility coverage passed (22 tests); the mockup matrix passed with 188 expected surfaces and 1,128 runtime roles; deployment-source parity passed; and `git diff --check` passed. Temporary root Rollup manifest/lockfile churn and the unintended `artifacts/api-server/pnpm-lock.yaml` were removed. No `@rollup/rollup-linux-arm64-gnu` dependency remains in committed manifests.
+
+Durable idempotency is intentionally not production-active. Migration 008 has not been applied to the approved production database, and `DURABLE_ORDER_IDEMPOTENCY` remains disabled by default. The route falls back to the existing memory guard when the database table is unavailable. Before enabling it, review the insert/replay/fingerprint-mismatch/pending-timeout/cleanup behavior, apply the migration only under a separately controlled release gate, and perform release testing against the exact approved database target. No production migration, catalog, settings, orders, payments, customer data, Render service, Cloudflare configuration, or R2 asset was changed during this checkpoint.
+
+Remaining release work: push both commits through the authorized GitHub integration; wait for CI and active-app checks; merge only after checks pass; let the exact Render service `srv-da9pl91f2nfc7388d150` auto-deploy from merged `main`; verify exact commit identity and both production hosts; check readiness/health aliases, sitemap/robots/routes, storage/R2 reachability, deterministic 70-product pagination, Studio assets, checkout/payment descriptions, and a reversible browser-local empty-cart smoke test without submitting an order or payment. Remaining measured P2 work includes responsive image derivatives, byte-aware/path-scoped service-worker cache sizing, explicit Studio ONNX/WASM resource handling, and provider-aware deployment verification.
+
+### Required status fields for this checkpoint
+
+```text
+Status: ready for review — local remediation verified; publication pending
+Last completed: Committed 52ea33a and 48b2c39; cleaned temporary dependency churn; updated TODO and handoff; API/storefront typechecks and focused regression checks passed.
+Stopped at: Before GitHub push/PR review and production deployment verification.
+Files/areas changed: API cache policies/invalidation, release-gated durable idempotency and migration 008, storefront focus trap integrations, TODO.md, AGENT_HANDOFF.md.
+Remaining work: Publish and merge after CI/review; deploy and verify exact Render SHA and both production hosts; complete live non-mutating smoke checks; separately gate migration 008/flag activation; continue measured P2 performance work.
+Blocker: None for local code; GitHub connector/authorized publication path and CI result still need confirmation.
+Next safe action: Use the authorized GitHub integration to push the branch, open/review the PR, and merge only after checks pass; do not apply migration 008 or submit orders/payments.
+Verification: API/storefront typechecks passed; focused cache/category/order, idempotency/order, storage, and Studio/accessibility tests passed; API bundle, deployment parity, mockup matrix, and git diff checks passed.
+```
+
+## 2026-11-26 — Production deployment and live smoke verification
+
+PR #107 (`Complete full-stack remediation and release hardening`) passed Cloudflare Pages, active-app verification, CI/build-and-check, and security-scan checks, then merged at `2026-11-26T20:47:10Z` as `8433f68dd2b5d96f58c84acaa6128f69f3758c75`. The exact approved Render service `trynex-lifestyle-main-render` (`srv-da9pl91f2nfc7388d150`) in `Azim's workspace` (`tea-d5uiuknfte5s73c3b0f0`) auto-deployed branch `main` from that SHA. Deployment `dep-dc49lk0ae00c73demn6g` completed `live` at `2026-11-26T20:51:20Z`; Render build and deploy events both succeeded.
+
+Read-only checks passed on both `https://trynext.shop` and `https://trynex-lifestyle-main-render.onrender.com` for liveness, readiness, readyz, categories, public settings, sitemap, robots, and catalog pagination. Readiness returned HTTP 200 with `db:true`, `catalog:true`, and `status:"ok"`. Both hosts returned six categories and exactly 70 distinct products across pages of 24/24/22 with no duplicates. Public commerce settings showed shipping ৳100, free-shipping threshold ৳1,500, COD enabled, and the corrected card-on-delivery note. Representative T-shirt, long-sleeve, hoodie, mug, cap, and water-bottle Studio runtime PNGs returned HTTP 200 from the custom domain.
+
+The browser-local cart smoke test was reversible and non-mutating: one ordinary catalog item was added, the cart drawer showed one item, the item was removed, and the drawer ended with `Cart` / `Your bag is empty`. No checkout, order, payment, customer data, or production write was submitted.
+
+Open production limitation: `GET /api/health/storage` returned HTTP 200 but reported `backend:"r2"`, `reachable:false`, and stable `storage_unavailable` on both hosts. Static Studio assets are reachable, but the configured R2 bucket did not pass the backend `HeadBucket` probe. This leaves customer upload/private-object and R2-backed storage readiness unproven; do not claim full A-to-Z production readiness until the approved Render R2 credentials/bucket permissions are privately verified and the health check returns reachable. No Render environment variable or R2 setting was changed during this verification.
+
+Status: live release verified with one explicit storage blocker
+Last completed: Merged PR #107, verified exact Render SHA/deployment, ran both-host GET-only smoke checks, verified 70-product pagination and six categories, and completed the reversible empty-cart browser test.
+Stopped at: Before any R2 credential/bucket repair or environment-variable change.
+Files/areas changed: This handoff and TODO records only after deployment; no application or production data change.
+Remaining work: Privately diagnose/fix the approved R2 bucket access on Render, then re-run storage health and upload/private-object checks; durable idempotency migration 008 remains staged but unapplied and disabled; continue measured P2 performance work.
+Blocker: Render production R2 `HeadBucket` reachability is false; the available read-only Render tools did not expose secret values for diagnosis, and no secret was changed or requested in chat.
+Next safe action: Verify the exact R2 account/key/bucket permissions in the authorized Render environment without exposing values, make the smallest approved env correction if needed, redeploy, and repeat the storage and live smoke checks. Do not submit an order/payment or apply migration 008 during that repair.
+Verification: PR checks 4/4 passed; Render build/deploy succeeded; both hosts readiness/liveness/catalog/SEO checks passed; 70 products were unique across 3 pages; six Studio family PNGs returned 200; browser cart returned to empty; storage health alone remains failing.
+
+
+## 2026-11-26 — Provider diagnosis and Pages SEO root-function correction
+
+The owner-connected provider checks were read-only. Render reconfirmed the approved free service `trynex-lifestyle-main-render` (`srv-da9pl91f2nfc7388d150`) in `Azim's workspace` (`tea-d5uiuknfte5s73c3b0f0`), tracking `main` with auto-deploy enabled. The older `trynex-lifestyle` service is suspended and was not touched. Cloudflare account `060a0f28c7f62affa5ac09be3b1dd1a9` contains the expected `trynex` R2 bucket in APAC/Standard with an enabled managed domain and existing upload/mockup objects. No Render, Cloudflare, Neon, database, order, payment, or customer setting was changed.
+
+The R2 blocker remains precise: both live hosts report backend `r2`, `reachable:false`, and `storage_unavailable` from the backend `HeadBucket` probe. The bucket exists, so the remaining likely causes are the exact Render R2 account/bucket values or the R2 access key's bucket permission. The owner must privately verify, in the exact Render service, that `R2_ACCOUNT_ID` is the Cloudflare account ID, `R2_BUCKET` is `trynex`, and the key/secret are an R2 API token with bucket-scoped Object Read/Write access. No secret value should be pasted into chat or recorded here.
+
+A production SEO path defect was found and corrected in source. The active Cloudflare Pages project is `trynext-shop-new`, built from the repository-root `functions/` directory, but the route-aware middleware existed only under `artifacts/trynex-storefront/functions/`. This explained why live `/design-studio` and unknown paths still exposed the homepage shell. The verified middleware was copied to `functions/_middleware.ts`, preserving the existing behavior while making the real 404/noindex, Design Studio noindex, and bot metadata paths available to the deployed Pages runtime.
+
+Read-only Google evidence was also recorded: Search Console owner property `sc-domain:trynext.shop` has a submitted sitemap last downloaded 2026-11-23 with 101 web URLs and 69 image URLs submitted and 0 indexed in the returned sitemap report. The prior 30-day page report returned 2 clicks/152 impressions for the home page and impressions for `/blog`, one blog article, a product, and `/shop`. GA4 property `533850165` returned 128 sessions, 94 active users, 110 engaged sessions, and 3 key events for the preceding 28-day range; Organic Search contributed 40 sessions and all 3 key events. These figures are diagnostic only and do not prove ranking or approval.
+
+Status: in progress — source correction verified locally; publication and R2 repair remain open
+Last completed: Read-only Render/Cloudflare/Neon/Google provider inventory; confirmed the expected R2 bucket; added root Pages middleware; focused SEO tests passed 13/13; storefront typecheck, parity guard, and diff check passed.
+Stopped at: Before committing/pushing the root middleware and before any Render environment-variable or R2 permission change.
+Files/areas changed: `functions/_middleware.ts`, `TODO.md`, and this handoff. No production data or provider configuration changed.
+Remaining work: Run a clean CI-like build where ARM64 optional native packages are available; commit and publish the root middleware through the authorized GitHub path; wait for Pages checks; repeat raw normal-user/Googlebot route checks; privately repair and verify Render R2 access; continue the broader SEO/product/content and admin/Studio audits.
+Blocker: Render R2 `HeadBucket` is unreachable; local Vite build is also blocked by missing sandbox ARM64 optional native binaries (Rollup, Lightning CSS, Tailwind Oxide), while focused tests and typecheck pass.
+Next safe action: Review the root middleware diff, commit it with the existing controlled release process, and do not deploy until CI/active-app checks pass. Separately, the owner should verify the four R2 configuration values and bucket-scoped permissions in Render without exposing secrets. Do not apply migration 008 or submit an order/payment.
+Verification: Cloudflare bucket metadata/listing and Pages project reads succeeded; Search Console sitemap and analytics reads succeeded; storefront middleware/SEO tests 13/13 passed; storefront typecheck passed; deployment-source parity passed; `git diff --check` passed; production Vite build was blocked only by sandbox optional native dependencies.
+
+
+## 2026-11-26 — PR #109 checks complete
+
+The root middleware correction was committed as `ad47e65` (`fix: wire Pages SEO middleware at deployment root`), pushed to `manus/az-remediation`, and opened as PR #109: https://github.com/georgelsmith333-hub/New-Trynext/pull/109. GitHub reports the PR open, non-draft, and merge state `CLEAN`. All four checks passed: Active app verification (typecheck/test/build), CI build-and-check, CI security-scan, and the Cloudflare Pages preview deployment for `trynext-shop-new`. The Pages check is a preview/deployment check; production custom-host verification is intentionally deferred until an approved merge and production deployment.
+
+Status: ready for review
+Last completed: Pushed commit `ad47e65`; PR #109 opened; all required checks passed.
+Stopped at: Before merge, because the project requires the normal review gate and the PR has no recorded review decision yet.
+Files/areas changed: Repository-root `functions/_middleware.ts`, `TODO.md`, and `AGENT_HANDOFF.md` in commit `ad47e65`.
+Remaining work: Obtain the required review/approval, merge through GitHub if approved, verify the exact production deployment, and run raw normal-user/Googlebot GET checks for `/design-studio`, an unknown route, representative product/category/blog routes, sitemap, and robots on both public hosts. R2 repair and the broader SEO/product/content audit remain open.
+Blocker: Review approval is pending. The independent Render R2 `HeadBucket` blocker remains unresolved and no provider configuration was changed.
+Next safe action: Review PR #109. After approval, merge normally and wait for the active production deployment before any live claim. Do not apply migration 008 or submit an order/payment.
+Verification: GitHub check rollup is 4 successful, 0 failing, 0 pending; Cloudflare Pages preview check succeeded; local root/storefront middleware parity, focused tests (13/13), typecheck, and diff check were already successful.
+
+
+## 2026-11-26 — R2 access repaired and live-verified
+
+The owner approved a narrowly scoped R2 credential repair through the connected Cloudflare browser. The `trynex` bucket was confirmed in account `060a0f28c7f62affa5ac09be3b1dd1a9`, APAC/Standard, with existing objects preserved. Cloudflare's dedicated R2 API-token flow created account token `Trynext Production R2 Recovery`, restricted to bucket `trynex` with Object Read & Write. The dashboard's available short TTL choice was 30 days, active through 2026-12-26. Secret values and access-key values were not written to this handoff, source files, logs, or chat.
+
+Only the four R2 environment variables were merged into the exact Render production service `srv-da9pl91f2nfc7388d150` in workspace `tea-d5uiuknfte5s73c3b0f0`; no replacement of the existing environment-variable set occurred. Render deployment `dep-dc4a7rei0phs739jlt1g` was triggered and became live. Render logs confirmed the new instance had all required R2 variable names present and started the R2 backend. A pre-live storage check still reflected the prior instance; after the new instance was live, both public hosts returned `backend:r2`, `reachable:true`, `error:null` from `/api/health/storage`. Both hosts also continued to return readiness `status:ok`, `db:true`, and `catalog:true`.
+
+Status: in progress — R2 blocker resolved; SEO PR review/deployment and broader A-to-Z work remain open
+Last completed: Created the trynex-only R2 credential, updated only the four exact Render variables, waited for deployment `dep-dc4a7rei0phs739jlt1g`, and verified R2 reachability on custom and Render hosts.
+Stopped at: After successful GET-only R2 verification; no upload or customer/private-object mutation was attempted.
+Files/areas changed: Render production environment variables only (four R2 values); `TODO.md` and this handoff. Cloudflare bucket data, CORS, public access, DNS, Pages, Neon, catalog, orders, payments, and customers were not changed.
+Remaining work: Preserve the token until controlled rotation before 2026-12-26; complete PR #109 review/merge and production SEO route checks; continue product/SEO/content/admin/Design Studio audit.
+Blocker: No active R2 reachability blocker. PR #109 still awaits normal review approval; local broader work remains pending that release gate.
+Next safe action: Review and approve PR #109 through GitHub. After merge, verify the active production Pages deployment and raw metadata/404 behavior. Separately schedule a controlled R2 credential rotation before expiry; do not submit an order/payment or apply migration 008.
+Verification: Cloudflare bucket/token metadata was read in the authenticated browser; Render deployment became live; both `https://trynext.shop/api/health/storage` and the Render origin returned `{"backend":"r2","portable":true,"reachable":true,"error":null}`; both readiness endpoints remained healthy. No secrets were persisted.
+
+
+## 2026-11-26 — Post-repair Render log audit
+
+Read-only Render log and event inspection covered the exact production service `srv-da9pl91f2nfc7388d150` from the R2 repair deployment through 2026-11-26T21:35:30Z. Deployment `dep-dc4a7rei0phs739jlt1g` ended with `deployStatus:succeeded`; the build also ended successfully. The new instance started on port 8082, connected to the approved Neon primary with the transactional schema verified, reported all required R2 variable names present, selected the `r2` backend, and served readiness/storage/liveness requests with HTTP 200. R2 health checks remained successful after the restart.
+
+No lingering R2 connection error, Neon connection failure, request 5xx, crash loop, or unclean shutdown was found. The log audit did find one non-fatal startup database migration error: the application attempted to add `utm_source`, `utm_medium`, and `utm_campaign` to `orders`, but the Neon runtime role is not the table owner (`must be owner of table orders`). The application logged that UTM columns may be missing, then continued; the separate migration runner completed with `appliedCount:0` and `totalFiles:8`. This was not changed during the log-only inspection because changing schema ownership or applying a migration requires a separate controlled database decision.
+
+Known non-fatal warnings were also present: optional `GOOGLE_CLIENT_ID` and `FACEBOOK_APP_ID` are unset, and node-postgres warned that `sslmode=prefer`, `require`, and `verify-ca` are treated as aliases for `verify-full` in the current driver. These did not prevent startup or database connectivity. Render's informational port-detection notice on 8082 is expected and not an application error.
+
+Status: in progress — post-repair service healthy; non-fatal startup warnings documented
+Last completed: Read-only Render application logs and service events audited after the R2 deployment.
+Stopped at: No production code, schema, credentials, OAuth configuration, or provider settings changed during this audit.
+Files/areas changed: This handoff only.
+Remaining work: Decide separately whether to address the table-owner/UTM migration path, normalize the PostgreSQL SSL configuration, or configure optional social-login credentials. Do not treat these as R2 blockers.
+Blocker: None for current R2 connectivity or service availability. The UTM-column ownership issue remains a separate database migration follow-up.
+Next safe action: Keep the current healthy deployment unchanged; create a separate reviewed migration/configuration task for the UTM ownership and SSL warning if those features are required. Do not apply schema ownership changes or submit an order/payment from this log audit.
+Verification: Render events showed build and deploy succeeded; post-restart logs showed Neon primary connection, required R2 variables present, `storageBackend:r2`, server listening, and HTTP 200 health requests. No secret values were recorded.
+
+
+## 2026-11-27 — Checkout/payment remediation completed locally
+
+The checkout recovery changes are complete in the local worktree on branch `manus/az-remediation`; production has not yet received this code. The frontend now protects the acknowledged post-order gateway/success flow from the empty-cart redirect, while failed order creation releases the guard. COD and card-on-delivery semantics remain preserved, including zero due now and the full card amount due at delivery. Wallet and bank flows continue retaining the cart until evidence submission.
+
+Payment instructions are now visible before confirmation and repeated in the review step. bKash, Nagad, Rocket, and uPay show the configured receiver number, the selected full-payment or 25%-advance amount, and the remaining balance when applicable. Bank transfer shows configured bank/account details and the amount/balance. Card explicitly communicates card-on-delivery timing and that no card details are collected online. COD communicates its advance and delivery balance. Gateway copy distinguishes full payment from 25% advance, and bank transfer no longer shows the irrelevant wallet sender-last-four field.
+
+The backend now uses `buildPaymentEvidenceNotes()` to normalize and replace prior payment-evidence fields deterministically on retry instead of appending duplicate evidence. Existing contact verification, payment-method validation, private proof-path validation, and order/payment status behavior were preserved. Focused regressions cover the frontend post-order/cart guard, review payment details, and backend evidence replacement/sanitization.
+
+Status: checkout/payment remediation implemented and verified locally; awaiting controlled commit, PR review, CI, merge, and production deployment.
+Last completed: Reviewed the scoped four-file diff; restored tracked manifests after the temporary ARM64 build dependency; updated TODO; confirmed no real order, payment, evidence upload, inventory, setting, customer, or provider mutation occurred.
+Stopped at: Before creating the release commit or opening the checkout PR.
+Files/areas changed: `artifacts/trynex-storefront/src/pages/Checkout.tsx`, `artifacts/trynex-storefront/src/commerce-recovery.regressions.test.ts`, `artifacts/api-server/src/routes/orders.ts`, `artifacts/api-server/src/routes/orders.create.test.ts`, plus this handoff and `TODO.md`.
+Remaining work: Re-run final status/diff checks, create a controlled attributed commit on `manus/az-remediation`, push through the authorized GitHub integration, open the scoped PR, wait for active-app/CI/security/preview checks, and merge only through normal review. After approved deployment, verify the exact Render SHA and repeat GET-only health/readiness/storage/catalog/SEO checks plus a reversible browser checkout-entry/payment-detail smoke test. Continue the broader A-to-Z frontend/backend/SEO/content/admin/Design Studio work separately.
+Blocker: No active local checkout blocker. Production still runs the pre-remediation checkout until review and deployment. Durable order-idempotency migration `008_add_order_idempotency_keys.sql` remains unapplied and `DURABLE_ORDER_IDEMPOTENCY=true` remains disabled. Do not submit an order or payment.
+Next safe action: Run the final repository checks, commit only the scoped checkout files and documentation with `Co-authored-by: Manus <dev-agent@manus.ai>` if required by the repository attribution rule, then open the controlled PR without force-pushing or merging outside normal review.
+Verification: Storefront typecheck passed; full storefront suite passed (40 files / 264 tests); API typecheck and production bundle passed; API order/idempotency tests passed (27/27); focused storefront checkout tests passed (13 tests); focused backend order/payment-evidence tests passed (16 tests); storefront production build passed after a temporary ARM64-only optional binding install and tracked manifests were restored unchanged; `git diff --check` passed; live empty-cart checkout-entry smoke test routed to `/cart` without submitting an order/payment.
 
 ## 2026-11-27 — PR #109 checks passed for checkout remediation
 
