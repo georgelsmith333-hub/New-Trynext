@@ -5249,3 +5249,21 @@ Remaining work: Preserve the token until controlled rotation before 2026-12-26; 
 Blocker: No active R2 reachability blocker. PR #109 still awaits normal review approval; local broader work remains pending that release gate.
 Next safe action: Review and approve PR #109 through GitHub. After merge, verify the active production Pages deployment and raw metadata/404 behavior. Separately schedule a controlled R2 credential rotation before expiry; do not submit an order/payment or apply migration 008.
 Verification: Cloudflare bucket/token metadata was read in the authenticated browser; Render deployment became live; both `https://trynext.shop/api/health/storage` and the Render origin returned `{"backend":"r2","portable":true,"reachable":true,"error":null}`; both readiness endpoints remained healthy. No secrets were persisted.
+
+
+## 2026-11-26 — Post-repair Render log audit
+
+Read-only Render log and event inspection covered the exact production service `srv-da9pl91f2nfc7388d150` from the R2 repair deployment through 2026-11-26T21:35:30Z. Deployment `dep-dc4a7rei0phs739jlt1g` ended with `deployStatus:succeeded`; the build also ended successfully. The new instance started on port 8082, connected to the approved Neon primary with the transactional schema verified, reported all required R2 variable names present, selected the `r2` backend, and served readiness/storage/liveness requests with HTTP 200. R2 health checks remained successful after the restart.
+
+No lingering R2 connection error, Neon connection failure, request 5xx, crash loop, or unclean shutdown was found. The log audit did find one non-fatal startup database migration error: the application attempted to add `utm_source`, `utm_medium`, and `utm_campaign` to `orders`, but the Neon runtime role is not the table owner (`must be owner of table orders`). The application logged that UTM columns may be missing, then continued; the separate migration runner completed with `appliedCount:0` and `totalFiles:8`. This was not changed during the log-only inspection because changing schema ownership or applying a migration requires a separate controlled database decision.
+
+Known non-fatal warnings were also present: optional `GOOGLE_CLIENT_ID` and `FACEBOOK_APP_ID` are unset, and node-postgres warned that `sslmode=prefer`, `require`, and `verify-ca` are treated as aliases for `verify-full` in the current driver. These did not prevent startup or database connectivity. Render's informational port-detection notice on 8082 is expected and not an application error.
+
+Status: in progress — post-repair service healthy; non-fatal startup warnings documented
+Last completed: Read-only Render application logs and service events audited after the R2 deployment.
+Stopped at: No production code, schema, credentials, OAuth configuration, or provider settings changed during this audit.
+Files/areas changed: This handoff only.
+Remaining work: Decide separately whether to address the table-owner/UTM migration path, normalize the PostgreSQL SSL configuration, or configure optional social-login credentials. Do not treat these as R2 blockers.
+Blocker: None for current R2 connectivity or service availability. The UTM-column ownership issue remains a separate database migration follow-up.
+Next safe action: Keep the current healthy deployment unchanged; create a separate reviewed migration/configuration task for the UTM ownership and SSL warning if those features are required. Do not apply schema ownership changes or submit an order/payment from this log audit.
+Verification: Render events showed build and deploy succeeded; post-restart logs showed Neon primary connection, required R2 variables present, `storageBackend:r2`, server listening, and HTTP 200 health requests. No secret values were recorded.
