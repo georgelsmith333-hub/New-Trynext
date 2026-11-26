@@ -5298,3 +5298,19 @@ Remaining work: Obtain review approval and merge normally; wait for the exact pr
 Blocker: Review/approval is pending. Durable order-idempotency migration `008_add_order_idempotency_keys.sql` remains unapplied and `DURABLE_ORDER_IDEMPOTENCY=true` remains disabled. Do not submit an order or payment.
 Next safe action: Review PR #109 at https://github.com/georgelsmith333-hub/New-Trynext/pull/109 and merge only through the normal GitHub review path after approval; then verify the active deployment before making any production claim.
 Verification: Exact PR head `9fec08d8ba423c189cf8af932a01562830d71d7a`; Cloudflare Pages, Active app verification, CI build-and-check, and CI security-scan all passed; local typechecks/builds/tests and live empty-cart GET-only smoke evidence remain recorded above.
+
+
+## 2026-11-27 — Pages API fall-through diagnosis
+
+The merged checkout release is live on Render deployment `dep-dc4aq68473hc739d6eb0` and Pages production deployment `8b8a0538-cd3d-4e62-9c0b-67a0c6987e11`, both at merge SHA `9524d2dc4714a550b5e46543ce0dbc887aa5fc28`. GET-only checks showed the Render origin returning the expected JSON catalog/settings/health, while the Pages production, Pages preview, and `trynext.shop` `/api/*` paths returned the SPA HTML with HTTP 200 and no gateway headers. This is why the browser showed zero products and why checkout could not be live-verified through the custom domain.
+
+The confirmed source cause is `artifacts/trynex-storefront/public/_redirects`: its global `/* /index.html 200` rule intercepted `/api/*` before the Pages Function gateway. The narrow correction removes only that wildcard and preserves `/sitemap.xml -> /api/sitemap.xml 301`. No provider or application data was changed.
+
+Status: in progress — routing correction ready for controlled PR
+Last completed: Confirmed Pages deployment/project configuration read-only; compared production/preview/custom-domain API responses with the healthy Render origin; removed the API-intercepting wildcard redirect locally; storefront TypeScript and focused Pages middleware/gateway/SEO tests passed (13/13).
+Stopped at: Before committing/pushing the routing-only correction from a fresh branch based on merged `origin/main`.
+Files/areas changed: `artifacts/trynex-storefront/public/_redirects`, `TODO.md`, and this handoff.
+Remaining work: Create the fresh controlled PR; wait for CI/Pages checks; verify JSON API responses, 70-product catalog, settings, health/readiness/storage, sitemap/robots, and the reversible browser checkout/payment-detail smoke test without submitting an order or payment.
+Blocker: Local Vite production build is blocked by the known missing ARM64 optional `@tailwindcss/oxide` binding; CI/Pages builds use the correct environment. Do not add the temporary native package to tracked manifests.
+Next safe action: Branch from `origin/main`, commit the one-line redirect correction with the required attribution, push normally, and open the routing PR. Keep migration 008 unapplied and durable order idempotency disabled.
+Verification: Direct GETs showed Pages production/preview/custom-domain `/api/*` HTML fall-through and Render JSON success; storefront typecheck passed; `functions/middleware.test.ts`, `functions/seo-guides.test.ts`, and `functions/gateway.test.ts` selection passed 13/13; `git diff --check` passed. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.

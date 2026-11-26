@@ -180,3 +180,12 @@
 - [x] Refreshed checks passed on the exact commit: Cloudflare Pages, Active app verification, CI build-and-check, and CI security-scan (4 successful, 0 failing, 0 pending).
 - [ ] Obtain the normal review/approval and merge through GitHub; do not merge from the sandbox or bypass the review gate.
 - [ ] After merge/deployment, verify the exact Render SHA and both public hosts with GET-only health/readiness/storage/catalog/SEO checks plus a reversible browser checkout-entry/payment-detail smoke test. Do not submit an order or payment.
+
+
+## 2026-11-27 Pages API routing blocker and correction
+
+- [x] GET-only diagnosis confirmed the active Pages project `trynext-shop-new` is on production commit `9524d2dc4714a550b5e46543ce0dbc887aa5fc28`, but `/api/products`, `/api/settings`, `/api/categories`, and `/api/health/readiness` fell through to the SPA HTML on both the production and preview Pages URLs; the healthy Render origin returned JSON.
+- [x] Root cause identified in the deployed source path: `artifacts/trynex-storefront/public/_redirects` had a global `/* /index.html 200` rewrite that intercepted `/api/*` before the Pages API Function. Removed only that wildcard and preserved the `/sitemap.xml` redirect.
+- [ ] Publish this routing-only correction from a fresh branch based on merged `origin/main`; wait for Pages/CI checks, then verify JSON API responses and the live catalog before claiming custom-domain checkout verification.
+- [x] No order, payment, payment proof, upload, inventory, customer, settings, database, or provider mutation occurred during diagnosis.
+- [ ] Keep migration 008 unapplied and durable order idempotency disabled.
