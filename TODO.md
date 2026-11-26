@@ -206,3 +206,12 @@
 - [x] Updated `scripts/check-deployment-source-parity.mjs` to validate the root API Function as authoritative while preserving gateway-config parity and retired-host protection; local parity and focused Pages tests pass.
 - [ ] Push the corrective commit, wait for all four hosted checks, merge normally only when green, then verify Pages deployment/custom-domain JSON APIs and the reversible checkout payment-detail flow without submitting an order/payment.
 - [ ] Keep migration 008 unapplied and durable order idempotency disabled.
+
+
+## 2026-11-27 Pages stale-build-output follow-up
+
+- [x] PR #111 merged normally as `c77015c5`; Pages deployment `20fe6d19` uploaded the root Functions directory but still served SPA HTML for `/api/*` and `/sitemap.xml`.
+- [x] GET-only diagnosis found the deployed artifact retained the old `dist/_redirects` wildcard despite the corrected tracked `public/_redirects` source.
+- [x] Created `fix/pages-clean-build` from merged `origin/main` and made the storefront build remove `dist` before Vite output generation.
+- [ ] Verify, commit, push, and merge the clean-build follow-up; then repeat deployment/custom-domain JSON API, sitemap, robots, catalog, readiness, storage, and reversible checkout-detail checks without submitting an order/payment.
+- [ ] Keep migration 008 unapplied and durable order idempotency disabled.
