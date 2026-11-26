@@ -228,11 +228,13 @@ export function __resetGatewayState(): void {
 export const onRequest: PagesFunction<GatewayEnv> = async (context) => {
   const { request, env, params } = context;
   const originalUrl = new URL(request.url);
-  const pathSegments = (params["path"] as string[] | string) ?? [];
+  const pathSegments = (params["catchall"] as string[] | string)
+    ?? (params["path"] as string[] | string)
+    ?? [];
   const rawPath = Array.isArray(pathSegments) ? pathSegments.join("/") : pathSegments;
   // The request pathname is authoritative for Pages root catch-all Functions;
-  // params.path may be empty or may include the /api prefix depending on the
-  // runtime route matcher. Keep params only as a compatibility fallback.
+  // params.catchall may be empty or may include the /api prefix depending on
+  // the runtime route matcher. Keep both names as compatibility fallbacks.
   const pathnamePath = originalUrl.pathname
     .replace(/^\/+/, "")
     .replace(/^api(?:\/|$)/i, "")

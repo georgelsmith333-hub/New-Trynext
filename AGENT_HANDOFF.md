@@ -5360,3 +5360,17 @@ Remaining work: Verify the clean-build behavior and focused tests; commit/push/o
 Blocker: Current merged deployment still serves SPA HTML for API paths until the clean-build follow-up deploys. Local Vite build remains blocked by the known sandbox ARM64 optional Tailwind Oxide binding; do not add temporary native packages to tracked manifests.
 Next safe action: Complete the clean-build follow-up through normal PR review and perform GET-only live verification. Do not submit an order/payment, apply migration 008, or enable durable idempotency.
 Verification: Cloudflare deployment logs show `Found Functions directory at /functions. Uploading.` and successful deployment, while direct GET probes show `/api/*` and `/sitemap.xml` still rewritten to `index.html`. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.
+
+
+## 2026-11-27 — Pages API named-catchall follow-up
+
+The PR #112 clean-build deployment `ecaea2dc-c046-46f1-99dd-8ad272b7b3fd` completed successfully, but GET-only probes still returned the SPA HTML for `/api/*` and `/sitemap.xml` on both the deployment URL and custom domain. The deployment logs confirm `/functions` was found and uploaded; the tracked source redirect contains only `/sitemap.xml -> /api/sitemap.xml 301`, and the clean build removes stale `dist` files. The remaining evidence points to the nested API route filename not matching in the Pages runtime.
+
+Status: in progress — named-catchall follow-up ready for controlled PR
+Last completed: Created `fix/pages-api-catchall` from merged `origin/main`, renamed the authoritative root route from `functions/api/[[path]].ts` to `functions/api/[[catchall]].ts` following Cloudflare’s documented named multipath convention, updated the gateway test and parity checker, and made the handler accept both `params.catchall` and legacy `params.path`.
+Stopped at: Before focused validation, commit, PR, deployment, and live GET-only verification.
+Files/areas changed: `functions/api/[[catchall]].ts` renamed/updated, `artifacts/trynex-storefront/functions/api/gateway.test.ts`, `scripts/check-deployment-source-parity.mjs`, plus this handoff.
+Remaining work: Run parity/typecheck/focused tests; commit/push/open a controlled PR; wait for all hosted checks; merge normally only when green; then verify deployment/custom-domain JSON API, sitemap, robots, catalog, readiness, and storage before browser checkout inspection.
+Blocker: API JSON remains unavailable through Pages until the named-catchall correction is deployed. Do not perform checkout submission, payment, proof upload, or any production mutation. Keep migration 008 unapplied and durable idempotency disabled.
+Next safe action: Complete the named-catchall PR and repeat GET-only live verification. If API paths still fall through after this explicit route correction, stop and inspect the Pages project’s route/build configuration rather than making further speculative source changes.
+Verification: PR #112 hosted Pages, active-app, CI, and security checks passed; its deployment served the storefront but not API JSON. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.

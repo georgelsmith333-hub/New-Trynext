@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { __resetGatewayState, onRequest } from "../../../functions/api/[[path]].ts";
+import { __resetGatewayState, onRequest } from "../../../functions/api/[[catchall]].ts";
 
 class StrictMemoryCache {
   readonly entries = new Map<string, Response>();
