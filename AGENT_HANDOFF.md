@@ -5155,3 +5155,28 @@ Verification: storefront `functions/seo-guides.test.ts` and `product-options.tes
 Remaining work: Manus branch `manus/seo-category-guides-2026-11-10` has a newer unmerged commit (`d25d66d`, mockup-queue retry hardening, touching `mockupQueue.ts`, its test, `TODO.md` and this handoff). It is not merged and I have not reviewed it for `main`. Owner/Manus-blocked items N1, N2/N3/N8, N4 and N13-N15 are unchanged.
 Blocker: none for this change. Live cache, SEO routes and Pages Functions behavior still need a check on the deployed site; the DB failover change from #103 is not live-verified.
 Next safe action: Keep watching `claude/reports.md`, root `reports.md` and `ANSWER:` lines; do not merge `manus/*` branches.
+
+## 2026-11-26 checkpoint — comprehensive remediation continuation
+
+The first remediation batch remains committed as `52ea33a` (`fix: harden checkout storage and deployment paths`). It covered free-shipping persistence, card-on-delivery semantics, mobile checkout shipping/idempotency behavior, payment labels, sitemap routes, admin terminal error states, gateway parity checks, mobile production host correction, Studio curvature consistency, staging cleanup, and storage authorization regression coverage.
+
+The second remediation batch is committed as `48b2c39` (`harden cache accessibility and idempotency release path`). It adds authenticated catalog cache privacy, explicit public cache policies, category/product cache invalidation after mutations and committed stock decrements, a reusable storefront focus trap applied to the Design Studio picker and shared admin ConfirmDialog, and a release-gated database-backed order idempotency middleware with migration `lib/db/migrations/008_add_order_idempotency_keys.sql`.
+
+Verification completed for this checkpoint: API and storefront TypeScript checks passed after dependency cleanup; API production bundling passed; focused cache/category/order tests passed (3 files, 28 tests); existing memory idempotency/order tests passed (2 files, 25 tests); focused storage authorization/staging cleanup coverage passed (2 files, 16 tests); focused Studio/accessibility coverage passed (22 tests); the mockup matrix passed with 188 expected surfaces and 1,128 runtime roles; deployment-source parity passed; and `git diff --check` passed. Temporary root Rollup manifest/lockfile churn and the unintended `artifacts/api-server/pnpm-lock.yaml` were removed. No `@rollup/rollup-linux-arm64-gnu` dependency remains in committed manifests.
+
+Durable idempotency is intentionally not production-active. Migration 008 has not been applied to the approved production database, and `DURABLE_ORDER_IDEMPOTENCY` remains disabled by default. The route falls back to the existing memory guard when the database table is unavailable. Before enabling it, review the insert/replay/fingerprint-mismatch/pending-timeout/cleanup behavior, apply the migration only under a separately controlled release gate, and perform release testing against the exact approved database target. No production migration, catalog, settings, orders, payments, customer data, Render service, Cloudflare configuration, or R2 asset was changed during this checkpoint.
+
+Remaining release work: push both commits through the authorized GitHub integration; wait for CI and active-app checks; merge only after checks pass; let the exact Render service `srv-da9pl91f2nfc7388d150` auto-deploy from merged `main`; verify exact commit identity and both production hosts; check readiness/health aliases, sitemap/robots/routes, storage/R2 reachability, deterministic 70-product pagination, Studio assets, checkout/payment descriptions, and a reversible browser-local empty-cart smoke test without submitting an order or payment. Remaining measured P2 work includes responsive image derivatives, byte-aware/path-scoped service-worker cache sizing, explicit Studio ONNX/WASM resource handling, and provider-aware deployment verification.
+
+### Required status fields for this checkpoint
+
+```text
+Status: ready for review — local remediation verified; publication pending
+Last completed: Committed 52ea33a and 48b2c39; cleaned temporary dependency churn; updated TODO and handoff; API/storefront typechecks and focused regression checks passed.
+Stopped at: Before GitHub push/PR review and production deployment verification.
+Files/areas changed: API cache policies/invalidation, release-gated durable idempotency and migration 008, storefront focus trap integrations, TODO.md, AGENT_HANDOFF.md.
+Remaining work: Publish and merge after CI/review; deploy and verify exact Render SHA and both production hosts; complete live non-mutating smoke checks; separately gate migration 008/flag activation; continue measured P2 performance work.
+Blocker: None for local code; GitHub connector/authorized publication path and CI result still need confirmation.
+Next safe action: Use the authorized GitHub integration to push the branch, open/review the PR, and merge only after checks pass; do not apply migration 008 or submit orders/payments.
+Verification: API/storefront typechecks passed; focused cache/category/order, idempotency/order, storage, and Studio/accessibility tests passed; API bundle, deployment parity, mockup matrix, and git diff checks passed.
+```

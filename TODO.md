@@ -116,3 +116,16 @@
 - [x] Document that event notifications and retry delays are process-local; the current Render production service is configured for one instance. Any horizontal scaling or restart-durable retry schedule needs a separate cross-process design that does not reintroduce frequent idle queries.
 - [ ] Keep production release blocked until the original database source is available and data-verified; this code change is for review only and has not been merged or deployed.
 - [ ] If API horizontal scaling or restart-durable retry timing is introduced, add cross-process wake-ups / durable retry scheduling without restoring frequent database polling.
+
+## 2026-11-26 comprehensive remediation continuation
+
+- [x] First remediation batch committed as `52ea33a`: authoritative shipping/payment semantics, card-on-delivery wording, mobile retry key/fallback, sitemap route coverage, admin terminal error states, gateway/config parity guard, retired-host correction, Studio curvature consistency, and safe staging-object cleanup with regression coverage.
+- [x] Second remediation batch committed as `48b2c39`: authenticated catalog cache privacy, explicit public cache headers, product-cache invalidation after category mutations and committed stock decrements, shared focus trapping/restoration for custom Studio/admin dialogs, and a release-gated durable idempotency implementation.
+- [x] Focused storage regression suite passed: 2 files / 16 tests; cache/order/category suite passed: 3 files / 28 tests; existing idempotency and order tests passed: 2 files / 25 tests.
+- [x] API and storefront typechecks passed; API production bundle passed; mockup matrix passed with 188 expected surfaces and 1,128 runtime roles; deployment-source parity guard passed; `git diff --check` passed.
+- [x] Durable idempotency migration `lib/db/migrations/008_add_order_idempotency_keys.sql` and `DURABLE_ORDER_IDEMPOTENCY=true` code path are staged in source but not activated against production. The current default remains the existing memory guard until the migration is applied and a controlled release is approved.
+- [ ] Re-run the full repository test/build matrix after the second batch in a clean CI-like install environment; local ARM64 verification required a temporary optional Rollup package installation that was removed from manifests.
+- [ ] Push the two commits through the authorized GitHub path, wait for CI and active-app verification, merge only after review, and let the exact Render service auto-deploy from merged `main`.
+- [ ] After deployment, verify exact SHA, both production hosts, health/readiness aliases, sitemap/robots/routes, 70-product pagination, Studio assets, checkout/payment descriptions, storage reachability, and the reversible empty-cart smoke test without submitting an order/payment.
+- [ ] Apply migration 008 only through a separate controlled release gate after confirming the approved production database target and rollback procedure; then enable `DURABLE_ORDER_IDEMPOTENCY=true` and verify replay/concurrency behavior non-mutating where possible.
+- [ ] Continue measured P2 optimization: responsive WebP/AVIF derivatives, byte-aware/path-scoped service-worker image caching, explicit Studio ONNX/WASM resource handling, and deferred decorative/third-party work only after measurement.
