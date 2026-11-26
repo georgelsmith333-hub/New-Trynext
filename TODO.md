@@ -215,3 +215,12 @@
 - [x] Created `fix/pages-clean-build` from merged `origin/main` and made the storefront build remove `dist` before Vite output generation.
 - [ ] Verify, commit, push, and merge the clean-build follow-up; then repeat deployment/custom-domain JSON API, sitemap, robots, catalog, readiness, storage, and reversible checkout-detail checks without submitting an order/payment.
 - [ ] Keep migration 008 unapplied and durable order idempotency disabled.
+
+
+## 2026-11-27 Pages API named-catchall follow-up
+
+- [x] PR #112 clean-build checks passed and deployment `ecaea2dc` completed, but `/api/*` and `/sitemap.xml` still returned SPA HTML on both Pages and custom domain.
+- [x] Confirmed Functions upload succeeded, tracked source redirects are corrected, and clean build removes stale `dist` output; remaining source-level hypothesis is the API multipath filename match.
+- [x] Renamed the authoritative root API Function to `functions/api/[[catchall]].ts`, updated test/parity references, and preserved both `params.catchall` and legacy `params.path` handling.
+- [ ] Validate, commit, push, and merge the named-catchall follow-up; then repeat Pages/custom-domain JSON API, sitemap, robots, catalog, readiness, storage, and reversible checkout-detail checks without submitting an order/payment.
+- [ ] If API routing remains broken, inspect Pages project routing/build configuration before further source changes. Keep migration 008 unapplied and durable order idempotency disabled.

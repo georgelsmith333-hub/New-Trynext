@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const files = {
-  rootGateway: resolve(root, "functions/api/[[path]].ts"),
+  rootGateway: resolve(root, "functions/api/[[catchall]].ts"),
   rootConfig: resolve(root, "functions/gateway-config.ts"),
   storefrontConfig: resolve(root, "artifacts/trynex-storefront/functions/gateway-config.ts"),
   mobileProductionEnv: resolve(root, "artifacts/trynext-mobile/.env.production"),

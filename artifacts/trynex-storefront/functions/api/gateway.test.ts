@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { onRequest, __resetGatewayState } from "../../../../functions/api/[[path]]";
+import { onRequest, __resetGatewayState } from "../../../../functions/api/[[catchall]]";
 import { AI_PRIMARY_TIMEOUT_MS, primaryRequestTimeoutMs } from "../../../../functions/gateway-config";
 
 type GatewayContext = Parameters<typeof onRequest>[0];
