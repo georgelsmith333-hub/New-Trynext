@@ -69,7 +69,7 @@ vi.mock("@workspace/db", async (importActual) => {
   return { ...actual, db: { ...tx, execute: () => Promise.resolve(undefined), transaction: (cb: (t: typeof tx) => unknown) => cb(tx) } };
 });
 
-import ordersRouter from "./orders";
+import ordersRouter, { buildPaymentEvidenceNotes } from "./orders";
 
 const app = express();
 app.use(express.json());
@@ -241,5 +241,38 @@ describe("POST /orders promo codes", () => {
     const res = await request(app).post("/api/orders").send({ ...customer, promoCode: "SAVE10", items: [catalogItem()] });
     expect(res.status).toBe(201);
     expect(res.body.total).toBe(0);
+  });
+});
+
+describe("payment evidence notes", () => {
+  it("replaces prior evidence instead of appending duplicate fields on retry", () => {
+    const first = buildPaymentEvidenceNotes("Customer note", {
+      paymentMethod: "bKash",
+      lastFourDigits: "12-34",
+      paymentProofUrl: "/api/storage/objects/proof-a",
+    });
+    const retry = buildPaymentEvidenceNotes(first, {
+      paymentMethod: "bKash",
+      lastFourDigits: "5678",
+      paymentProofUrl: "/api/storage/objects/proof-b",
+    });
+
+    expect(retry).toContain("Customer note");
+    expect(retry).toContain("Wallet/payment method: bkash");
+    expect(retry).toContain("Payment last 4 digits: 5678");
+    expect(retry).toContain("Payment proof: /api/storage/objects/proof-b");
+    expect(retry).not.toContain("1234");
+    expect(retry).not.toContain("proof-a");
+  });
+
+  it("keeps bank sender and reference details safe and deterministic", () => {
+    expect(buildPaymentEvidenceNotes("Payment plan: full payment", {
+      paymentMethod: "bank",
+      senderName: "Ayesha <Test>",
+      bankReference: "REF/2026 11",
+      promoCode: "save-10",
+    })).toBe(
+      "Payment plan: full payment | Wallet/payment method: bank | Sender name: Ayesha Test | Bank reference: REF202611 | Promo code: SAVE-10",
+    );
   });
 });

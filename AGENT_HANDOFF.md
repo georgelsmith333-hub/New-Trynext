@@ -5199,3 +5199,102 @@ Remaining work: Privately diagnose/fix the approved R2 bucket access on Render, 
 Blocker: Render production R2 `HeadBucket` reachability is false; the available read-only Render tools did not expose secret values for diagnosis, and no secret was changed or requested in chat.
 Next safe action: Verify the exact R2 account/key/bucket permissions in the authorized Render environment without exposing values, make the smallest approved env correction if needed, redeploy, and repeat the storage and live smoke checks. Do not submit an order/payment or apply migration 008 during that repair.
 Verification: PR checks 4/4 passed; Render build/deploy succeeded; both hosts readiness/liveness/catalog/SEO checks passed; 70 products were unique across 3 pages; six Studio family PNGs returned 200; browser cart returned to empty; storage health alone remains failing.
+
+
+## 2026-11-26 — Provider diagnosis and Pages SEO root-function correction
+
+The owner-connected provider checks were read-only. Render reconfirmed the approved free service `trynex-lifestyle-main-render` (`srv-da9pl91f2nfc7388d150`) in `Azim's workspace` (`tea-d5uiuknfte5s73c3b0f0`), tracking `main` with auto-deploy enabled. The older `trynex-lifestyle` service is suspended and was not touched. Cloudflare account `060a0f28c7f62affa5ac09be3b1dd1a9` contains the expected `trynex` R2 bucket in APAC/Standard with an enabled managed domain and existing upload/mockup objects. No Render, Cloudflare, Neon, database, order, payment, or customer setting was changed.
+
+The R2 blocker remains precise: both live hosts report backend `r2`, `reachable:false`, and `storage_unavailable` from the backend `HeadBucket` probe. The bucket exists, so the remaining likely causes are the exact Render R2 account/bucket values or the R2 access key's bucket permission. The owner must privately verify, in the exact Render service, that `R2_ACCOUNT_ID` is the Cloudflare account ID, `R2_BUCKET` is `trynex`, and the key/secret are an R2 API token with bucket-scoped Object Read/Write access. No secret value should be pasted into chat or recorded here.
+
+A production SEO path defect was found and corrected in source. The active Cloudflare Pages project is `trynext-shop-new`, built from the repository-root `functions/` directory, but the route-aware middleware existed only under `artifacts/trynex-storefront/functions/`. This explained why live `/design-studio` and unknown paths still exposed the homepage shell. The verified middleware was copied to `functions/_middleware.ts`, preserving the existing behavior while making the real 404/noindex, Design Studio noindex, and bot metadata paths available to the deployed Pages runtime.
+
+Read-only Google evidence was also recorded: Search Console owner property `sc-domain:trynext.shop` has a submitted sitemap last downloaded 2026-11-23 with 101 web URLs and 69 image URLs submitted and 0 indexed in the returned sitemap report. The prior 30-day page report returned 2 clicks/152 impressions for the home page and impressions for `/blog`, one blog article, a product, and `/shop`. GA4 property `533850165` returned 128 sessions, 94 active users, 110 engaged sessions, and 3 key events for the preceding 28-day range; Organic Search contributed 40 sessions and all 3 key events. These figures are diagnostic only and do not prove ranking or approval.
+
+Status: in progress — source correction verified locally; publication and R2 repair remain open
+Last completed: Read-only Render/Cloudflare/Neon/Google provider inventory; confirmed the expected R2 bucket; added root Pages middleware; focused SEO tests passed 13/13; storefront typecheck, parity guard, and diff check passed.
+Stopped at: Before committing/pushing the root middleware and before any Render environment-variable or R2 permission change.
+Files/areas changed: `functions/_middleware.ts`, `TODO.md`, and this handoff. No production data or provider configuration changed.
+Remaining work: Run a clean CI-like build where ARM64 optional native packages are available; commit and publish the root middleware through the authorized GitHub path; wait for Pages checks; repeat raw normal-user/Googlebot route checks; privately repair and verify Render R2 access; continue the broader SEO/product/content and admin/Studio audits.
+Blocker: Render R2 `HeadBucket` is unreachable; local Vite build is also blocked by missing sandbox ARM64 optional native binaries (Rollup, Lightning CSS, Tailwind Oxide), while focused tests and typecheck pass.
+Next safe action: Review the root middleware diff, commit it with the existing controlled release process, and do not deploy until CI/active-app checks pass. Separately, the owner should verify the four R2 configuration values and bucket-scoped permissions in Render without exposing secrets. Do not apply migration 008 or submit an order/payment.
+Verification: Cloudflare bucket metadata/listing and Pages project reads succeeded; Search Console sitemap and analytics reads succeeded; storefront middleware/SEO tests 13/13 passed; storefront typecheck passed; deployment-source parity passed; `git diff --check` passed; production Vite build was blocked only by sandbox optional native dependencies.
+
+
+## 2026-11-26 — PR #109 checks complete
+
+The root middleware correction was committed as `ad47e65` (`fix: wire Pages SEO middleware at deployment root`), pushed to `manus/az-remediation`, and opened as PR #109: https://github.com/georgelsmith333-hub/New-Trynext/pull/109. GitHub reports the PR open, non-draft, and merge state `CLEAN`. All four checks passed: Active app verification (typecheck/test/build), CI build-and-check, CI security-scan, and the Cloudflare Pages preview deployment for `trynext-shop-new`. The Pages check is a preview/deployment check; production custom-host verification is intentionally deferred until an approved merge and production deployment.
+
+Status: ready for review
+Last completed: Pushed commit `ad47e65`; PR #109 opened; all required checks passed.
+Stopped at: Before merge, because the project requires the normal review gate and the PR has no recorded review decision yet.
+Files/areas changed: Repository-root `functions/_middleware.ts`, `TODO.md`, and `AGENT_HANDOFF.md` in commit `ad47e65`.
+Remaining work: Obtain the required review/approval, merge through GitHub if approved, verify the exact production deployment, and run raw normal-user/Googlebot GET checks for `/design-studio`, an unknown route, representative product/category/blog routes, sitemap, and robots on both public hosts. R2 repair and the broader SEO/product/content audit remain open.
+Blocker: Review approval is pending. The independent Render R2 `HeadBucket` blocker remains unresolved and no provider configuration was changed.
+Next safe action: Review PR #109. After approval, merge normally and wait for the active production deployment before any live claim. Do not apply migration 008 or submit an order/payment.
+Verification: GitHub check rollup is 4 successful, 0 failing, 0 pending; Cloudflare Pages preview check succeeded; local root/storefront middleware parity, focused tests (13/13), typecheck, and diff check were already successful.
+
+
+## 2026-11-26 — R2 access repaired and live-verified
+
+The owner approved a narrowly scoped R2 credential repair through the connected Cloudflare browser. The `trynex` bucket was confirmed in account `060a0f28c7f62affa5ac09be3b1dd1a9`, APAC/Standard, with existing objects preserved. Cloudflare's dedicated R2 API-token flow created account token `Trynext Production R2 Recovery`, restricted to bucket `trynex` with Object Read & Write. The dashboard's available short TTL choice was 30 days, active through 2026-12-26. Secret values and access-key values were not written to this handoff, source files, logs, or chat.
+
+Only the four R2 environment variables were merged into the exact Render production service `srv-da9pl91f2nfc7388d150` in workspace `tea-d5uiuknfte5s73c3b0f0`; no replacement of the existing environment-variable set occurred. Render deployment `dep-dc4a7rei0phs739jlt1g` was triggered and became live. Render logs confirmed the new instance had all required R2 variable names present and started the R2 backend. A pre-live storage check still reflected the prior instance; after the new instance was live, both public hosts returned `backend:r2`, `reachable:true`, `error:null` from `/api/health/storage`. Both hosts also continued to return readiness `status:ok`, `db:true`, and `catalog:true`.
+
+Status: in progress — R2 blocker resolved; SEO PR review/deployment and broader A-to-Z work remain open
+Last completed: Created the trynex-only R2 credential, updated only the four exact Render variables, waited for deployment `dep-dc4a7rei0phs739jlt1g`, and verified R2 reachability on custom and Render hosts.
+Stopped at: After successful GET-only R2 verification; no upload or customer/private-object mutation was attempted.
+Files/areas changed: Render production environment variables only (four R2 values); `TODO.md` and this handoff. Cloudflare bucket data, CORS, public access, DNS, Pages, Neon, catalog, orders, payments, and customers were not changed.
+Remaining work: Preserve the token until controlled rotation before 2026-12-26; complete PR #109 review/merge and production SEO route checks; continue product/SEO/content/admin/Design Studio audit.
+Blocker: No active R2 reachability blocker. PR #109 still awaits normal review approval; local broader work remains pending that release gate.
+Next safe action: Review and approve PR #109 through GitHub. After merge, verify the active production Pages deployment and raw metadata/404 behavior. Separately schedule a controlled R2 credential rotation before expiry; do not submit an order/payment or apply migration 008.
+Verification: Cloudflare bucket/token metadata was read in the authenticated browser; Render deployment became live; both `https://trynext.shop/api/health/storage` and the Render origin returned `{"backend":"r2","portable":true,"reachable":true,"error":null}`; both readiness endpoints remained healthy. No secrets were persisted.
+
+
+## 2026-11-26 — Post-repair Render log audit
+
+Read-only Render log and event inspection covered the exact production service `srv-da9pl91f2nfc7388d150` from the R2 repair deployment through 2026-11-26T21:35:30Z. Deployment `dep-dc4a7rei0phs739jlt1g` ended with `deployStatus:succeeded`; the build also ended successfully. The new instance started on port 8082, connected to the approved Neon primary with the transactional schema verified, reported all required R2 variable names present, selected the `r2` backend, and served readiness/storage/liveness requests with HTTP 200. R2 health checks remained successful after the restart.
+
+No lingering R2 connection error, Neon connection failure, request 5xx, crash loop, or unclean shutdown was found. The log audit did find one non-fatal startup database migration error: the application attempted to add `utm_source`, `utm_medium`, and `utm_campaign` to `orders`, but the Neon runtime role is not the table owner (`must be owner of table orders`). The application logged that UTM columns may be missing, then continued; the separate migration runner completed with `appliedCount:0` and `totalFiles:8`. This was not changed during the log-only inspection because changing schema ownership or applying a migration requires a separate controlled database decision.
+
+Known non-fatal warnings were also present: optional `GOOGLE_CLIENT_ID` and `FACEBOOK_APP_ID` are unset, and node-postgres warned that `sslmode=prefer`, `require`, and `verify-ca` are treated as aliases for `verify-full` in the current driver. These did not prevent startup or database connectivity. Render's informational port-detection notice on 8082 is expected and not an application error.
+
+Status: in progress — post-repair service healthy; non-fatal startup warnings documented
+Last completed: Read-only Render application logs and service events audited after the R2 deployment.
+Stopped at: No production code, schema, credentials, OAuth configuration, or provider settings changed during this audit.
+Files/areas changed: This handoff only.
+Remaining work: Decide separately whether to address the table-owner/UTM migration path, normalize the PostgreSQL SSL configuration, or configure optional social-login credentials. Do not treat these as R2 blockers.
+Blocker: None for current R2 connectivity or service availability. The UTM-column ownership issue remains a separate database migration follow-up.
+Next safe action: Keep the current healthy deployment unchanged; create a separate reviewed migration/configuration task for the UTM ownership and SSL warning if those features are required. Do not apply schema ownership changes or submit an order/payment from this log audit.
+Verification: Render events showed build and deploy succeeded; post-restart logs showed Neon primary connection, required R2 variables present, `storageBackend:r2`, server listening, and HTTP 200 health requests. No secret values were recorded.
+
+
+## 2026-11-27 — Checkout/payment remediation completed locally
+
+The checkout recovery changes are complete in the local worktree on branch `manus/az-remediation`; production has not yet received this code. The frontend now protects the acknowledged post-order gateway/success flow from the empty-cart redirect, while failed order creation releases the guard. COD and card-on-delivery semantics remain preserved, including zero due now and the full card amount due at delivery. Wallet and bank flows continue retaining the cart until evidence submission.
+
+Payment instructions are now visible before confirmation and repeated in the review step. bKash, Nagad, Rocket, and uPay show the configured receiver number, the selected full-payment or 25%-advance amount, and the remaining balance when applicable. Bank transfer shows configured bank/account details and the amount/balance. Card explicitly communicates card-on-delivery timing and that no card details are collected online. COD communicates its advance and delivery balance. Gateway copy distinguishes full payment from 25% advance, and bank transfer no longer shows the irrelevant wallet sender-last-four field.
+
+The backend now uses `buildPaymentEvidenceNotes()` to normalize and replace prior payment-evidence fields deterministically on retry instead of appending duplicate evidence. Existing contact verification, payment-method validation, private proof-path validation, and order/payment status behavior were preserved. Focused regressions cover the frontend post-order/cart guard, review payment details, and backend evidence replacement/sanitization.
+
+Status: checkout/payment remediation implemented and verified locally; awaiting controlled commit, PR review, CI, merge, and production deployment.
+Last completed: Reviewed the scoped four-file diff; restored tracked manifests after the temporary ARM64 build dependency; updated TODO; confirmed no real order, payment, evidence upload, inventory, setting, customer, or provider mutation occurred.
+Stopped at: Before creating the release commit or opening the checkout PR.
+Files/areas changed: `artifacts/trynex-storefront/src/pages/Checkout.tsx`, `artifacts/trynex-storefront/src/commerce-recovery.regressions.test.ts`, `artifacts/api-server/src/routes/orders.ts`, `artifacts/api-server/src/routes/orders.create.test.ts`, plus this handoff and `TODO.md`.
+Remaining work: Re-run final status/diff checks, create a controlled attributed commit on `manus/az-remediation`, push through the authorized GitHub integration, open the scoped PR, wait for active-app/CI/security/preview checks, and merge only through normal review. After approved deployment, verify the exact Render SHA and repeat GET-only health/readiness/storage/catalog/SEO checks plus a reversible browser checkout-entry/payment-detail smoke test. Continue the broader A-to-Z frontend/backend/SEO/content/admin/Design Studio work separately.
+Blocker: No active local checkout blocker. Production still runs the pre-remediation checkout until review and deployment. Durable order-idempotency migration `008_add_order_idempotency_keys.sql` remains unapplied and `DURABLE_ORDER_IDEMPOTENCY=true` remains disabled. Do not submit an order or payment.
+Next safe action: Run the final repository checks, commit only the scoped checkout files and documentation with `Co-authored-by: Manus <dev-agent@manus.ai>` if required by the repository attribution rule, then open the controlled PR without force-pushing or merging outside normal review.
+Verification: Storefront typecheck passed; full storefront suite passed (40 files / 264 tests); API typecheck and production bundle passed; API order/idempotency tests passed (27/27); focused storefront checkout tests passed (13 tests); focused backend order/payment-evidence tests passed (16 tests); storefront production build passed after a temporary ARM64-only optional binding install and tracked manifests were restored unchanged; `git diff --check` passed; live empty-cart checkout-entry smoke test routed to `/cart` without submitting an order/payment.
+
+## 2026-11-27 — PR #109 checks passed for checkout remediation
+
+Commit `9fec08d8ba423c189cf8af932a01562830d71d7a` was pushed normally to the existing authorized `manus/az-remediation` branch and PR #109 was updated to cover SEO and checkout payment recovery. On the exact commit, all four required checks passed: Cloudflare Pages, Active app verification, CI build-and-check, and CI security-scan. No order, payment, proof upload, production data, provider setting, or credential was changed.
+
+Status: ready for review — PR #109 open, checks green, not merged.
+Last completed: Pushed the corrected checkout commit, updated the PR title/body, and waited for the refreshed check suite; 4 successful, 0 failing, 0 pending.
+Stopped at: Before normal human review/approval and merge.
+Files/areas changed: PR metadata plus the existing checkout remediation files and durable records already committed in `9fec08d`; no new application change after the green checks.
+Remaining work: Obtain review approval and merge normally; wait for the exact production Render deployment; then perform GET-only verification of the exact SHA, health/readiness/storage/catalog/SEO endpoints on both public hosts and a reversible browser checkout-entry/payment-detail smoke test. Continue broader A-to-Z work after this release gate.
+Blocker: Review/approval is pending. Durable order-idempotency migration `008_add_order_idempotency_keys.sql` remains unapplied and `DURABLE_ORDER_IDEMPOTENCY=true` remains disabled. Do not submit an order or payment.
+Next safe action: Review PR #109 at https://github.com/georgelsmith333-hub/New-Trynext/pull/109 and merge only through the normal GitHub review path after approval; then verify the active deployment before making any production claim.
+Verification: Exact PR head `9fec08d8ba423c189cf8af932a01562830d71d7a`; Cloudflare Pages, Active app verification, CI build-and-check, and CI security-scan all passed; local typechecks/builds/tests and live empty-cart GET-only smoke evidence remain recorded above.

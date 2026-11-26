@@ -30,6 +30,23 @@ describe("commerce recovery regressions", () => {
     expect(source).toContain("setPaymentSubmitError(null);");
   });
 
+  it("keeps the acknowledged order flow out of the empty-cart redirect", () => {
+    const source = read("src/pages/Checkout.tsx");
+    expect(source).toContain("const postOrderFlowRef = useRef(false);");
+    expect(source).toContain("postOrderFlowRef.current = true;");
+    expect(source).toContain("!postOrderFlowRef.current && !createdOrder");
+    expect(source).toContain("postOrderFlowRef.current = false;");
+  });
+
+  it("repeats receiver, bank, card, and balance details before order confirmation", () => {
+    const source = read("src/pages/Checkout.tsx");
+    expect(source).toContain("<strong>Send to:</strong>");
+    expect(source).toContain("<strong>Bank:</strong>");
+    expect(source).toContain("<strong>Due on delivery:</strong>");
+    expect(source).toContain("<strong>Remaining on delivery:</strong>");
+    expect(source).toContain("No card details are collected online.");
+  });
+
   it("keeps clipboard failure inside the checkout UI error path", () => {
     const source = read("src/pages/Checkout.tsx");
     expect(source).toContain("Clipboard API unavailable");

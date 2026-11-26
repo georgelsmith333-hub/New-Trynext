@@ -77,6 +77,9 @@ export default function Checkout() {
   const [step, setStep] = useState<number>(1);
   const [checkoutStatus, setCheckoutStatus] = useState<CheckoutStep>('form');
   const [createdOrder, setCreatedOrder] = useState<Record<string, unknown> | null>(null);
+  // Once the order API has acknowledged an order, checkout owns the screen even
+  // if COD/card immediately clears the live cart.
+  const postOrderFlowRef = useRef(false);
   const [lastFour, setLastFour] = useState("");
   const [senderName, setSenderName] = useState("");
   const [bankReference, setBankReference] = useState("");
@@ -397,16 +400,16 @@ export default function Checkout() {
   // order therefore has the same 25% amount due now; this prevents a COD
   // selection from ever producing a zero-value "advance" order.
   const advanceAmount = Math.ceil(total * 0.25);
-  const amountDueNow = paymentMode === 'full' ? total : advanceAmount;
+  const amountDueNow = paymentMethod === 'card' ? 0 : paymentMode === 'full' ? total : advanceAmount;
 
   const displayTotal = checkoutStatus === 'form' ? total : snapshotRef.current.total;
   const displayAdvance = checkoutStatus === 'form' ? advanceAmount : snapshotRef.current.advance;
 
   useEffect(() => {
-    if (items.length === 0 && checkoutStatus === 'form') {
+    if (items.length === 0 && checkoutStatus === 'form' && !postOrderFlowRef.current && !createdOrder) {
       setLocation("/cart");
     }
-  }, [items.length, checkoutStatus, setLocation]);
+  }, [items.length, checkoutStatus, createdOrder, setLocation]);
 
   // Normalize the wallet selection before any conditional return. Keeping this
   // hook above the empty-cart branch prevents React error #310 when a cart is
@@ -423,7 +426,7 @@ export default function Checkout() {
   // We render a deterministic loading state instead of `return null` so
   // the user never sees a flash of empty checkout chrome before the
   // redirect lands.
-  if (items.length === 0 && checkoutStatus === 'form') {
+  if (items.length === 0 && checkoutStatus === 'form' && !postOrderFlowRef.current && !createdOrder) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center gap-3 text-gray-400">
@@ -446,6 +449,7 @@ export default function Checkout() {
     const snapAdvance = Math.ceil(snapTotal * 0.25);
 
     snapshotRef.current = { total: snapTotal, advance: snapAdvance, shipping: snapShipping };
+    postOrderFlowRef.current = true;
 
     const { firstName, lastName, shippingUpazila, shippingUnion, shippingPostCode, shippingAddress, ...rest } = data;
     const customerName = `${firstName} ${lastName}`.trim();
@@ -605,6 +609,9 @@ export default function Checkout() {
         setCheckoutStatus('success');
       }
     } catch (err: any) {
+      // No order was acknowledged, so a later render should retain the normal
+      // empty-cart guard rather than treating this failed attempt as a gateway.
+      postOrderFlowRef.current = false;
       if (wakingTimerRef.current) { clearTimeout(wakingTimerRef.current); wakingTimerRef.current = null; }
       setServerWaking(false);
       const errBody = err?.data || err?.body || {};
@@ -1136,7 +1143,9 @@ export default function Checkout() {
               <div className="mb-2">{theme.logo}</div>
               <p className="text-xs font-black uppercase tracking-widest text-gray-400 mb-1">Payment Gateway</p>
               <p className="text-sm text-gray-500">
-                {`Pay 25% advance via ${theme.name} — rest collected on delivery`}
+                {paymentMode === 'full'
+                  ? `Send the full order total via ${theme.name}`
+                  : `Pay 25% advance via ${theme.name} — rest collected on delivery`}
               </p>
             </div>
 
@@ -1155,7 +1164,7 @@ export default function Checkout() {
 
               <div className="rounded-2xl p-5 text-center" style={{ background: theme.light, border: `2px solid ${theme.border}` }}>
                 <p className="text-xs font-black uppercase tracking-widest mb-2" style={{ color: theme.primary }}>
-                  Send This Amount (25% Advance)
+                  {paymentMode === 'full' ? 'Send This Amount (Full Payment)' : 'Send This Amount (25% Advance)'}
                 </p>
                 <p className="text-6xl font-black font-display" style={{ color: theme.primary }}>
                   {formatPrice(amountToSend)}
@@ -1230,28 +1239,32 @@ export default function Checkout() {
               </div>
 
               <div>
-                <label htmlFor="payment-sender-last-four" className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-2 mt-4">
-                  Sender Number — Last 4 Digits
-                </label>
-                <input
-                  id="payment-sender-last-four"
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={4}
-                  placeholder="e.g. 5678"
-                  aria-label="Last four digits of the number used to send payment"
-                  value={lastFour}
-                  onChange={e => {
-                    setPaymentSubmitError(null);
-                    setLastFour(e.target.value.replace(/\D/g, '').slice(0, 4));
-                  }}
-                  className={inputClass}
-                  style={{ ...inputStyle, letterSpacing: '0.5em', textAlign: 'center', fontSize: '1.5rem', fontWeight: 900 }}
-                />
-                  <p className="text-xs text-gray-500 mt-1.5">
-                  Use the last 4 digits of <strong>your own sending number</strong>, not our merchant number. Never enter your full number.
-                </p>
-                <p className="text-xs text-gray-400 mt-1">Example: if your sending number ends in 5678, enter <strong>5678</strong>.</p>
+                {isWalletMethod && (
+                  <>
+                    <label htmlFor="payment-sender-last-four" className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-2 mt-4">
+                      Sender Number — Last 4 Digits
+                    </label>
+                    <input
+                      id="payment-sender-last-four"
+                      type="tel"
+                      inputMode="numeric"
+                      maxLength={4}
+                      placeholder="e.g. 5678"
+                      aria-label="Last four digits of the number used to send payment"
+                      value={lastFour}
+                      onChange={e => {
+                        setPaymentSubmitError(null);
+                        setLastFour(e.target.value.replace(/\D/g, '').slice(0, 4));
+                      }}
+                      className={inputClass}
+                      style={{ ...inputStyle, letterSpacing: '0.5em', textAlign: 'center', fontSize: '1.5rem', fontWeight: 900 }}
+                    />
+                    <p className="text-xs text-gray-500 mt-1.5">
+                      Use the last 4 digits of <strong>your own sending number</strong>, not our merchant number. Never enter your full number.
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Example: if your sending number ends in 5678, enter <strong>5678</strong>.</p>
+                  </>
+                )}
 
                 <label className="block text-xs font-black uppercase tracking-wider text-gray-500 mb-2 mt-5">
                   Payment Screenshot (Optional)
@@ -1777,7 +1790,7 @@ export default function Checkout() {
                               type="button"
                               onClick={() => {
                                 setPaymentMethod(method);
-                                setPaymentMode('advance');
+                                if (method === 'card') setPaymentMode('full');
                               }}
                               className="relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl transition-all duration-200 focus:outline-none disabled:opacity-40"
                               style={{
@@ -1995,7 +2008,37 @@ export default function Checkout() {
                       <p className="text-sm font-bold text-gray-900">
                          {paymentMode === 'full' ? 'Full Payment' : '25% Advance + Pay on Delivery'}
                       </p>
-                       <p className="text-xs text-gray-500 mt-0.5">Via {theme.name}{paymentMethod === 'cod' ? ` (25% advance ${formatPrice(advanceAmount)})` : ''}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {paymentMethod === 'card'
+                          ? 'Card on delivery — no payment is due now.'
+                          : `Via ${theme.name}${paymentMethod === 'cod' ? ` (advance ${formatPrice(advanceAmount)})` : ''}`}
+                      </p>
+                      <div className="mt-3 rounded-xl border border-orange-100 bg-orange-50/60 p-3 text-xs text-gray-700 space-y-1.5">
+                        {paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'rocket' || paymentMethod === 'upay' ? (
+                          <>
+                            <p><strong>Send to:</strong> <span className="font-mono font-black">{effectivePaymentNumber || 'Not configured'}</span></p>
+                            <p><strong>Due now:</strong> {formatPrice(paymentMode === 'full' ? total : advanceAmount)}</p>
+                            {paymentMode === 'advance' && <p><strong>Remaining on delivery:</strong> {formatPrice(total - advanceAmount)}</p>}
+                            <p className="text-gray-500">After sending, enter the last 4 digits of your sending number and submit payment evidence.</p>
+                          </>
+                        ) : paymentMethod === 'bank' ? (
+                          <>
+                            <p><strong>Bank:</strong> {settings.bankName || 'Not configured'}</p>
+                            <p><strong>Account:</strong> {settings.bankAccountName || 'Not configured'} · <span className="font-mono">{settings.bankAccountNumber || 'Not configured'}</span></p>
+                            <p><strong>Due now:</strong> {formatPrice(paymentMode === 'full' ? total : advanceAmount)}</p>
+                            {paymentMode === 'advance' && <p><strong>Remaining on delivery:</strong> {formatPrice(total - advanceAmount)}</p>}
+                            <p className="text-gray-500">After transferring, provide the sender name and bank reference on the next screen.</p>
+                          </>
+                        ) : paymentMethod === 'card' ? (
+                          <p><strong>Due on delivery:</strong> {formatPrice(total)} by card at the POS machine. No card details are collected online.</p>
+                        ) : (
+                          <>
+                            <p><strong>Advance to confirm:</strong> {formatPrice(advanceAmount)}</p>
+                            <p><strong>Remaining on delivery:</strong> {formatPrice(total - advanceAmount)}</p>
+                            <p className="text-gray-500">Our team will contact you with the advance payment instructions.</p>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -2012,7 +2055,7 @@ export default function Checkout() {
                         </>
                       ) : (
                         <>
-                           Place Order ({formatPrice(amountDueNow)})
+                           {paymentMethod === 'card' ? 'Place Order (No payment due now)' : `Place Order (${formatPrice(amountDueNow)})`}
                         </>
                       )}
                     </button>
@@ -2107,7 +2150,13 @@ export default function Checkout() {
                   </div>
 
                   <div className="space-y-2 pt-1">
-                    {paymentMode === 'full' && paymentMethod !== 'card' ? (
+                    {paymentMethod === 'card' ? (
+                      <div className="flex justify-between items-center p-3 rounded-xl"
+                        style={{ background: 'rgba(124,58,237,0.05)', border: '1px solid rgba(124,58,237,0.15)' }}>
+                        <span className="text-xs font-bold text-violet-700">Due on Delivery (Card)</span>
+                        <span className="font-black text-violet-700">{formatPrice(total)}</span>
+                      </div>
+                    ) : paymentMode === 'full' ? (
                       <div className="flex justify-between items-center p-3 rounded-xl"
                         style={{ background: 'rgba(232,93,4,0.04)', border: '1px solid rgba(232,93,4,0.12)' }}>
                         <span className="text-xs font-bold text-orange-600">Pay Now (Full — via {theme.name})</span>

@@ -138,3 +138,45 @@
 - [x] Browser-local cart smoke test completed reversibly: one item added and removed; final cart showed empty. No checkout, order, or payment submission occurred.
 - [ ] Resolve the explicit storage blocker: both hosts report `GET /api/health/storage` with `backend=r2`, `reachable=false`, `error=storage_unavailable`. Privately verify the exact Render R2 credentials, bucket name, account endpoint, and bucket permissions; do not paste values into chat or weaken the health probe.
 - [ ] After R2 repair, repeat health/storage and safe upload/private-object reachability checks before calling the full-stack release fully ready. Durable idempotency migration 008 remains unapplied and disabled.
+
+
+## 2026-11-26 provider and SEO continuation
+
+- [x] Read-only Render verification reconfirmed the approved service `trynex-lifestyle-main-render` (`srv-da9pl91f2nfc7388d150`) in `Azim's workspace` (`tea-d5uiuknfte5s73c3b0f0`), on free tier, branch `main`, auto-deploy enabled; the older `trynex-lifestyle` service is suspended and was not touched.
+- [x] Read-only Cloudflare verification found the authenticated owner account `060a0f28c7f62affa5ac09be3b1dd1a9`, R2 bucket `trynex` (APAC, Standard), enabled managed domain, and existing upload/mockup objects. The bucket exists; no Cloudflare setting was changed.
+- [x] Confirmed the live R2 blocker is still backend `HeadBucket` failure (`reachable:false`, `storage_unavailable`) rather than proof that the bucket is absent. Render's four R2 values remain owner/provider configuration items; no secret was read, printed, or changed.
+- [x] Read-only Cloudflare Pages inventory confirmed the active project is `trynext-shop-new`, custom domains `trynext.shop`/`www.trynext.shop`, GitHub source `New-Trynext`, production deployment at commit `24dc178e9aedfb8b3948e997c8af3a554d792b4f`.
+- [x] Read-only Google evidence recorded: Search Console owner property `sc-domain:trynext.shop`; submitted sitemap last downloaded 2026-11-23 with 101 web URLs and 69 image URLs submitted, 0 indexed in the returned sitemap report; last 30-day page data showed 2 clicks/152 impressions for the home page, 36 impressions for `/blog`, 51 for one behind-the-scenes article, and 8 for `/product/zip-up-hoodie`. GA4 property `533850165` returned 128 sessions, 94 active users, 110 engaged sessions, and 3 key events for the previous 28-day range; Organic Search contributed 40 sessions and all 3 key events.
+- [x] Found and fixed a release-path defect: route-aware SEO middleware existed only at `artifacts/trynex-storefront/functions/_middleware.ts`, while the active Cloudflare Pages project builds from repository-root `functions/`. Added the identical middleware at `functions/_middleware.ts` so unknown routes can return a real noindex 404, `/design-studio` can return truthful noindex metadata, and bot product/blog/keyword rendering reaches the actual Pages runtime.
+- [x] Focused SEO middleware/guide tests passed 13/13; storefront typecheck passed; gateway/config parity and `git diff --check` passed.
+- [ ] Build/test full production artifact in a clean CI-like environment; this sandbox currently lacks ARM64 optional native binaries for Rollup, Lightning CSS, and Tailwind Oxide, so the local Vite build was environment-blocked after the source/typecheck/tests passed. Do not add those temporary packages to tracked manifests.
+- [ ] Commit/push the root middleware through the authorized GitHub path, wait for Pages CI/active-app checks, then recheck raw normal-user and Googlebot responses for `/design-studio`, unknown routes, product/blog detail routes, sitemap, and robots.
+- [ ] Owner/provider action required for R2: in the exact Render service, privately confirm `R2_ACCOUNT_ID` is the Cloudflare account ID, `R2_BUCKET` is `trynex`, and the access key/secret belong to an R2 API token with bucket-scoped Object Read/Write permission. Do not paste values into chat. After any smallest approved correction, redeploy and repeat storage health plus safe upload/private-object checks.
+
+
+## 2026-11-26 R2 repair completed
+
+- [x] In the owner-connected Cloudflare browser, confirmed the `trynex` bucket, account ID, APAC/Standard location, 24 existing objects, managed public-domain state, and current CORS policy without changing bucket data or access settings.
+- [x] Created the approved dedicated R2 Account API token `Trynext Production R2 Recovery`, restricted to bucket `trynex` with Object Read & Write. Cloudflare's shortest practical form option was selected: 30-day TTL, active through 2026-12-26. No token secret or access key was recorded in files or chat.
+- [x] Updated only the exact Render production service `srv-da9pl91f2nfc7388d150` in workspace `tea-d5uiuknfte5s73c3b0f0` with the four R2 variables; existing environment variables were merged/preserved. Render deployment `dep-dc4a7rei0phs739jlt1g` became live.
+- [x] GET-only live verification passed on both `https://trynext.shop` and `https://trynex-lifestyle-main-render.onrender.com`: readiness remained `status:ok`, `db:true`, `catalog:true`; storage health now reports `backend:r2`, `reachable:true`, `error:null`.
+- [ ] Before 2026-12-26, rotate/renew the scoped R2 credential through an approved controlled operation; do not let the short-lived production credential expire unexpectedly.
+
+## 2026-11-27 checkout/payment remediation checkpoint
+
+- [x] Prevent the empty-cart redirect from winning after an acknowledged order: checkout now records an explicit post-order flow guard before creation, keeps the acknowledged gateway/success path independent of live cart clearing, and releases the guard only when order creation fails.
+- [x] Preserve wallet/bank cart state until payment evidence submission; COD and card-on-delivery still clear the cart only after their order is accepted.
+- [x] Show payment details before final confirmation and again on the review step: configured bKash, Nagad, Rocket, and uPay receiver numbers; full-payment or 25%-advance amount; remaining delivery balance; bank name/account/branch/routing when configured; sender/reference guidance; card-on-delivery timing; and COD advance/balance wording.
+- [x] Make gateway copy distinguish full payment from 25% advance and remove the irrelevant wallet sender-number field from bank-transfer gateway screens.
+- [x] Extract backend payment-evidence note construction so retries replace prior evidence fields deterministically instead of appending duplicates; preserve contact authorization, payment-method matching, private proof-path validation, and payment-status behavior.
+- [x] Add focused frontend regression assertions for post-order cart protection and review payment-detail completeness, plus backend tests for retry-safe wallet/bank evidence normalization.
+- [x] Verification completed without a real order or payment: storefront typecheck passed; full storefront tests passed (40 files / 264 tests); API typecheck and production bundle passed; affected API order/idempotency tests passed (27/27); storefront production build passed after a temporary ARM64-only optional native binding install, with tracked manifests restored unchanged; `git diff --check` passed; live checkout-entry navigation with an empty cart redirected reversibly to the cart and no order/payment was submitted.
+- [ ] Review the scoped diff, commit with the repository attribution rule, push through the authorized GitHub path, open a controlled PR, wait for CI/active-app/Pages checks, and merge only through normal review.
+- [ ] After approved deployment, repeat GET-only health/readiness/storage/catalog checks and a reversible browser checkout-entry/payment-detail smoke test. Do not submit an order or payment. Durable idempotency migration 008 remains unapplied and disabled.
+
+## 2026-11-27 PR #109 checkout checks complete
+
+- [x] Pushed checkout/payment remediation commit `9fec08d8ba423c189cf8af932a01562830d71d7a` to the existing authorized PR #109 branch without force-pushing.
+- [x] Refreshed checks passed on the exact commit: Cloudflare Pages, Active app verification, CI build-and-check, and CI security-scan (4 successful, 0 failing, 0 pending).
+- [ ] Obtain the normal review/approval and merge through GitHub; do not merge from the sandbox or bypass the review gate.
+- [ ] After merge/deployment, verify the exact Render SHA and both public hosts with GET-only health/readiness/storage/catalog/SEO checks plus a reversible browser checkout-entry/payment-detail smoke test. Do not submit an order or payment.
