@@ -5233,3 +5233,19 @@ Remaining work: Obtain the required review/approval, merge through GitHub if app
 Blocker: Review approval is pending. The independent Render R2 `HeadBucket` blocker remains unresolved and no provider configuration was changed.
 Next safe action: Review PR #109. After approval, merge normally and wait for the active production deployment before any live claim. Do not apply migration 008 or submit an order/payment.
 Verification: GitHub check rollup is 4 successful, 0 failing, 0 pending; Cloudflare Pages preview check succeeded; local root/storefront middleware parity, focused tests (13/13), typecheck, and diff check were already successful.
+
+
+## 2026-11-26 — R2 access repaired and live-verified
+
+The owner approved a narrowly scoped R2 credential repair through the connected Cloudflare browser. The `trynex` bucket was confirmed in account `060a0f28c7f62affa5ac09be3b1dd1a9`, APAC/Standard, with existing objects preserved. Cloudflare's dedicated R2 API-token flow created account token `Trynext Production R2 Recovery`, restricted to bucket `trynex` with Object Read & Write. The dashboard's available short TTL choice was 30 days, active through 2026-12-26. Secret values and access-key values were not written to this handoff, source files, logs, or chat.
+
+Only the four R2 environment variables were merged into the exact Render production service `srv-da9pl91f2nfc7388d150` in workspace `tea-d5uiuknfte5s73c3b0f0`; no replacement of the existing environment-variable set occurred. Render deployment `dep-dc4a7rei0phs739jlt1g` was triggered and became live. Render logs confirmed the new instance had all required R2 variable names present and started the R2 backend. A pre-live storage check still reflected the prior instance; after the new instance was live, both public hosts returned `backend:r2`, `reachable:true`, `error:null` from `/api/health/storage`. Both hosts also continued to return readiness `status:ok`, `db:true`, and `catalog:true`.
+
+Status: in progress — R2 blocker resolved; SEO PR review/deployment and broader A-to-Z work remain open
+Last completed: Created the trynex-only R2 credential, updated only the four exact Render variables, waited for deployment `dep-dc4a7rei0phs739jlt1g`, and verified R2 reachability on custom and Render hosts.
+Stopped at: After successful GET-only R2 verification; no upload or customer/private-object mutation was attempted.
+Files/areas changed: Render production environment variables only (four R2 values); `TODO.md` and this handoff. Cloudflare bucket data, CORS, public access, DNS, Pages, Neon, catalog, orders, payments, and customers were not changed.
+Remaining work: Preserve the token until controlled rotation before 2026-12-26; complete PR #109 review/merge and production SEO route checks; continue product/SEO/content/admin/Design Studio audit.
+Blocker: No active R2 reachability blocker. PR #109 still awaits normal review approval; local broader work remains pending that release gate.
+Next safe action: Review and approve PR #109 through GitHub. After merge, verify the active production Pages deployment and raw metadata/404 behavior. Separately schedule a controlled R2 credential rotation before expiry; do not submit an order/payment or apply migration 008.
+Verification: Cloudflare bucket/token metadata was read in the authenticated browser; Render deployment became live; both `https://trynext.shop/api/health/storage` and the Render origin returned `{"backend":"r2","portable":true,"reachable":true,"error":null}`; both readiness endpoints remained healthy. No secrets were persisted.

@@ -152,3 +152,12 @@
 - [ ] Build/test full production artifact in a clean CI-like environment; this sandbox currently lacks ARM64 optional native binaries for Rollup, Lightning CSS, and Tailwind Oxide, so the local Vite build was environment-blocked after the source/typecheck/tests passed. Do not add those temporary packages to tracked manifests.
 - [ ] Commit/push the root middleware through the authorized GitHub path, wait for Pages CI/active-app checks, then recheck raw normal-user and Googlebot responses for `/design-studio`, unknown routes, product/blog detail routes, sitemap, and robots.
 - [ ] Owner/provider action required for R2: in the exact Render service, privately confirm `R2_ACCOUNT_ID` is the Cloudflare account ID, `R2_BUCKET` is `trynex`, and the access key/secret belong to an R2 API token with bucket-scoped Object Read/Write permission. Do not paste values into chat. After any smallest approved correction, redeploy and repeat storage health plus safe upload/private-object checks.
+
+
+## 2026-11-26 R2 repair completed
+
+- [x] In the owner-connected Cloudflare browser, confirmed the `trynex` bucket, account ID, APAC/Standard location, 24 existing objects, managed public-domain state, and current CORS policy without changing bucket data or access settings.
+- [x] Created the approved dedicated R2 Account API token `Trynext Production R2 Recovery`, restricted to bucket `trynex` with Object Read & Write. Cloudflare's shortest practical form option was selected: 30-day TTL, active through 2026-12-26. No token secret or access key was recorded in files or chat.
+- [x] Updated only the exact Render production service `srv-da9pl91f2nfc7388d150` in workspace `tea-d5uiuknfte5s73c3b0f0` with the four R2 variables; existing environment variables were merged/preserved. Render deployment `dep-dc4a7rei0phs739jlt1g` became live.
+- [x] GET-only live verification passed on both `https://trynext.shop` and `https://trynex-lifestyle-main-render.onrender.com`: readiness remained `status:ok`, `db:true`, `catalog:true`; storage health now reports `backend:r2`, `reachable:true`, `error:null`.
+- [ ] Before 2026-12-26, rotate/renew the scoped R2 credential through an approved controlled operation; do not let the short-lived production credential expire unexpectedly.
