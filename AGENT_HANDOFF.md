@@ -5314,3 +5314,19 @@ Remaining work: Create the fresh controlled PR; wait for CI/Pages checks; verify
 Blocker: Local Vite production build is blocked by the known missing ARM64 optional `@tailwindcss/oxide` binding; CI/Pages builds use the correct environment. Do not add the temporary native package to tracked manifests.
 Next safe action: Branch from `origin/main`, commit the one-line redirect correction with the required attribution, push normally, and open the routing PR. Keep migration 008 unapplied and durable order idempotency disabled.
 Verification: Direct GETs showed Pages production/preview/custom-domain `/api/*` HTML fall-through and Render JSON success; storefront typecheck passed; `functions/middleware.test.ts`, `functions/seo-guides.test.ts`, and `functions/gateway.test.ts` selection passed 13/13; `git diff --check` passed. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.
+
+
+## 2026-11-27 — Pages API duplicate-route follow-up
+
+PR #110 merged as `de997a6c08146f271844ad3bf91406a9213f0657`, and Pages deployment `9d9d0386-9d43-4b24-ae3e-da095a926437` completed successfully. GET-only verification showed the root Pages Functions bundle is active: `/custom-mugs-bangladesh` returned the route-aware HTML, but `/api/*` returned a Pages 404 on the deployment URL. The custom domain still served the previous SPA response while its alias propagated.
+
+The remaining source anomaly is two identical API catch-all Function files: the authoritative root `functions/api/[[path]].ts` and a duplicate nested `artifacts/trynex-storefront/functions/api/[[path]].ts`. The root Functions bundle is demonstrably active because the root custom-category Function and middleware work. A follow-up branch removes only the nested duplicate and points its unit test to the root gateway, leaving one authoritative `/api` route and preserving gateway behavior. No provider setting or production data was changed.
+
+Status: in progress — duplicate-route correction ready for controlled PR
+Last completed: Verified Cloudflare’s official `[[catchall]]` multipath convention; confirmed root Pages Functions are active; isolated the API-only 404; created the follow-up branch and removed the duplicate nested API Function source.
+Stopped at: Before focused test, commit, PR, and deployment verification for the duplicate-route correction.
+Files/areas changed: `artifacts/trynex-storefront/functions/api/[[path]].ts` removed; `artifacts/trynex-storefront/functions/api/gateway.test.ts` now imports the root gateway; this handoff.
+Remaining work: Run focused tests; commit/push/open PR; wait for green checks; merge normally; verify the new Pages deployment and custom-domain JSON APIs before browser checkout verification.
+Blocker: The custom-domain Pages alias has not yet propagated the previous deployment, and `/api` remains unverified until the duplicate-route correction is deployed. Local Vite build remains blocked by the known sandbox ARM64 Tailwind Oxide binding.
+Next safe action: Complete the duplicate-route PR and repeat GET-only API, catalog, settings, health, sitemap, robots, and reversible browser checks. Do not submit an order/payment or apply migration 008.
+Verification: Pages deployment `9d9d0386` is live; root category Function/middleware route works; deployment `/api/*` returns 404; Render origin remains healthy JSON. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.

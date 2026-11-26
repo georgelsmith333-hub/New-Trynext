@@ -189,3 +189,11 @@
 - [ ] Publish this routing-only correction from a fresh branch based on merged `origin/main`; wait for Pages/CI checks, then verify JSON API responses and the live catalog before claiming custom-domain checkout verification.
 - [x] No order, payment, payment proof, upload, inventory, customer, settings, database, or provider mutation occurred during diagnosis.
 - [ ] Keep migration 008 unapplied and durable order idempotency disabled.
+
+
+## 2026-11-27 Pages duplicate API Function follow-up
+
+- [x] After PR #110, verified Pages Functions are active through the root category route and middleware, while the deployment URL returned 404 only for `/api/*`.
+- [x] Isolated two identical API catch-all Function sources: root `functions/api/[[path]].ts` and nested `artifacts/trynex-storefront/functions/api/[[path]].ts`.
+- [ ] Remove the duplicate-route ambiguity through a focused PR, then verify the new Pages deployment and custom-domain JSON API responses before browser checkout verification.
+- [ ] Keep all checks GET-only; do not submit an order/payment, apply migration 008, or enable durable idempotency.
