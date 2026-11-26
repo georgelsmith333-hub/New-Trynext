@@ -9,12 +9,14 @@ import { logger } from "../lib/logger";
 import { isOrderStatus, ORDER_STATUS_MESSAGE, canMoveOrderStatus, invalidTransitionMessage } from "../lib/orderStatus";
 import { restoreOrderStock, type RestockResult } from "../lib/orderStock";
 import { orderIdempotency } from "../lib/idempotency";
+import { durableOrderIdempotency } from "../lib/durableIdempotency";
 import { getVirtualPromo, calcVirtualDiscount } from "../lib/spinPromos";
 import { ObjectStorageService } from "../lib/objectStorage";
 import { z } from "zod";
 import { tgSend, getEffectiveChatId } from "../lib/telegram";
 import { checkRevenueMilestone } from "../lib/scheduler";
 import { sendOrderConfirmationEmail, sendStatusUpdateEmail } from "../lib/email";
+import { invalidateProductCache } from "./products";
 
 // ---------------------------------------------------------------------------
 // Zod schemas for order creation
@@ -655,7 +657,11 @@ async function sendAutoConfirmationMessage(order: {
   }
 }
 
-router.post("/orders", orderIdempotency.middleware, async (req, res) => {
+const orderIdempotencyMiddleware = process.env.DURABLE_ORDER_IDEMPOTENCY === "true"
+  ? durableOrderIdempotency.middleware
+  : orderIdempotency.middleware;
+
+router.post("/orders", orderIdempotencyMiddleware, async (req, res) => {
   try {
     // Zod validation — structured 400 with field-level error messages.
     const zodResult = OrderCreateSchema.safeParse(req.body ?? {});
@@ -1241,6 +1247,9 @@ router.post("/orders", orderIdempotency.middleware, async (req, res) => {
     });
 
     const mapped = mapOrder(order);
+    // Stock was decremented inside the committed transaction above. Invalidate
+    // catalog caches only after commit so readers cannot retain stale stock.
+    await invalidateProductCache();
     res.status(201).json(mapped);
 
     sendWhatsAppNotification(mapped).catch((err) => logger.warn({ err }, "WhatsApp notification failed (fire-and-forget)"));
