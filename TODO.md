@@ -161,3 +161,15 @@
 - [x] Updated only the exact Render production service `srv-da9pl91f2nfc7388d150` in workspace `tea-d5uiuknfte5s73c3b0f0` with the four R2 variables; existing environment variables were merged/preserved. Render deployment `dep-dc4a7rei0phs739jlt1g` became live.
 - [x] GET-only live verification passed on both `https://trynext.shop` and `https://trynex-lifestyle-main-render.onrender.com`: readiness remained `status:ok`, `db:true`, `catalog:true`; storage health now reports `backend:r2`, `reachable:true`, `error:null`.
 - [ ] Before 2026-12-26, rotate/renew the scoped R2 credential through an approved controlled operation; do not let the short-lived production credential expire unexpectedly.
+
+## 2026-11-27 checkout/payment remediation checkpoint
+
+- [x] Prevent the empty-cart redirect from winning after an acknowledged order: checkout now records an explicit post-order flow guard before creation, keeps the acknowledged gateway/success path independent of live cart clearing, and releases the guard only when order creation fails.
+- [x] Preserve wallet/bank cart state until payment evidence submission; COD and card-on-delivery still clear the cart only after their order is accepted.
+- [x] Show payment details before final confirmation and again on the review step: configured bKash, Nagad, Rocket, and uPay receiver numbers; full-payment or 25%-advance amount; remaining delivery balance; bank name/account/branch/routing when configured; sender/reference guidance; card-on-delivery timing; and COD advance/balance wording.
+- [x] Make gateway copy distinguish full payment from 25% advance and remove the irrelevant wallet sender-number field from bank-transfer gateway screens.
+- [x] Extract backend payment-evidence note construction so retries replace prior evidence fields deterministically instead of appending duplicates; preserve contact authorization, payment-method matching, private proof-path validation, and payment-status behavior.
+- [x] Add focused frontend regression assertions for post-order cart protection and review payment-detail completeness, plus backend tests for retry-safe wallet/bank evidence normalization.
+- [x] Verification completed without a real order or payment: storefront typecheck passed; full storefront tests passed (40 files / 264 tests); API typecheck and production bundle passed; affected API order/idempotency tests passed (27/27); storefront production build passed after a temporary ARM64-only optional native binding install, with tracked manifests restored unchanged; `git diff --check` passed; live checkout-entry navigation with an empty cart redirected reversibly to the cart and no order/payment was submitted.
+- [ ] Review the scoped diff, commit with the repository attribution rule, push through the authorized GitHub path, open a controlled PR, wait for CI/active-app/Pages checks, and merge only through normal review.
+- [ ] After approved deployment, repeat GET-only health/readiness/storage/catalog checks and a reversible browser checkout-entry/payment-detail smoke test. Do not submit an order or payment. Durable idempotency migration 008 remains unapplied and disabled.

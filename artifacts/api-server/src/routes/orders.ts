@@ -109,6 +109,45 @@ function isValidBangladeshPhone(value: string): boolean {
   return /^01[3-9]\d{8}$/.test(value);
 }
 
+export function buildPaymentEvidenceNotes(
+  existingNotes: unknown,
+  evidence: {
+    paymentMethod?: unknown;
+    lastFourDigits?: unknown;
+    paymentProofUrl?: unknown;
+    senderName?: unknown;
+    bankReference?: unknown;
+    promoCode?: unknown;
+  },
+): string {
+  const rawMethod = String(evidence.paymentMethod ?? "").trim().toLowerCase();
+  const lastFour = String(evidence.lastFourDigits ?? "").replace(/\D/g, "").slice(0, 4);
+  const proof = String(evidence.paymentProofUrl ?? "").trim().slice(0, 1000);
+  const sender = String(evidence.senderName ?? "").replace(/[^a-zA-Z0-9.\- ]/gi, "").slice(0, 100);
+  const bankReference = String(evidence.bankReference ?? "").replace(/[^a-zA-Z0-9\-]/gi, "").slice(0, 100);
+  const promo = String(evidence.promoCode ?? "").replace(/[^A-Z0-9_\-]/gi, "").toUpperCase().slice(0, 50);
+  const parts = [
+    rawMethod ? `Wallet/payment method: ${rawMethod}` : null,
+    lastFour ? `Payment last 4 digits: ${lastFour}` : null,
+    proof ? `Payment proof: ${proof}` : null,
+    sender ? `Sender name: ${sender}` : null,
+    bankReference ? `Bank reference: ${bankReference}` : null,
+    promo ? `Promo code: ${promo}` : null,
+  ].filter(Boolean) as string[];
+  const evidencePrefixes = [
+    "Wallet/payment method:",
+    "Payment last 4 digits:",
+    "Payment proof:",
+    "Sender name:",
+    "Bank reference:",
+    "Promo code:",
+  ];
+  const prior = String(existingNotes ?? "")
+    .split(" | ")
+    .filter((part) => !evidencePrefixes.some((prefix) => part.startsWith(prefix)));
+  return [...prior, ...parts].filter(Boolean).join(" | ");
+}
+
 function normalizePaymentProofPath(value: unknown): string | null {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
@@ -1632,26 +1671,14 @@ router.put("/orders/:id/payment-info", async (req, res) => {
       }
     }
 
-    const evidence = [
-      rawPaymentMethod ? `Wallet/payment method: ${rawPaymentMethod}` : null,
-      rawLastFour ? `Payment last 4 digits: ${rawLastFour}` : null,
-      rawPaymentProofUrl ? `Payment proof: ${rawPaymentProofUrl}` : null,
-      rawSenderName ? `Sender name: ${rawSenderName}` : null,
-      rawBankReference ? `Bank reference: ${rawBankReference}` : null,
-      rawPromo ? `Promo code: ${rawPromo}` : null,
-    ].filter(Boolean).join(" | ");
-    const evidencePrefixes = [
-      "Wallet/payment method:",
-      "Payment last 4 digits:",
-      "Payment proof:",
-      "Sender name:",
-      "Bank reference:",
-      "Promo code:",
-    ];
-    const existingNotes = String(existingOrder.notes ?? "")
-      .split(" | ")
-      .filter((part) => !evidencePrefixes.some((prefix) => part.startsWith(prefix)));
-    const notes = [...existingNotes, evidence].filter(Boolean).join(" | ");
+    const notes = buildPaymentEvidenceNotes(existingOrder.notes, {
+      paymentMethod: rawPaymentMethod,
+      lastFourDigits: rawLastFour,
+      paymentProofUrl: rawPaymentProofUrl,
+      senderName: rawSenderName,
+      bankReference: rawBankReference,
+      promoCode: rawPromo,
+    });
 
     // A retry after a successful request must be safe: return the current order
     // rather than appending a second copy of the same evidence or creating a
