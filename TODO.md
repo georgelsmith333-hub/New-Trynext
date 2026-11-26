@@ -129,3 +129,12 @@
 - [ ] After deployment, verify exact SHA, both production hosts, health/readiness aliases, sitemap/robots/routes, 70-product pagination, Studio assets, checkout/payment descriptions, storage reachability, and the reversible empty-cart smoke test without submitting an order/payment.
 - [ ] Apply migration 008 only through a separate controlled release gate after confirming the approved production database target and rollback procedure; then enable `DURABLE_ORDER_IDEMPOTENCY=true` and verify replay/concurrency behavior non-mutating where possible.
 - [ ] Continue measured P2 optimization: responsive WebP/AVIF derivatives, byte-aware/path-scoped service-worker image caching, explicit Studio ONNX/WASM resource handling, and deferred decorative/third-party work only after measurement.
+
+## 2026-11-26 live production verification
+
+- [x] PR #107 merged as `8433f68dd2b5d96f58c84acaa6128f69f3758c75`; exact Render service `srv-da9pl91f2nfc7388d150` deployed that SHA live in `dep-dc49lk0ae00c73demn6g`.
+- [x] Both production hosts passed GET-only liveness/readiness/readyz, categories, sitemap, robots, public settings, and deterministic pagination checks. Catalog result: six categories, 70 products, page counts 24/24/22, 70 distinct, zero duplicates.
+- [x] Live public settings confirmed ৳100 shipping, ৳1,500 free-shipping threshold, COD enabled, and card-on-delivery wording. Representative six-family Design Studio runtime PNGs returned 200.
+- [x] Browser-local cart smoke test completed reversibly: one item added and removed; final cart showed empty. No checkout, order, or payment submission occurred.
+- [ ] Resolve the explicit storage blocker: both hosts report `GET /api/health/storage` with `backend=r2`, `reachable=false`, `error=storage_unavailable`. Privately verify the exact Render R2 credentials, bucket name, account endpoint, and bucket permissions; do not paste values into chat or weaken the health probe.
+- [ ] After R2 repair, repeat health/storage and safe upload/private-object reachability checks before calling the full-stack release fully ready. Durable idempotency migration 008 remains unapplied and disabled.
