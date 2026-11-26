@@ -189,3 +189,20 @@
 - [ ] Publish this routing-only correction from a fresh branch based on merged `origin/main`; wait for Pages/CI checks, then verify JSON API responses and the live catalog before claiming custom-domain checkout verification.
 - [x] No order, payment, payment proof, upload, inventory, customer, settings, database, or provider mutation occurred during diagnosis.
 - [ ] Keep migration 008 unapplied and durable order idempotency disabled.
+
+
+## 2026-11-27 Pages duplicate API Function follow-up
+
+- [x] After PR #110, verified Pages Functions are active through the root category route and middleware, while the deployment URL returned 404 only for `/api/*`.
+- [x] Isolated two identical API catch-all Function sources: root `functions/api/[[path]].ts` and nested `artifacts/trynex-storefront/functions/api/[[path]].ts`.
+- [ ] Remove the duplicate-route ambiguity through a focused PR, then verify the new Pages deployment and custom-domain JSON API responses before browser checkout verification.
+- [ ] Keep all checks GET-only; do not submit an order/payment, apply migration 008, or enable durable idempotency.
+
+
+## 2026-11-27 Pages duplicate-route PR gate correction
+
+- [x] PR #111 was opened with the duplicate nested API Function removed and the nested gateway test pointed at the root gateway.
+- [x] Cloudflare Pages and security checks passed; CI/build and active-app failed only because the parity checker still referenced the intentionally deleted nested API Function.
+- [x] Updated `scripts/check-deployment-source-parity.mjs` to validate the root API Function as authoritative while preserving gateway-config parity and retired-host protection; local parity and focused Pages tests pass.
+- [ ] Push the corrective commit, wait for all four hosted checks, merge normally only when green, then verify Pages deployment/custom-domain JSON APIs and the reversible checkout payment-detail flow without submitting an order/payment.
+- [ ] Keep migration 008 unapplied and durable order idempotency disabled.
