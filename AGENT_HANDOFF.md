@@ -5330,3 +5330,17 @@ Remaining work: Run focused tests; commit/push/open PR; wait for green checks; m
 Blocker: The custom-domain Pages alias has not yet propagated the previous deployment, and `/api` remains unverified until the duplicate-route correction is deployed. Local Vite build remains blocked by the known sandbox ARM64 Tailwind Oxide binding.
 Next safe action: Complete the duplicate-route PR and repeat GET-only API, catalog, settings, health, sitemap, robots, and reversible browser checks. Do not submit an order/payment or apply migration 008.
 Verification: Pages deployment `9d9d0386` is live; root category Function/middleware route works; deployment `/api/*` returns 404; Render origin remains healthy JSON. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.
+
+
+## 2026-11-27 — Pages duplicate-route PR gate correction
+
+PR #111 was opened from commit `f890ded` after removing the duplicate nested API Function and redirecting its gateway test to the root gateway. Cloudflare Pages and security checks passed, but CI/build and active-app verification failed at `check:deployment-source-parity` because that checker still required the intentionally deleted nested API Function path.
+
+Status: in progress — corrective commit ready to push
+Last completed: Updated `scripts/check-deployment-source-parity.mjs` to validate the repository-root `functions/api/[[path]].ts` as the sole authoritative gateway, while retaining root/nested gateway-config parity and the retired mobile-host guard. No duplicate route was restored.
+Stopped at: After local parity and focused gateway/middleware/SEO/cache verification; before pushing the corrective commit and waiting for refreshed PR checks.
+Files/areas changed: `scripts/check-deployment-source-parity.mjs`, plus the PR #111 duplicate-route correction files and this handoff.
+Remaining work: Commit/push the parity-gate correction; wait for refreshed Cloudflare Pages, Active app verification, CI build, and security checks; merge normally only when green; then verify deployment/custom-domain JSON APIs and the reversible checkout payment-detail flow without submitting an order or payment.
+Blocker: PR #111 is not mergeable until refreshed CI and active-app checks pass. Local Vite build remains blocked by the known sandbox ARM64 optional Tailwind Oxide binding; do not add temporary native packages to tracked manifests.
+Next safe action: Push the corrective commit to PR #111, wait for all checks, then perform only GET/read-only live verification before browser checkout inspection. Keep migration 008 unapplied and durable order idempotency disabled.
+Verification: `pnpm run check:deployment-source-parity` passed; focused Pages gateway/middleware/SEO/cache tests passed 39/39; `git diff --check` passed. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.

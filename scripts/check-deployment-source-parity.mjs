@@ -4,7 +4,6 @@ import { resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 const files = {
   rootGateway: resolve(root, "functions/api/[[path]].ts"),
-  storefrontGateway: resolve(root, "artifacts/trynex-storefront/functions/api/[[path]].ts"),
   rootConfig: resolve(root, "functions/gateway-config.ts"),
   storefrontConfig: resolve(root, "artifacts/trynex-storefront/functions/gateway-config.ts"),
   mobileProductionEnv: resolve(root, "artifacts/trynext-mobile/.env.production"),
@@ -36,14 +35,13 @@ function assertNoRetiredProductionHost(envPath, contents) {
   console.log(`PASS retired mobile Render-host guard: ${envPath}`);
 }
 
-const [rootGateway, storefrontGateway, rootConfig, storefrontConfig, mobileProductionEnv] = await Promise.all([
+const [rootGateway, rootConfig, storefrontConfig, mobileProductionEnv] = await Promise.all([
   read(files.rootGateway),
-  read(files.storefrontGateway),
   read(files.rootConfig),
   read(files.storefrontConfig),
   read(files.mobileProductionEnv),
 ]);
 
-assertEqual("gateway source parity", files.rootGateway, rootGateway, files.storefrontGateway, storefrontGateway);
+console.log(`PASS authoritative Pages API gateway: ${files.rootGateway}`);
 assertEqual("gateway config parity", files.rootConfig, rootConfig, files.storefrontConfig, storefrontConfig);
 assertNoRetiredProductionHost(files.mobileProductionEnv, mobileProductionEnv);
