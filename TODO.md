@@ -173,3 +173,10 @@
 - [x] Verification completed without a real order or payment: storefront typecheck passed; full storefront tests passed (40 files / 264 tests); API typecheck and production bundle passed; affected API order/idempotency tests passed (27/27); storefront production build passed after a temporary ARM64-only optional native binding install, with tracked manifests restored unchanged; `git diff --check` passed; live checkout-entry navigation with an empty cart redirected reversibly to the cart and no order/payment was submitted.
 - [ ] Review the scoped diff, commit with the repository attribution rule, push through the authorized GitHub path, open a controlled PR, wait for CI/active-app/Pages checks, and merge only through normal review.
 - [ ] After approved deployment, repeat GET-only health/readiness/storage/catalog checks and a reversible browser checkout-entry/payment-detail smoke test. Do not submit an order or payment. Durable idempotency migration 008 remains unapplied and disabled.
+
+## 2026-11-27 PR #109 checkout checks complete
+
+- [x] Pushed checkout/payment remediation commit `9fec08d8ba423c189cf8af932a01562830d71d7a` to the existing authorized PR #109 branch without force-pushing.
+- [x] Refreshed checks passed on the exact commit: Cloudflare Pages, Active app verification, CI build-and-check, and CI security-scan (4 successful, 0 failing, 0 pending).
+- [ ] Obtain the normal review/approval and merge through GitHub; do not merge from the sandbox or bypass the review gate.
+- [ ] After merge/deployment, verify the exact Render SHA and both public hosts with GET-only health/readiness/storage/catalog/SEO checks plus a reversible browser checkout-entry/payment-detail smoke test. Do not submit an order or payment.
