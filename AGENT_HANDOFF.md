@@ -5180,3 +5180,22 @@ Blocker: None for local code; GitHub connector/authorized publication path and C
 Next safe action: Use the authorized GitHub integration to push the branch, open/review the PR, and merge only after checks pass; do not apply migration 008 or submit orders/payments.
 Verification: API/storefront typechecks passed; focused cache/category/order, idempotency/order, storage, and Studio/accessibility tests passed; API bundle, deployment parity, mockup matrix, and git diff checks passed.
 ```
+
+## 2026-11-26 — Production deployment and live smoke verification
+
+PR #107 (`Complete full-stack remediation and release hardening`) passed Cloudflare Pages, active-app verification, CI/build-and-check, and security-scan checks, then merged at `2026-11-26T20:47:10Z` as `8433f68dd2b5d96f58c84acaa6128f69f3758c75`. The exact approved Render service `trynex-lifestyle-main-render` (`srv-da9pl91f2nfc7388d150`) in `Azim's workspace` (`tea-d5uiuknfte5s73c3b0f0`) auto-deployed branch `main` from that SHA. Deployment `dep-dc49lk0ae00c73demn6g` completed `live` at `2026-11-26T20:51:20Z`; Render build and deploy events both succeeded.
+
+Read-only checks passed on both `https://trynext.shop` and `https://trynex-lifestyle-main-render.onrender.com` for liveness, readiness, readyz, categories, public settings, sitemap, robots, and catalog pagination. Readiness returned HTTP 200 with `db:true`, `catalog:true`, and `status:"ok"`. Both hosts returned six categories and exactly 70 distinct products across pages of 24/24/22 with no duplicates. Public commerce settings showed shipping ৳100, free-shipping threshold ৳1,500, COD enabled, and the corrected card-on-delivery note. Representative T-shirt, long-sleeve, hoodie, mug, cap, and water-bottle Studio runtime PNGs returned HTTP 200 from the custom domain.
+
+The browser-local cart smoke test was reversible and non-mutating: one ordinary catalog item was added, the cart drawer showed one item, the item was removed, and the drawer ended with `Cart` / `Your bag is empty`. No checkout, order, payment, customer data, or production write was submitted.
+
+Open production limitation: `GET /api/health/storage` returned HTTP 200 but reported `backend:"r2"`, `reachable:false`, and stable `storage_unavailable` on both hosts. Static Studio assets are reachable, but the configured R2 bucket did not pass the backend `HeadBucket` probe. This leaves customer upload/private-object and R2-backed storage readiness unproven; do not claim full A-to-Z production readiness until the approved Render R2 credentials/bucket permissions are privately verified and the health check returns reachable. No Render environment variable or R2 setting was changed during this verification.
+
+Status: live release verified with one explicit storage blocker
+Last completed: Merged PR #107, verified exact Render SHA/deployment, ran both-host GET-only smoke checks, verified 70-product pagination and six categories, and completed the reversible empty-cart browser test.
+Stopped at: Before any R2 credential/bucket repair or environment-variable change.
+Files/areas changed: This handoff and TODO records only after deployment; no application or production data change.
+Remaining work: Privately diagnose/fix the approved R2 bucket access on Render, then re-run storage health and upload/private-object checks; durable idempotency migration 008 remains staged but unapplied and disabled; continue measured P2 performance work.
+Blocker: Render production R2 `HeadBucket` reachability is false; the available read-only Render tools did not expose secret values for diagnosis, and no secret was changed or requested in chat.
+Next safe action: Verify the exact R2 account/key/bucket permissions in the authorized Render environment without exposing values, make the smallest approved env correction if needed, redeploy, and repeat the storage and live smoke checks. Do not submit an order/payment or apply migration 008 during that repair.
+Verification: PR checks 4/4 passed; Render build/deploy succeeded; both hosts readiness/liveness/catalog/SEO checks passed; 70 products were unique across 3 pages; six Studio family PNGs returned 200; browser cart returned to empty; storage health alone remains failing.
