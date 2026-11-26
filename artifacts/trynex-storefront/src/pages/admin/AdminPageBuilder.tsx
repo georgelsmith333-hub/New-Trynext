@@ -39,7 +39,7 @@ const SECTION_ICONS: Record<HomeSectionType, LucideIcon> = {
 export default function AdminPageBuilder() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { data: settings, isLoading } = useGetSettings({
+  const { data: settings, isLoading, isError, error, refetch } = useGetSettings({
     request: { headers: getAuthHeaders() },
     query: { staleTime: 0, refetchOnMount: "always" } as any
   });
@@ -170,7 +170,29 @@ export default function AdminPageBuilder() {
   const selectedSection = layout.find(s => s.id === selectedSectionId);
   const selectedInfo = selectedSection ? HOME_SECTION_INFO[selectedSection.type] : null;
 
-  if (isLoading) return <AdminLayout><Loader /></AdminLayout>;
+  if (isLoading && !isError) return <AdminLayout><Loader /></AdminLayout>;
+
+  if (isError || !settings) {
+    const message = error instanceof Error && error.message ? error.message : "The homepage settings could not be loaded.";
+    return (
+      <AdminLayout>
+        <div className="min-h-[320px] flex items-center justify-center px-4">
+          <div className="max-w-md w-full rounded-2xl border border-red-100 bg-white p-8 text-center shadow-sm" role="alert">
+            <AlertCircle className="w-10 h-10 mx-auto mb-3 text-red-500" />
+            <h1 className="text-xl font-black text-gray-900">Page Builder unavailable</h1>
+            <p className="text-sm text-gray-500 mt-2">{message}</p>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="mt-5 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" /> Try again
+            </button>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>

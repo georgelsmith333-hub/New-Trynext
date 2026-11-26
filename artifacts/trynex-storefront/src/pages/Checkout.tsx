@@ -472,7 +472,7 @@ export default function Checkout() {
       paymentMethod,
       notes: [
         rest.notes,
-        paymentMode === 'advance' ? 'Payment plan: 25% advance + cash on delivery' : 'Payment plan: full payment',
+        paymentMethod === 'card' ? 'Payment plan: card on delivery' : paymentMode === 'advance' ? 'Payment plan: 25% advance + cash on delivery' : 'Payment plan: full payment',
       ].filter(Boolean).join(' | '),
       items: items.map(i => ({
         productId: i.productId,
@@ -935,9 +935,11 @@ export default function Checkout() {
 
           <h1 className="text-4xl font-black font-display mb-2 text-gray-900">Order Received</h1>
           <p className="text-gray-400 mb-6 leading-relaxed text-sm">
-             {paymentMode === 'full'
+             {paymentMode === 'full' && paymentMethod !== 'card'
                ? "Full payment details were submitted. Our team will verify and confirm your order shortly."
-               : paymentMethod === 'cod'
+               : paymentMethod === 'card'
+                 ? "Your order is reserved. The full amount will be collected by card on delivery."
+                 : paymentMethod === 'cod'
                  ? "Your order is reserved. We'll contact you to collect the 25% advance, then deliver the balance by cash on delivery."
                  : "Your 25% advance details were submitted for verification. The remaining balance is due on delivery."}
           </p>
@@ -1009,7 +1011,17 @@ export default function Checkout() {
             );
           })()}
 
-          {paymentMethod === 'cod' ? (
+          {paymentMethod === 'card' ? (
+            <div className="p-4 rounded-2xl mb-4 text-left" style={{ background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.18)' }}>
+              <p className="text-xs font-bold text-violet-700 mb-2 flex items-center gap-1.5">
+                <Info className="w-3.5 h-3.5" /> Card on Delivery
+              </p>
+              <div className="text-xs text-gray-500 space-y-1">
+                <p>Full amount due on delivery: <strong className="text-gray-900">{formatPrice(snapshotRef.current.total)}</strong></p>
+                <p>No card payment is due now.</p>
+              </div>
+            </div>
+          ) : paymentMethod === 'cod' ? (
             <div className="p-4 rounded-2xl mb-4 text-left" style={{ background: 'rgba(8,145,178,0.06)', border: '1px solid rgba(8,145,178,0.18)' }}>
               <p className="text-xs font-bold text-cyan-700 mb-2 flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5" /> Advance Required to Confirm
@@ -2095,7 +2107,7 @@ export default function Checkout() {
                   </div>
 
                   <div className="space-y-2 pt-1">
-                    {paymentMode === 'full' ? (
+                    {paymentMode === 'full' && paymentMethod !== 'card' ? (
                       <div className="flex justify-between items-center p-3 rounded-xl"
                         style={{ background: 'rgba(232,93,4,0.04)', border: '1px solid rgba(232,93,4,0.12)' }}>
                         <span className="text-xs font-bold text-orange-600">Pay Now (Full — via {theme.name})</span>

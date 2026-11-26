@@ -13,6 +13,7 @@ const fake = vi.hoisted(() => {
     promoClaimed: true,
     stockLeft: true,
     noProduct: false,
+    settings: [] as Array<{ key: string; value: string }>,
     inserted: [] as Record<string, unknown>[],
     promoUpdates: 0,
   };
@@ -36,6 +37,7 @@ vi.mock("@workspace/db", async (importActual) => {
   const rowsFor = (table: unknown): unknown[] => {
     if (table === actual.productsTable) return fake.noProduct ? [] : [fake.product];
     if (table === actual.promoCodesTable) return fake.promo ? [fake.promo] : [];
+    if (table === actual.settingsTable) return fake.settings;
     return [];
   };
   const select = () => ({
@@ -89,6 +91,7 @@ beforeEach(() => {
   fake.promoClaimed = true;
   fake.stockLeft = true;
   fake.noProduct = false;
+  fake.settings = [];
   fake.inserted = [];
   fake.promoUpdates = 0;
 });
@@ -154,6 +157,19 @@ describe("POST /orders pricing", () => {
     // the file is relocated into this order's own storage prefix
     expect(note.originalAssets[0].objectPath).toMatch(/^\/objects\/orders\/TN\w+\/0\/logo\.png$/);
     expect(note.originalAssetUrls).toEqual([note.originalAssets[0].objectPath]);
+  });
+
+  it("persists virtual free-shipping promo as zero shipping and an agreeing total", async () => {
+    fake.settings = [
+      { key: "freeShippingThreshold", value: "5000" },
+      { key: "shippingCost", value: "100" },
+    ];
+    const res = await request(app).post("/api/orders").send({ ...customer, promoCode: "FREEDELIV", items: [catalogItem(3)] });
+    expect(res.status).toBe(201);
+    expect(res.body.subtotal).toBe(1500);
+    expect(res.body.shippingCost).toBe(0);
+    expect(res.body.total).toBe(1500);
+    expect(fake.inserted[0]?.shippingCost).toBe("0");
   });
 
   it("makes delivery free once the subtotal reaches the free-shipping threshold", async () => {

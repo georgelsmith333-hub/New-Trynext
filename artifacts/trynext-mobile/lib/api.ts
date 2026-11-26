@@ -164,6 +164,7 @@ export interface CreateOrderPayload {
   total: number;
   promoDiscount?: number;
   source?: string;
+  idempotencyKey?: string;
 }
 
 export interface PromoValidateResponse {
@@ -241,7 +242,10 @@ export const api = {
   createOrder: (data: CreateOrderPayload) =>
     apiFetch<Order>(`/api/orders`, {
       method: "POST",
-      headers: { "X-Requested-With": "XMLHttpRequest" },
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+        ...(data.idempotencyKey ? { "Idempotency-Key": data.idempotencyKey } : {}),
+      },
       body: JSON.stringify(data),
     }),
 

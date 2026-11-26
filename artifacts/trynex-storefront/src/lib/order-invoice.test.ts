@@ -71,6 +71,12 @@ describe("order invoice payment summary", () => {
     });
   });
 
+  it("treats card on delivery as due at delivery, not paid or due now", () => {
+    expect(getInvoicePaymentBreakdown({ total: 1000, paymentMethod: "card", notes: "Payment plan: card on delivery", paymentStatus: "pending" })).toMatchObject({
+      isFullPayment: false, expectedNow: 0, advanceDue: 0, deliveryBalance: 1000, totalDue: 1000,
+    });
+  });
+
   it("recognizes Rocket and Dhaka district names", () => {
     expect(getInvoicePaymentMethodName("rocket")).toBe("Rocket");
     expect(getExpectedDelivery({ shippingDistrict: "Dhaka District" })).toContain("2–3 business days");

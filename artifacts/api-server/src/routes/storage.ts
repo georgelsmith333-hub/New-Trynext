@@ -367,6 +367,31 @@ router.get("/storage/objects/*path", requirePrivateObjectAccess, async (req: Req
 });
 
 /**
+ * DELETE /storage/objects/<direct-upload-id>
+ * Removes one abandoned staging upload after a failed multi-file operation.
+ * The storage service rejects order-prefixed assets and path traversal.
+ */
+router.delete("/storage/objects/*path", requirePrivateObjectAccess, async (req: Request, res: Response) => {
+  const raw = req.params.path;
+  const objectId = Array.isArray(raw) ? raw.join("/") : raw;
+  if (!/^[A-Za-z0-9_-]{8,128}$/.test(objectId)) {
+    res.status(400).json({ error: "validation_error", message: "Only a direct-upload staging object can be deleted." });
+    return;
+  }
+  try {
+    const deleted = await objectStorageService.deleteStagingObject(objectId);
+    res.status(deleted ? 200 : 404).json({ deleted });
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      res.status(404).json({ error: "Object not found" });
+      return;
+    }
+    req.log.error({ err: error }, "Error deleting staging object");
+    if (!res.headersSent) res.status(500).json({ error: "Failed to delete staging object" });
+  }
+});
+
+/**
  * POST /storage/optimize
  * Server-side image optimization: convert uploaded images to WebP, resize if
  * needed, and strip metadata. Returns a buffer the client can upload or the server

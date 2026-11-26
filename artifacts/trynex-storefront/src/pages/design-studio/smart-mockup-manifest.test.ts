@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createSmartMockupManifest, validateSmartMockupManifest } from "./smart-mockup-manifest";
+import { getCategoryCurvature } from "./server-mockup-render";
 
 const validManifest = () => createSmartMockupManifest({
   category: "hoodie",
@@ -17,6 +18,14 @@ const validManifest = () => createSmartMockupManifest({
 });
 
 describe("smart mockup manifest contract", () => {
+  it("uses the same curvature values for curved products and flat apparel", () => {
+    expect(getCategoryCurvature("mug")).toBe(0.16);
+    expect(getCategoryCurvature("waterbottle")).toBe(0.16);
+    expect(getCategoryCurvature("cap")).toBe(0.1);
+    expect(getCategoryCurvature("tshirt")).toBe(0);
+    expect(getCategoryCurvature("hoodie")).toBe(0);
+  });
+
   it("accepts a complete approved surface and checks its source identity", () => {
     const manifest = validManifest();
     expect(validateSmartMockupManifest(manifest, {

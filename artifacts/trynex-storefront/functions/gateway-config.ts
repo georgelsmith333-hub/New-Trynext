@@ -88,9 +88,9 @@ export const PRODUCTION_ORIGINS: OriginRoles = {
     "https://trynex-lifestyle-main-render.onrender.com",
   ],
   reads: [
-    // No verified standby is currently active in the connected Render
-    // workspace. Keep public reads on the verified primary until a same-
-    // repository standby passes direct health and catalog smoke checks.
+    // The former standby is suspended and returns Render's no-server 404.
+    // Keep public reads on the verified primary until a standby is restored
+    // and passes its own health/catalog smoke checks.
     "https://trynex-lifestyle-main-render.onrender.com",
   ],
 };

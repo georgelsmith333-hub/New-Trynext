@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { resetDirectUploadMemory, StorageUploadError, uploadToStorage } from "./storageUpload";
+import { cleanupStagingObjects, resetDirectUploadMemory, StorageUploadError, uploadToStorage } from "./storageUpload";
 
 const target = { uploadURL: "https://bucket.invalid/uploads/abc?sig=1", fallbackUploadURL: "/api/storage/upload-via-api/abc?sig=2" };
 const blob = new Blob(["png"]);
@@ -10,6 +10,20 @@ const status = (code: number, body?: unknown) => new Response(body ? JSON.string
 beforeEach(() => resetDirectUploadMemory());
 
 describe("uploadToStorage", () => {
+  it("cleans only bounded canonical staging objects after a partial operation", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(ok());
+    await cleanupStagingObjects([
+      "/objects/first-staged-object",
+      "/api/storage/objects/second-staged-object",
+      "/objects/orders/paid-order/0/original.png",
+      ...Array.from({ length: 20 }, (_, index) => `/objects/staged-${index}`),
+    ], { fetchImpl, resolveApiUrl });
+    expect(fetchImpl).toHaveBeenCalledTimes(15);
+    expect(fetchImpl.mock.calls[0][0]).toBe("https://api.invalid/api/storage/objects/first-staged-object");
+    expect(fetchImpl.mock.calls[0][1].method).toBe("DELETE");
+    expect(fetchImpl).not.toHaveBeenCalledWith(expect.stringContaining("orders/paid-order"), expect.anything());
+  });
+
   it("uses the direct upload when storage accepts it, and never calls the API", async () => {
     const fetchImpl = vi.fn().mockResolvedValue(ok());
     await expect(uploadToStorage(target, blob, "image/png", { fetchImpl, resolveApiUrl })).resolves.toBe("direct");

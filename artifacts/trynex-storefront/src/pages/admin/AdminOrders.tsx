@@ -29,7 +29,8 @@ const PAYMENT_LABELS: Record<string, { label: string; color: string }> = {
   nagad: { label: "Nagad", color: "#f7941d" },
   upay: { label: "uPay", color: "#0077cc" },
   rocket: { label: "Rocket", color: "#8b2291" },
-  card: { label: "Card (Visa/MC)", color: "#2563eb" },
+  card: { label: "Card on delivery", color: "#2563eb" },
+  bank: { label: "Bank transfer", color: "#16a34a" },
 };
 
 const PAYMENT_STATUS_OPTS = [

@@ -34,6 +34,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Check deployment source parity and retired mobile host
+        run: pnpm run check:deployment-source-parity
+
       - name: Build shared TypeScript declarations
         run: pnpm run typecheck:libs
 

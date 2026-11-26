@@ -10,6 +10,7 @@
     "mockups:validate-matrix": "node tools/validate-smart-matrix.mjs",
     "validate:mockups": "node scripts/validate-mockup-matrix.mjs",
     "verify:critical-flows": "node scripts/verify-critical-flows.mjs",
+    "check:deployment-source-parity": "node scripts/check-deployment-source-parity.mjs",
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "build": "pnpm run typecheck && pnpm -r --if-present run build",
     "typecheck:libs": "tsc --build",

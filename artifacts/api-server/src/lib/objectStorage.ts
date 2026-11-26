@@ -418,6 +418,35 @@ export class ObjectStorageService {
     return fs.promises.readFile(fullPath);
   }
 
+  /**
+   * Delete one abandoned direct-upload staging object. Order assets are
+   * intentionally rejected here: once an upload has been moved under the
+   * orders/ prefix it is durable customer/order evidence and is not eligible
+   * for browser cleanup.
+   */
+  async deleteStagingObject(objectId: string): Promise<boolean> {
+    const safeId = validatePrivateObjectKey(objectId);
+    if (!/^[A-Za-z0-9_-]{8,128}$/.test(safeId)) {
+      throw new ObjectNotFoundError();
+    }
+
+    if (BACKEND === "r2" || BACKEND === "s3") {
+      const { client, bucket } = ensureS3Client();
+      await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: `uploads/${safeId}` }));
+      return true;
+    }
+
+    const fullPath = resolveLocalStoragePath(localUploadsDir(), safeId, "staging object id");
+    try {
+      await fs.promises.unlink(fullPath);
+      return true;
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code === "ENOENT") return false;
+      throw error;
+    }
+  }
+
   /* ── Issue a temporary download URL ── */
   async getObjectDownloadURL(objectPath: string, ttlSec = 900): Promise<string> {
     if (!objectPath.startsWith("/objects/")) throw new ObjectNotFoundError();

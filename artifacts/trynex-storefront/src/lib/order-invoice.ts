@@ -49,9 +49,10 @@ const text = (value: unknown): string =>
 export function getInvoicePaymentBreakdown(order: InvoiceOrder) {
   const total = amount(order.total);
   const status = text(order.paymentStatus).toLowerCase();
-  const isFullPayment = /payment plan:\s*full payment/i.test(text(order.notes));
+  const isCardOnDelivery = text(order.paymentMethod).toLowerCase() === "card";
+  const isFullPayment = !isCardOnDelivery && /payment plan:\s*full payment/i.test(text(order.notes));
   const isRefunded = status === "refunded";
-  const expectedNow = isFullPayment ? total : Math.ceil(total * 0.25);
+  const expectedNow = isCardOnDelivery ? 0 : isFullPayment ? total : Math.ceil(total * 0.25);
   const verifiedPaid = isRefunded
     ? 0
     : status === "paid"
@@ -73,6 +74,7 @@ export function getInvoicePaymentBreakdown(order: InvoiceOrder) {
       ? expectedNow
       : 0,
     deliveryBalance: isRefunded || isFullPayment ? 0 : Math.max(0, total - expectedNow),
+    isCardOnDelivery,
   };
 }
 

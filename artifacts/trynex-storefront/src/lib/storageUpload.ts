@@ -18,6 +18,11 @@ export interface UploadDeps {
   resolveApiUrl: (path: string) => string;
 }
 
+export interface StorageCleanupDeps {
+  fetchImpl?: typeof fetch;
+  resolveApiUrl: (path: string) => string;
+}
+
 export type UploadRoute = "direct" | "api";
 
 export class StorageUploadError extends Error {
@@ -32,6 +37,32 @@ export class StorageUploadError extends Error {
 let directRefused = false;
 export function resetDirectUploadMemory(): void {
   directRefused = false;
+}
+
+const MAX_STAGING_CLEANUP_OBJECTS = 16;
+
+/**
+ * Best-effort cleanup for objects created by an unfinished multi-upload.
+ * Only canonical single-object staging paths are accepted; order assets and
+ * arbitrary URLs are deliberately not targeted by this helper.
+ */
+export async function cleanupStagingObjects(
+  objectPaths: readonly string[],
+  deps: StorageCleanupDeps,
+): Promise<void> {
+  const paths = Array.from(new Set(objectPaths)).slice(0, MAX_STAGING_CLEANUP_OBJECTS);
+  await Promise.all(paths.map(async (objectPath) => {
+    const match = objectPath.match(/^(?:\/api\/storage)?\/objects\/([A-Za-z0-9-]{8,128})$/);
+    if (!match) return;
+    try {
+      await (deps.fetchImpl ?? fetch)(deps.resolveApiUrl(`/api/storage/objects/${match[1]}`), {
+        method: "DELETE",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      });
+    } catch {
+      // Cleanup must never mask the original cart/upload failure.
+    }
+  }));
 }
 
 async function readServerMessage(response: Response): Promise<string> {
