@@ -224,3 +224,16 @@
 - [x] Renamed the authoritative root API Function to `functions/api/[[catchall]].ts`, updated test/parity references, and preserved both `params.catchall` and legacy `params.path` handling.
 - [ ] Validate, commit, push, and merge the named-catchall follow-up; then repeat Pages/custom-domain JSON API, sitemap, robots, catalog, readiness, storage, and reversible checkout-detail checks without submitting an order/payment.
 - [ ] If API routing remains broken, inspect Pages project routing/build configuration before further source changes. Keep migration 008 unapplied and durable order idempotency disabled.
+
+
+## 2026-11-27 Pages API routing blocker after named-catchall release
+
+- [x] PR #113 merged normally as `657b2ab0`; all four hosted checks passed.
+- [x] Pages deployment `97e7d2b7-d2a8-4ab2-86c6-fd5b647cd226` completed successfully and is tied to the merged commit.
+- [x] Local parity, storefront typecheck, focused gateway/middleware/SEO/cache tests (39/39), stale-reference scan, and diff check passed.
+- [x] GET-only probes confirmed `/robots.txt` is plain text on both hosts.
+- [x] GET-only probes confirmed `/api/products`, `/api/settings`, `/api/categories`, `/api/health/readiness`, `/api/health/storage`, and `/sitemap.xml` still return SPA HTML on both the deployment URL and `https://trynext.shop`.
+- [x] Inspected live Pages project configuration and deployment logs: root `/`, destination `artifacts/trynex-storefront/dist`, `uses_functions: true`, `/functions` upload successful, one redirect rule parsed, deployment successful.
+- [ ] Diagnose Pages runtime route invocation/configuration or generated route manifest; do not make speculative source edits.
+- [ ] Only after API JSON works, perform reversible authenticated checkout-detail inspection without order/payment/proof/upload mutation.
+- [ ] Keep migration 008 unapplied and durable order idempotency disabled.

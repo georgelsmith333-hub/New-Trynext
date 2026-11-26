@@ -5374,3 +5374,23 @@ Remaining work: Run parity/typecheck/focused tests; commit/push/open a controlle
 Blocker: API JSON remains unavailable through Pages until the named-catchall correction is deployed. Do not perform checkout submission, payment, proof upload, or any production mutation. Keep migration 008 unapplied and durable idempotency disabled.
 Next safe action: Complete the named-catchall PR and repeat GET-only live verification. If API paths still fall through after this explicit route correction, stop and inspect the Pages project’s route/build configuration rather than making further speculative source changes.
 Verification: PR #112 hosted Pages, active-app, CI, and security checks passed; its deployment served the storefront but not API JSON. No order, payment, proof upload, upload, inventory, customer, settings, database, or provider mutation occurred.
+
+
+## 2026-11-27 — Post-merge Pages routing diagnosis
+
+PR #113 (`fix/pages-api-catchall`) merged normally as commit `657b2ab0d9c56d3812ec9e5c92815e06dccd4f56`. The resulting production Pages deployment is `97e7d2b7-d2a8-4ab2-86c6-fd5b647cd226` at `https://97e7d2b7.trynext-shop-new.pages.dev`; its queued, initialize, clone, build, and deploy stages all completed successfully. The deployment is tied exactly to the merged commit and reports `uses_functions: true`.
+
+Local release verification passed: deployment-source parity, storefront typecheck, 39/39 focused gateway/middleware/SEO/cache tests, stale `[[path]]` reference scan, and `git diff --check`. All four required hosted checks passed: Cloudflare Pages, Active App verification, CI build-and-check, and security scan. No order, payment, payment-proof, upload, inventory, customer, settings, database, or provider mutation occurred.
+
+GET-only probes against both the deployment URL and `https://trynext.shop` still return `200 text/html` SPA HTML for `/api/products`, `/api/settings`, `/api/categories`, `/api/health/readiness`, `/api/health/storage`, and `/sitemap.xml`. `/robots.txt` returns `200 text/plain` as expected. This means the named-catchall rename and clean-build correction did not restore API route invocation.
+
+Configuration inspection confirms the live Pages project is configured with root `/`, destination `artifacts/trynex-storefront/dist`, the expected GitHub repository and `main` production branch, `uses_functions: true`, and the expected Wrangler configuration hash. Deployment logs confirm Wrangler found `/functions`, uploaded the Functions bundle, parsed one redirect rule, and completed deployment successfully. The authoritative Cloudflare routing documentation confirms `functions/api/[[catchall]].ts` is the correct multipath filename convention. The remaining blocker is therefore Pages runtime route invocation/route configuration or another platform-level precedence issue, not stale build output or an unverified source filename.
+
+Status: blocked — source-level routing hypotheses exhausted; Pages configuration/runtime investigation required
+Last completed: Merged PR #113, verified deployment success and hosted checks, ran the required GET-only matrix on deployment and custom-domain hosts, and inspected the live Pages project configuration and deployment logs.
+Stopped at: After confirming API and sitemap still fall through to SPA HTML; before any further source edit or checkout browser inspection.
+Files/areas changed: Named catch-all route and related tests/parity/handoff files were merged in PR #113; this handoff and TODO now record the live blocker.
+Remaining work: Inspect Pages route/invocation configuration and deployment route manifest using Cloudflare-supported diagnostics; only after `/api/*` returns JSON may authenticated browser checkout-detail inspection resume. Broader A-to-Z work remains deferred behind this production API gate.
+Blocker: Pages serves the SPA for all tested API and sitemap paths despite successful Functions upload and `uses_functions: true`. Do not make speculative source route edits, submit an order/payment/proof/upload mutation, apply migration 008, or enable durable order idempotency.
+Next safe action: Diagnose the live Pages invocation boundary/configuration, preferably by inspecting the generated `_routes.json`/function route manifest or using an isolated supported Pages deployment configuration check. If a configuration change is required, make it as a separately reviewed, reversible release.
+Verification: PR #113 hosted checks 4/4 passed; deployment `97e7d2b7` stage success; live GET-only matrix: API 5/5 HTML fallback on both hosts, sitemap HTML fallback on both hosts, robots plain text on both hosts. No production mutation occurred.
