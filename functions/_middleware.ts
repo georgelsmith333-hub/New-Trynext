@@ -21,6 +21,8 @@
    serving the unmodified SPA. No user is ever broken.
 ═══════════════════════════════════════════════════════════════════════════ */
 
+import { onRequest as apiGatewayOnRequest } from "./api/[[catchall]]";
+
 // The verified custom domain is the canonical public origin. The Pages
 // hostname remains available as a compatibility URL, but must not win SEO.
 const SITE_URL = "https://trynext.shop";
@@ -263,11 +265,21 @@ function buildBlogHtml(html: string, post: any, slug: string): string {
 }
 
 /* ─── Main entry point ───────────────────────────────────────────── */
-export const onRequest: PagesFunction<{ API_URL: string }> = async ({ request, env }) => {
+export const onRequest: PagesFunction<{ API_URL: string }> = async (context) => {
+  const { request, env } = context;
+  const path = new URL(request.url).pathname;
+
+  // Pages is currently serving the SPA asset for the nested API Function route
+  // in production. Dispatch from the global middleware as a defensive, single
+  // entry point so API methods can never be mistaken for index.html. The
+  // sitemap is dynamic too and must use the same gateway response path.
+  if (path === "/sitemap.xml" || path === "/api" || path.startsWith("/api/")) {
+    return apiGatewayOnRequest(context as Parameters<typeof apiGatewayOnRequest>[0]);
+  }
+
   if (request.method !== "GET") return env.ASSETS.fetch(request);
 
   const ua = request.headers.get("user-agent") || "";
-  const path = new URL(request.url).pathname;
 
   // Do not let the Pages catch-all rewrite manufacture a 200 homepage for a
   // typo. API requests and file-like paths have their own handlers.
