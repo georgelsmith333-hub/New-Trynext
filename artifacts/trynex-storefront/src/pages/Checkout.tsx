@@ -33,6 +33,7 @@ import { DeliveryAreaPicker } from "@/components/DeliveryAreaPicker";
 import { OrderSuccessCelebration } from "@/components/orders/OrderSuccessCelebration";
 import { downloadOrderInvoicePdf, type InvoiceOrder } from "@/lib/order-invoice";
 import { resolveShippingCity } from "@/lib/shippingLocality";
+import { addLocalNotification } from "@/lib/localNotifications";
 
 const checkoutSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -593,12 +594,19 @@ export default function Checkout() {
         size: i.size,
         color: i.color,
       }));
-      // Keep the cart intact while the customer is on the wallet/bank gateway.
-      // The order already exists, but the payment evidence has not been submitted
-      // yet; clearing here made a gateway glitch or refresh look like the order/cart
-      // had vanished. COD and card flows can still clear immediately.
-      const requiresPaymentEvidence = paymentMethod === 'bkash' || paymentMethod === 'nagad' || paymentMethod === 'rocket' || paymentMethod === 'upay' || paymentMethod === 'bank';
-      if (!requiresPaymentEvidence) clearCart();
+      // The order snapshot above owns the post-submit gateway now. Clear the
+      // shopping cart for every acknowledged order so the ordered lines cannot
+      // reappear as ordinary cart items while payment evidence is being added.
+      // The gateway still retains the order/cart snapshot in component state.
+      clearCart();
+      if (!customer) {
+        addLocalNotification({
+          type: 'order',
+          title: 'Order received',
+          message: `Order ${(orderData.orderNumber as string) || 'confirmation'} was received. Keep this browser open to follow updates.`,
+          link: '/track',
+        });
+      }
 
       // Wallet orders must stop at the gateway so the customer can send the
       // exact 25% amount and submit transaction evidence. Payment is only

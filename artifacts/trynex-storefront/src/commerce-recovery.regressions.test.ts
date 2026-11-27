@@ -23,11 +23,19 @@ describe("commerce recovery regressions", () => {
     expect(source).toContain("JSON.stringify(studioDraft).length <= 3000");
   });
 
-  it("does not clear the cart before wallet or bank payment evidence is submitted", () => {
+  it("clears the cart after acknowledgement while retaining the gateway snapshot", () => {
     const source = read("src/pages/Checkout.tsx");
-    expect(source).toContain("const requiresPaymentEvidence = paymentMethod === 'bkash'");
-    expect(source).toContain("if (!requiresPaymentEvidence) clearCart();");
+    expect(source).toContain("clearCart();");
+    expect(source).toContain("The gateway still retains the order/cart snapshot in component state.");
+    expect(source).toContain("addLocalNotification({");
     expect(source).toContain("setPaymentSubmitError(null);");
+  });
+
+  it("keeps browser-local notifications available without an account", () => {
+    const source = read("src/lib/localNotifications.ts");
+    expect(source).toContain('trynext_local_notifications_v1');
+    expect(source).toContain("subscribeToLocalNotifications");
+    expect(source).toContain("markLocalNotificationsRead");
   });
 
   it("keeps the acknowledged order flow out of the empty-cart redirect", () => {

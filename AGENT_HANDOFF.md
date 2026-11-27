@@ -5408,3 +5408,30 @@ Remaining work: Perform only reversible authenticated checkout-detail inspection
 Blocker: None for the Pages API outage. Migration 008 remains unapplied and `DURABLE_ORDER_IDEMPOTENCY` remains disabled. Do not submit an order, payment, proof, upload, or other mutation.
 Next safe action: Run the non-mutating browser checkout inspection against the repaired custom domain, then document whether bKash/Nagad/uPay/Rocket/bank/card-on-delivery/full-payment/25%-advance details render before confirmation. If browser inspection requires a real submission, stop before it.
 Verification: PR #115 hosted checks 4/4 passed; Pages deployment `34eeda67` live; all three hosts passed API/settings/categories/readiness/sitemap GET-only probes; exact public catalog result 70 products and 6 categories on deployment and custom domain.
+
+## 2026-11-28 cart clarity and guest notification continuation
+
+Status: local implementation verified; controlled PR/deployment still required.
+
+Completed:
+- Updated `artifacts/trynex-storefront/src/pages/Checkout.tsx` so every acknowledged order clears the ordinary browser cart immediately. The acknowledged order snapshot remains in component state for the wallet/bank gateway and payment-evidence flow, so clearing the cart no longer sends the customer back to an ordinary cart view.
+- Added browser-local guest/signed-out notifications in `src/lib/localNotifications.ts` and made the Navbar bell/message area visible without authentication. Authenticated users retain server notification polling and order-message unread counts.
+- Guest order acknowledgement creates a local browser notification. This is intentionally not represented as cross-device or server-durable delivery.
+- Updated `src/commerce-recovery.regressions.test.ts` for the new intended behavior.
+- Created the evidence report PDF at `/tmp/trynext-remediation/trynext-recovery-pdf/main.pdf`.
+
+Verification:
+- Storefront typecheck passed.
+- Storefront Vitest passed: 40 files / 265 tests.
+- `git diff --check` passed.
+- Typst strict compile passed with no warnings.
+- PDF deterministic verification passed: 6 checks, 0 warnings/failures.
+- No order, payment, proof upload, customer, inventory, settings, database, or provider mutation was performed.
+
+Remaining:
+- Review, commit, push, and merge through the controlled GitHub PR path; wait for CI/Pages/active-app/security checks.
+- Deploy and verify exact SHA plus both production hosts with GET-only probes and reversible browser checks.
+- Wallet/bank destinations remain blank until the owner configures and privately verifies them.
+- Guest notifications remain browser-local; durable guest, email, SMS, WhatsApp, Telegram, uptime-alert, synchronized-standby, and backup/restore work remain separate planned stages.
+- Rotate/renew the short-lived R2 credential before 2026-12-26.
+- Keep migration 008 unapplied and durable idempotency disabled unless separately approved.
