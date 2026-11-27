@@ -237,3 +237,14 @@
 - [ ] Diagnose Pages runtime route invocation/configuration or generated route manifest; do not make speculative source edits.
 - [ ] Only after API JSON works, perform reversible authenticated checkout-detail inspection without order/payment/proof/upload mutation.
 - [ ] Keep migration 008 unapplied and durable order idempotency disabled.
+
+
+## 2026-11-27 Pages API outage resolution
+
+- [x] Isolated the public outage to Cloudflare Pages serving the SPA shell for `/api/*` and `/sitemap.xml`; the direct Render API remained healthy with database/catalog readiness.
+- [x] Merged PR #115 as `16ad1f3dd8d8f880762b683ae91b8c4c064a35f8` after all four hosted checks passed (Cloudflare Pages, Active App verification, CI build-and-check, and security scan).
+- [x] Deployed Pages production deployment `34eeda67-571f-4a61-a4b2-b5165ce021ff` from the exact merge commit and verified propagation completed.
+- [x] GET-only probes passed on `https://34eeda67.trynext-shop-new.pages.dev`, `https://trynext.shop`, and `https://www.trynext.shop`: `/api/products`, `/api/settings`, `/api/categories`, and `/api/health/readiness` returned HTTP 200 JSON; `/sitemap.xml` returned HTTP 200 XML.
+- [x] Exact public catalog evidence after repair: `limit=100` returned 70 products and 6 categories on both the deployment hostname and custom domain; readiness returned `status=ok`, `db=true`, `catalog=true`.
+- [ ] Perform only the allowed authenticated, reversible checkout-detail inspection against the repaired custom domain. Confirm payment instructions render before confirmation and that no order/payment/proof/upload mutation is submitted.
+- [ ] Keep migration 008 unapplied and `DURABLE_ORDER_IDEMPOTENCY` disabled unless a separate controlled release is approved.
