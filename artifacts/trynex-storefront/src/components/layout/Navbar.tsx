@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CartDrawer } from "@/components/CartDrawer";
 import { useListProducts, useListCategories } from "@workspace/api-client-react";
 import { lockBodyScroll } from "@/lib/scrollLock";
+import { getLocalNotifications, markLocalNotificationsRead, subscribeToLocalNotifications } from "@/lib/localNotifications";
 
 const SHOP_CATEGORIES = [
   { label: "All Products", href: "/products", emoji: "🛍️" },
@@ -85,6 +86,7 @@ export function Navbar() {
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadNotificationsCount, setUnreadNotificationsCount] = useState(0);
+  const [localNotifications, setLocalNotifications] = useState(() => getLocalNotifications());
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -93,6 +95,14 @@ export function Navbar() {
   const { itemCount } = useCart();
   const { count: wishlistCount } = useWishlist();
   const isHomePage = location === "/" || location === "";
+  const visibleNotifications = [...localNotifications, ...notifications];
+  const totalUnreadNotifications = unreadNotificationsCount + localNotifications.filter((notification) => !notification.read).length;
+
+  useEffect(() => {
+    const refreshLocalNotifications = () => setLocalNotifications(getLocalNotifications());
+    refreshLocalNotifications();
+    return subscribeToLocalNotifications(refreshLocalNotifications);
+  }, []);
 
   useEffect(() => {
     let ticking = false;
@@ -185,6 +195,7 @@ export function Navbar() {
   }, [isAuthenticated]);
 
   const markNotificationsAsRead = async () => {
+    markLocalNotificationsRead();
     if (unreadNotificationsCount === 0) return;
     const token = localStorage.getItem("trynext_customer_token");
     if (!token) return;
@@ -720,8 +731,7 @@ export function Navbar() {
               <Search className="w-[1.05rem] h-[1.05rem]" />
             </button>
 
-            {isAuthenticated && (
-              <div ref={notificationsRef} className="relative">
+            <div ref={notificationsRef} className="relative">
                 <button
                   onClick={() => setNotificationsOpen(!notificationsOpen)}
                   className={cn(
@@ -731,15 +741,15 @@ export function Navbar() {
                       : "text-gray-500 hover:text-orange-600 hover:bg-orange-50/60"
                   )}
                   title="Notifications"
-                  aria-label={`Notifications with ${unreadNotificationsCount} unread`}
+                  aria-label={`Notifications with ${totalUnreadNotifications} unread`}
                 >
                   <Bell className="w-[1.1rem] h-[1.1rem]" />
-                  {unreadNotificationsCount > 0 && (
+                  {totalUnreadNotifications > 0 && (
                     <span
                       className="absolute top-1 right-1 min-w-[1.1rem] h-[1.1rem] px-1 text-[9px] font-black text-white rounded-full flex items-center justify-center ring-2 ring-white animate-pulse"
                       style={{ background: '#EF4444' }}
                     >
-                      {unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}
+                      {totalUnreadNotifications > 99 ? "99+" : totalUnreadNotifications}
                     </span>
                   )}
                 </button>
@@ -754,7 +764,7 @@ export function Navbar() {
                     >
                       <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
                         <h3 className="text-sm font-bold text-gray-900">Notifications</h3>
-                        {unreadNotificationsCount > 0 && (
+                        {totalUnreadNotifications > 0 && (
                           <button 
                             onClick={markNotificationsAsRead}
                             className="text-[10px] font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1"
@@ -764,11 +774,11 @@ export function Navbar() {
                         )}
                       </div>
                       <div className="max-h-[360px] overflow-y-auto scrollbar-hide overscroll-contain" data-lenis-prevent>
-                        {notifications.length > 0 ? (
+                        {visibleNotifications.length > 0 ? (
                           <div className="divide-y divide-gray-50">
-                            {notifications.map((n) => (
+                            {visibleNotifications.map((n) => (
                               <Link
-                                key={n.id}
+                                key={String(n.id)}
                                 href={n.link || "/account"}
                                 onClick={() => {
                                   setNotificationsOpen(false);
@@ -834,7 +844,6 @@ export function Navbar() {
                   )}
                 </AnimatePresence>
               </div>
-            )}
 
             {isAuthenticated ? (
               <div ref={profileRef} className="relative hidden sm:block">

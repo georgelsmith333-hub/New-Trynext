@@ -248,3 +248,16 @@
 - [x] Exact public catalog evidence after repair: `limit=100` returned 70 products and 6 categories on both the deployment hostname and custom domain; readiness returned `status=ok`, `db=true`, `catalog=true`.
 - [ ] Perform only the allowed authenticated, reversible checkout-detail inspection against the repaired custom domain. Confirm payment instructions render before confirmation and that no order/payment/proof/upload mutation is submitted.
 - [ ] Keep migration 008 unapplied and `DURABLE_ORDER_IDEMPOTENCY` disabled unless a separate controlled release is approved.
+
+## 2026-11-28 cart clarity, guest notifications, and recovery report
+
+- [x] Change checkout to clear the ordinary cart after every acknowledged order while retaining the acknowledged order snapshot for the wallet/bank gateway and payment-evidence flow.
+- [x] Add a visible notification bell/message area for guests and signed-out users using browser-local notifications; preserve authenticated server notification polling and order-message counts.
+- [x] Add regression assertions for cart clearing, gateway snapshot retention, and local notification storage.
+- [x] Storefront typecheck passed; Vitest passed 40 files / 265 tests; `git diff --check` passed.
+- [x] Create and verify `/tmp/trynext-remediation/trynext-recovery-pdf/main.pdf` with Typst strict compilation and deterministic PDF verification (6 pass, 0 warnings/failures).
+- [ ] Commit and push the scoped change through the authorized GitHub PR path; wait for CI, Pages, active-app, and security checks; merge normally.
+- [ ] After deployment, verify exact SHA, both production hosts, readiness/db/catalog/storage, 70 products/six categories, and reversible checkout UI without submitting an order/payment.
+- [ ] Configure and privately verify bKash/Nagad/Rocket/uPay/bank destinations if those methods should be offered; do not invent or hard-code destinations.
+- [ ] Treat guest local notices as browser-scoped only until a separately designed durable anonymous notification channel is implemented.
+- [ ] Rotate/renew the short-lived R2 credential before 2026-12-26. Keep migration 008 unapplied and durable idempotency disabled.
